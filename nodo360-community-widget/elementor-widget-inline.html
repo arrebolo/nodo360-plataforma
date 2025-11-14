@@ -1,0 +1,408 @@
+<!-- ============================================================================
+     NODO360 COMMUNITY WIDGET - ELEMENTOR ALL-IN-ONE VERSION
+     Version: 1.0
+     Description: Complete widget with inline CSS and JavaScript
+     Usage: Copy and paste this entire file into Elementor HTML widget
+     ============================================================================ -->
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Inline Styles -->
+<style>
+:root{--color-black:#000;--color-white:#fff;--color-primary:#dc2626;--color-primary-hover:#b91c1c;--color-primary-dark:#991b1b;--color-gray-50:#f9fafb;--color-gray-100:#f3f4f6;--color-gray-200:#e5e7eb;--color-gray-300:#d1d5db;--color-gray-400:#9ca3af;--color-gray-500:#6b7280;--color-gray-600:#4b5563;--color-gray-700:#374151;--color-gray-800:#1f2937;--color-gray-900:#111827;--color-border:#30363d;--color-border-light:#21262d;--bg-primary:var(--color-black);--bg-secondary:#0d1117;--bg-tertiary:#161b22;--bg-card:#0d1117;--bg-card-hover:#161b22;--font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--font-weight-light:300;--font-weight-normal:400;--font-weight-medium:500;--font-weight-semibold:600;--font-weight-bold:700;--font-weight-extrabold:800;--text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--text-5xl:3rem;--text-6xl:3.75rem;--leading-tight:1.25;--leading-snug:1.375;--leading-normal:1.5;--leading-relaxed:1.625;--leading-loose:2;--spacing-1:.25rem;--spacing-2:.5rem;--spacing-3:.75rem;--spacing-4:1rem;--spacing-5:1.25rem;--spacing-6:1.5rem;--spacing-8:2rem;--spacing-10:2.5rem;--spacing-12:3rem;--spacing-16:4rem;--spacing-20:5rem;--spacing-24:6rem;--radius-sm:.25rem;--radius-md:.375rem;--radius-lg:.5rem;--radius-xl:.75rem;--radius-2xl:1rem;--radius-full:9999px;--shadow-sm:0 1px 2px 0 rgba(0,0,0,.05);--shadow-md:0 4px 6px -1px rgba(0,0,0,.1);--shadow-lg:0 10px 15px -3px rgba(0,0,0,.1);--shadow-xl:0 20px 25px -5px rgba(0,0,0,.1);--shadow-2xl:0 25px 50px -12px rgba(0,0,0,.25);--transition-fast:150ms cubic-bezier(.4,0,.2,1);--transition-base:300ms cubic-bezier(.4,0,.2,1);--transition-slow:500ms cubic-bezier(.4,0,.2,1);--z-dropdown:1000;--z-sticky:1020;--z-fixed:1030;--z-modal-backdrop:1040;--z-modal:1050;--z-popover:1060;--z-tooltip:1070;--container-max-width:1280px;--container-padding:var(--spacing-4)}
+.nodo360-community-widget *,.nodo360-community-widget *::before,.nodo360-community-widget *::after{box-sizing:border-box;margin:0;padding:0}
+.nodo360-community-widget{font-family:var(--font-family);font-size:var(--text-base);font-weight:var(--font-weight-normal);line-height:var(--leading-normal);color:var(--color-white);background-color:var(--bg-primary);text-rendering:optimizeSpeed;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.nodo360-community-widget img,.nodo360-community-widget picture,.nodo360-community-widget video,.nodo360-community-widget canvas,.nodo360-community-widget svg{display:block;max-width:100%;height:auto}
+.nodo360-community-widget input,.nodo360-community-widget button,.nodo360-community-widget textarea,.nodo360-community-widget select{font:inherit}
+.nodo360-community-widget button{background:none;border:none;cursor:pointer}
+.nodo360-community-widget ul,.nodo360-community-widget ol{list-style:none}
+.nodo360-community-widget a{color:inherit;text-decoration:none;cursor:pointer}
+.nodo360-community-widget h1,.nodo360-community-widget h2,.nodo360-community-widget h3,.nodo360-community-widget h4,.nodo360-community-widget h5,.nodo360-community-widget h6{font-weight:var(--font-weight-bold);line-height:var(--leading-tight);color:var(--color-white)}
+.nodo360-community-widget p,.nodo360-community-widget h1,.nodo360-community-widget h2,.nodo360-community-widget h3,.nodo360-community-widget h4,.nodo360-community-widget h5,.nodo360-community-widget h6{overflow-wrap:break-word}
+@media (prefers-reduced-motion:reduce){.nodo360-community-widget *,.nodo360-community-widget *::before,.nodo360-community-widget *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+.nodo360-community-widget .container{width:100%;max-width:var(--container-max-width);margin-left:auto;margin-right:auto;padding-left:var(--container-padding);padding-right:var(--container-padding)}
+.nodo360-community-widget .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInScale{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.nodo360-community-widget .fade-in{animation:fadeIn var(--transition-slow) ease-out forwards;opacity:0}
+.nodo360-community-widget .fade-in[data-delay="100"]{animation-delay:100ms}
+.nodo360-community-widget .fade-in[data-delay="150"]{animation-delay:150ms}
+.nodo360-community-widget .fade-in[data-delay="200"]{animation-delay:200ms}
+.nodo360-community-widget .fade-in[data-delay="250"]{animation-delay:250ms}
+.nodo360-community-widget .fade-in[data-delay="300"]{animation-delay:300ms}
+.nodo360-community-widget .fade-in.visible{animation:fadeIn var(--transition-slow) ease-out forwards}
+.nodo360-community-widget .section-title{font-size:var(--text-3xl);font-weight:var(--font-weight-bold);text-align:center;margin-bottom:var(--spacing-12);color:var(--color-white)}
+@media (min-width:768px){.nodo360-community-widget .section-title{font-size:var(--text-4xl)}}
+.nodo360-community-widget .text-primary{color:var(--color-primary)}
+.nodo360-community-widget .text-secondary{color:var(--color-gray-300)}
+.nodo360-community-widget .text-muted{color:var(--color-gray-400)}
+.nodo360-community-widget *:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:var(--radius-sm)}
+.nodo360-community-widget ::selection{background-color:var(--color-primary);color:var(--color-white)}
+.nodo360-community-widget ::-moz-selection{background-color:var(--color-primary);color:var(--color-white)}
+.nodo360-community-widget .hero-section{position:relative;padding:var(--spacing-20) 0;background:linear-gradient(180deg,var(--bg-primary) 0%,var(--bg-secondary) 100%);overflow:hidden}
+.nodo360-community-widget .hero-content{text-align:center;max-width:900px;margin:0 auto}
+.nodo360-community-widget .hero-title{font-size:var(--text-4xl);font-weight:var(--font-weight-extrabold);line-height:var(--leading-tight);margin-bottom:var(--spacing-6);color:var(--color-white)}
+@media (min-width:768px){.nodo360-community-widget .hero-title{font-size:var(--text-5xl)}}
+@media (min-width:1024px){.nodo360-community-widget .hero-title{font-size:var(--text-6xl)}}
+.nodo360-community-widget .hero-subtitle{font-size:var(--text-lg);font-weight:var(--font-weight-normal);line-height:var(--leading-relaxed);color:var(--color-gray-300);margin-bottom:var(--spacing-10);max-width:700px;margin-left:auto;margin-right:auto}
+@media (min-width:768px){.nodo360-community-widget .hero-subtitle{font-size:var(--text-xl)}}
+.nodo360-community-widget .hero-ctas{display:flex;flex-direction:column;gap:var(--spacing-4);align-items:center;justify-content:center}
+@media (min-width:640px){.nodo360-community-widget .hero-ctas{flex-direction:row;flex-wrap:wrap}}
+.nodo360-community-widget .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-2);padding:var(--spacing-3) var(--spacing-6);font-size:var(--text-base);font-weight:var(--font-weight-semibold);line-height:1;text-align:center;text-decoration:none;border-radius:var(--radius-lg);border:2px solid transparent;transition:all var(--transition-base);cursor:pointer;white-space:nowrap}
+.nodo360-community-widget .btn:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+.nodo360-community-widget .btn-icon{font-size:var(--text-lg);line-height:1}
+.nodo360-community-widget .btn-primary{background-color:var(--color-primary);color:var(--color-white);border-color:var(--color-primary)}
+.nodo360-community-widget .btn-primary:hover{background-color:var(--color-primary-hover);border-color:var(--color-primary-hover);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.nodo360-community-widget .btn-primary:active{transform:translateY(0)}
+.nodo360-community-widget .btn-secondary{background-color:var(--bg-card);color:var(--color-white);border-color:var(--color-border)}
+.nodo360-community-widget .btn-secondary:hover{background-color:var(--bg-card-hover);border-color:var(--color-gray-600);transform:translateY(-2px)}
+.nodo360-community-widget .btn-outline{background-color:transparent;color:var(--color-white);border-color:var(--color-border)}
+.nodo360-community-widget .btn-outline:hover{background-color:var(--bg-card);border-color:var(--color-gray-500);transform:translateY(-2px)}
+.nodo360-community-widget .btn-primary-full,.nodo360-community-widget .btn-secondary-full,.nodo360-community-widget .btn-outline-full{width:100%}
+.nodo360-community-widget .btn-primary-full{background-color:var(--color-primary);color:var(--color-white);border-color:var(--color-primary)}
+.nodo360-community-widget .btn-primary-full:hover{background-color:var(--color-primary-hover);border-color:var(--color-primary-hover)}
+.nodo360-community-widget .btn-secondary-full{background-color:var(--bg-card);color:var(--color-white);border-color:var(--color-border)}
+.nodo360-community-widget .btn-secondary-full:hover{background-color:var(--bg-card-hover);border-color:var(--color-gray-600)}
+.nodo360-community-widget .btn-outline-full{background-color:transparent;color:var(--color-white);border-color:var(--color-border)}
+.nodo360-community-widget .btn-outline-full:hover{background-color:var(--bg-card);border-color:var(--color-gray-500)}
+.nodo360-community-widget .btn-large{padding:var(--spacing-4) var(--spacing-10);font-size:var(--text-lg)}
+.nodo360-community-widget .features-section{padding:var(--spacing-16) 0;background-color:var(--bg-secondary)}
+.nodo360-community-widget .features-grid{display:grid;grid-template-columns:1fr;gap:var(--spacing-8)}
+@media (min-width:768px){.nodo360-community-widget .features-grid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1024px){.nodo360-community-widget .features-grid{grid-template-columns:repeat(3,1fr)}}
+.nodo360-community-widget .feature-card{padding:var(--spacing-8);background-color:var(--bg-card);border:1px solid var(--color-border);border-radius:var(--radius-xl);transition:all var(--transition-base)}
+.nodo360-community-widget .feature-card:hover{border-color:var(--color-primary);transform:translateY(-4px);box-shadow:var(--shadow-xl)}
+.nodo360-community-widget .feature-icon{font-size:var(--text-5xl);margin-bottom:var(--spacing-4);line-height:1}
+.nodo360-community-widget .feature-title{font-size:var(--text-xl);font-weight:var(--font-weight-bold);margin-bottom:var(--spacing-3);color:var(--color-white)}
+.nodo360-community-widget .feature-text{font-size:var(--text-base);line-height:var(--leading-relaxed);color:var(--color-gray-300)}
+.nodo360-community-widget .quick-access-section{padding:var(--spacing-16) 0;background-color:var(--bg-primary)}
+.nodo360-community-widget .quick-access-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--spacing-4)}
+@media (min-width:640px){.nodo360-community-widget .quick-access-grid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:1024px){.nodo360-community-widget .quick-access-grid{grid-template-columns:repeat(5,1fr)}}
+.nodo360-community-widget .quick-access-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--spacing-3);padding:var(--spacing-6);background-color:var(--bg-card);border:1px solid var(--color-border);border-radius:var(--radius-xl);transition:all var(--transition-base);text-decoration:none;color:var(--color-white)}
+.nodo360-community-widget .quick-access-btn:hover{background-color:var(--bg-card-hover);border-color:var(--color-primary);transform:translateY(-2px)}
+.nodo360-community-widget .qa-icon{font-size:var(--text-4xl);line-height:1}
+.nodo360-community-widget .qa-text{font-size:var(--text-sm);font-weight:var(--font-weight-semibold);text-align:center}
+.nodo360-community-widget .access-levels-section{padding:var(--spacing-16) 0;background-color:var(--bg-secondary)}
+.nodo360-community-widget .access-levels-grid{display:grid;grid-template-columns:1fr;gap:var(--spacing-8)}
+@media (min-width:768px){.nodo360-community-widget .access-levels-grid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1024px){.nodo360-community-widget .access-levels-grid{grid-template-columns:repeat(3,1fr)}}
+.nodo360-community-widget .access-card{position:relative;display:flex;flex-direction:column;padding:var(--spacing-8);background-color:var(--bg-card);border:1px solid var(--color-border);border-radius:var(--radius-xl);transition:all var(--transition-base)}
+.nodo360-community-widget .access-card:hover{border-color:var(--color-gray-600);transform:translateY(-4px)}
+.nodo360-community-widget .access-card-premium{border-color:var(--color-primary);background:linear-gradient(135deg,var(--bg-card) 0%,rgba(220,38,38,.1) 100%)}
+.nodo360-community-widget .access-card-premium:hover{border-color:var(--color-primary-hover);box-shadow:0 0 30px rgba(220,38,38,.3)}
+.nodo360-community-widget .access-badge{display:inline-block;padding:var(--spacing-1) var(--spacing-3);font-size:var(--text-xs);font-weight:var(--font-weight-bold);text-transform:uppercase;letter-spacing:.05em;background-color:var(--bg-tertiary);color:var(--color-gray-300);border-radius:var(--radius-md);margin-bottom:var(--spacing-4);width:fit-content}
+.nodo360-community-widget .access-badge-premium{background-color:var(--color-primary);color:var(--color-white)}
+.nodo360-community-widget .access-title{font-size:var(--text-2xl);font-weight:var(--font-weight-bold);margin-bottom:var(--spacing-6);color:var(--color-white)}
+.nodo360-community-widget .access-features{flex:1;margin-bottom:var(--spacing-6)}
+.nodo360-community-widget .feature-item{display:flex;align-items:center;gap:var(--spacing-3);padding:var(--spacing-3) 0;font-size:var(--text-base);line-height:var(--leading-normal)}
+.nodo360-community-widget .feature-item+.feature-item{border-top:1px solid var(--color-border-light)}
+.nodo360-community-widget .feature-item .feature-icon{flex-shrink:0;font-size:var(--text-lg)}
+.nodo360-community-widget .feature-available{color:var(--color-white)}
+.nodo360-community-widget .feature-available .feature-icon{color:var(--color-primary)}
+.nodo360-community-widget .feature-locked{color:var(--color-gray-400)}
+.nodo360-community-widget .feature-locked .feature-icon{opacity:.5}
+.nodo360-community-widget .conduct-section{padding:var(--spacing-16) 0;background-color:var(--bg-primary)}
+.nodo360-community-widget .conduct-content{max-width:800px;margin:0 auto;text-align:center}
+.nodo360-community-widget .conduct-title{font-size:var(--text-3xl);font-weight:var(--font-weight-bold);margin-bottom:var(--spacing-6);color:var(--color-white)}
+@media (min-width:768px){.nodo360-community-widget .conduct-title{font-size:var(--text-4xl)}}
+.nodo360-community-widget .conduct-text{font-size:var(--text-lg);line-height:var(--leading-relaxed);color:var(--color-gray-300);margin-bottom:var(--spacing-6)}
+.nodo360-community-widget .conduct-link{display:inline-flex;align-items:center;font-size:var(--text-base);font-weight:var(--font-weight-semibold);color:var(--color-primary);transition:all var(--transition-base)}
+.nodo360-community-widget .conduct-link:hover{color:var(--color-primary-hover);text-decoration:underline}
+.nodo360-community-widget .final-cta-section{padding:var(--spacing-20) 0;background:linear-gradient(180deg,var(--bg-secondary) 0%,var(--bg-primary) 100%)}
+.nodo360-community-widget .final-cta-content{max-width:700px;margin:0 auto;text-align:center}
+.nodo360-community-widget .final-cta-title{font-size:var(--text-4xl);font-weight:var(--font-weight-extrabold);margin-bottom:var(--spacing-6);color:var(--color-white)}
+@media (min-width:768px){.nodo360-community-widget .final-cta-title{font-size:var(--text-5xl)}}
+.nodo360-community-widget .final-cta-text{font-size:var(--text-lg);line-height:var(--leading-relaxed);color:var(--color-gray-300);margin-bottom:var(--spacing-8)}
+@media (min-width:768px){.nodo360-community-widget .final-cta-text{font-size:var(--text-xl)}}
+.nodo360-community-widget .footer{padding:var(--spacing-8) 0;background-color:var(--bg-primary);border-top:1px solid var(--color-border)}
+.nodo360-community-widget .footer-text{font-size:var(--text-sm);text-align:center;color:var(--color-gray-400);line-height:var(--leading-relaxed)}
+.nodo360-community-widget a,.nodo360-community-widget button,.nodo360-community-widget .btn,.nodo360-community-widget .feature-card,.nodo360-community-widget .quick-access-btn,.nodo360-community-widget .access-card{-webkit-tap-highlight-color:transparent}
+@media (hover:none){.nodo360-community-widget .btn:active,.nodo360-community-widget .quick-access-btn:active{transform:scale(.98)}}
+.nodo360-community-widget .feature-card,.nodo360-community-widget .quick-access-btn,.nodo360-community-widget .access-card,.nodo360-community-widget .btn{transform:translateZ(0);will-change:transform}
+.nodo360-community-widget .feature-card:hover,.nodo360-community-widget .quick-access-btn:hover,.nodo360-community-widget .access-card:hover,.nodo360-community-widget .btn:hover{will-change:auto}
+@media (min-width:640px){.nodo360-community-widget .container{--container-padding:var(--spacing-6)}.nodo360-community-widget .hero-title{font-size:var(--text-5xl)}.nodo360-community-widget .hero-subtitle{font-size:var(--text-xl)}.nodo360-community-widget .hero-ctas{flex-direction:row;flex-wrap:wrap}.nodo360-community-widget .btn{padding:var(--spacing-3) var(--spacing-8)}.nodo360-community-widget .quick-access-grid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:768px){.nodo360-community-widget .container{--container-padding:var(--spacing-8)}.nodo360-community-widget .hero-section{padding:var(--spacing-24) 0}.nodo360-community-widget .hero-title{font-size:var(--text-5xl)}.nodo360-community-widget .section-title{font-size:var(--text-4xl);margin-bottom:var(--spacing-16)}.nodo360-community-widget .features-grid{grid-template-columns:repeat(2,1fr);gap:var(--spacing-10)}.nodo360-community-widget .feature-card{padding:var(--spacing-10)}.nodo360-community-widget .access-levels-grid{grid-template-columns:repeat(2,1fr)}.nodo360-community-widget .conduct-title{font-size:var(--text-4xl)}.nodo360-community-widget .final-cta-title{font-size:var(--text-5xl)}.nodo360-community-widget .final-cta-text{font-size:var(--text-xl)}}
+@media (min-width:1024px){.nodo360-community-widget .container{--container-padding:var(--spacing-10)}.nodo360-community-widget .hero-title{font-size:var(--text-6xl)}.nodo360-community-widget .features-grid{grid-template-columns:repeat(3,1fr)}.nodo360-community-widget .quick-access-grid{grid-template-columns:repeat(5,1fr)}.nodo360-community-widget .access-levels-grid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:1280px){.nodo360-community-widget .hero-section{padding:calc(var(--spacing-24) * 1.5) 0}.nodo360-community-widget .features-section,.nodo360-community-widget .quick-access-section,.nodo360-community-widget .access-levels-section,.nodo360-community-widget .conduct-section{padding:calc(var(--spacing-16) * 1.25) 0}.nodo360-community-widget .final-cta-section{padding:calc(var(--spacing-20) * 1.25) 0}}
+@media (max-height:600px) and (orientation:landscape){.nodo360-community-widget .hero-section{padding:var(--spacing-12) 0}.nodo360-community-widget .features-section,.nodo360-community-widget .quick-access-section,.nodo360-community-widget .access-levels-section,.nodo360-community-widget .conduct-section{padding:var(--spacing-10) 0}.nodo360-community-widget .final-cta-section{padding:var(--spacing-12) 0}.nodo360-community-widget .hero-title{font-size:var(--text-4xl);margin-bottom:var(--spacing-4)}.nodo360-community-widget .hero-subtitle{font-size:var(--text-base);margin-bottom:var(--spacing-6)}}
+@media print{.nodo360-community-widget{background-color:#fff;color:#000}.nodo360-community-widget .feature-card,.nodo360-community-widget .quick-access-btn,.nodo360-community-widget .access-card{box-shadow:none;border:1px solid #ccc}.nodo360-community-widget .btn,.nodo360-community-widget .quick-access-btn{display:none}.nodo360-community-widget .hero-title,.nodo360-community-widget .section-title,.nodo360-community-widget .feature-title,.nodo360-community-widget .access-title,.nodo360-community-widget .conduct-title,.nodo360-community-widget .final-cta-title{color:#000}.nodo360-community-widget .hero-subtitle,.nodo360-community-widget .feature-text,.nodo360-community-widget .conduct-text,.nodo360-community-widget .final-cta-text{color:#333}.nodo360-community-widget .hero-section,.nodo360-community-widget .features-section,.nodo360-community-widget .access-levels-section{page-break-inside:avoid}}
+@media (prefers-contrast:high){.nodo360-community-widget .hero-subtitle,.nodo360-community-widget .feature-text,.nodo360-community-widget .conduct-text{color:var(--color-gray-100)}.nodo360-community-widget .btn-outline,.nodo360-community-widget .btn-secondary{border-width:3px}.nodo360-community-widget .feature-card,.nodo360-community-widget .access-card{border-width:2px}}
+@media (max-width:639px){.nodo360-community-widget .hide-mobile{display:none!important}}
+@media (min-width:640px) and (max-width:1023px){.nodo360-community-widget .hide-tablet{display:none!important}}
+@media (min-width:1024px){.nodo360-community-widget .hide-desktop{display:none!important}}
+.nodo360-community-widget .show-mobile{display:block}
+@media (min-width:640px){.nodo360-community-widget .show-mobile{display:none}}
+.nodo360-community-widget .show-tablet{display:none}
+@media (min-width:640px) and (max-width:1023px){.nodo360-community-widget .show-tablet{display:block}}
+.nodo360-community-widget .show-desktop{display:none}
+@media (min-width:1024px){.nodo360-community-widget .show-desktop{display:block}}
+@media (hover:none) and (pointer:coarse){.nodo360-community-widget .btn,.nodo360-community-widget .quick-access-btn{min-height:44px;min-width:44px}.nodo360-community-widget .feature-card:hover,.nodo360-community-widget .access-card:hover{transform:none}.nodo360-community-widget .btn:active{transform:scale(.98)}.nodo360-community-widget .quick-access-btn:active{transform:scale(.95)}}
+@media (-webkit-min-device-pixel-ratio:2),(min-resolution:192dpi){.nodo360-community-widget{-webkit-font-smoothing:subpixel-antialiased}}
+@media (min-width:1920px){.nodo360-community-widget .container{max-width:1440px}.nodo360-community-widget .hero-section{padding:calc(var(--spacing-24) * 1.75) 0}}
+@media (max-width:374px){.nodo360-community-widget .hero-title{font-size:var(--text-3xl)}.nodo360-community-widget .hero-subtitle{font-size:var(--text-base)}.nodo360-community-widget .hero-ctas{flex-direction:column;width:100%}.nodo360-community-widget .btn{width:100%}.nodo360-community-widget .feature-card,.nodo360-community-widget .access-card{padding:var(--spacing-6)}.nodo360-community-widget .feature-icon{font-size:var(--text-4xl)}.nodo360-community-widget .qa-icon{font-size:var(--text-3xl)}}
+</style>
+
+<!-- Widget HTML -->
+<div class="nodo360-community-widget">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section" id="hero" role="banner">
+        <div class="container">
+            <div class="hero-content fade-in">
+                <h1 class="hero-title">
+                    Bienvenido a la Comunidad Nodo360
+                </h1>
+                <p class="hero-subtitle">
+                    Aprende, comparte y conecta con otros pioneros del Internet descentralizado
+                </p>
+
+                <!-- Hero CTAs -->
+                <div class="hero-ctas">
+                    <a href="#discord" class="btn btn-primary" aria-label="Únete al Discord de Nodo360">
+                        <span class="btn-icon">💬</span>
+                        Únete al Discord
+                    </a>
+                    <a href="#foro" class="btn btn-secondary" aria-label="Accede al Foro Interno">
+                        <span class="btn-icon">📝</span>
+                        Accede al Foro
+                    </a>
+                    <a href="#eventos" class="btn btn-outline" aria-label="Ver Calendario de Eventos">
+                        <span class="btn-icon">📅</span>
+                        Calendario de Eventos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CARACTERÍSTICAS -->
+    <section class="features-section" id="caracteristicas">
+        <div class="container">
+            <div class="features-grid">
+
+                <!-- Feature 1 -->
+                <article class="feature-card fade-in" data-delay="100">
+                    <div class="feature-icon" aria-hidden="true">👥</div>
+                    <h3 class="feature-title">Comunidad Web3 activa</h3>
+                    <p class="feature-text">
+                        Conecta con otros alumnos, mentores y builders que comparten tu visión del futuro descentralizado
+                    </p>
+                </article>
+
+                <!-- Feature 2 -->
+                <article class="feature-card fade-in" data-delay="200">
+                    <div class="feature-icon" aria-hidden="true">💬</div>
+                    <h3 class="feature-title">Canales de discusión</h3>
+                    <p class="feature-text">
+                        Debate sobre wallets, DAOs, DeFi, NFTs y todos los temas que están construyendo Web3
+                    </p>
+                </article>
+
+                <!-- Feature 3 -->
+                <article class="feature-card fade-in" data-delay="300">
+                    <div class="feature-icon" aria-hidden="true">🛠️</div>
+                    <h3 class="feature-title">Espacio para tus proyectos</h3>
+                    <p class="feature-text">
+                        Comparte ideas, colabora en tiempo real, recibe feedback de expertos y lanza tu proyecto
+                    </p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ACCESOS RÁPIDOS -->
+    <section class="quick-access-section" id="accesos">
+        <div class="container">
+            <h2 class="section-title fade-in">Accesos rápidos</h2>
+
+            <div class="quick-access-grid">
+
+                <a href="https://t.me/nodo360" class="quick-access-btn fade-in" data-delay="100"
+                   target="_blank" rel="noopener noreferrer" aria-label="Únete al canal de Telegram">
+                    <span class="qa-icon">📱</span>
+                    <span class="qa-text">Telegram</span>
+                </a>
+
+                <a href="#discord" class="quick-access-btn fade-in" data-delay="150"
+                   aria-label="Únete al servidor de Discord">
+                    <span class="qa-icon">💬</span>
+                    <span class="qa-text">Discord</span>
+                </a>
+
+                <a href="#foro" class="quick-access-btn fade-in" data-delay="200"
+                   aria-label="Accede al Foro Interno">
+                    <span class="qa-icon">📝</span>
+                    <span class="qa-text">Foro Interno</span>
+                </a>
+
+                <a href="#calendario" class="quick-access-btn fade-in" data-delay="250"
+                   aria-label="Ver Calendario de Eventos">
+                    <span class="qa-icon">📅</span>
+                    <span class="qa-text">Calendario</span>
+                </a>
+
+                <a href="#propuestas" class="quick-access-btn fade-in" data-delay="300"
+                   aria-label="Ver y crear propuestas">
+                    <span class="qa-icon">💡</span>
+                    <span class="qa-text">Propuestas</span>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- NIVELES DE ACCESO -->
+    <section class="access-levels-section" id="niveles">
+        <div class="container">
+            <h2 class="section-title fade-in">Niveles de acceso</h2>
+
+            <div class="access-levels-grid">
+
+                <!-- Gratuito -->
+                <article class="access-card fade-in" data-delay="100">
+                    <span class="access-badge">GRATUITO</span>
+                    <h3 class="access-title">Acceso gratuito</h3>
+
+                    <ul class="access-features">
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Chat Telegram
+                        </li>
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Recursos básicos
+                        </li>
+                        <li class="feature-item feature-locked">
+                            <span class="feature-icon">🔒</span>
+                            Foro Interno
+                        </li>
+                        <li class="feature-item feature-locked">
+                            <span class="feature-icon">🔒</span>
+                            Proyectos exclusivos
+                        </li>
+                    </ul>
+
+                    <a href="#registro" class="btn btn-outline-full">
+                        Unirse gratis
+                    </a>
+                </article>
+
+                <!-- Registrado -->
+                <article class="access-card fade-in" data-delay="200">
+                    <span class="access-badge">REGISTRADO</span>
+                    <h3 class="access-title">Usuario registrado</h3>
+
+                    <ul class="access-features">
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Discord privado
+                        </li>
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Foro Interno
+                        </li>
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Recursos exclusivos
+                        </li>
+                        <li class="feature-item feature-locked">
+                            <span class="feature-icon">🔒</span>
+                            Proyectos DAO
+                        </li>
+                    </ul>
+
+                    <a href="#registro" class="btn btn-secondary-full">
+                        Registrarse
+                    </a>
+                </article>
+
+                <!-- Premium -->
+                <article class="access-card access-card-premium fade-in" data-delay="300">
+                    <span class="access-badge access-badge-premium">PREMIUM</span>
+                    <h3 class="access-title">Miembro premium</h3>
+
+                    <ul class="access-features">
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Todo lo anterior
+                        </li>
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Mentoría personalizada
+                        </li>
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Proyectos reales DAO
+                        </li>
+                        <li class="feature-item feature-available">
+                            <span class="feature-icon">✓</span>
+                            Networking exclusivo
+                        </li>
+                    </ul>
+
+                    <a href="#precios" class="btn btn-primary-full">
+                        Ver planes
+                    </a>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CÓDIGO DE CONDUCTA -->
+    <section class="conduct-section" id="conducta">
+        <div class="container">
+            <div class="conduct-content fade-in">
+                <h2 class="conduct-title">Código de conducta</h2>
+                <p class="conduct-text">
+                    Nuestra comunidad se basa en el respeto, la inclusión, la colaboración y el entusiasmo por construir el futuro descentralizado. Todos los miembros deben seguir nuestras normas de convivencia.
+                </p>
+                <a href="#normas" class="conduct-link" aria-label="Leer normas completas de conducta">
+                    Leer normas completas →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="final-cta-section" id="cta-final">
+        <div class="container">
+            <div class="final-cta-content fade-in">
+                <h2 class="final-cta-title">¿Listo para empezar?</h2>
+                <p class="final-cta-text">
+                    Únete a cientos de estudiantes y profesionales que están construyendo el futuro descentralizado
+                </p>
+                <a href="#registro" class="btn btn-primary btn-large">
+                    Únete ahora
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <p class="footer-text">
+                &copy; 2025 Nodo360. Formación, comunidad y proyectos para construir el Internet descentralizado.
+            </p>
+        </div>
+    </footer>
+
+</div>
+
+<!-- Inline JavaScript -->
+<script>
+(function(){'use strict';function initSmoothScroll(){const links=document.querySelectorAll('.nodo360-community-widget a[href^="#"]');links.forEach(link=>{link.addEventListener('click',function(e){const href=this.getAttribute('href');if(!href||href==='#'){e.preventDefault();return}const target=document.querySelector(href);if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'});if(history.pushState){history.pushState(null,null,href)}target.focus()}})})}
+function initScrollAnimations(){if(!('IntersectionObserver' in window)){document.querySelectorAll('.nodo360-community-widget .fade-in').forEach(el=>{el.classList.add('visible')});return}const observerOptions={root:null,rootMargin:'0px 0px -100px 0px',threshold:0.1};const observerCallback=(entries,observer)=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})};const observer=new IntersectionObserver(observerCallback,observerOptions);document.querySelectorAll('.nodo360-community-widget .fade-in').forEach(el=>{observer.observe(el)})}
+function initButtonTracking(){document.querySelectorAll('.nodo360-community-widget .btn, .nodo360-community-widget .quick-access-btn').forEach(button=>{button.addEventListener('click',function(){const buttonText=this.textContent.trim();const buttonHref=this.getAttribute('href');console.log('Button clicked:',{text:buttonText,href:buttonHref,timestamp:new Date().toISOString()})})})}
+function initExternalLinks(){document.querySelectorAll('.nodo360-community-widget a[target="_blank"]').forEach(link=>{const currentRel=link.getAttribute('rel')||'';if(!currentRel.includes('noopener')){link.setAttribute('rel',currentRel+' noopener')}if(!currentRel.includes('noreferrer')){link.setAttribute('rel',link.getAttribute('rel')+' noreferrer')}})}
+function initAccessibility(){document.querySelectorAll('.nodo360-community-widget .feature-card, .nodo360-community-widget .access-card').forEach(card=>{if(!card.hasAttribute('tabindex')){card.setAttribute('tabindex','0')}const title=card.querySelector('.feature-title, .access-title');if(title&&!card.hasAttribute('aria-label')){card.setAttribute('aria-label',title.textContent.trim())}});document.querySelectorAll('.nodo360-community-widget .btn').forEach(button=>{if(!button.hasAttribute('aria-label')&&!button.textContent.trim()){console.warn('Button without aria-label or text content:',button)}});document.addEventListener('keydown',function(e){if(e.key==='Tab'){document.body.classList.add('user-is-tabbing')}});document.addEventListener('mousedown',function(){document.body.classList.remove('user-is-tabbing')})}
+function initLazyLoading(){if('loading' in HTMLImageElement.prototype){document.querySelectorAll('.nodo360-community-widget img[data-src]').forEach(img=>{img.src=img.dataset.src;img.removeAttribute('data-src')})}else{const imageObserver=new IntersectionObserver((entries,observer)=>{entries.forEach(entry=>{if(entry.isIntersecting){const img=entry.target;img.src=img.dataset.src;img.removeAttribute('data-src');observer.unobserve(img)}})});document.querySelectorAll('.nodo360-community-widget img[data-src]').forEach(img=>{imageObserver.observe(img)})}}
+function init(){if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);return}initSmoothScroll();initScrollAnimations();initButtonTracking();initExternalLinks();initAccessibility();initLazyLoading();console.log('Nodo360 Community Widget initialized successfully')}
+init()})();
+</script>

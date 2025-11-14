@@ -1,0 +1,33 @@
+{
+  "name": "bitcoin-basico",
+  "version": "1.0.0",
+  "title": "Bitcoin Basico",
+  "description": "Curso introductorio sobre Bitcoin",
+  "instructor": "Nodo360 Team",
+  "duration": "2 horas",
+  "level": "Principiante",
+  "baseURL": "/assets",
+  "resources": [
+    {
+      "id": "leccion-1-data",
+      "url": "leccion-1/data.json",
+      "type": "json",
+      "preload": true,
+      "priority": 1
+    },
+    {
+      "id": "leccion-2-data",
+      "url": "leccion-2/data.json",
+      "type": "json",
+      "preload": false,
+      "priority": 2
+    },
+    {
+      "id": "leccion-3-data",
+      "url": "leccion-3/data.json",
+      "type": "json",
+      "preload": false,
+      "priority": 2
+    }
+  ]
+}

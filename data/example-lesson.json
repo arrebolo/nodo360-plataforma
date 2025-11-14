@@ -1,0 +1,157 @@
+{
+  "version": "1.0",
+  "estimatedReadingTime": 15,
+  "blocks": [
+    {
+      "id": "video-1",
+      "type": "video",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "duration": 632,
+      "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+      "provider": "youtube"
+    },
+    {
+      "id": "heading-1",
+      "type": "heading",
+      "level": 1,
+      "text": "¿Qué es Bitcoin?",
+      "anchor": "que-es-bitcoin"
+    },
+    {
+      "id": "para-1",
+      "type": "paragraph",
+      "text": "Bitcoin es una moneda digital descentralizada que permite realizar transacciones directas entre personas sin necesidad de intermediarios como bancos o gobiernos. Fue creada en 2009 por una persona o grupo bajo el seudónimo de Satoshi Nakamoto."
+    },
+    {
+      "id": "callout-1",
+      "type": "callout",
+      "style": "tip",
+      "title": "¿Sabías que?",
+      "content": "Bitcoin fue la primera criptomoneda en existir y sigue siendo la más valiosa y ampliamente adoptada del mercado."
+    },
+    {
+      "id": "heading-2",
+      "type": "heading",
+      "level": 2,
+      "text": "El Problema del Dinero Tradicional",
+      "anchor": "problema-dinero-tradicional"
+    },
+    {
+      "id": "para-2",
+      "type": "paragraph",
+      "text": "Antes de entender qué es Bitcoin, debemos comprender los problemas del sistema financiero actual:"
+    },
+    {
+      "id": "list-1",
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Centralización: Los bancos y gobiernos controlan tu dinero",
+        "Inflación: Los gobiernos pueden imprimir dinero ilimitadamente",
+        "Censura: Las transacciones pueden ser bloqueadas o reversadas",
+        "Altas comisiones: Los intermediarios cobran tarifas elevadas",
+        "Lentitud: Las transferencias internacionales pueden tardar días"
+      ]
+    },
+    {
+      "id": "heading-3",
+      "type": "heading",
+      "level": 2,
+      "text": "La Solución: Bitcoin",
+      "anchor": "solucion-bitcoin"
+    },
+    {
+      "id": "para-3",
+      "type": "paragraph",
+      "text": "Bitcoin resuelve estos problemas mediante tecnología blockchain y criptografía. Veamos sus características principales:"
+    },
+    {
+      "id": "callout-2",
+      "type": "callout",
+      "style": "info",
+      "title": "Características de Bitcoin",
+      "content": "Bitcoin es descentralizado, transparente, seguro, limitado a 21 millones de unidades y permite transacciones globales en minutos."
+    },
+    {
+      "id": "heading-4",
+      "type": "heading",
+      "level": 3,
+      "text": "Ejemplo de Código",
+      "anchor": "ejemplo-codigo"
+    },
+    {
+      "id": "code-1",
+      "type": "code",
+      "language": "python",
+      "filename": "bitcoin_example.py",
+      "showLineNumbers": true,
+      "code": "# Ejemplo simple de verificación de dirección Bitcoin\nimport hashlib\n\ndef is_valid_bitcoin_address(address):\n    \"\"\"Verifica si una dirección Bitcoin es válida\"\"\"\n    if len(address) < 26 or len(address) > 35:\n        return False\n    \n    if not address[0] in ['1', '3', 'bc1']:\n        return False\n    \n    return True\n\n# Ejemplo de uso\naddress = \"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa\"\nprint(f\"¿Es válida? {is_valid_bitcoin_address(address)}\")"
+    },
+    {
+      "id": "heading-5",
+      "type": "heading",
+      "level": 2,
+      "text": "Prueba tus Conocimientos",
+      "anchor": "prueba-conocimientos"
+    },
+    {
+      "id": "quiz-1",
+      "type": "quiz",
+      "question": "¿Cuántos bitcoins existirán como máximo?",
+      "options": [
+        {
+          "id": "opt-1",
+          "text": "21 millones",
+          "correct": true
+        },
+        {
+          "id": "opt-2",
+          "text": "100 millones",
+          "correct": false
+        },
+        {
+          "id": "opt-3",
+          "text": "Infinitos",
+          "correct": false
+        },
+        {
+          "id": "opt-4",
+          "text": "1 billón",
+          "correct": false
+        }
+      ],
+      "explanation": "Bitcoin tiene un límite de 21 millones de unidades, establecido en su código desde el inicio. Esto lo hace un activo deflacionario, a diferencia de las monedas fiat."
+    },
+    {
+      "id": "divider-1",
+      "type": "divider"
+    },
+    {
+      "id": "callout-3",
+      "type": "callout",
+      "style": "success",
+      "title": "¡Felicitaciones!",
+      "content": "Has completado la introducción a Bitcoin. En la siguiente lección aprenderás cómo funciona la tecnología blockchain que hace posible esta moneda digital."
+    }
+  ],
+  "resources": [
+    {
+      "id": "res-1",
+      "title": "Bitcoin Whitepaper (Satoshi Nakamoto)",
+      "url": "https://bitcoin.org/bitcoin.pdf",
+      "type": "pdf"
+    },
+    {
+      "id": "res-2",
+      "title": "Presentación: Introducción a Bitcoin",
+      "url": "#",
+      "type": "slides"
+    },
+    {
+      "id": "res-3",
+      "title": "Código de ejemplo completo",
+      "url": "#",
+      "type": "code"
+    }
+  ]
+}

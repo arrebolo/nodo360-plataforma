@@ -1,0 +1,17 @@
+{
+  "leccion": 1,
+  "titulo": "Que es Bitcoin",
+  "descripcion": "Introduccion a Bitcoin y su historia",
+  "duracion": "15 minutos",
+  "objetivos": [
+    "Entender que es Bitcoin",
+    "Conocer su historia",
+    "Comprender por que es importante"
+  ],
+  "contenido": "Bitcoin es una moneda digital descentralizada creada en 2009 por Satoshi Nakamoto. Es la primera criptomoneda del mundo y funciona sin necesidad de bancos centrales o intermediarios.",
+  "puntosClave": [
+    "Descentralizado",
+    "Digital",
+    "Peer-to-peer"
+  ]
+}

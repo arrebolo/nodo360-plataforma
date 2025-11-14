@@ -1,0 +1,573 @@
+<!-- ============================================================================
+     NODO360 COMMUNITY WIDGET - ELEMENTOR FINAL VERSION
+     Basado en el test simple que SÍ funciona
+     Copiar y pegar TODO en widget HTML de Elementor
+     ============================================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* WIDGET CONTAINER */
+.nodo360-widget {
+    background: #000000 !important;
+    color: #ffffff !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.nodo360-widget * {
+    box-sizing: border-box !important;
+}
+
+/* CONTAINER */
+.nodo360-container {
+    width: 100% !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+    padding: 0 1rem !important;
+}
+
+/* HERO SECTION */
+.nodo360-hero {
+    background: linear-gradient(180deg, #000000 0%, #0d1117 100%) !important;
+    padding: 80px 20px !important;
+    text-align: center !important;
+}
+
+.nodo360-hero h1 {
+    color: #ffffff !important;
+    font-size: 2.25rem !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    margin: 0 0 1.5rem 0 !important;
+}
+
+.nodo360-hero p {
+    color: #d1d5db !important;
+    font-size: 1.125rem !important;
+    line-height: 1.625 !important;
+    margin: 0 auto 2.5rem auto !important;
+    max-width: 700px !important;
+}
+
+.nodo360-hero-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* BUTTONS */
+.nodo360-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    padding: 12px 24px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    border-radius: 8px !important;
+    border: 2px solid transparent !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.nodo360-btn-primary {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+}
+
+.nodo360-btn-primary:hover {
+    background: #b91c1c !important;
+    border-color: #b91c1c !important;
+    transform: translateY(-2px) !important;
+}
+
+.nodo360-btn-secondary {
+    background: #0d1117 !important;
+    color: #ffffff !important;
+    border-color: #30363d !important;
+}
+
+.nodo360-btn-secondary:hover {
+    background: #161b22 !important;
+    border-color: #4b5563 !important;
+    transform: translateY(-2px) !important;
+}
+
+.nodo360-btn-outline {
+    background: transparent !important;
+    color: #ffffff !important;
+    border-color: #30363d !important;
+}
+
+.nodo360-btn-outline:hover {
+    background: #0d1117 !important;
+    border-color: #6b7280 !important;
+    transform: translateY(-2px) !important;
+}
+
+.nodo360-btn-full {
+    width: 100% !important;
+}
+
+/* FEATURES SECTION */
+.nodo360-features {
+    background: #0d1117 !important;
+    padding: 64px 20px !important;
+}
+
+.nodo360-features-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+}
+
+.nodo360-feature-card {
+    background: #0d1117 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 12px !important;
+    padding: 2rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.nodo360-feature-card:hover {
+    border-color: #dc2626 !important;
+    transform: translateY(-4px) !important;
+}
+
+.nodo360-feature-icon {
+    font-size: 3rem !important;
+    line-height: 1 !important;
+    margin-bottom: 1rem !important;
+}
+
+.nodo360-feature-card h3 {
+    color: #ffffff !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 0.75rem 0 !important;
+}
+
+.nodo360-feature-card p {
+    color: #d1d5db !important;
+    font-size: 1rem !important;
+    line-height: 1.625 !important;
+    margin: 0 !important;
+}
+
+/* SECTION TITLE */
+.nodo360-section-title {
+    color: #ffffff !important;
+    font-size: 1.875rem !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    margin: 0 0 3rem 0 !important;
+}
+
+/* QUICK ACCESS SECTION */
+.nodo360-access {
+    background: #000000 !important;
+    padding: 64px 20px !important;
+}
+
+.nodo360-access-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+}
+
+.nodo360-access-btn {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    padding: 1.5rem !important;
+    background: #0d1117 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 12px !important;
+    text-decoration: none !important;
+    color: #ffffff !important;
+    transition: all 0.3s ease !important;
+}
+
+.nodo360-access-btn:hover {
+    background: #161b22 !important;
+    border-color: #dc2626 !important;
+    transform: translateY(-2px) !important;
+}
+
+.nodo360-access-icon {
+    font-size: 2.25rem !important;
+    line-height: 1 !important;
+}
+
+.nodo360-access-text {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+}
+
+/* ACCESS LEVELS SECTION */
+.nodo360-levels {
+    background: #0d1117 !important;
+    padding: 64px 20px !important;
+}
+
+.nodo360-levels-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+}
+
+.nodo360-level-card {
+    background: #0d1117 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 12px !important;
+    padding: 2rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.nodo360-level-card:hover {
+    border-color: #4b5563 !important;
+    transform: translateY(-4px) !important;
+}
+
+.nodo360-level-card-premium {
+    border-color: #dc2626 !important;
+    background: linear-gradient(135deg, #0d1117 0%, rgba(220, 38, 38, 0.1) 100%) !important;
+}
+
+.nodo360-level-card-premium:hover {
+    border-color: #b91c1c !important;
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.3) !important;
+}
+
+.nodo360-badge {
+    display: inline-block !important;
+    padding: 0.25rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    background: #161b22 !important;
+    color: #d1d5db !important;
+    border-radius: 6px !important;
+    margin-bottom: 1rem !important;
+}
+
+.nodo360-badge-premium {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.nodo360-level-card h3 {
+    color: #ffffff !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 1.5rem 0 !important;
+}
+
+.nodo360-level-features {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 0 1.5rem 0 !important;
+}
+
+.nodo360-level-features li {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem 0 !important;
+    font-size: 1rem !important;
+    border-top: 1px solid #21262d !important;
+}
+
+.nodo360-level-features li:first-child {
+    border-top: none !important;
+}
+
+.nodo360-feature-available {
+    color: #ffffff !important;
+}
+
+.nodo360-feature-locked {
+    color: #9ca3af !important;
+}
+
+/* CONDUCT SECTION */
+.nodo360-conduct {
+    background: #000000 !important;
+    padding: 64px 20px !important;
+    text-align: center !important;
+}
+
+.nodo360-conduct h2 {
+    color: #ffffff !important;
+    font-size: 1.875rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 1.5rem 0 !important;
+}
+
+.nodo360-conduct p {
+    color: #d1d5db !important;
+    font-size: 1.125rem !important;
+    line-height: 1.625 !important;
+    max-width: 800px !important;
+    margin: 0 auto 1.5rem auto !important;
+}
+
+.nodo360-conduct a {
+    color: #dc2626 !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+.nodo360-conduct a:hover {
+    color: #b91c1c !important;
+    text-decoration: underline !important;
+}
+
+/* FINAL CTA SECTION */
+.nodo360-cta {
+    background: linear-gradient(180deg, #0d1117 0%, #000000 100%) !important;
+    padding: 80px 20px !important;
+    text-align: center !important;
+}
+
+.nodo360-cta h2 {
+    color: #ffffff !important;
+    font-size: 2.25rem !important;
+    font-weight: 800 !important;
+    margin: 0 0 1.5rem 0 !important;
+}
+
+.nodo360-cta p {
+    color: #d1d5db !important;
+    font-size: 1.125rem !important;
+    line-height: 1.625 !important;
+    max-width: 700px !important;
+    margin: 0 auto 2rem auto !important;
+}
+
+.nodo360-btn-large {
+    padding: 16px 40px !important;
+    font-size: 1.125rem !important;
+}
+
+/* FOOTER */
+.nodo360-footer {
+    background: #000000 !important;
+    border-top: 1px solid #30363d !important;
+    padding: 2rem 1rem !important;
+    text-align: center !important;
+}
+
+.nodo360-footer p {
+    color: #9ca3af !important;
+    font-size: 0.875rem !important;
+    margin: 0 !important;
+}
+
+/* RESPONSIVE */
+@media (min-width: 640px) {
+    .nodo360-hero-buttons {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+    }
+    .nodo360-access-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .nodo360-hero h1 {
+        font-size: 3rem !important;
+    }
+    .nodo360-hero p {
+        font-size: 1.25rem !important;
+    }
+    .nodo360-section-title {
+        font-size: 2.25rem !important;
+    }
+    .nodo360-features-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 2.5rem !important;
+    }
+    .nodo360-feature-card {
+        padding: 2.5rem !important;
+    }
+    .nodo360-levels-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .nodo360-conduct h2 {
+        font-size: 2.25rem !important;
+    }
+    .nodo360-cta h2 {
+        font-size: 3rem !important;
+    }
+    .nodo360-cta p {
+        font-size: 1.25rem !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .nodo360-hero h1 {
+        font-size: 3.75rem !important;
+    }
+    .nodo360-features-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .nodo360-access-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+    .nodo360-levels-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+</style>
+
+<div class="nodo360-widget">
+    <!-- HERO -->
+    <section class="nodo360-hero">
+        <div class="nodo360-container">
+            <h1>Bienvenido a la Comunidad Nodo360</h1>
+            <p>Aprende, comparte y conecta con otros pioneros del Internet descentralizado</p>
+            <div class="nodo360-hero-buttons">
+                <a href="https://discord.gg/gKRFcPZD" class="nodo360-btn nodo360-btn-primary"><span>💬</span> Únete al Discord</a>
+                <a href="#foro" class="nodo360-btn nodo360-btn-secondary"><span>📝</span> Accede al Foro</a>
+                <a href="#eventos" class="nodo360-btn nodo360-btn-outline"><span>📅</span> Calendario de Eventos</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="nodo360-features">
+        <div class="nodo360-container">
+            <div class="nodo360-features-grid">
+                <article class="nodo360-feature-card">
+                    <div class="nodo360-feature-icon">👥</div>
+                    <h3>Comunidad Web3 activa</h3>
+                    <p>Conecta con otros alumnos, mentores y builders que comparten tu visión del futuro descentralizado</p>
+                </article>
+                <article class="nodo360-feature-card">
+                    <div class="nodo360-feature-icon">💬</div>
+                    <h3>Canales de discusión</h3>
+                    <p>Debate sobre wallets, DAOs, DeFi, NFTs y todos los temas que están construyendo Web3</p>
+                </article>
+                <article class="nodo360-feature-card">
+                    <div class="nodo360-feature-icon">🛠️</div>
+                    <h3>Espacio para tus proyectos</h3>
+                    <p>Comparte ideas, colabora en tiempo real, recibe feedback de expertos y lanza tu proyecto</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK ACCESS -->
+    <section class="nodo360-access">
+        <div class="nodo360-container">
+            <h2 class="nodo360-section-title">Accesos rápidos</h2>
+            <div class="nodo360-access-grid">
+                <a href="https://t.me/nodo360" class="nodo360-access-btn" target="_blank" rel="noopener noreferrer">
+                    <span class="nodo360-access-icon">📱</span>
+                    <span class="nodo360-access-text">Telegram</span>
+                </a>
+                <a href="https://discord.gg/gKRFcPZD" class="nodo360-access-btn">
+                    <span class="nodo360-access-icon">💬</span>
+                    <span class="nodo360-access-text">Discord</span>
+                </a>
+                <a href="#foro" class="nodo360-access-btn">
+                    <span class="nodo360-access-icon">📝</span>
+                    <span class="nodo360-access-text">Foro Interno</span>
+                </a>
+                <a href="#calendario" class="nodo360-access-btn">
+                    <span class="nodo360-access-icon">📅</span>
+                    <span class="nodo360-access-text">Calendario</span>
+                </a>
+                <a href="#propuestas" class="nodo360-access-btn">
+                    <span class="nodo360-access-icon">💡</span>
+                    <span class="nodo360-access-text">Propuestas</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ACCESS LEVELS -->
+    <section class="nodo360-levels">
+        <div class="nodo360-container">
+            <h2 class="nodo360-section-title">Niveles de acceso</h2>
+            <div class="nodo360-levels-grid">
+                <article class="nodo360-level-card">
+                    <span class="nodo360-badge">GRATUITO</span>
+                    <h3>Acceso gratuito</h3>
+                    <ul class="nodo360-level-features">
+                        <li class="nodo360-feature-available"><span>✓</span> Chat Telegram</li>
+                        <li class="nodo360-feature-available"><span>✓</span> Recursos básicos</li>
+                        <li class="nodo360-feature-locked"><span>🔒</span> Foro Interno</li>
+                        <li class="nodo360-feature-locked"><span>🔒</span> Proyectos exclusivos</li>
+                    </ul>
+                    <a href="#registro" class="nodo360-btn nodo360-btn-outline nodo360-btn-full">Unirse gratis</a>
+                </article>
+                <article class="nodo360-level-card">
+                    <span class="nodo360-badge">REGISTRADO</span>
+                    <h3>Usuario registrado</h3>
+                    <ul class="nodo360-level-features">
+                        <li class="nodo360-feature-available"><span>✓</span> Discord privado</li>
+                        <li class="nodo360-feature-available"><span>✓</span> Foro Interno</li>
+                        <li class="nodo360-feature-available"><span>✓</span> Recursos exclusivos</li>
+                        <li class="nodo360-feature-locked"><span>🔒</span> Proyectos DAO</li>
+                    </ul>
+                    <a href="#registro" class="nodo360-btn nodo360-btn-secondary nodo360-btn-full">Registrarse</a>
+                </article>
+                <article class="nodo360-level-card nodo360-level-card-premium">
+                    <span class="nodo360-badge nodo360-badge-premium">PREMIUM</span>
+                    <h3>Miembro premium</h3>
+                    <ul class="nodo360-level-features">
+                        <li class="nodo360-feature-available"><span>✓</span> Todo lo anterior</li>
+                        <li class="nodo360-feature-available"><span>✓</span> Mentoría personalizada</li>
+                        <li class="nodo360-feature-available"><span>✓</span> Proyectos reales DAO</li>
+                        <li class="nodo360-feature-available"><span>✓</span> Networking exclusivo</li>
+                    </ul>
+                    <a href="#precios" class="nodo360-btn nodo360-btn-primary nodo360-btn-full">Ver planes</a>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONDUCT -->
+    <section class="nodo360-conduct">
+        <div class="nodo360-container">
+            <h2>Código de conducta</h2>
+            <p>Nuestra comunidad se basa en el respeto, la inclusión, la colaboración y el entusiasmo por construir el futuro descentralizado. Todos los miembros deben seguir nuestras normas de convivencia.</p>
+            <a href="#normas">Leer normas completas →</a>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="nodo360-cta">
+        <div class="nodo360-container">
+            <h2>¿Listo para empezar?</h2>
+            <p>Únete a cientos de estudiantes y profesionales que están construyendo el futuro descentralizado</p>
+            <a href="#registro" class="nodo360-btn nodo360-btn-primary nodo360-btn-large">Únete ahora</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="nodo360-footer">
+        <div class="nodo360-container">
+            <p>&copy; 2025 Nodo360. Formación, comunidad y proyectos para construir el Internet descentralizado.</p>
+        </div>
+    </footer>
+</div>

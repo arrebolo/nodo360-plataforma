@@ -1,0 +1,260 @@
+{
+  "version": "1.0",
+  "is_premium": true,
+  "estimatedReadingTime": 25,
+  "blocks": [
+    {
+      "id": "heading-1",
+      "type": "heading",
+      "level": 1,
+      "text": "Seguridad Avanzada en Wallets",
+      "anchor": "seguridad-wallets"
+    },
+    {
+      "id": "para-1",
+      "type": "paragraph",
+      "text": "En esta lección premium, exploraremos técnicas avanzadas de seguridad para proteger tus wallets de criptomonedas. Aprenderás estrategias profesionales utilizadas por expertos en seguridad blockchain."
+    },
+    {
+      "id": "callout-1",
+      "type": "callout",
+      "style": "warning",
+      "title": "⚠️ Contenido Premium",
+      "content": "Esta lección incluye material avanzado diseñado para usuarios que desean dominar la seguridad de sus activos digitales. Incluye recursos descargables, ejercicios prácticos y acceso a la comunidad de discusión."
+    },
+    {
+      "id": "heading-2",
+      "type": "heading",
+      "level": 2,
+      "text": "Tipos de Wallets y Vectores de Ataque",
+      "anchor": "tipos-wallets-ataques"
+    },
+    {
+      "id": "para-2",
+      "type": "paragraph",
+      "text": "Antes de proteger tu wallet, debes entender los diferentes tipos y sus vulnerabilidades específicas:"
+    },
+    {
+      "id": "list-1",
+      "type": "list",
+      "ordered": true,
+      "items": [
+        "Hot Wallets: Conectadas a internet, convenientes pero más vulnerables",
+        "Cold Wallets: Sin conexión, máxima seguridad para almacenamiento a largo plazo",
+        "Hardware Wallets: Dispositivos físicos especializados con seguridad de nivel militar",
+        "Paper Wallets: Claves impresas en papel, inmunes a hacks digitales",
+        "Multisig Wallets: Requieren múltiples firmas para transacciones"
+      ]
+    },
+    {
+      "id": "callout-2",
+      "type": "callout",
+      "style": "tip",
+      "title": "💡 Estrategia Profesional",
+      "content": "Los inversores profesionales utilizan una combinación: hot wallet para transacciones diarias (5-10% de fondos), hardware wallet para ahorros a medio plazo (30-40%), y cold storage multisig para la mayoría de sus activos (50-60%)."
+    },
+    {
+      "id": "heading-3",
+      "type": "heading",
+      "level": 2,
+      "text": "Amenazas Comunes y Cómo Protegerte",
+      "anchor": "amenazas-comunes"
+    },
+    {
+      "id": "para-3",
+      "type": "paragraph",
+      "text": "Los ataques más comunes incluyen phishing, malware, ataques de ingeniería social, y compromisos de intercambios. Aquí te mostramos cómo defenderte:"
+    },
+    {
+      "id": "callout-3",
+      "type": "callout",
+      "style": "danger",
+      "title": "🚨 Señales de Alerta de Phishing",
+      "content": "URLs incorrectas, emails urgentes pidiendo tu frase semilla, promesas de airdrops que requieren conectar tu wallet, y aplicaciones falsas en tiendas de apps. NUNCA compartas tu frase semilla con nadie."
+    },
+    {
+      "id": "heading-4",
+      "type": "heading",
+      "level": 3,
+      "text": "Implementación de Seguridad Multi-Capa",
+      "anchor": "seguridad-multicapa"
+    },
+    {
+      "id": "para-4",
+      "type": "paragraph",
+      "text": "Implementar múltiples capas de seguridad reduce significativamente el riesgo. Veamos un ejemplo de código para generar y validar frases semilla de forma segura:"
+    },
+    {
+      "id": "code-1",
+      "type": "code",
+      "language": "javascript",
+      "filename": "secure-wallet.js",
+      "showLineNumbers": true,
+      "code": "import { generateMnemonic, mnemonicToSeedSync, validateMnemonic } from 'bip39'\nimport * as crypto from 'crypto'\n\n// Generar una frase semilla segura de 24 palabras\nfunction generateSecureMnemonic() {\n  // Usar 256 bits de entropía para máxima seguridad\n  const entropy = crypto.randomBytes(32)\n  const mnemonic = generateMnemonic(256)\n  \n  // Validar que la frase es correcta\n  if (!validateMnemonic(mnemonic)) {\n    throw new Error('Mnemonic inválido generado')\n  }\n  \n  return mnemonic\n}\n\n// Derivar seed de la frase con passphrase opcional\nfunction deriveSeed(mnemonic, passphrase = '') {\n  if (!validateMnemonic(mnemonic)) {\n    throw new Error('Mnemonic inválido')\n  }\n  \n  // La passphrase añade una capa extra de seguridad\n  const seed = mnemonicToSeedSync(mnemonic, passphrase)\n  return seed\n}\n\n// Ejemplo de uso\nconst mnemonic = generateSecureMnemonic()\nconsole.log('Frase semilla generada (¡GUÁRDALA EN LUGAR SEGURO!):')\nconsole.log(mnemonic)\n\nconst seed = deriveSeed(mnemonic, 'mi-passphrase-secreta')\nconsole.log('Seed derivado (hex):', seed.toString('hex'))"
+    },
+    {
+      "id": "callout-4",
+      "type": "callout",
+      "style": "info",
+      "title": "📚 Sobre BIP39",
+      "content": "BIP39 es el estándar de la industria para generar frases mnemónicas. Una frase de 24 palabras proporciona 256 bits de entropía, equivalente a 2^256 posibilidades - prácticamente imposible de adivinar por fuerza bruta."
+    },
+    {
+      "id": "heading-5",
+      "type": "heading",
+      "level": 2,
+      "text": "Protocolo de Respaldo y Recuperación",
+      "anchor": "respaldo-recuperacion"
+    },
+    {
+      "id": "para-5",
+      "type": "paragraph",
+      "text": "Un plan de respaldo robusto es tan importante como la seguridad inicial. Sigue este protocolo profesional:"
+    },
+    {
+      "id": "list-2",
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Nunca almacenes tu frase semilla digitalmente (ni fotos, ni archivos, ni nubes)",
+        "Usa metal resistente al fuego y agua en lugar de papel",
+        "Distribuye copias en múltiples ubicaciones geográficas seguras",
+        "Considera usar un esquema Shamir Secret Sharing para dividir la frase",
+        "Documenta instrucciones de recuperación para herederos de confianza",
+        "Realiza simulacros de recuperación cada 6 meses"
+      ]
+    },
+    {
+      "id": "heading-6",
+      "type": "heading",
+      "level": 3,
+      "text": "Quiz de Seguridad Avanzada",
+      "anchor": "quiz-seguridad"
+    },
+    {
+      "id": "quiz-1",
+      "type": "quiz",
+      "question": "¿Cuál es la forma MÁS segura de almacenar tu frase semilla a largo plazo?",
+      "options": [
+        {
+          "id": "opt-1",
+          "text": "Foto cifrada en tu teléfono",
+          "correct": false
+        },
+        {
+          "id": "opt-2",
+          "text": "Archivo de texto en USB encriptado",
+          "correct": false
+        },
+        {
+          "id": "opt-3",
+          "text": "Grabada en metal resistente al fuego, distribuida en múltiples ubicaciones",
+          "correct": true
+        },
+        {
+          "id": "opt-4",
+          "text": "Memorizada sin respaldo físico",
+          "correct": false
+        }
+      ],
+      "explanation": "La opción más segura es grabar tu frase semilla en metal resistente al fuego y agua, y distribuir copias en múltiples ubicaciones físicas seguras. Esto protege contra desastres físicos, robo, y pérdida de memoria. Nunca almacenes tu frase digitalmente, incluso cifrada."
+    },
+    {
+      "id": "quiz-2",
+      "type": "quiz",
+      "question": "Un servicio legítimo de wallet NUNCA te pedirá:",
+      "options": [
+        {
+          "id": "opt-5",
+          "text": "Tu dirección de wallet pública",
+          "correct": false
+        },
+        {
+          "id": "opt-6",
+          "text": "Verificar tu email",
+          "correct": false
+        },
+        {
+          "id": "opt-7",
+          "text": "Tu frase semilla o clave privada",
+          "correct": true
+        },
+        {
+          "id": "opt-8",
+          "text": "Activar 2FA",
+          "correct": false
+        }
+      ],
+      "explanation": "¡NUNCA compartas tu frase semilla o clave privada con nadie! Ningún servicio legítimo te la pedirá jamás. Si alguien la solicita, es 100% un intento de phishing o estafa. Tu dirección pública es segura de compartir, pero tu frase semilla es como la contraseña maestra de todos tus fondos."
+    },
+    {
+      "id": "divider-1",
+      "type": "divider"
+    },
+    {
+      "id": "image-1",
+      "type": "image",
+      "url": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800",
+      "alt": "Dispositivos de seguridad para criptomonedas",
+      "caption": "Hardware wallets: La forma más segura de almacenar criptomonedas para la mayoría de usuarios"
+    },
+    {
+      "id": "divider-2",
+      "type": "divider"
+    },
+    {
+      "id": "callout-5",
+      "type": "callout",
+      "style": "success",
+      "title": "🎓 ¡Lección Completada!",
+      "content": "Has completado la lección de seguridad avanzada en wallets. Asegúrate de descargar los recursos premium disponibles en la barra lateral, incluyendo plantillas de respaldo, checklists de seguridad y código de ejemplo completo."
+    }
+  ],
+  "resources": [
+    {
+      "id": "res-1",
+      "title": "Guía Completa de Seguridad en Wallets",
+      "description": "PDF con mejores prácticas, checklist de seguridad y casos de estudio reales.",
+      "type": "pdf",
+      "size": "2.4 MB",
+      "url": "#",
+      "isPremium": true
+    },
+    {
+      "id": "res-2",
+      "title": "Presentación: Anatomía de una Wallet",
+      "description": "Slides interactivos explicando la arquitectura técnica de las wallets.",
+      "type": "slides",
+      "size": "1.8 MB",
+      "url": "#",
+      "isPremium": true
+    },
+    {
+      "id": "res-3",
+      "title": "Código: Generador de Wallets",
+      "description": "Repositorio con código de ejemplo para crear tu propia wallet simple.",
+      "type": "code",
+      "size": "450 KB",
+      "url": "#",
+      "isPremium": true
+    },
+    {
+      "id": "res-4",
+      "title": "Plantilla de Respaldo de Wallet",
+      "description": "Template imprimible para documentar de forma segura tus frases semilla.",
+      "type": "template",
+      "size": "120 KB",
+      "url": "#",
+      "isPremium": true
+    },
+    {
+      "id": "res-5",
+      "title": "Ejercicio: Auditoria de Seguridad",
+      "description": "Worksheet para evaluar la seguridad de tu configuración actual.",
+      "type": "worksheet",
+      "size": "340 KB",
+      "url": "#",
+      "isPremium": true
+    }
+  ]
+}

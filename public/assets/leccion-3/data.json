@@ -1,0 +1,17 @@
+{
+  "leccion": 3,
+  "titulo": "Como usar Bitcoin",
+  "descripcion": "Wallets, compra y uso practico",
+  "duracion": "25 minutos",
+  "objetivos": [
+    "Conocer tipos de wallets",
+    "Aprender a comprar Bitcoin",
+    "Realizar transacciones"
+  ],
+  "contenido": "Para usar Bitcoin necesitas una wallet (billetera digital). Hay varios tipos: hardware, software, web. Puedes comprar Bitcoin en exchanges y usarlo para enviar dinero o como inversion.",
+  "puntosClave": [
+    "Wallets",
+    "Exchanges",
+    "Seguridad"
+  ]
+}

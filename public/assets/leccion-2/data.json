@@ -1,0 +1,17 @@
+{
+  "leccion": 2,
+  "titulo": "Como funciona Bitcoin",
+  "descripcion": "Tecnologia blockchain y mineria",
+  "duracion": "20 minutos",
+  "objetivos": [
+    "Entender la blockchain",
+    "Conocer el proceso de mineria",
+    "Comprender las transacciones"
+  ],
+  "contenido": "Bitcoin utiliza la tecnologia blockchain, un libro contable distribuido que registra todas las transacciones. Los mineros validan estas transacciones y las agregan a bloques nuevos.",
+  "puntosClave": [
+    "Blockchain",
+    "Mineria",
+    "Consenso distribuido"
+  ]
+}

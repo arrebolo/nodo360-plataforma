@@ -1,0 +1,188 @@
+{
+  "name": "bitcoin-101",
+  "version": "1.0.0",
+  "description": "Curso completo de introducción a Bitcoin",
+  "baseURL": "/assets/courses/bitcoin-101",
+  "metadata": {
+    "title": "Bitcoin 101: Fundamentos",
+    "instructor": "Nodo360 Team",
+    "duration": "8 horas",
+    "totalLessons": 10,
+    "level": "Principiante"
+  },
+  "resources": [
+    {
+      "id": "course-banner",
+      "url": "banner.jpg",
+      "type": "image",
+      "preload": true,
+      "priority": 1,
+      "cache": true,
+      "metadata": {
+        "width": 1920,
+        "height": 1080,
+        "description": "Banner del curso"
+      }
+    },
+    {
+      "id": "course-intro-video",
+      "url": "intro/video.mp4",
+      "type": "video",
+      "preload": true,
+      "priority": 0,
+      "cache": true,
+      "metadata": {
+        "duration": "5:30",
+        "lesson": "intro",
+        "title": "Bienvenida al Curso"
+      }
+    },
+    {
+      "id": "course-syllabus",
+      "url": "syllabus.json",
+      "type": "json",
+      "preload": true,
+      "priority": 1,
+      "cache": true,
+      "metadata": {
+        "description": "Programa del curso"
+      }
+    },
+    {
+      "id": "lesson-1-video",
+      "url": "lesson-1/video.mp4",
+      "type": "video",
+      "preload": false,
+      "priority": 2,
+      "cache": true,
+      "metadata": {
+        "duration": "25:00",
+        "lesson": 1,
+        "title": "¿Qué es Bitcoin?"
+      }
+    },
+    {
+      "id": "lesson-1-slides",
+      "url": "lesson-1/slides.pdf",
+      "type": "binary",
+      "preload": false,
+      "priority": 2,
+      "cache": true,
+      "metadata": {
+        "lesson": 1,
+        "pages": 30,
+        "size": "2.5MB"
+      }
+    },
+    {
+      "id": "lesson-1-data",
+      "url": "lesson-1/data.json",
+      "type": "json",
+      "preload": false,
+      "priority": 1,
+      "cache": true,
+      "metadata": {
+        "lesson": 1,
+        "hasQuiz": true,
+        "hasExercises": true
+      }
+    },
+    {
+      "id": "lesson-2-video",
+      "url": "lesson-2/video.mp4",
+      "type": "video",
+      "preload": false,
+      "priority": 2,
+      "cache": true,
+      "metadata": {
+        "duration": "30:00",
+        "lesson": 2,
+        "title": "Historia y Origen de Bitcoin"
+      }
+    },
+    {
+      "id": "lesson-2-slides",
+      "url": "lesson-2/slides.pdf",
+      "type": "binary",
+      "preload": false,
+      "priority": 2,
+      "cache": true,
+      "metadata": {
+        "lesson": 2,
+        "pages": 35
+      }
+    },
+    {
+      "id": "lesson-2-data",
+      "url": "lesson-2/data.json",
+      "type": "json",
+      "preload": false,
+      "priority": 1,
+      "cache": true,
+      "metadata": {
+        "lesson": 2,
+        "hasQuiz": true
+      }
+    },
+    {
+      "id": "lesson-3-video",
+      "url": "lesson-3/video.mp4",
+      "type": "video",
+      "preload": false,
+      "priority": 2,
+      "cache": true,
+      "metadata": {
+        "duration": "28:00",
+        "lesson": 3,
+        "title": "Cómo Funciona la Blockchain"
+      }
+    },
+    {
+      "id": "lesson-3-slides",
+      "url": "lesson-3/slides.pdf",
+      "type": "binary",
+      "preload": false,
+      "priority": 2,
+      "cache": true,
+      "metadata": {
+        "lesson": 3,
+        "pages": 40
+      }
+    },
+    {
+      "id": "lesson-3-data",
+      "url": "lesson-3/data.json",
+      "type": "json",
+      "preload": false,
+      "priority": 1,
+      "cache": true,
+      "metadata": {
+        "lesson": 3,
+        "hasQuiz": true,
+        "hasInteractive": true
+      }
+    },
+    {
+      "id": "course-resources",
+      "url": "resources/additional-materials.json",
+      "type": "json",
+      "preload": true,
+      "priority": 2,
+      "cache": true,
+      "metadata": {
+        "description": "Materiales adicionales y recursos complementarios"
+      }
+    },
+    {
+      "id": "course-certificate-template",
+      "url": "certificate/template.pdf",
+      "type": "binary",
+      "preload": false,
+      "priority": 3,
+      "cache": true,
+      "metadata": {
+        "description": "Plantilla de certificado de finalización"
+      }
+    }
+  ]
+}

@@ -1,0 +1,288 @@
+{
+  "timestamp": "2025-11-13T14:49:30.537Z",
+  "courses": [
+    {
+      "id": "e2f7d29f-e151-42e9-92f3-67953594b673",
+      "title": "Fundamentos de Blockchain - Curso Gratuito | Nodo360",
+      "slug": "fundamentos-blockchain"
+    },
+    {
+      "id": "fb154f88-c3c9-48c4-a13a-705267e299d2",
+      "title": "Introducción a Bitcoin - Curso Gratuito | Nodo360",
+      "slug": "bitcoin-desde-cero"
+    },
+    {
+      "id": "d55477d8-667a-463d-9ab8-dd79d27e9b17",
+      "title": "Tu Primera Wallet - Curso Gratuito | Nodo360",
+      "slug": "primera-wallet"
+    }
+  ],
+  "modules": [
+    {
+      "id": "942817fb-fb28-4e02-83b7-46b30b8d78d4",
+      "title": "Módulo 1",
+      "slug": "modulo-1",
+      "course_id": "d55477d8-667a-463d-9ab8-dd79d27e9b17"
+    },
+    {
+      "id": "1385ac35-cd6c-4ab3-9621-2c50eb9e3f04",
+      "title": "Módulo 1",
+      "slug": "modulo-1",
+      "course_id": "e2f7d29f-e151-42e9-92f3-67953594b673"
+    },
+    {
+      "id": "b5056966-9e09-4243-9318-c30059fc586d",
+      "title": "Módulo 1",
+      "slug": "modulo-1",
+      "course_id": "fb154f88-c3c9-48c4-a13a-705267e299d2"
+    },
+    {
+      "id": "9f24e8fe-1fe8-4dac-a456-ea1d4e22ea58",
+      "title": "Módulo 2",
+      "slug": "modulo-2",
+      "course_id": "d55477d8-667a-463d-9ab8-dd79d27e9b17"
+    },
+    {
+      "id": "7fd52e6c-f8a2-4fee-83f8-832d534a459c",
+      "title": "Módulo 2",
+      "slug": "modulo-2",
+      "course_id": "fb154f88-c3c9-48c4-a13a-705267e299d2"
+    },
+    {
+      "id": "04a07b16-83de-4f2e-bd2c-da54ad8df6b8",
+      "title": "Módulo 2",
+      "slug": "modulo-2",
+      "course_id": "e2f7d29f-e151-42e9-92f3-67953594b673"
+    },
+    {
+      "id": "eaa738be-1ba3-4b94-aee0-5c73a6e0e822",
+      "title": "Módulo 3",
+      "slug": "modulo-3",
+      "course_id": "e2f7d29f-e151-42e9-92f3-67953594b673"
+    },
+    {
+      "id": "e34d1613-539b-4f44-acfe-158332e7324e",
+      "title": "Módulo 3",
+      "slug": "modulo-3",
+      "course_id": "fb154f88-c3c9-48c4-a13a-705267e299d2"
+    },
+    {
+      "id": "ac56c404-b62e-4002-8607-94a7a419053f",
+      "title": "Módulo 3",
+      "slug": "modulo-3",
+      "course_id": "d55477d8-667a-463d-9ab8-dd79d27e9b17"
+    },
+    {
+      "id": "267b3743-12b5-40f6-912e-1f0c00f53899",
+      "title": "Módulo 4",
+      "slug": "modulo-4",
+      "course_id": "d55477d8-667a-463d-9ab8-dd79d27e9b17"
+    },
+    {
+      "id": "e332ff71-90f2-4137-92e1-4991ba7072b7",
+      "title": "Módulo 4",
+      "slug": "modulo-4",
+      "course_id": "e2f7d29f-e151-42e9-92f3-67953594b673"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "d7aaf284-095b-4030-b97a-feade33323c3",
+      "title": "¿Cómo funciona Bitcoin?",
+      "slug": "como-funciona-bitcoin",
+      "module_id": "b5056966-9e09-4243-9318-c30059fc586d"
+    },
+    {
+      "id": "f9b40be4-c7b2-465a-9bc8-8be0dda3c946",
+      "title": "¿Qué es Bitcoin?",
+      "slug": "que-es-bitcoin",
+      "module_id": "b5056966-9e09-4243-9318-c30059fc586d"
+    },
+    {
+      "id": "c584957c-696a-4659-ae1e-69fc1b2aa1f1",
+      "title": "Amenazas Comunes y Cómo Protegerte | Tu Primera Wallet - Nodo360",
+      "slug": "amenazas-comunes-y-como-protegerte",
+      "module_id": "267b3743-12b5-40f6-912e-1f0c00f53899"
+    },
+    {
+      "id": "7ca6d570-4416-4cfc-b2be-048d234e30b4",
+      "title": "Bitcoin vs Otras Criptomonedas",
+      "slug": "bitcoin-vs-otras-criptomonedas",
+      "module_id": "b5056966-9e09-4243-9318-c30059fc586d"
+    },
+    {
+      "id": "29f7e508-d259-41c5-8a44-82765990db24",
+      "title": "Casos de Uso de Smart Contracts - Fundamentos de Blockchain | Nodo360",
+      "slug": "casos-de-uso-de-smart-contracts",
+      "module_id": "e332ff71-90f2-4137-92e1-4991ba7072b7"
+    },
+    {
+      "id": "8c26d78b-8411-4d0b-859c-176ccf6b0772",
+      "title": "Cómo funcionan las Transacciones Bitcoin - Bitcoin desde Cero | Nodo360",
+      "slug": "como-funcionan-las-transacciones-bitcoin",
+      "module_id": "7fd52e6c-f8a2-4fee-83f8-832d534a459c"
+    },
+    {
+      "id": "6395143e-06b3-4246-95b5-e010243c73e1",
+      "title": "Cómo proteger tus Bitcoins - Bitcoin desde Cero | Nodo360",
+      "slug": "como-proteger-tus-bitcoins",
+      "module_id": "e34d1613-539b-4f44-acfe-158332e7324e"
+    },
+    {
+      "id": "57f6514b-d5c6-46f9-bc06-714d5d39a59a",
+      "title": "Direcciones y Wallets de Bitcoin - Bitcoin desde Cero | Nodo360",
+      "slug": "direcciones-y-wallets-de-bitcoin",
+      "module_id": "7fd52e6c-f8a2-4fee-83f8-832d534a459c"
+    },
+    {
+      "id": "3b9706e1-4744-4ba4-97ba-d97784eea135",
+      "title": "Ethereum y la EVM - Fundamentos de Blockchain | Nodo360",
+      "slug": "ethereum-y-la-evm",
+      "module_id": "e332ff71-90f2-4137-92e1-4991ba7072b7"
+    },
+    {
+      "id": "20993472-e9c3-4a42-a486-56257c758ada",
+      "title": "Guía práctica: Configurar tu primera Wallet - Bitcoin desde Cero | Nodo360",
+      "slug": "guia-practica-configurar-tu-primera-wallet",
+      "module_id": "e34d1613-539b-4f44-acfe-158332e7324e"
+    },
+    {
+      "id": "626b8889-f3c9-4a9e-94d8-91585974330d",
+      "title": "Historia de Bitcoin",
+      "slug": "historia-de-bitcoin",
+      "module_id": "b5056966-9e09-4243-9318-c30059fc586d"
+    },
+    {
+      "id": "b3ea171e-3cd6-419f-b198-71c43d9b801b",
+      "title": "Introducción a Smart Contracts - Fundamentos de Blockchain | Nodo360",
+      "slug": "introduccion-a-smart-contracts",
+      "module_id": "e332ff71-90f2-4137-92e1-4991ba7072b7"
+    },
+    {
+      "id": "0cc72c28-4bf0-44b0-b02f-a2fd46fe02f7",
+      "title": "La Blockchain de Bitcoin: El registro público - Bitcoin desde Cero | Nodo360",
+      "slug": "la-blockchain-de-bitcoin-el-registro-publico",
+      "module_id": "7fd52e6c-f8a2-4fee-83f8-832d534a459c"
+    },
+    {
+      "id": "dd8bdeb4-1e20-4183-921d-bd0d33419d74",
+      "title": "Lección 1.1: ¿Qué es Blockchain? | Fundamentos de Blockchain - Nodo360",
+      "slug": "que-es-blockchain",
+      "module_id": "1385ac35-cd6c-4ab3-9621-2c50eb9e3f04"
+    },
+    {
+      "id": "54ada1ce-99d9-489c-8202-d978da487e8a",
+      "title": "Lección 1.1: Hot Wallets vs Cold Wallets | Tu Primera Wallet - Nodo360",
+      "slug": "hot-wallets-vs-cold-wallets",
+      "module_id": "942817fb-fb28-4e02-83b7-46b30b8d78d4"
+    },
+    {
+      "id": "a9bcaa81-1ee1-4f88-9842-9e0b4af1a49d",
+      "title": "Lección 1.2: Historia y Evolución | Fundamentos de Blockchain - Nodo360",
+      "slug": "historia-y-evolucion",
+      "module_id": "1385ac35-cd6c-4ab3-9621-2c50eb9e3f04"
+    },
+    {
+      "id": "192f2620-e5ed-4449-af78-b23b8fe7fdc0",
+      "title": "Lección 1.3: Por qué es Revolucionario | Fundamentos de Blockchain - Nodo360",
+      "slug": "por-que-es-revolucionario",
+      "module_id": "1385ac35-cd6c-4ab3-9621-2c50eb9e3f04"
+    },
+    {
+      "id": "7109667c-ff23-4391-a99f-4233189bcd2a",
+      "title": "Lección 2.1: Bloques y Cadenas | Fundamentos de Blockchain - Nodo360",
+      "slug": "bloques-y-cadenas",
+      "module_id": "04a07b16-83de-4f2e-bd2c-da54ad8df6b8"
+    },
+    {
+      "id": "31eaae97-d58c-474c-9cb8-311f9017853b",
+      "title": "Lección 2.1: Cómo elegir tu primera Wallet | Tu Primera Wallet - Nodo360",
+      "slug": "como-elegir-tu-primera-wallet",
+      "module_id": "9f24e8fe-1fe8-4dac-a456-ea1d4e22ea58"
+    },
+    {
+      "id": "2c3f7f5e-f7d1-42b8-a64a-41d06fb41e3b",
+      "title": "Lección 2.2: Configurar tu Wallet paso a paso | Tu Primera Wallet - Nodo360",
+      "slug": "configurar-tu-wallet-paso-a-paso",
+      "module_id": "9f24e8fe-1fe8-4dac-a456-ea1d4e22ea58"
+    },
+    {
+      "id": "86269f3a-29fa-46f7-9c42-c69297880670",
+      "title": "Lección 2.2: Hash y Criptografía | Fundamentos de Blockchain - Nodo360",
+      "slug": "hash-y-criptografia",
+      "module_id": "04a07b16-83de-4f2e-bd2c-da54ad8df6b8"
+    },
+    {
+      "id": "82abd3ee-56b5-4109-962f-178e0a55ad69",
+      "title": "Lección 2.3: Nodos y Red P2P | Fundamentos de Blockchain - Nodo360",
+      "slug": "nodos-y-red-p2p",
+      "module_id": "04a07b16-83de-4f2e-bd2c-da54ad8df6b8"
+    },
+    {
+      "id": "b721ee03-28fe-4b8c-aae7-f7ce96efb1ba",
+      "title": "Lección 2.3: Seguridad y Backups | Tu Primera Wallet - Nodo360",
+      "slug": "seguridad-y-backups",
+      "module_id": "9f24e8fe-1fe8-4dac-a456-ea1d4e22ea58"
+    },
+    {
+      "id": "8ae9b252-d38c-4509-9210-9dc471f9b864",
+      "title": "Lección 3.1: Cómo Recibir Bitcoin | Tu Primera Wallet - Nodo360",
+      "slug": "como-recibir-bitcoin",
+      "module_id": "ac56c404-b62e-4002-8607-94a7a419053f"
+    },
+    {
+      "id": "57ea6068-b3bd-4364-8373-4b8152ef333d",
+      "title": "Lección 3.2: Cómo Enviar Bitcoin | Tu Primera Wallet - Nodo360",
+      "slug": "como-enviar-bitcoin",
+      "module_id": "ac56c404-b62e-4002-8607-94a7a419053f"
+    },
+    {
+      "id": "7a56122e-0c2d-4f4e-82f3-3f32dc0e1e33",
+      "title": "Lección 3.3: Fees y Confirmaciones | Tu Primera Wallet - Nodo360",
+      "slug": "fees-y-confirmaciones",
+      "module_id": "ac56c404-b62e-4002-8607-94a7a419053f"
+    },
+    {
+      "id": "7c1a73d1-b918-4cc0-bb59-52b426a367ab",
+      "title": "Mejores Prácticas de Seguridad | Tu Primera Wallet - Nodo360",
+      "slug": "mejores-practicas-de-seguridad",
+      "module_id": "267b3743-12b5-40f6-912e-1f0c00f53899"
+    },
+    {
+      "id": "6489aba1-affa-406c-86d6-5fee7c686dd0",
+      "title": "Otros Mecanismos de Consenso - Fundamentos de Blockchain | Nodo360",
+      "slug": "otros-mecanismos-de-consenso",
+      "module_id": "eaa738be-1ba3-4b94-aee0-5c73a6e0e822"
+    },
+    {
+      "id": "b5097849-0338-4c08-be31-3e02bc8a330d",
+      "title": "Por qué necesitamos Bitcoin",
+      "slug": "por-que-necesitamos-bitcoin",
+      "module_id": "b5056966-9e09-4243-9318-c30059fc586d"
+    },
+    {
+      "id": "5c939b8a-3b9a-4323-b06a-aba6c63aa80d",
+      "title": "Proof of Stake (PoS) - Fundamentos de Blockchain | Nodo360",
+      "slug": "proof-of-stake-pos",
+      "module_id": "eaa738be-1ba3-4b94-aee0-5c73a6e0e822"
+    },
+    {
+      "id": "b4c4ca36-d29e-4a6e-b998-e4d0872d4d9b",
+      "title": "Proof of Work (PoW) - Fundamentos de Blockchain | Nodo360",
+      "slug": "proof-of-work-pow",
+      "module_id": "eaa738be-1ba3-4b94-aee0-5c73a6e0e822"
+    },
+    {
+      "id": "98cb789c-6b47-423e-bb72-c2d25300ab94",
+      "title": "Qué Hacer en Caso de Emergencia | Tu Primera Wallet - Nodo360",
+      "slug": "que-hacer-en-caso-de-emergencia",
+      "module_id": "267b3743-12b5-40f6-912e-1f0c00f53899"
+    },
+    {
+      "id": "9d088145-67ff-4fe8-9072-b5c8389406e6",
+      "title": "Recuperación y Backups: Seed phrase - Bitcoin desde Cero | Nodo360",
+      "slug": "recuperacion-y-backups-seed-phrase",
+      "module_id": "e34d1613-539b-4f44-acfe-158332e7324e"
+    }
+  ]
+}

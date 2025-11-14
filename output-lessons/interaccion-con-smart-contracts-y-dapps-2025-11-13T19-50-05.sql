@@ -1,0 +1,31 @@
+-- Insertar nueva lección: Interacción con Smart Contracts y DApps
+INSERT INTO lessons (
+  module_id,
+  title,
+  slug,
+  description,
+  order_index,
+  content_json,
+  video_url,
+  video_duration_minutes,
+  is_free_preview,
+  created_at,
+  updated_at
+) VALUES (
+  '942817fb-fb28-4e02-83b7-46b30b8d78d4',
+  'Interacción con Smart Contracts y DApps',
+  'interaccion-con-smart-contracts-y-dapps',
+  'Comprender cómo una DApp se comunica con un contrato inteligente en la blockchain utilizando librerías como Web3.js o Ethers.js, y cómo el usuario firma transacciones con su wallet (ej. MetaMask)',
+  1,
+  '{"version":"1.0","estimatedReadingTime":10,"blocks":[{"id":"heading-1","type":"heading","level":2,"text":"Interacción con Smart Contracts y DApps"},{"id":"para-1","type":"paragraph","text":"Este es un párrafo introductorio que explica el tema de la lección. Puede contener texto en **negrita** usando markdown o conceptos importantes que el estudiante debe entender."},{"id":"callout-1","type":"callout","style":"info","title":"Dato Importante","content":"Los callouts son perfectos para resaltar información clave. Este es un callout de tipo ''info'' con fondo azul."},{"id":"heading-2","type":"heading","level":2,"text":"Conceptos Clave"},{"id":"para-2","type":"paragraph","text":"A continuación veremos los conceptos más importantes que debes dominar en esta lección."},{"id":"list-1","type":"list","style":"bullet","items":["Primer concepto importante a recordar","Segundo concepto con explicación adicional","Tercer concepto que complementa los anteriores","Cuarto punto relevante para el tema"]},{"id":"heading-3","type":"heading","level":3,"text":"Ejemplo Práctico"},{"id":"para-3","type":"paragraph","text":"Ahora veamos un ejemplo de código que ilustra estos conceptos en la práctica."},{"id":"code-1","type":"code","language":"javascript","code":"// Ejemplo de código JavaScript\nconst bitcoin = {\n  nombre: ''Bitcoin'',\n  simbolo: ''BTC'',\n  maxSupply: 21000000\n};\n\nconsole.log(`${bitcoin.nombre} tiene un suministro máximo de ${bitcoin.maxSupply} monedas`);","showLineNumbers":true},{"id":"callout-2","type":"callout","style":"tip","title":"Consejo Profesional","content":"Los callouts tipo ''tip'' son ideales para consejos prácticos y mejores prácticas. Tienen un color verde distintivo."},{"id":"heading-4","type":"heading","level":2,"text":"Paso a Paso"},{"id":"para-4","type":"paragraph","text":"Sigue estos pasos en orden para completar el ejercicio:"},{"id":"list-2","type":"list","style":"numbered","items":["Abre tu terminal o línea de comandos","Navega hasta el directorio del proyecto","Ejecuta el comando npm install","Verifica que la instalación fue exitosa","Inicia el servidor con npm start"]},{"id":"divider-1","type":"divider"},{"id":"heading-5","type":"heading","level":2,"text":"Advertencias Importantes"},{"id":"callout-3","type":"callout","style":"warning","title":"¡Atención!","content":"Los callouts tipo ''warning'' son perfectos para advertencias y precauciones. Usan un color naranja/amarillo para llamar la atención del usuario."},{"id":"para-5","type":"paragraph","text":"Es fundamental que sigas las buenas prácticas de seguridad al trabajar con este tipo de operaciones."},{"id":"list-3","type":"list","style":"checklist","items":["Verifica siempre las direcciones antes de enviar","Haz backups regulares de tu información","Usa autenticación de dos factores","Mantén tus claves privadas seguras"]},{"id":"heading-6","type":"heading","level":2,"text":"Ilustración del Concepto"},{"id":"para-6","type":"paragraph","text":"La siguiente imagen ilustra visualmente el concepto que acabamos de explicar:"},{"id":"image-1","type":"image","url":"https://example.com/images/bitcoin-diagram.png","alt":"Diagrama explicativo de Bitcoin","caption":"Arquitectura simplificada de la red Bitcoin"},{"id":"heading-7","type":"heading","level":3,"text":"Código Adicional"},{"id":"code-2","type":"code","language":"python","code":"# Ejemplo en Python\ndef calcular_sats(btc_amount):\n    \"\"\"\n    Convierte BTC a satoshis\n    1 BTC = 100,000,000 satoshis\n    \"\"\"\n    return btc_amount * 100_000_000\n\nbtc = 0.5\nsats = calcular_sats(btc)\nprint(f\"{btc} BTC = {sats:,} satoshis\")","showLineNumbers":true},{"id":"callout-4","type":"callout","style":"success","title":"¡Excelente Trabajo!","content":"Los callouts tipo ''success'' son perfectos para felicitar al estudiante o marcar hitos completados. Tienen un color verde brillante."},{"id":"divider-2","type":"divider"},{"id":"heading-8","type":"heading","level":2,"text":"Resumen Final"},{"id":"para-7","type":"paragraph","text":"En esta lección hemos cubierto los conceptos fundamentales necesarios para entender este tema. Los puntos clave a recordar son:"},{"id":"list-4","type":"list","style":"bullet","items":["La importancia de entender los fundamentos","Cómo aplicar estos conceptos en la práctica","Las mejores prácticas de seguridad","Los pasos a seguir para implementar soluciones"]},{"id":"para-8","type":"paragraph","text":"En la próxima lección profundizaremos en aspectos más avanzados de este tema."}],"resources":[{"title":"Documentación Oficial de Bitcoin","url":"https://bitcoin.org/es/","type":"documentation"},{"title":"Whitepaper de Bitcoin (PDF)","url":"https://bitcoin.org/bitcoin.pdf","type":"pdf"},{"title":"Video Tutorial Complementario","url":"https://www.youtube.com/watch?v=example","type":"video"},{"title":"Herramienta de Explorador de Blockchain","url":"https://blockstream.info/","type":"tool"}]}'::jsonb,
+  NULL,
+  10,
+  false,
+  NOW(),
+  NOW()
+);
+
+-- Verificar inserción
+SELECT id, title, slug, created_at
+FROM lessons
+WHERE slug = 'interaccion-con-smart-contracts-y-dapps';

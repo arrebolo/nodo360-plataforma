@@ -1,0 +1,503 @@
+{
+  "version": "1.0",
+  "estimatedReadingTime": 18,
+  "blocks": [
+    {
+      "id": "heading-1",
+      "type": "heading",
+      "level": 2,
+      "text": "¿Qué son las Aplicaciones Descentralizadas (dApps)?"
+    },
+    {
+      "id": "para-1",
+      "type": "paragraph",
+      "text": "Las dApps (Decentralized Applications) son aplicaciones que funcionan sobre una blockchain en lugar de servidores centralizados. A diferencia de las aplicaciones tradicionales como Facebook o Gmail, las dApps no están controladas por una única empresa, sino que se ejecutan de forma autónoma gracias a los smart contracts."
+    },
+    {
+      "id": "para-2",
+      "type": "paragraph",
+      "text": "Imagina una aplicación bancaria tradicional: todos tus datos están en los servidores del banco, y ellos controlan completamente qué puedes hacer. En cambio, una dApp financiera como Uniswap te permite intercambiar criptomonedas directamente con otros usuarios, sin intermediarios, sin permisos y disponible 24/7."
+    },
+    {
+      "id": "callout-1",
+      "type": "callout",
+      "style": "info",
+      "title": "Características Clave de las dApps",
+      "content": "Las dApps son código abierto, descentralizadas, funcionan con incentivos en tokens, y generan datos que se almacenan en una blockchain pública y criptográficamente segura."
+    },
+    {
+      "id": "divider-1",
+      "type": "divider"
+    },
+    {
+      "id": "heading-2",
+      "type": "heading",
+      "level": 2,
+      "text": "Smart Contracts: El Fundamento de las dApps"
+    },
+    {
+      "id": "para-3",
+      "type": "paragraph",
+      "text": "Un smart contract es un programa que se ejecuta automáticamente cuando se cumplen ciertas condiciones, sin necesidad de intermediarios. Es como una máquina expendedora: insertas dinero, seleccionas un producto, y la máquina te lo entrega automáticamente, sin necesidad de un vendedor."
+    },
+    {
+      "id": "heading-3",
+      "type": "heading",
+      "level": 3,
+      "text": "Ejemplo Simple de Smart Contract"
+    },
+    {
+      "id": "para-4",
+      "type": "paragraph",
+      "text": "Aquí un ejemplo básico de un smart contract en Solidity (el lenguaje de Ethereum):"
+    },
+    {
+      "id": "code-1",
+      "type": "code",
+      "language": "javascript",
+      "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract SaludoSimple {\n    string public mensaje;\n    \n    // Constructor: se ejecuta al desplegar el contrato\n    constructor(string memory _mensajeInicial) {\n        mensaje = _mensajeInicial;\n    }\n    \n    // Función para actualizar el mensaje\n    function actualizarMensaje(string memory _nuevoMensaje) public {\n        mensaje = _nuevoMensaje;\n    }\n    \n    // Función para leer el mensaje\n    function obtenerMensaje() public view returns (string memory) {\n        return mensaje;\n    }\n}",
+      "showLineNumbers": true
+    },
+    {
+      "id": "para-5",
+      "type": "paragraph",
+      "text": "Este contrato permite almacenar un mensaje en la blockchain de Ethereum. Una vez desplegado, cualquiera puede leer el mensaje o actualizarlo (pagando gas). El código es inmutable y transparente: todos pueden verificar exactamente qué hace."
+    },
+    {
+      "id": "callout-2",
+      "type": "callout",
+      "style": "tip",
+      "title": "Inmutabilidad de los Smart Contracts",
+      "content": "Una vez que un smart contract se despliega en la blockchain, su código NO puede modificarse. Por eso es crucial auditar el código antes del despliegue. Los contratos pueden tener funciones de actualización, pero el código base permanece inalterable."
+    },
+    {
+      "id": "divider-2",
+      "type": "divider"
+    },
+    {
+      "id": "heading-4",
+      "type": "heading",
+      "level": 2,
+      "text": "Arquitectura de una dApp"
+    },
+    {
+      "id": "para-6",
+      "type": "paragraph",
+      "text": "Una dApp típica tiene tres componentes principales:"
+    },
+    {
+      "id": "list-1",
+      "type": "list",
+      "style": "numbered",
+      "items": [
+        "Frontend (Interfaz de Usuario): Una web o aplicación móvil normal (HTML, CSS, JavaScript, React, etc.)",
+        "Smart Contracts (Backend Descentralizado): El código que se ejecuta en la blockchain",
+        "Wallet (Autenticación): Tu billetera cripto actúa como tu identidad y firma las transacciones"
+      ]
+    },
+    {
+      "id": "para-7",
+      "type": "paragraph",
+      "text": "El frontend se comunica con los smart contracts usando bibliotecas como Web3.js o Ethers.js, que permiten enviar transacciones y leer datos de la blockchain directamente desde tu navegador."
+    },
+    {
+      "id": "heading-5",
+      "type": "heading",
+      "level": 3,
+      "text": "Flujo de Interacción"
+    },
+    {
+      "id": "list-2",
+      "type": "list",
+      "style": "bullet",
+      "items": [
+        "Abres una dApp en tu navegador (ej: app.uniswap.org)",
+        "Conectas tu wallet (MetaMask, WalletConnect, etc.)",
+        "Realizas una acción (intercambiar tokens, prestar dinero, comprar NFTs)",
+        "Tu wallet te pide que firmes la transacción",
+        "La transacción se envía a la blockchain",
+        "El smart contract se ejecuta automáticamente",
+        "Recibes el resultado (tokens, NFTs, confirmación)"
+      ]
+    },
+    {
+      "id": "divider-3",
+      "type": "divider"
+    },
+    {
+      "id": "heading-6",
+      "type": "heading",
+      "level": 2,
+      "text": "Ejemplos Populares de dApps"
+    },
+    {
+      "id": "heading-7",
+      "type": "heading",
+      "level": 3,
+      "text": "1. Finanzas Descentralizadas (DeFi)"
+    },
+    {
+      "id": "list-3",
+      "type": "list",
+      "style": "bullet",
+      "items": [
+        "Uniswap: Intercambio descentralizado de tokens (DEX)",
+        "Aave: Préstamos y ahorros sin intermediarios",
+        "Compound: Plataforma de préstamos con intereses",
+        "MakerDAO: Creación de stablecoins descentralizadas (DAI)"
+      ]
+    },
+    {
+      "id": "heading-8",
+      "type": "heading",
+      "level": 3,
+      "text": "2. NFTs y Coleccionables"
+    },
+    {
+      "id": "list-4",
+      "type": "list",
+      "style": "bullet",
+      "items": [
+        "OpenSea: Marketplace de NFTs",
+        "Rarible: Plataforma para crear y vender NFTs",
+        "Axie Infinity: Juego play-to-earn basado en NFTs"
+      ]
+    },
+    {
+      "id": "heading-9",
+      "type": "heading",
+      "level": 3,
+      "text": "3. Gobernanza y DAOs"
+    },
+    {
+      "id": "list-5",
+      "type": "list",
+      "style": "bullet",
+      "items": [
+        "Snapshot: Votación off-chain para DAOs",
+        "Aragon: Plataforma para crear organizaciones autónomas",
+        "Gnosis Safe: Wallets multifirma para DAOs"
+      ]
+    },
+    {
+      "id": "callout-3",
+      "type": "callout",
+      "style": "success",
+      "title": "Caso de Uso Real",
+      "content": "Uniswap procesa miles de millones de dólares en intercambios cada mes, sin necesidad de un banco o exchange centralizado. Todo el código es público, auditable y se ejecuta automáticamente en Ethereum."
+    },
+    {
+      "id": "divider-4",
+      "type": "divider"
+    },
+    {
+      "id": "heading-10",
+      "type": "heading",
+      "level": 2,
+      "text": "Cómo Interactuar con una dApp (Paso a Paso)"
+    },
+    {
+      "id": "para-8",
+      "type": "paragraph",
+      "text": "Vamos a ver cómo usar Uniswap, el DEX (exchange descentralizado) más popular, como ejemplo práctico:"
+    },
+    {
+      "id": "list-6",
+      "type": "list",
+      "style": "checklist",
+      "items": [
+        "Instala una wallet compatible (MetaMask es la más popular)",
+        "Añade fondos a tu wallet (ETH para pagar gas + tokens que quieras intercambiar)",
+        "Ve a la dApp (app.uniswap.org)",
+        "Haz clic en 'Connect Wallet' y selecciona MetaMask",
+        "Autoriza la conexión en la ventana emergente de MetaMask",
+        "Selecciona los tokens que quieres intercambiar (ej: ETH → USDC)",
+        "Ingresa la cantidad",
+        "Revisa el precio, slippage y fees estimados",
+        "Haz clic en 'Swap'",
+        "Confirma la transacción en MetaMask (verifica el gas fee)",
+        "Espera la confirmación en la blockchain (30 segundos - 2 minutos)",
+        "¡Listo! Los tokens nuevos aparecerán en tu wallet"
+      ]
+    },
+    {
+      "id": "callout-4",
+      "type": "callout",
+      "style": "tip",
+      "title": "Primer Uso: Hazlo con Poco Dinero",
+      "content": "La primera vez que uses una dApp, hazlo con cantidades pequeñas para familiarizarte con el proceso. Así, si cometes un error, el costo será mínimo."
+    },
+    {
+      "id": "divider-5",
+      "type": "divider"
+    },
+    {
+      "id": "heading-11",
+      "type": "heading",
+      "level": 2,
+      "text": "Seguridad al Usar dApps"
+    },
+    {
+      "id": "para-9",
+      "type": "paragraph",
+      "text": "Aunque las dApps son más seguras que las aplicaciones centralizadas en muchos aspectos, también tienen riesgos únicos. Aquí están las reglas de oro para mantenerte seguro:"
+    },
+    {
+      "id": "callout-5",
+      "type": "callout",
+      "style": "warning",
+      "title": "¡Peligro: Contratos Maliciosos!",
+      "content": "Nunca interactúes con smart contracts que no hayas verificado. Los contratos maliciosos pueden vaciar tu wallet completamente. Usa solo dApps conocidas y auditadas."
+    },
+    {
+      "id": "heading-12",
+      "type": "heading",
+      "level": 3,
+      "text": "Reglas de Seguridad Esenciales"
+    },
+    {
+      "id": "list-7",
+      "type": "list",
+      "style": "checklist",
+      "items": [
+        "Verifica SIEMPRE la URL de la dApp (phishing es común)",
+        "Lee los permisos que solicita el contrato antes de aprobar",
+        "Usa contratos auditados por empresas reconocidas (CertiK, Trail of Bits)",
+        "Revoca permisos antiguos que ya no uses (etherscan.io/tokenapprovalchecker)",
+        "No firmes transacciones que no entiendas completamente",
+        "Desconfía de APYs (rendimientos) irrealmente altos",
+        "Usa una wallet diferente para probar dApps nuevas",
+        "Mantén la mayoría de tus fondos en cold storage"
+      ]
+    },
+    {
+      "id": "heading-13",
+      "type": "heading",
+      "level": 3,
+      "text": "Permisos de Tokens (Token Allowances)"
+    },
+    {
+      "id": "para-10",
+      "type": "paragraph",
+      "text": "Cuando usas una dApp como Uniswap, primero debes dar permiso al smart contract para mover tus tokens. Esto se llama 'allowance' o 'approval'."
+    },
+    {
+      "id": "callout-6",
+      "type": "callout",
+      "style": "warning",
+      "title": "Riesgo de Unlimited Approvals",
+      "content": "Muchas dApps solicitan permisos ilimitados por defecto para ahorrarte gas en futuras transacciones. PERO si el contrato es hackeado o malicioso, podrían robar todos tus tokens. Considera aprobar solo la cantidad exacta que necesitas."
+    },
+    {
+      "id": "para-11",
+      "type": "paragraph",
+      "text": "Ejemplo de cómo funciona un approval en código:"
+    },
+    {
+      "id": "code-2",
+      "type": "code",
+      "language": "javascript",
+      "code": "// Aprobar a Uniswap para gastar tus USDC\nawait usdcContract.approve(\n  uniswapRouterAddress, \n  ethers.constants.MaxUint256 // ⚠️ Aprobación ilimitada (riesgosa)\n);\n\n// Alternativa más segura: aprobar solo lo que necesitas\nawait usdcContract.approve(\n  uniswapRouterAddress,\n  ethers.utils.parseUnits('100', 6) // Solo 100 USDC\n);",
+      "showLineNumbers": true
+    },
+    {
+      "id": "divider-6",
+      "type": "divider"
+    },
+    {
+      "id": "heading-14",
+      "type": "heading",
+      "level": 2,
+      "text": "Wallets y Conexión a dApps"
+    },
+    {
+      "id": "para-12",
+      "type": "paragraph",
+      "text": "Para usar dApps necesitas una wallet compatible con Web3. Las más populares son:"
+    },
+    {
+      "id": "list-8",
+      "type": "list",
+      "style": "bullet",
+      "items": [
+        "MetaMask: La más usada, disponible como extensión de navegador y app móvil",
+        "WalletConnect: Protocolo para conectar wallets móviles a dApps web",
+        "Coinbase Wallet: Wallet oficial de Coinbase con soporte para dApps",
+        "Trust Wallet: Wallet móvil con navegador dApp integrado",
+        "Ledger/Trezor: Hardware wallets que también pueden conectarse a dApps"
+      ]
+    },
+    {
+      "id": "heading-15",
+      "type": "heading",
+      "level": 3,
+      "text": "Instalación de MetaMask (Ejemplo)"
+    },
+    {
+      "id": "list-9",
+      "type": "list",
+      "style": "numbered",
+      "items": [
+        "Ve a metamask.io (¡verifica la URL!)",
+        "Descarga la extensión para tu navegador",
+        "Haz clic en 'Crear una wallet'",
+        "Establece una contraseña fuerte",
+        "GUARDA tu frase de recuperación (12-24 palabras) en papel, NUNCA digitalmente",
+        "Confirma tu frase de recuperación",
+        "¡Listo! Ya tienes una wallet Web3"
+      ]
+    },
+    {
+      "id": "callout-7",
+      "type": "callout",
+      "style": "warning",
+      "title": "Tu Frase de Recuperación = Tus Fondos",
+      "content": "La frase de recuperación (seed phrase) es la llave maestra de tu wallet. Si alguien la obtiene, puede robar TODOS tus fondos. NUNCA la compartas, NUNCA la guardes digitalmente, NUNCA la ingreses en sitios web."
+    },
+    {
+      "id": "divider-7",
+      "type": "divider"
+    },
+    {
+      "id": "heading-16",
+      "type": "heading",
+      "level": 2,
+      "text": "Errores Comunes a Evitar"
+    },
+    {
+      "id": "list-10",
+      "type": "list",
+      "style": "bullet",
+      "items": [
+        "No verificar la dirección del contrato antes de interactuar",
+        "Aprobar permisos ilimitados sin pensarlo",
+        "No calcular correctamente el slippage en swaps",
+        "Ignorar las advertencias de gas fees altos",
+        "Usar dApps en redes equivocadas (ej: Ethereum en lugar de Polygon)",
+        "No revisar las transacciones pendientes antes de confirmar",
+        "Confiar en APYs (rendimientos) demasiado buenos para ser verdad",
+        "No hacer investigación sobre el equipo detrás del proyecto"
+      ]
+    },
+    {
+      "id": "callout-8",
+      "type": "callout",
+      "style": "tip",
+      "title": "Usa Testnets Primero",
+      "content": "Antes de usar una dApp con dinero real, pruébala en una testnet (red de prueba) como Goerli o Sepolia. Obtienes ETH gratis de prueba y puedes experimentar sin riesgo."
+    },
+    {
+      "id": "divider-8",
+      "type": "divider"
+    },
+    {
+      "id": "heading-17",
+      "type": "heading",
+      "level": 2,
+      "text": "Gas Fees: El Costo de Usar dApps"
+    },
+    {
+      "id": "para-13",
+      "type": "paragraph",
+      "text": "Cada interacción con un smart contract requiere 'gas', que es el pago a los mineros/validadores por procesar tu transacción. El gas se paga en la criptomoneda nativa de la blockchain (ETH en Ethereum, BNB en BSC, etc.)."
+    },
+    {
+      "id": "heading-18",
+      "type": "heading",
+      "level": 3,
+      "text": "Cómo Optimizar Tus Gas Fees"
+    },
+    {
+      "id": "list-11",
+      "type": "list",
+      "style": "checklist",
+      "items": [
+        "Usa la blockchain en horarios de menor tráfico (madrugada UTC)",
+        "Agrupa transacciones cuando sea posible",
+        "Usa Layer 2s como Arbitrum, Optimism o Polygon (fees 100x más bajos)",
+        "Ajusta manualmente el gas price si no tienes prisa",
+        "Usa herramientas como Etherscan Gas Tracker para ver precios actuales"
+      ]
+    },
+    {
+      "id": "callout-9",
+      "type": "callout",
+      "style": "info",
+      "title": "Layer 2: La Solución a los Gas Fees",
+      "content": "Las soluciones Layer 2 como Arbitrum y Optimism procesan transacciones fuera de Ethereum mainnet y luego las registran en lotes, reduciendo los costos hasta 100x. Muchas dApps populares ya están disponibles en L2."
+    },
+    {
+      "id": "divider-9",
+      "type": "divider"
+    },
+    {
+      "id": "heading-19",
+      "type": "heading",
+      "level": 2,
+      "text": "Resumen y Puntos Clave"
+    },
+    {
+      "id": "para-14",
+      "type": "paragraph",
+      "text": "En esta lección has aprendido los fundamentos para interactuar de forma segura con smart contracts y dApps. Recapitulemos:"
+    },
+    {
+      "id": "list-12",
+      "type": "list",
+      "style": "bullet",
+      "items": [
+        "Las dApps son aplicaciones descentralizadas que funcionan sobre blockchain",
+        "Los smart contracts son programas inmutables que se ejecutan automáticamente",
+        "Necesitas una wallet Web3 (como MetaMask) para conectarte a dApps",
+        "Siempre verifica URLs, permisos y contratos antes de interactuar",
+        "Los gas fees son inevitables, pero puedes optimizarlos usando Layer 2",
+        "Empieza con cantidades pequeñas para aprender sin riesgo",
+        "La seguridad es TU responsabilidad: nadie puede revertir transacciones"
+      ]
+    },
+    {
+      "id": "callout-10",
+      "type": "callout",
+      "style": "success",
+      "title": "¡Estás Listo para Explorar Web3!",
+      "content": "Ahora tienes el conocimiento fundamental para empezar a usar dApps de forma segura. Recuerda: empieza con lo básico, aprende haciendo y nunca dejes de investigar antes de invertir."
+    },
+    {
+      "id": "para-15",
+      "type": "paragraph",
+      "text": "En las próximas lecciones profundizaremos en temas específicos como DeFi, NFTs, DAOs y desarrollo de smart contracts. ¡Nos vemos allí!"
+    }
+  ],
+  "resources": [
+    {
+      "title": "Ethereum.org: Introducción a dApps",
+      "url": "https://ethereum.org/es/dapps/",
+      "type": "documentation"
+    },
+    {
+      "title": "MetaMask: Guía de Instalación Oficial",
+      "url": "https://metamask.io/learn/",
+      "type": "documentation"
+    },
+    {
+      "title": "DeFi Llama: Rankings de dApps DeFi",
+      "url": "https://defillama.com/",
+      "type": "tool"
+    },
+    {
+      "title": "Etherscan: Explorador de Ethereum",
+      "url": "https://etherscan.io/",
+      "type": "tool"
+    },
+    {
+      "title": "Token Approval Checker",
+      "url": "https://etherscan.io/tokenapprovalchecker",
+      "type": "tool"
+    },
+    {
+      "title": "Uniswap Academy: Guía de Usuario",
+      "url": "https://support.uniswap.org/",
+      "type": "documentation"
+    }
+  ]
+}

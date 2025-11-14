@@ -1,0 +1,600 @@
+/**
+ * Database Query Helpers
+ *
+ * Reusable functions for common database queries
+ * These functions use Supabase client and return typed results
+ */
+
+import { createClient } from '@/lib/supabase/server'
+import type {
+  Course,
+  CourseWithInstructor,
+  CourseWithModules,
+  Module,
+  Lesson,
+  UserProgress,
+  Bookmark,
+  Note,
+  CourseProgress,
+} from '@/types/database'
+
+// =====================================================
+// COURSE QUERIES
+// =====================================================
+
+/**
+ * Get all published courses
+ */
+export async function getAllCourses(): Promise<CourseWithInstructor[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('courses')
+    .select(`
+      *,
+      instructor:instructor_id (
+        id,
+        full_name,
+        avatar_url
+      )
+    `)
+    .eq('status', 'published')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+/**
+ * Get a single course by slug with full details
+ */
+export async function getCourseBySlug(
+  slug: string
+): Promise<CourseWithModules | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('courses')
+    .select(`
+      *,
+      instructor:instructor_id (
+        id,
+        full_name,
+        avatar_url,
+        bio
+      ),
+      modules (
+        *,
+        lessons (
+          *
+        )
+      )
+    `)
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .single()
+
+  console.log('📊 [QUERY] Resultado:', { data, error })
+
+  if (error) {
+    if (error.code === 'PGRST116') return null // Not found
+    throw error
+  }
+
+  return data
+}
+
+/**
+ * Get user's enrolled courses
+ */
+export async function getUserEnrolledCourses(
+  userId: string
+): Promise<CourseWithInstructor[]> {
+  const supabase = await createClient()
+
+  // Get courses where user has progress
+  const { data, error } = await supabase
+    .from('user_progress')
+    .select(`
+      lessons:lesson_id (
+        module:module_id (
+          course:course_id (
+            *,
+            instructor:instructor_id (
+              id,
+              full_name,
+              avatar_url
+            )
+          )
+        )
+      )
+    `)
+    .eq('user_id', userId)
+
+  if (error) throw error
+
+  // Extract unique courses
+  const courses = new Map<string, CourseWithInstructor>()
+  data?.forEach((item: any) => {
+    const course = item.lessons?.module?.course
+    if (course && !courses.has(course.id)) {
+      courses.set(course.id, course)
+    }
+  })
+
+  return Array.from(courses.values())
+}
+
+// =====================================================
+// PROGRESS QUERIES
+// =====================================================
+
+/**
+ * Get user's progress for a course
+ */
+// Comentado para MVP - requiere autenticación y tiene error de tipo en nested query
+/*
+export async function getCourseProgress(
+  userId: string,
+  courseId: string
+): Promise<CourseProgress> {
+  const supabase = await createClient()
+
+  // Get all lessons in the course
+  const { data: lessons, error: lessonsError } = await supabase
+    .from('lessons')
+    .select('id')
+    .in(
+      'module_id',
+      supabase
+        .from('modules')
+        .select('id')
+        .eq('course_id', courseId)
+    )
+
+  if (lessonsError) throw lessonsError
+
+  const totalLessons = lessons?.length || 0
+  const lessonIds = lessons?.map((l: any) => l.id) || []
+
+  // Get user progress for these lessons
+  const { data: progress, error: progressError } = await supabase
+    .from('user_progress')
+    .select('*')
+    .eq('user_id', userId)
+    .in('lesson_id', lessonIds)
+
+  if (progressError) throw progressError
+
+  const completedLessons =
+    progress?.filter((p) => p.is_completed).length || 0
+  const totalWatchTime =
+    progress?.reduce((sum, p) => sum + p.watch_time_seconds, 0) || 0
+  const lastWatched =
+    progress?.[0]?.updated_at ||
+    null
+
+  return {
+    course_id: courseId,
+    total_lessons: totalLessons,
+    completed_lessons: completedLessons,
+    total_watch_time_seconds: totalWatchTime,
+    last_watched_at: lastWatched,
+    completion_percentage:
+      totalLessons > 0
+        ? Math.round((completedLessons / totalLessons) * 100)
+        : 0,
+  }
+}
+*/
+
+/**
+ * Check if user completed a lesson
+ */
+export async function isLessonCompleted(
+  userId: string,
+  lessonId: string
+): Promise<boolean> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('user_progress')
+    .select('is_completed')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .single()
+
+  if (error && error.code !== 'PGRST116') throw error
+
+  return data?.is_completed || false
+}
+
+/**
+ * Mark lesson as completed
+ */
+export async function markLessonCompleted(
+  userId: string,
+  lessonId: string
+): Promise<UserProgress> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('user_progress')
+    .upsert(
+      {
+        user_id: userId,
+        lesson_id: lessonId,
+        is_completed: true,
+        completed_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'user_id,lesson_id',
+      }
+    )
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// =====================================================
+// BOOKMARK QUERIES
+// =====================================================
+
+/**
+ * Check if lesson is bookmarked
+ */
+export async function isLessonBookmarked(
+  userId: string,
+  lessonId: string
+): Promise<boolean> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('bookmarks')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .single()
+
+  if (error && error.code !== 'PGRST116') throw error
+
+  return !!data
+}
+
+/**
+ * Get all user bookmarks
+ */
+export async function getUserBookmarks(userId: string): Promise<Bookmark[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('bookmarks')
+    .select(`
+      *,
+      lessons:lesson_id (
+        *,
+        module:module_id (
+          *,
+          course:course_id (
+            *
+          )
+        )
+      )
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+// =====================================================
+// NOTE QUERIES
+// =====================================================
+
+/**
+ * Get notes for a lesson
+ */
+export async function getLessonNotes(
+  userId: string,
+  lessonId: string
+): Promise<Note[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('notes')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+/**
+ * Get all user notes
+ */
+export async function getUserNotes(userId: string): Promise<Note[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('notes')
+    .select(`
+      *,
+      lessons:lesson_id (
+        *,
+        module:module_id (
+          *,
+          course:course_id (
+            *
+          )
+        )
+      )
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+// =====================================================
+// LESSON QUERIES
+// =====================================================
+
+/**
+ * Get next lesson in a course
+ */
+export async function getNextLesson(
+  lessonId: string
+): Promise<Lesson | null> {
+  const supabase = await createClient()
+
+  // Get current lesson
+  const { data: currentLesson, error: currentError } = await supabase
+    .from('lessons')
+    .select('module_id, order_index')
+    .eq('id', lessonId)
+    .single()
+
+  if (currentError) throw currentError
+
+  // Try to get next lesson in same module
+  const { data: nextInModule, error: nextError } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('module_id', currentLesson.module_id)
+    .gt('order_index', currentLesson.order_index)
+    .order('order_index', { ascending: true })
+    .limit(1)
+    .single()
+
+  if (!nextError && nextInModule) {
+    return nextInModule
+  }
+
+  // If no next lesson in module, get first lesson of next module
+  const { data: currentModule, error: moduleError } = await supabase
+    .from('modules')
+    .select('course_id, order_index')
+    .eq('id', currentLesson.module_id)
+    .single()
+
+  if (moduleError) throw moduleError
+
+  const { data: nextModule, error: nextModuleError } = await supabase
+    .from('modules')
+    .select('id')
+    .eq('course_id', currentModule.course_id)
+    .gt('order_index', currentModule.order_index)
+    .order('order_index', { ascending: true })
+    .limit(1)
+    .single()
+
+  if (nextModuleError || !nextModule) return null
+
+  const { data: firstLesson, error: firstError } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('module_id', nextModule.id)
+    .order('order_index', { ascending: true })
+    .limit(1)
+    .single()
+
+  if (firstError) return null
+
+  return firstLesson
+}
+
+/**
+ * Get previous lesson in a course
+ */
+export async function getPreviousLesson(
+  lessonId: string
+): Promise<Lesson | null> {
+  const supabase = await createClient()
+
+  // Get current lesson
+  const { data: currentLesson, error: currentError } = await supabase
+    .from('lessons')
+    .select('module_id, order_index')
+    .eq('id', lessonId)
+    .single()
+
+  if (currentError) throw currentError
+
+  // Try to get previous lesson in same module
+  const { data: prevInModule, error: prevError } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('module_id', currentLesson.module_id)
+    .lt('order_index', currentLesson.order_index)
+    .order('order_index', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!prevError && prevInModule) {
+    return prevInModule
+  }
+
+  // If no previous lesson in module, get last lesson of previous module
+  const { data: currentModule, error: moduleError } = await supabase
+    .from('modules')
+    .select('course_id, order_index')
+    .eq('id', currentLesson.module_id)
+    .single()
+
+  if (moduleError) throw moduleError
+
+  const { data: prevModule, error: prevModuleError } = await supabase
+    .from('modules')
+    .select('id')
+    .eq('course_id', currentModule.course_id)
+    .lt('order_index', currentModule.order_index)
+    .order('order_index', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (prevModuleError || !prevModule) return null
+
+  const { data: lastLesson, error: lastError } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('module_id', prevModule.id)
+    .order('order_index', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (lastError) return null
+
+  return lastLesson
+}
+
+/**
+ * Example usage in a Server Component:
+ *
+ * import { getCourseBySlug, getCourseProgress } from '@/lib/db/queries'
+ *
+ * export default async function CoursePage({ params }) {
+ *   const course = await getCourseBySlug(params.slug)
+ *   const progress = await getCourseProgress(userId, course.id)
+ *
+ *   return <div>Course completion: {progress.completion_percentage}%</div>
+ * }
+ */
+
+/**
+ * Get lesson by slug within a course
+ */
+export async function getLessonBySlug(
+  courseSlug: string,
+  lessonSlug: string
+): Promise<Lesson & {
+  module: {
+    id: string
+    title: string
+    course_id: string
+    course: {
+      id: string
+      title: string
+      slug: string
+      is_premium: boolean
+    }
+  }
+} | null> {
+  const supabase = await createClient()
+
+  console.log('🔍 [getLessonBySlug] Iniciando búsqueda con:', { courseSlug, lessonSlug })
+
+  const { data, error } = await supabase
+    .from('lessons')
+    .select(`
+      *,
+      content_json,
+      module:module_id (
+        id,
+        title,
+        course_id,
+        course:course_id (
+          id,
+          title,
+          slug,
+          is_premium
+        )
+      )
+    `)
+    .eq('slug', lessonSlug)
+    .single()
+
+  console.log('📊 [getLessonBySlug] Resultado de query:', { 
+    encontrada: !!data, 
+    error: error?.message,
+    errorCode: error?.code 
+  })
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      console.log('❌ [getLessonBySlug] Lección no encontrada (PGRST116)')
+      return null
+    }
+    console.error('💥 [getLessonBySlug] Error en query:', error)
+    throw error
+  }
+
+  console.log('🔎 [getLessonBySlug] Datos de la lección:', {
+    lessonId: data.id,
+    lessonTitle: data.title,
+    lessonSlug: data.slug,
+    moduleData: data.module,
+  })
+
+  // Verify the lesson belongs to the correct course
+  const moduleCourseSlug = (data.module as any)?.course?.slug
+  console.log('🔐 [getLessonBySlug] Verificando curso:', {
+    esperado: courseSlug,
+    recibido: moduleCourseSlug,
+    coincide: moduleCourseSlug === courseSlug
+  })
+
+  if (moduleCourseSlug !== courseSlug) {
+    console.log('❌ [getLessonBySlug] Lección no pertenece al curso esperado')
+    return null
+  }
+
+  console.log('✅ [getLessonBySlug] Lección encontrada exitosamente')
+  return data as any
+}
+
+/**
+ * Get all lessons for a course by slug
+ */
+export async function getAllLessonsForCourse(courseSlug: string) {
+  const course = await getCourseBySlug(courseSlug)
+  if (!course) return []
+
+  const supabase = await createClient()
+
+  const { data, error} = await supabase
+    .from('lessons')
+    .select(`
+      *,
+      module:module_id (
+        id,
+        title,
+        order_index,
+        course_id
+      )
+    `)
+    .in(
+      'module_id',
+      course.modules?.map(m => m.id) || []
+    )
+    .order('order_index', { ascending: true })
+
+  if (error) throw error
+
+  return data || []
+}

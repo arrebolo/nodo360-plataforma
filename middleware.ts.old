@@ -1,0 +1,150 @@
+// /**
+//  * Next.js Middleware
+//  *
+//  * This middleware runs before every request and handles:
+//  * 1. Session refresh (keeps users authenticated)
+//  * 2. Route protection (redirects unauthenticated users)
+//  * 3. Auth state management
+//  *
+//  * The middleware runs on all routes except those specified in `config.matcher`
+//  */
+
+// import { NextResponse, type NextRequest } from 'next/server'
+// import { updateSession, requireAuth } from '@/lib/supabase/middleware'
+
+// /**
+//  * Define protected routes that require authentication
+//  * Add route patterns here to protect them
+//  */
+// const PROTECTED_ROUTES = [
+//   '/dashboard',
+//   '/perfil',
+//   '/mis-cursos',
+//   '/configuracion',
+//   // Add more protected routes as needed
+// ]
+
+// /**
+//  * Define public-only routes (redirect to dashboard if authenticated)
+//  * Users who are already logged in will be redirected away from these
+//  */
+// const PUBLIC_ONLY_ROUTES = ['/login', '/registro', '/recuperar-password']
+
+// /**
+//  * Check if a path matches any of the protected routes
+//  */
+// function isProtectedRoute(pathname: string): boolean {
+//   return PROTECTED_ROUTES.some((route) => pathname.startsWith(route))
+// }
+
+// /**
+//  * Check if a path is a public-only route
+//  */
+// function isPublicOnlyRoute(pathname: string): boolean {
+//   return PUBLIC_ONLY_ROUTES.some((route) => pathname.startsWith(route))
+// }
+
+// /**
+//  * Main middleware function
+//  * Runs on every request to protected routes
+//  */
+// export async function middleware(request: NextRequest) {
+//   const { pathname } = request.nextUrl
+
+//   /**
+//    * STEP 1: Check if route requires authentication
+//    */
+//   if (isProtectedRoute(pathname)) {
+//     // This will redirect to /login if user is not authenticated
+//     const authCheck = await requireAuth(request, '/login')
+//     if (authCheck) {
+//       return authCheck
+//     }
+//   }
+
+//   /**
+//    * STEP 2: Handle public-only routes
+//    * If user is already authenticated and tries to access login/registro,
+//    * redirect them to dashboard
+//    */
+//   if (isPublicOnlyRoute(pathname)) {
+//     const supabase = await import('@/lib/supabase/server').then((m) =>
+//       m.createClient()
+//     )
+//     const {
+//       data: { user },
+//     } = await supabase.auth.getUser()
+
+//     if (user) {
+//       // User is authenticated, redirect to dashboard
+//       return NextResponse.redirect(new URL('/dashboard', request.url))
+//     }
+//   }
+
+//   /**
+//    * STEP 3: Update session (refresh auth state)
+//    * This is critical for maintaining authentication
+//    */
+//   return await updateSession(request)
+// }
+
+// /**
+//  * Middleware configuration
+//  * Specifies which routes the middleware should run on
+//  *
+//  * The middleware will NOT run on:
+//  * - _next/static (static files)
+//  * - _next/image (image optimization)
+//  * - favicon.ico (favicon)
+//  * - Public files in /public
+//  * - API routes (except /api/auth)
+//  */
+// export const config = {
+//   matcher: [
+//     /*
+//      * Match all request paths except:
+//      * - _next/static (static files)
+//      * - _next/image (image optimization files)
+//      * - favicon.ico (favicon file)
+//      * - public files (public folder)
+//      * - API routes (we handle auth separately)
+//      */
+//     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+//   ],
+// }
+
+// /**
+//  * USAGE EXAMPLES:
+//  *
+//  * 1. Protect a new route:
+//  *    Add it to PROTECTED_ROUTES array above
+//  *    Example: '/admin' -> only authenticated users can access
+//  *
+//  * 2. Add a public-only route:
+//  *    Add it to PUBLIC_ONLY_ROUTES array
+//  *    Example: '/onboarding' -> redirect authenticated users away
+//  *
+//  * 3. Check auth status in a Server Component:
+//  *    ```tsx
+//  *    import { createClient } from '@/lib/supabase/server'
+//  *
+//  *    const supabase = createClient()
+//  *    const { data: { user } } = await supabase.auth.getUser()
+//  *    ```
+//  *
+//  * 4. Check auth status in a Client Component:
+//  *    ```tsx
+//  *    'use client'
+//  *    import { createClient } from '@/lib/supabase/client'
+//  *    import { useEffect, useState } from 'react'
+//  *
+//  *    const [user, setUser] = useState(null)
+//  *    const supabase = createClient()
+//  *
+//  *    useEffect(() => {
+//  *      supabase.auth.getUser().then(({ data: { user } }) => {
+//  *        setUser(user)
+//  *      })
+//  *    }, [])
+//  *    ```
+//  */

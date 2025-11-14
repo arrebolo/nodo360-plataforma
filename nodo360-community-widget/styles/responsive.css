@@ -1,0 +1,418 @@
+/* ============================================================================
+   NODO360 COMMUNITY WIDGET - RESPONSIVE
+   Version: 1.0
+   Description: Media queries y optimizaciones responsive
+   ============================================================================ */
+
+/* ============================================================================
+   BREAKPOINTS
+   - Mobile: < 640px (default)
+   - Tablet: 640px - 1024px
+   - Desktop: > 1024px
+   ============================================================================ */
+
+/* ============================================================================
+   MOBILE FIRST APPROACH
+   Base styles are for mobile, media queries enhance for larger screens
+   ============================================================================ */
+
+/* ============================================================================
+   SMALL DEVICES (Landscape phones, 640px and up)
+   ============================================================================ */
+@media (min-width: 640px) {
+    /* Container */
+    .container {
+        --container-padding: var(--spacing-6);
+    }
+
+    /* Hero Section */
+    .hero-title {
+        font-size: var(--text-5xl);
+    }
+
+    .hero-subtitle {
+        font-size: var(--text-xl);
+    }
+
+    .hero-ctas {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: var(--spacing-3) var(--spacing-8);
+    }
+
+    /* Quick Access Grid */
+    .quick-access-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================================================
+   MEDIUM DEVICES (Tablets, 768px and up)
+   ============================================================================ */
+@media (min-width: 768px) {
+    /* Container */
+    .container {
+        --container-padding: var(--spacing-8);
+    }
+
+    /* Hero Section */
+    .hero-section {
+        padding: var(--spacing-24) 0;
+    }
+
+    .hero-title {
+        font-size: var(--text-5xl);
+    }
+
+    /* Section Title */
+    .section-title {
+        font-size: var(--text-4xl);
+        margin-bottom: var(--spacing-16);
+    }
+
+    /* Features Grid */
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-10);
+    }
+
+    .feature-card {
+        padding: var(--spacing-10);
+    }
+
+    /* Access Levels Grid */
+    .access-levels-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Conduct Title */
+    .conduct-title {
+        font-size: var(--text-4xl);
+    }
+
+    /* Final CTA */
+    .final-cta-title {
+        font-size: var(--text-5xl);
+    }
+
+    .final-cta-text {
+        font-size: var(--text-xl);
+    }
+}
+
+/* ============================================================================
+   LARGE DEVICES (Desktops, 1024px and up)
+   ============================================================================ */
+@media (min-width: 1024px) {
+    /* Container */
+    .container {
+        --container-padding: var(--spacing-10);
+    }
+
+    /* Hero Section */
+    .hero-title {
+        font-size: var(--text-6xl);
+    }
+
+    /* Features Grid */
+    .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* Quick Access Grid */
+    .quick-access-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    /* Access Levels Grid */
+    .access-levels-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================================================
+   EXTRA LARGE DEVICES (Large desktops, 1280px and up)
+   ============================================================================ */
+@media (min-width: 1280px) {
+    /* Increase spacing for very large screens */
+    .hero-section {
+        padding: calc(var(--spacing-24) * 1.5) 0;
+    }
+
+    .features-section,
+    .quick-access-section,
+    .access-levels-section,
+    .conduct-section {
+        padding: calc(var(--spacing-16) * 1.25) 0;
+    }
+
+    .final-cta-section {
+        padding: calc(var(--spacing-20) * 1.25) 0;
+    }
+}
+
+/* ============================================================================
+   LANDSCAPE ORIENTATION (Mobile devices in landscape)
+   ============================================================================ */
+@media (max-height: 600px) and (orientation: landscape) {
+    /* Reduce vertical padding */
+    .hero-section {
+        padding: var(--spacing-12) 0;
+    }
+
+    .features-section,
+    .quick-access-section,
+    .access-levels-section,
+    .conduct-section {
+        padding: var(--spacing-10) 0;
+    }
+
+    .final-cta-section {
+        padding: var(--spacing-12) 0;
+    }
+
+    /* Reduce title sizes */
+    .hero-title {
+        font-size: var(--text-4xl);
+        margin-bottom: var(--spacing-4);
+    }
+
+    .hero-subtitle {
+        font-size: var(--text-base);
+        margin-bottom: var(--spacing-6);
+    }
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+@media print {
+    /* Remove backgrounds for print */
+    body {
+        background-color: white;
+        color: black;
+    }
+
+    /* Remove shadows and borders */
+    .feature-card,
+    .quick-access-btn,
+    .access-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+
+    /* Hide interactive elements */
+    .btn,
+    .quick-access-btn {
+        display: none;
+    }
+
+    /* Ensure text is readable */
+    .hero-title,
+    .section-title,
+    .feature-title,
+    .access-title,
+    .conduct-title,
+    .final-cta-title {
+        color: black;
+    }
+
+    .hero-subtitle,
+    .feature-text,
+    .conduct-text,
+    .final-cta-text {
+        color: #333;
+    }
+
+    /* Page breaks */
+    .hero-section,
+    .features-section,
+    .access-levels-section {
+        page-break-inside: avoid;
+    }
+}
+
+/* ============================================================================
+   HIGH CONTRAST MODE (Accessibility)
+   ============================================================================ */
+@media (prefers-contrast: high) {
+    /* Increase contrast for better readability */
+    .hero-subtitle,
+    .feature-text,
+    .conduct-text {
+        color: var(--color-gray-100);
+    }
+
+    .btn-outline,
+    .btn-secondary {
+        border-width: 3px;
+    }
+
+    .feature-card,
+    .access-card {
+        border-width: 2px;
+    }
+}
+
+/* ============================================================================
+   DARK MODE PREFERENCE (System-level)
+   Note: Widget is already dark by default, but we respect system preferences
+   ============================================================================ */
+@media (prefers-color-scheme: light) {
+    /* If user explicitly prefers light mode, we could provide light theme */
+    /* Currently not implemented as Nodo360 brand is dark */
+    /* This is a placeholder for future light mode implementation */
+}
+
+/* ============================================================================
+   RESPONSIVE UTILITIES
+   ============================================================================ */
+
+/* Hide on mobile */
+@media (max-width: 639px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Hide on tablet */
+@media (min-width: 640px) and (max-width: 1023px) {
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
+/* Hide on desktop */
+@media (min-width: 1024px) {
+    .hide-desktop {
+        display: none !important;
+    }
+}
+
+/* Show only on mobile */
+.show-mobile {
+    display: block;
+}
+
+@media (min-width: 640px) {
+    .show-mobile {
+        display: none;
+    }
+}
+
+/* Show only on tablet */
+.show-tablet {
+    display: none;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+    .show-tablet {
+        display: block;
+    }
+}
+
+/* Show only on desktop */
+.show-desktop {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .show-desktop {
+        display: block;
+    }
+}
+
+/* ============================================================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================================================ */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets for better mobile UX */
+    .btn,
+    .quick-access-btn {
+        min-height: 44px; /* Apple's recommended minimum */
+        min-width: 44px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .feature-card:hover,
+    .access-card:hover {
+        transform: none;
+    }
+
+    /* Add active states instead */
+    .btn:active {
+        transform: scale(0.98);
+    }
+
+    .quick-access-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* ============================================================================
+   RETINA/HIGH-DPI DISPLAYS
+   ============================================================================ */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Optimize rendering for high-DPI displays */
+    body {
+        -webkit-font-smoothing: subpixel-antialiased;
+    }
+}
+
+/* ============================================================================
+   WIDE SCREENS (Ultra-wide monitors, 1920px and up)
+   ============================================================================ */
+@media (min-width: 1920px) {
+    /* Prevent content from getting too wide */
+    .container {
+        max-width: 1440px;
+    }
+
+    /* Increase spacing proportionally */
+    .hero-section {
+        padding: calc(var(--spacing-24) * 1.75) 0;
+    }
+}
+
+/* ============================================================================
+   SMALL MOBILE DEVICES (iPhone SE, older phones, < 375px)
+   ============================================================================ */
+@media (max-width: 374px) {
+    /* Reduce font sizes for very small screens */
+    .hero-title {
+        font-size: var(--text-3xl);
+    }
+
+    .hero-subtitle {
+        font-size: var(--text-base);
+    }
+
+    /* Stack buttons vertically */
+    .hero-ctas {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    /* Reduce padding */
+    .feature-card,
+    .access-card {
+        padding: var(--spacing-6);
+    }
+
+    /* Smaller icons */
+    .feature-icon {
+        font-size: var(--text-4xl);
+    }
+
+    .qa-icon {
+        font-size: var(--text-3xl);
+    }
+}
