@@ -501,68 +501,36 @@ export async function getPreviousLesson(
 export async function getLessonBySlug(
   courseSlug: string,
   lessonSlug: string
-): Promise<Lesson & {
-  module: {
-    id: string
-    title: string
-    course_id: string
-    course: {
-      id: string
-      title: string
-      slug: string
-      is_premium: boolean
-    }
-  }
-} | null> {
+) {
   const supabase = await createClient()
 
-  // Fetch lesson by slug with nested relations
   const { data, error } = await supabase
     .from('lessons')
     .select(`
       *,
-      content_json,
-      module:module_id (
+      modules!inner (
         id,
         title,
         course_id,
-        course:course_id (
+        courses!inner (
           id,
-          title,
           slug,
-          is_premium
+          title,
+          description
         )
       )
     `)
+    .eq('modules.courses.slug', courseSlug)
     .eq('slug', lessonSlug)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
-      logger.debug('getLessonBySlug', { courseSlug, lessonSlug, found: false })
-      return null // Not found
-    }
-    logger.error('[getLessonBySlug] Error:', error)
-    throw error
-  }
-
-  // Verify the lesson belongs to the correct course (post-filter in JavaScript)
-  const moduleCourseSlug = (data.module as any)?.course?.slug
-  if (moduleCourseSlug !== courseSlug) {
-    logger.debug('getLessonBySlug', { courseSlug, lessonSlug, mismatch: true, actualCourseSlug: moduleCourseSlug })
+    console.error('Error fetching lesson:', error)
     return null
   }
 
-  logger.debug('getLessonBySlug', { courseSlug, lessonSlug, found: true })
-  return data as any
+  return data
 }
-
-/**
- * Get all lessons for a course by slug
- * Structure: lessons → modules → courses
- * Note: PostgREST does not support filtering on nested relations,
- * so we first get the course, then filter lessons by module IDs
- */
 export async function getAllLessonsForCourse(courseSlug: string) {
   // First, get the course with its modules
   const course = await getCourseBySlug(courseSlug)

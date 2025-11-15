@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
   }
 
   return {
-    title: `${lesson.title} | ${lesson.module.course.title} | Nodo360`,
+    title: `${lesson.title} | ${lesson.modules.courses.title} | Nodo360`,
     description: lesson.description || `Aprende ${lesson.title} en Nodo360`,
   }
 }
@@ -44,8 +44,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
     notFound()
   }
 
-  const course = lesson.module.course
-  const isPremium = isCoursePremium(course)
+  const course = lesson.modules.courses
+  const isPremium = course?.is_premium || false
   const sortedLessons = allCourseLessons
     .map(l => ({ slug: l.slug, order_index: l.order_index }))
     .sort((a, b) => a.order_index - b.order_index)

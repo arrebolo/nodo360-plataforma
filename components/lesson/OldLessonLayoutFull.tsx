@@ -60,10 +60,10 @@ export function OldLessonLayoutFull({
             </Link>
             <span>/</span>
             <Link href={`/cursos/${courseSlug}`} className="hover:text-white transition">
-              {lesson.module.course.title}
+              {lesson.modules.courses.title}
             </Link>
             <span>/</span>
-            <span className="text-white/70 truncate">{lesson.module.title}</span>
+            <span className="text-white/70 truncate">{lesson.modules.title}</span>
             <span>/</span>
             <span className="text-white truncate">{lesson.title}</span>
           </nav>
@@ -79,7 +79,7 @@ export function OldLessonLayoutFull({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
-              {lesson.module.title}
+              {lesson.modules.title}
             </div>
             <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
               {lesson.title}
