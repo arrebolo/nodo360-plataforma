@@ -28,6 +28,8 @@ import type {
 export async function getAllCourses(): Promise<CourseWithInstructor[]> {
   const supabase = await createClient()
 
+  console.log('🔍 [getAllCourses] Iniciando query de cursos...')
+
   const { data, error } = await supabase
     .from('courses')
     .select(`
@@ -41,7 +43,31 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
     .eq('status', 'published')
     .order('created_at', { ascending: false })
 
-  if (error) throw error
+  console.log('📊 [getAllCourses] Resultado:', {
+    cursosEncontrados: data?.length || 0,
+    error: error?.message,
+    errorCode: error?.code,
+    errorDetails: error?.details,
+    hint: error?.hint
+  })
+
+  if (data && data.length > 0) {
+    console.log('✅ [getAllCourses] Primeros 3 cursos:', data.slice(0, 3).map(c => ({
+      id: c.id,
+      slug: c.slug,
+      title: c.title,
+      status: c.status,
+      is_free: c.is_free,
+      instructor_id: c.instructor_id
+    })))
+  }
+
+  if (error) {
+    console.error('❌ [getAllCourses] Error en query:', error)
+    throw error
+  }
+
+  console.log(`🎯 [getAllCourses] Retornando ${data?.length || 0} cursos`)
   return data || []
 }
 
