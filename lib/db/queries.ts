@@ -495,6 +495,8 @@ export async function getPreviousLesson(
 /**
  * Get lesson by slug within a course
  * Structure: lessons → modules → courses
+ * Note: PostgREST does not support filtering on nested relations,
+ * so we fetch by lesson slug and verify course in JavaScript
  */
 export async function getLessonBySlug(
   courseSlug: string,
@@ -514,7 +516,7 @@ export async function getLessonBySlug(
 } | null> {
   const supabase = await createClient()
 
-  // Query with proper JOIN: lessons → modules → courses
+  // Fetch lesson by slug with nested relations
   const { data, error } = await supabase
     .from('lessons')
     .select(`
@@ -533,7 +535,6 @@ export async function getLessonBySlug(
       )
     `)
     .eq('slug', lessonSlug)
-    .eq('module.course.slug', courseSlug)
     .single()
 
   if (error) {
@@ -545,19 +546,34 @@ export async function getLessonBySlug(
     throw error
   }
 
+  // Verify the lesson belongs to the correct course (post-filter in JavaScript)
+  const moduleCourseSlug = (data.module as any)?.course?.slug
+  if (moduleCourseSlug !== courseSlug) {
+    logger.debug('getLessonBySlug', { courseSlug, lessonSlug, mismatch: true, actualCourseSlug: moduleCourseSlug })
+    return null
+  }
+
   logger.debug('getLessonBySlug', { courseSlug, lessonSlug, found: true })
   return data as any
 }
 
 /**
  * Get all lessons for a course by slug
- * Optimized: Single query with JOIN through modules table
  * Structure: lessons → modules → courses
+ * Note: PostgREST does not support filtering on nested relations,
+ * so we first get the course, then filter lessons by module IDs
  */
 export async function getAllLessonsForCourse(courseSlug: string) {
+  // First, get the course with its modules
+  const course = await getCourseBySlug(courseSlug)
+  if (!course) {
+    logger.debug('getAllLessonsForCourse', { courseSlug, found: false })
+    return []
+  }
+
   const supabase = await createClient()
 
-  // Single optimized query with proper JOIN: lessons → modules → courses
+  // Get all lessons for the course's modules
   const { data, error } = await supabase
     .from('lessons')
     .select(`
@@ -566,14 +582,13 @@ export async function getAllLessonsForCourse(courseSlug: string) {
         id,
         title,
         order_index,
-        course_id,
-        course:course_id (
-          id,
-          slug
-        )
+        course_id
       )
     `)
-    .eq('module.course.slug', courseSlug)
+    .in(
+      'module_id',
+      course.modules?.map(m => m.id) || []
+    )
     .order('order_index', { ascending: true })
 
   if (error) {
