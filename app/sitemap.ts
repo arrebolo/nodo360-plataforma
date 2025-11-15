@@ -109,13 +109,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })) || []
 
-    // URLs de lecciones
-    const lessonPages: MetadataRoute.Sitemap = publishedLessons.map((lesson: any) => ({
-      url: `${baseUrl}/cursos/${lesson.module.course.slug}/${lesson.slug}`,
-      lastModified: new Date(lesson.updated_at),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    }))
+    // URLs de lecciones con validación null-safe
+    const lessonPages: MetadataRoute.Sitemap = publishedLessons
+      .filter((lesson: any) => {
+        // Doble validación para asegurar que tenemos todos los datos necesarios
+        const hasValidData = lesson?.slug &&
+                             lesson?.module?.course?.slug &&
+                             lesson?.updated_at
+        if (!hasValidData) {
+          console.warn('⚠️  [Sitemap] Lección sin datos completos:', {
+            lessonSlug: lesson?.slug,
+            courseSlug: lesson?.module?.course?.slug,
+            hasUpdatedAt: !!lesson?.updated_at
+          })
+        }
+        return hasValidData
+      })
+      .map((lesson: any) => ({
+        url: `${baseUrl}/cursos/${lesson.module.course.slug}/${lesson.slug}`,
+        lastModified: new Date(lesson.updated_at),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }))
 
     return [...staticPages, ...coursePages, ...lessonPages]
 
