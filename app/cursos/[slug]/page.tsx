@@ -4,8 +4,9 @@ import { getCourseBySlug, getAllCourses } from '@/lib/db/queries'
 import { LessonList } from '@/components/course'
 import type { Metadata } from 'next'
 
-// ISR: Regenera la página cada hora
-export const revalidate = 3600
+// Configuración de Next.js para rutas dinámicas
+export const dynamic = 'force-dynamic' // Genera bajo demanda
+export const dynamicParams = true // Permite slugs no pre-generados
 
 interface CoursePageProps {
   params: { slug: string }
@@ -25,14 +26,6 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
     title: `${course.title} | Nodo360`,
     description: course.description || `Aprende ${course.title} con Nodo360`,
   }
-}
-
-// Pre-generar páginas de cursos en build time con ISR
-export async function generateStaticParams() {
-  const courses = await getAllCourses()
-  return courses.map((course) => ({
-    slug: course.slug,
-  }))
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {

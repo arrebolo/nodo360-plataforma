@@ -7,8 +7,9 @@ import { OldLessonLayoutFull } from '@/components/lesson/OldLessonLayoutFull'
 import { LessonPageWrapper } from '@/components/lesson/LessonPageWrapper'
 import type { Metadata } from 'next'
 
-// ISR: Regenera la página cada hora
-export const revalidate = 3600
+// Configuración de Next.js para rutas dinámicas
+export const dynamic = 'force-dynamic' // Genera bajo demanda
+export const dynamicParams = true // Permite slugs no pre-generados
 
 interface LessonPageProps {
   params: { slug: string; lessonSlug: string }
