@@ -504,32 +504,46 @@ export async function getLessonBySlug(
 ): Promise<any> {
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  // Primero obtener la lección
+  const { data: lesson, error: lessonError } = await supabase
     .from('lessons')
-    .select(`
-      *,
-      modules!inner (
-        id,
-        title,
-        course_id,
-        courses!inner (
-          id,
-          slug,
-          title,
-          description
-        )
-      )
-    `)
-    .eq('modules.courses.slug', courseSlug)
+    .select('*')
     .eq('slug', lessonSlug)
     .single()
 
-  if (error) {
-    console.error('Error fetching lesson:', error)
+  if (lessonError || !lesson) {
+    console.error('❌ Error fetching lesson:', lessonError)
     return null
   }
 
-  return data
+  // Luego obtener el módulo con el curso
+  const { data: module, error: moduleError } = await supabase
+    .from('modules')
+    .select(`
+      *,
+      course:course_id (
+        *
+      )
+    `)
+    .eq('id', lesson.module_id)
+    .single()
+
+  if (moduleError || !module) {
+    console.error('❌ Error fetching module:', moduleError)
+    return null
+  }
+
+  // Verificar que sea el curso correcto
+  if (module.course.slug !== courseSlug) {
+    console.error('❌ Course slug mismatch')
+    return null
+  }
+
+  // Combinar los datos
+  return {
+    ...lesson,
+    module: module
+  }
 }
 export async function getAllLessonsForCourse(courseSlug: string) {
   // First, get the course with its modules
