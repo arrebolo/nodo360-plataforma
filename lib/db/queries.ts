@@ -494,6 +494,7 @@ export async function getPreviousLesson(
 
 /**
  * Get lesson by slug within a course
+ * Structure: lessons → modules → courses
  */
 export async function getLessonBySlug(
   courseSlug: string,
@@ -513,6 +514,7 @@ export async function getLessonBySlug(
 } | null> {
   const supabase = await createClient()
 
+  // Query with proper JOIN: lessons → modules → courses
   const { data, error } = await supabase
     .from('lessons')
     .select(`
@@ -531,19 +533,16 @@ export async function getLessonBySlug(
       )
     `)
     .eq('slug', lessonSlug)
+    .eq('module.course.slug', courseSlug)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') return null // Not found
+    if (error.code === 'PGRST116') {
+      logger.debug('getLessonBySlug', { courseSlug, lessonSlug, found: false })
+      return null // Not found
+    }
     logger.error('[getLessonBySlug] Error:', error)
     throw error
-  }
-
-  // Verify the lesson belongs to the correct course
-  const moduleCourseSlug = (data.module as any)?.course?.slug
-  if (moduleCourseSlug !== courseSlug) {
-    logger.debug('getLessonBySlug', { courseSlug, lessonSlug, mismatch: true })
-    return null
   }
 
   logger.debug('getLessonBySlug', { courseSlug, lessonSlug, found: true })
@@ -552,14 +551,14 @@ export async function getLessonBySlug(
 
 /**
  * Get all lessons for a course by slug
+ * Optimized: Single query with JOIN through modules table
+ * Structure: lessons → modules → courses
  */
 export async function getAllLessonsForCourse(courseSlug: string) {
-  const course = await getCourseBySlug(courseSlug)
-  if (!course) return []
-
   const supabase = await createClient()
 
-  const { data, error} = await supabase
+  // Single optimized query with proper JOIN: lessons → modules → courses
+  const { data, error } = await supabase
     .from('lessons')
     .select(`
       *,
@@ -567,16 +566,21 @@ export async function getAllLessonsForCourse(courseSlug: string) {
         id,
         title,
         order_index,
-        course_id
+        course_id,
+        course:course_id (
+          id,
+          slug
+        )
       )
     `)
-    .in(
-      'module_id',
-      course.modules?.map(m => m.id) || []
-    )
+    .eq('module.course.slug', courseSlug)
     .order('order_index', { ascending: true })
 
-  if (error) throw error
+  if (error) {
+    logger.error('[getAllLessonsForCourse] Error:', error)
+    throw error
+  }
 
+  logger.debug('getAllLessonsForCourse', { courseSlug, count: data?.length || 0 })
   return data || []
 }
