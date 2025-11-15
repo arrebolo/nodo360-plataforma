@@ -1,8 +1,9 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { AccessGuard } from './AccessGuard'
 import { CompleteButton } from './CompleteButton'
+import { ProgressManager } from '@/lib/progress-manager'
 
 interface LessonPageWrapperProps {
   children: ReactNode
@@ -23,6 +24,14 @@ export function LessonPageWrapper({
   allLessons,
   nextLessonSlug
 }: LessonPageWrapperProps) {
+  const [isCompleted, setIsCompleted] = useState(false)
+
+  useEffect(() => {
+    // Check if lesson is completed
+    const completed = ProgressManager.isLessonCompleted(courseSlug, lessonSlug)
+    setIsCompleted(completed)
+  }, [courseSlug, lessonSlug])
+
   return (
     <AccessGuard
       courseSlug={courseSlug}
@@ -50,6 +59,7 @@ export function LessonPageWrapper({
                 lessonSlug={lessonSlug}
                 lessonId={lessonId}
                 nextLessonSlug={nextLessonSlug}
+                isCompleted={isCompleted}
               />
             </div>
           </div>
