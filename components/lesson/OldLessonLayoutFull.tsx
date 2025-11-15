@@ -60,10 +60,10 @@ export function OldLessonLayoutFull({
             </Link>
             <span>/</span>
             <Link href={`/cursos/${courseSlug}`} className="hover:text-white transition">
-              {lesson.modules.courses.title}
+              {lesson.module.course.title}
             </Link>
             <span>/</span>
-            <span className="text-white/70 truncate">{lesson.modules.title}</span>
+            <span className="text-white/70 truncate">{lesson.module.title}</span>
             <span>/</span>
             <span className="text-white truncate">{lesson.title}</span>
           </nav>
