@@ -1,14 +1,63 @@
+'use client'
+import { useEffect, useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
-import { getAllCourses } from '@/lib/db/queries'
-import type { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: 'Cursos de Bitcoin y Blockchain | Nodo360',
-  description: 'Aprende Bitcoin, Blockchain y tecnologías descentralizadas con nuestros cursos gratuitos.',
-}
+export default function CursosPage() {
+  const [courses, setCourses] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-export default async function CursosPage() {
-  const courses = await getAllCourses()
+  useEffect(() => {
+    async function fetchCourses() {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+
+        console.log('🔍 [CursosPage] Fetching courses...')
+
+        const { data, error } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false })
+
+        console.log('📊 [CursosPage] Result:', { count: data?.length, error })
+
+        if (error) throw error
+
+        setCourses(data || [])
+      } catch (err: any) {
+        console.error('❌ [CursosPage] Error fetching courses:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e] flex items-center justify-center">
+        <div className="text-white text-xl">Cargando cursos...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-400 text-xl mb-4">Error al cargar cursos</div>
+          <div className="text-white/50 text-sm">{error}</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
@@ -126,14 +175,14 @@ export default async function CursosPage() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
-                          <span>{course.total_modules} módulos</span>
+                          <span>{course.total_modules || 0} módulos</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span>{course.total_lessons} lecciones</span>
+                          <span>{course.total_lessons || 0} lecciones</span>
                         </div>
                       </div>
 
