@@ -501,7 +501,7 @@ export async function getPreviousLesson(
 export async function getLessonBySlug(
   courseSlug: string,
   lessonSlug: string
-) {
+): Promise<any> {
   const supabase = await createClient()
 
   const { data, error } = await supabase
