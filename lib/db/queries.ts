@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/utils/logger'
 import type {
   Course,
   CourseWithInstructor,
@@ -28,8 +29,6 @@ import type {
 export async function getAllCourses(): Promise<CourseWithInstructor[]> {
   const supabase = await createClient()
 
-  console.log('🔍 [getAllCourses] Iniciando query de cursos...')
-
   const { data, error } = await supabase
     .from('courses')
     .select(`
@@ -43,31 +42,12 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
     .eq('status', 'published')
     .order('created_at', { ascending: false })
 
-  console.log('📊 [getAllCourses] Resultado:', {
-    cursosEncontrados: data?.length || 0,
-    error: error?.message,
-    errorCode: error?.code,
-    errorDetails: error?.details,
-    hint: error?.hint
-  })
-
-  if (data && data.length > 0) {
-    console.log('✅ [getAllCourses] Primeros 3 cursos:', data.slice(0, 3).map(c => ({
-      id: c.id,
-      slug: c.slug,
-      title: c.title,
-      status: c.status,
-      is_free: c.is_free,
-      instructor_id: c.instructor_id
-    })))
-  }
-
   if (error) {
-    console.error('❌ [getAllCourses] Error en query:', error)
+    logger.error('[getAllCourses] Error:', error)
     throw error
   }
 
-  console.log(`🎯 [getAllCourses] Retornando ${data?.length || 0} cursos`)
+  logger.debug('getAllCourses', { count: data?.length || 0 })
   return data || []
 }
 
@@ -100,13 +80,13 @@ export async function getCourseBySlug(
     .eq('status', 'published')
     .single()
 
-  console.log('📊 [QUERY] Resultado:', { data, error })
-
   if (error) {
     if (error.code === 'PGRST116') return null // Not found
+    logger.error('[getCourseBySlug] Error:', error)
     throw error
   }
 
+  logger.debug('getCourseBySlug', { slug, found: !!data })
   return data
 }
 
@@ -533,8 +513,6 @@ export async function getLessonBySlug(
 } | null> {
   const supabase = await createClient()
 
-  console.log('🔍 [getLessonBySlug] Iniciando búsqueda con:', { courseSlug, lessonSlug })
-
   const { data, error } = await supabase
     .from('lessons')
     .select(`
@@ -555,42 +533,20 @@ export async function getLessonBySlug(
     .eq('slug', lessonSlug)
     .single()
 
-  console.log('📊 [getLessonBySlug] Resultado de query:', { 
-    encontrada: !!data, 
-    error: error?.message,
-    errorCode: error?.code 
-  })
-
   if (error) {
-    if (error.code === 'PGRST116') {
-      console.log('❌ [getLessonBySlug] Lección no encontrada (PGRST116)')
-      return null
-    }
-    console.error('💥 [getLessonBySlug] Error en query:', error)
+    if (error.code === 'PGRST116') return null // Not found
+    logger.error('[getLessonBySlug] Error:', error)
     throw error
   }
 
-  console.log('🔎 [getLessonBySlug] Datos de la lección:', {
-    lessonId: data.id,
-    lessonTitle: data.title,
-    lessonSlug: data.slug,
-    moduleData: data.module,
-  })
-
   // Verify the lesson belongs to the correct course
   const moduleCourseSlug = (data.module as any)?.course?.slug
-  console.log('🔐 [getLessonBySlug] Verificando curso:', {
-    esperado: courseSlug,
-    recibido: moduleCourseSlug,
-    coincide: moduleCourseSlug === courseSlug
-  })
-
   if (moduleCourseSlug !== courseSlug) {
-    console.log('❌ [getLessonBySlug] Lección no pertenece al curso esperado')
+    logger.debug('getLessonBySlug', { courseSlug, lessonSlug, mismatch: true })
     return null
   }
 
-  console.log('✅ [getLessonBySlug] Lección encontrada exitosamente')
+  logger.debug('getLessonBySlug', { courseSlug, lessonSlug, found: true })
   return data as any
 }
 

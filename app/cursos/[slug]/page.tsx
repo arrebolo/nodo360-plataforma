@@ -4,7 +4,8 @@ import { getCourseBySlug, getAllCourses } from '@/lib/db/queries'
 import { LessonList } from '@/components/course'
 import type { Metadata } from 'next'
 
-export const dynamic = 'force-dynamic'
+// ISR: Regenera la página cada hora
+export const revalidate = 3600
 
 interface CoursePageProps {
   params: { slug: string }
@@ -26,19 +27,17 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
   }
 }
 
-// Commenting out generateStaticParams to make this a dynamic page
-// export async function generateStaticParams() {
-//   const courses = await getAllCourses()
-//   return courses.map((course) => ({
-//     slug: course.slug,
-//   }))
-// }
+// Pre-generar páginas de cursos en build time con ISR
+export async function generateStaticParams() {
+  const courses = await getAllCourses()
+  return courses.map((course) => ({
+    slug: course.slug,
+  }))
+}
 
 export default async function CoursePage({ params }: CoursePageProps) {
   const resolvedParams = await params
-  console.log('🔍 Buscando curso con slug:', resolvedParams.slug)
   const course = await getCourseBySlug(resolvedParams.slug)
-  console.log('📊 Curso encontrado:', course)
 
   if (!course) {
     notFound()

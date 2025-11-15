@@ -7,7 +7,8 @@ import { OldLessonLayoutFull } from '@/components/lesson/OldLessonLayoutFull'
 import { LessonPageWrapper } from '@/components/lesson/LessonPageWrapper'
 import type { Metadata } from 'next'
 
-export const dynamic = 'force-dynamic'
+// ISR: Regenera la página cada hora
+export const revalidate = 3600
 
 interface LessonPageProps {
   params: { slug: string; lessonSlug: string }
@@ -31,34 +32,19 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
 
 export default async function LessonPage({ params }: LessonPageProps) {
   const resolvedParams = await params
-  console.log('🔍 [LESSON] Buscando lección con slugs:', {
-    courseSlug: resolvedParams.slug,
-    lessonSlug: resolvedParams.lessonSlug
-  })
 
-  const lesson = await getLessonBySlug(resolvedParams.slug, resolvedParams.lessonSlug)
-  console.log('📚 [LESSON] Lección encontrada:', {
-    id: lesson?.id,
-    title: lesson?.title,
-    hasContentJson: lesson ? hasJsonContent(lesson) : false
-  })
+  // Paralelizar queries para mejor performance
+  const [lesson, allCourseLessons] = await Promise.all([
+    getLessonBySlug(resolvedParams.slug, resolvedParams.lessonSlug),
+    getAllLessonsForCourse(resolvedParams.slug)
+  ])
 
   if (!lesson) {
-    console.log('❌ [LESSON] No se encontró la lección')
     notFound()
   }
 
   const course = lesson.module.course
   const isPremium = isCoursePremium(course)
-
-  console.log('🎯 [LESSON] Tipo de lección:', {
-    isPremium,
-    hasJsonContent: hasJsonContent(lesson),
-    courseTitle: course.title
-  })
-
-  // Obtener todas las lecciones del curso para el sistema de progreso
-  const allCourseLessons = await getAllLessonsForCourse(resolvedParams.slug)
   const sortedLessons = allCourseLessons
     .map(l => ({ slug: l.slug, order_index: l.order_index }))
     .sort((a, b) => a.order_index - b.order_index)
@@ -71,11 +57,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   // NUEVO SISTEMA: Si tiene content_json, usar nuevo renderer
   if (hasJsonContent(lesson)) {
-    console.log('✨ [LESSON] Usando nuevo sistema de renderizado')
-
     if (isPremium) {
       // Versión Premium
-      console.log('💎 [LESSON] Renderizando con PremiumLessonRenderer')
       return (
         <LessonPageWrapper
           courseSlug={resolvedParams.slug}
@@ -98,7 +81,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
       )
     } else {
       // Versión Gratuita
-      console.log('📖 [LESSON] Renderizando con LessonRenderer (gratuito)')
       return (
         <LessonPageWrapper
           courseSlug={resolvedParams.slug}
@@ -118,8 +100,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
   }
 
   // FALLBACK: HTML antiguo (backward compatibility)
-  console.log('🔄 [LESSON] Usando layout legacy (HTML antiguo)')
-
   // Get previous and next lessons for navigation
   const nextLesson = await getNextLesson(lesson.id)
   const previousLesson = await getPreviousLesson(lesson.id)

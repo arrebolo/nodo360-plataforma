@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { Lock, CheckCircle, Circle, Clock } from 'lucide-react'
 import { ProgressManager } from '@/lib/progress-manager'
@@ -39,40 +39,35 @@ export function LessonList({ courseSlug, modules, isPremium }: LessonListProps) 
       .sort((a, b) => a.order_index - b.order_index)
   }, [modules])
 
-  // Función para cargar progreso
-  const loadProgress = () => {
+  // Función para cargar progreso (memoizada)
+  const loadProgress = useCallback(() => {
     const updatedProgress: Record<string, boolean> = {}
     allLessons.forEach(lesson => {
       updatedProgress[lesson.slug] = ProgressManager.isLessonCompleted(courseSlug, lesson.slug)
     })
     setProgressState(updatedProgress)
-    console.log('🔄 Progreso actualizado:', updatedProgress)
-  }
+  }, [courseSlug, allLessons])
 
   useEffect(() => {
     setIsClient(true)
     loadProgress()
 
     // Listener para actualizaciones
-    const handleProgressUpdate = (event: any) => {
-      console.log('📢 Evento lesson-completed recibido:', event.detail)
-      loadProgress()
-    }
-
-    window.addEventListener('lesson-completed', handleProgressUpdate)
+    window.addEventListener('lesson-completed', loadProgress)
 
     // También actualizar al hacer focus en la ventana (por si vienen de otra página)
-    const handleFocus = () => {
-      console.log('👁️ Ventana enfocada, actualizando progreso')
-      loadProgress()
-    }
-    window.addEventListener('focus', handleFocus)
+    window.addEventListener('focus', loadProgress)
 
     return () => {
-      window.removeEventListener('lesson-completed', handleProgressUpdate)
-      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('lesson-completed', loadProgress)
+      window.removeEventListener('focus', loadProgress)
     }
-  }, [courseSlug, allLessons])
+  }, [loadProgress])
+
+  // Memoizar módulos ordenados
+  const sortedModules = useMemo(() =>
+    [...modules].sort((a, b) => a.order_index - b.order_index)
+  , [modules])
 
   return (
     <div className="space-y-4">
@@ -94,9 +89,7 @@ export function LessonList({ courseSlug, modules, isPremium }: LessonListProps) 
         </div>
       )}
 
-      {modules
-        .sort((a, b) => a.order_index - b.order_index)
-        .map((module, moduleIndex) => (
+      {sortedModules.map((module, moduleIndex) => (
           <div
             key={module.id}
             className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden"
@@ -171,16 +164,6 @@ export function LessonList({ courseSlug, modules, isPremium }: LessonListProps) 
                     allLessons
                   )
                   const isLocked = !canAccess
-
-                  // Debug log para las primeras 2 lecciones
-                  if (lesson.order_index <= 2) {
-                    console.log(`Lección ${lesson.order_index} (${lesson.slug}):`, {
-                      isCompleted,
-                      canAccess,
-                      isLocked,
-                      isPremium
-                    })
-                  }
 
                   if (isLocked) {
                     return (
