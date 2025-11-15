@@ -17,7 +17,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order('updated_at', { ascending: false })
 
     // Obtener todas las lecciones de cursos publicados
-    const { data: lessons } = await supabase
+    console.log('🗺️  [Sitemap] Obteniendo lecciones para sitemap...')
+
+    const { data: lessons, error: lessonsError } = await supabase
       .from('lessons')
       .select(`
         slug,
@@ -27,10 +29,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         )
       `)
 
-    // Filtrar solo lecciones de cursos publicados
+    if (lessonsError) {
+      console.error('❌ [Sitemap] Error obteniendo lecciones:', lessonsError)
+    }
+
+    console.log('📊 [Sitemap] Lecciones obtenidas:', {
+      total: lessons?.length || 0,
+      sample: lessons?.[0] ? {
+        slug: lessons[0].slug,
+        hasModule: !!lessons[0].module,
+        hasCourse: !!(lessons[0] as any).module?.course,
+        courseSlug: (lessons[0] as any).module?.course?.slug
+      } : 'No hay lecciones'
+    })
+
+    // Filtrar solo lecciones de cursos publicados con validación null-safe
     const publishedLessons = lessons?.filter(
-      (lesson: any) => lesson.module?.course?.status === 'published'
+      (lesson: any) => {
+        const isPublished = lesson?.module?.course?.status === 'published'
+        if (!isPublished && lesson) {
+          console.warn('⚠️  [Sitemap] Lección excluida:', {
+            lessonSlug: lesson.slug,
+            hasModule: !!lesson.module,
+            hasCourse: !!lesson.module?.course,
+            status: lesson.module?.course?.status
+          })
+        }
+        return isPublished
+      }
     ) || []
+
+    console.log('✅ [Sitemap] Lecciones publicadas filtradas:', publishedLessons.length)
 
     // URLs estáticas principales
     const staticPages: MetadataRoute.Sitemap = [

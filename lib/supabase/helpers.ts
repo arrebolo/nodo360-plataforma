@@ -85,23 +85,35 @@ export async function getLessonsByModule(moduleId: string) {
 
 // Obtener una lección por slug
 export async function getLessonBySlug(moduleSlug: string, lessonSlug: string) {
+  console.log('🔍 [helpers.getLessonBySlug] Buscando lección:', { moduleSlug, lessonSlug })
+
   const { data, error } = await supabase
     .from('lessons')
     .select(`
       *,
-      modules!inner (
+      module:modules!inner (
         slug,
         course_id,
-        courses!inner (
+        course:courses!inner (
           slug
         )
       )
     `)
     .eq('slug', lessonSlug)
-    .eq('modules.slug', moduleSlug)
+    .eq('module.slug', moduleSlug)
     .single();
-  
-  if (error) throw error;
+
+  if (error) {
+    console.error('❌ [helpers.getLessonBySlug] Error:', error)
+    throw error;
+  }
+
+  console.log('✅ [helpers.getLessonBySlug] Lección encontrada:', {
+    lessonSlug: (data as any)?.slug,
+    moduleSlug: (data as any)?.module?.slug,
+    courseSlug: (data as any)?.module?.course?.slug
+  })
+
   return data;
 }
 
