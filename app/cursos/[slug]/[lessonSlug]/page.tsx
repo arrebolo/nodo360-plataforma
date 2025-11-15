@@ -7,6 +7,8 @@ import { OldLessonLayoutFull } from '@/components/lesson/OldLessonLayoutFull'
 import { LessonPageWrapper } from '@/components/lesson/LessonPageWrapper'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 interface LessonPageProps {
   params: { slug: string; lessonSlug: string }
 }

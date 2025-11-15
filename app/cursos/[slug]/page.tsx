@@ -4,6 +4,8 @@ import { getCourseBySlug, getAllCourses } from '@/lib/db/queries'
 import { LessonList } from '@/components/course'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 interface CoursePageProps {
   params: { slug: string }
 }
