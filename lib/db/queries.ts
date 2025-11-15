@@ -502,28 +502,57 @@ export async function getLessonBySlug(
   courseSlug: string,
   lessonSlug: string
 ): Promise<any> {
+  console.log('🔍 Buscando lección:', { courseSlug, lessonSlug })
+  
   const supabase = await createClient()
 
-  // Primero obtener la lección
+  // Primero obtener el curso
+  const { data: course, error: courseError } = await supabase
+    .from('courses')
+    .select('id')
+    .eq('slug', courseSlug)
+    .single()
+
+  if (courseError || !course) {
+    console.error('❌ Error fetching course:', courseError)
+    return null
+  }
+
+  // Luego obtener los módulos de ese curso
+  const { data: modules, error: modulesError } = await supabase
+    .from('modules')
+    .select('id')
+    .eq('course_id', course.id)
+
+  if (modulesError || !modules) {
+    console.error('❌ Error fetching modules:', modulesError)
+    return null
+  }
+
+  const moduleIds = modules.map(m => m.id)
+
+  // Buscar la lección SOLO en los módulos de este curso
   const { data: lesson, error: lessonError } = await supabase
     .from('lessons')
     .select('*')
     .eq('slug', lessonSlug)
+    .in('module_id', moduleIds)
     .single()
 
   if (lessonError || !lesson) {
-    console.error('❌ Error fetching lesson:', lessonError)
+    console.error('❌ Error fetching lesson:', {
+      lessonSlug,
+      error: lessonError
+    })
     return null
   }
 
-  // Luego obtener el módulo con el curso
+  // Obtener el módulo completo con el curso
   const { data: module, error: moduleError } = await supabase
     .from('modules')
     .select(`
       *,
-      course:course_id (
-        *
-      )
+      course:course_id (*)
     `)
     .eq('id', lesson.module_id)
     .single()
@@ -533,13 +562,8 @@ export async function getLessonBySlug(
     return null
   }
 
-  // Verificar que sea el curso correcto
-  if (module.course.slug !== courseSlug) {
-    console.error('❌ Course slug mismatch')
-    return null
-  }
-
-  // Combinar los datos
+  console.log('✅ Lección encontrada')
+  
   return {
     ...lesson,
     module: module
