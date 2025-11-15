@@ -56,17 +56,25 @@ export function PremiumLessonRenderer({
     setTableOfContents(toc)
   }, [content])
 
-  // Simulate progress updates
+  // Optimized progress updates with throttling
   useEffect(() => {
+    let ticking = false
+
     const handleScroll = () => {
-      const windowHeight = window.innerHeight
-      const documentHeight = document.documentElement.scrollHeight
-      const scrollTop = window.scrollY
-      const scrollPercentage = (scrollTop / (documentHeight - windowHeight)) * 100
-      setProgress(Math.min(Math.round(scrollPercentage), 100))
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const windowHeight = window.innerHeight
+          const documentHeight = document.documentElement.scrollHeight
+          const scrollTop = window.scrollY
+          const scrollPercentage = (scrollTop / (documentHeight - windowHeight)) * 100
+          setProgress(Math.min(Math.round(scrollPercentage), 100))
+          ticking = false
+        })
+        ticking = true
+      }
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 

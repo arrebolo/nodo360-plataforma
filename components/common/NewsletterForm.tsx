@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Mail, Send, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { logger } from '@/lib/utils/logger'
 
 interface NewsletterFormProps {
   variant?: 'inline' | 'card'
@@ -22,7 +23,7 @@ export function NewsletterForm({
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     setSubmitStatus('idle')
@@ -52,20 +53,21 @@ export function NewsletterForm({
       // Reset status after 5 seconds
       setTimeout(() => setSubmitStatus('idle'), 5000)
     } catch (error) {
-      console.error('Error subscribing to newsletter:', error)
+      logger.error('Error subscribing to newsletter:', error)
       setSubmitStatus('error')
       setErrorMessage(error instanceof Error ? error.message : 'Error al suscribirse')
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [formData.email, formData.name, showName])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }))
-  }
+  }, [])
 
   if (variant === 'card') {
     return (
