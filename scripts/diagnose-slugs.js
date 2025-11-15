@@ -52,7 +52,6 @@ async function diagnoseSlugs() {
         id,
         title,
         slug,
-        status,
         module:module_id (
           id,
           course:course_id (
@@ -93,7 +92,6 @@ async function diagnoseSlugs() {
         console.log(`  ID: ${lesson.id}`)
         console.log(`  Título: ${lesson.title}`)
         console.log(`  Slug: "${lesson.slug}"`)
-        console.log(`  Status: ${lesson.status}`)
         console.log(`  URL esperada: /cursos/${courseSlug}/${lesson.slug}`)
         console.log('  ' + '─'.repeat(76))
       })
@@ -118,7 +116,6 @@ async function diagnoseSlugs() {
     )
     if (leccion11) {
       console.log(`✅ Lección encontrada: "${leccion11.title}" (ID: ${leccion11.id})`)
-      console.log(`   Status: ${leccion11.status}`)
     } else {
       console.log('❌ NO se encontró lección con slug "leccion-1-1" en el curso "bitcoin-desde-cero"')
       const bitcoinLessons = lessons?.filter(l => l.module?.course?.slug === 'bitcoin-desde-cero')
@@ -135,7 +132,7 @@ async function diagnoseSlugs() {
       console.log(`   /cursos/${course.slug}`)
 
       const courseLessons = lessons?.filter(l =>
-        l.module?.course?.slug === course.slug && l.status === 'published'
+        l.module?.course?.slug === course.slug
       )
       courseLessons?.forEach(lesson => {
         console.log(`   /cursos/${course.slug}/${lesson.slug}`)
