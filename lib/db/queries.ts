@@ -546,10 +546,11 @@ export async function getLessonBySlug(
     })
     // En lugar de retornar la estructura actual, retorna esto:
 return {
-  ...lesson,
-  module: {
-    ...module,
-    course: module.course
+    ...lesson,
+    module: {
+      ...module,
+      course: module.course
+    }
   }
 }
 
