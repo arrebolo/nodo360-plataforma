@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Providers } from "./providers";
 // import Header from "@/components/navigation/Header"; // Removed - not implemented yet
 // import Footer from "@/components/navigation/Footer"; // Removed - not implemented yet
 import "./globals.css";
@@ -50,11 +51,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={inter.className}>
       <body className="bg-black text-white antialiased">
-        {/* <Header /> - Removed for MVP */}
-        <main>
-          {children}
-        </main>
-        {/* <Footer /> - Removed for MVP */}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
