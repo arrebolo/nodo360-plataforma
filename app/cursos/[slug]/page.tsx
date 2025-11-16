@@ -12,17 +12,27 @@ interface CoursePageProps {
 
 export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const course = await getCourseBySlug(resolvedParams.slug)
 
-  if (!course) {
-    return {
-      title: 'Curso no encontrado | Nodo360',
+  try {
+    const course = await getCourseBySlug(resolvedParams.slug)
+
+    if (!course) {
+      return {
+        title: 'Curso no encontrado | Nodo360',
+        description: 'El curso que buscas no está disponible',
+      }
     }
-  }
 
-  return {
-    title: `${course.title} | Nodo360`,
-    description: course.description || `Aprende ${course.title} con Nodo360`,
+    return {
+      title: `${course.title} | Nodo360`,
+      description: course.description || `Aprende ${course.title} con Nodo360`,
+    }
+  } catch (error) {
+    console.error('❌ [Course generateMetadata] Error:', error)
+    return {
+      title: 'Error | Nodo360',
+      description: 'Ocurrió un error al cargar el curso',
+    }
   }
 }
 
@@ -210,18 +220,18 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </section>
 
       {/* Instructor Section */}
-      {course.instructor && (
+      {course.instructor && course.instructor.full_name && (
         <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-white/10">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold text-white mb-6">Instructor</h2>
             <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center text-2xl text-white font-bold">
-                  {course.instructor.full_name?.[0] || 'I'}
+                  {course.instructor.full_name[0].toUpperCase()}
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white">
-                    {course.instructor.full_name || 'Instructor'}
+                    {course.instructor.full_name}
                   </h3>
                   {/* Bio field not available in type */}
                 </div>

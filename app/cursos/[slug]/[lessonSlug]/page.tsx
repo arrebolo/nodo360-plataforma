@@ -15,17 +15,27 @@ interface LessonPageProps {
 
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const lesson = await getLessonBySlug(resolvedParams.slug, resolvedParams.lessonSlug)
 
-  if (!lesson) {
-    return {
-      title: 'Lección no encontrada | Nodo360',
+  try {
+    const lesson = await getLessonBySlug(resolvedParams.slug, resolvedParams.lessonSlug)
+
+    if (!lesson || !lesson.module || !lesson.module.course) {
+      return {
+        title: 'Lección no encontrada | Nodo360',
+        description: 'La lección que buscas no está disponible',
+      }
     }
-  }
 
-  return {
-    title: `${lesson.title} | ${lesson.module.course.title} | Nodo360`,
-    description: lesson.description || `Aprende ${lesson.title} en Nodo360`,
+    return {
+      title: `${lesson.title} | ${lesson.module.course.title} | Nodo360`,
+      description: lesson.description || `Aprende ${lesson.title} en Nodo360`,
+    }
+  } catch (error) {
+    console.error('❌ [generateMetadata] Error:', error)
+    return {
+      title: 'Error | Nodo360',
+      description: 'Ocurrió un error al cargar la lección',
+    }
   }
 }
 
