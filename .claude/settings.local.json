@@ -12,7 +12,10 @@
       "Bash(if exist \"app\\api\\auth\" rmdir /s /q \"app\\api\\auth\")",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(mkdir:*)",
+      "Bash(copy libdbqueries.ts backupcursos-oldqueries.ts)",
+      "Bash(xcopy:*)"
     ],
     "deny": [],
     "ask": []

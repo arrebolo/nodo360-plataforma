@@ -1,19 +1,63 @@
+'use client'
+import { useEffect, useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
-import { getAllCourses } from '@/lib/db/courses-queries'
-import type { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: 'Cursos de Bitcoin y Blockchain | Nodo360',
-  description: 'Aprende Bitcoin y Blockchain desde cero con cursos gratuitos en español',
-}
+export default function CursosPage() {
+  const [courses, setCourses] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-export default async function CursosPage() {
-  console.log('🚀 [CursosPage] Renderizando página de cursos...')
+  useEffect(() => {
+    async function fetchCourses() {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
 
-  // Fetch courses server-side
-  const courses = await getAllCourses()
+        console.log('🔍 [CursosPage] Fetching courses...')
 
-  console.log(`📊 [CursosPage] ${courses.length} cursos obtenidos`)
+        const { data, error } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false })
+
+        console.log('📊 [CursosPage] Result:', { count: data?.length, error })
+
+        if (error) throw error
+
+        setCourses(data || [])
+      } catch (err: any) {
+        console.error('❌ [CursosPage] Error fetching courses:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e] flex items-center justify-center">
+        <div className="text-white text-xl">Cargando cursos...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-400 text-xl mb-4">Error al cargar cursos</div>
+          <div className="text-white/50 text-sm">{error}</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">

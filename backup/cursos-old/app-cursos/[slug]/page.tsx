@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getCourseBySlug } from '@/lib/db/courses-queries'
+import { getCourseBySlug, getAllCourses } from '@/lib/db/queries'
 import { LessonList } from '@/components/course'
 import type { Metadata } from 'next'
 
@@ -30,17 +30,11 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 
 export default async function CoursePage({ params }: CoursePageProps) {
   const resolvedParams = await params
-
-  console.log('🚀 [CoursePage] Renderizando curso:', resolvedParams.slug)
-
   const course = await getCourseBySlug(resolvedParams.slug)
 
   if (!course) {
-    console.log('❌ [CoursePage] Curso no encontrado:', resolvedParams.slug)
     notFound()
   }
-
-  console.log('✅ [CoursePage] Curso encontrado:', course.title)
 
   // Sort modules and lessons by order_index
   const sortedModules = course.modules?.sort((a, b) => a.order_index - b.order_index) || []
@@ -221,6 +215,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <h3 className="text-xl font-bold text-white">
                     {course.instructor.full_name || 'Instructor'}
                   </h3>
+                  {/* Bio field not available in type */}
                 </div>
               </div>
             </div>

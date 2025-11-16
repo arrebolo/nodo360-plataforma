@@ -208,6 +208,17 @@ export interface LessonWithDetails extends Lesson {
 }
 
 /**
+ * Lección con relaciones completas (Module y Course completos)
+ * ESTRUCTURA CONSISTENTE: lesson.module.course (singular)
+ * Esta es la estructura que usan las queries en lib/db/courses-queries.ts
+ */
+export interface LessonWithRelations extends Lesson {
+  module: Module & {
+    course: Course
+  }
+}
+
+/**
  * Bookmark with Lesson details
  */
 export interface BookmarkWithLesson extends Bookmark {

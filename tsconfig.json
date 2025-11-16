@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
 , "middleware.ts.old"  ],
-  "exclude": ["node_modules", "scripts", "src"]
+  "exclude": ["node_modules", "scripts", "src", "backup"]
 }
