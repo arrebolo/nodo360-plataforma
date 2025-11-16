@@ -44,7 +44,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
     notFound()
   }
 
-  const course = lesson.modules.courses
+  const course = lesson.module.course
   const isPremium = course?.is_premium || false
   const sortedLessons = allCourseLessons
     .map(l => ({ slug: l.slug, order_index: l.order_index }))

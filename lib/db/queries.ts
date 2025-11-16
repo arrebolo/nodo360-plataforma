@@ -544,8 +544,14 @@ export async function getLessonBySlug(
       lessonSlug,
       error: lessonError
     })
-    return null
+    // En lugar de retornar la estructura actual, retorna esto:
+return {
+  ...lesson,
+  module: {
+    ...module,
+    course: module.course
   }
+}
 
   // Obtener el módulo completo con el curso
   const { data: module, error: moduleError } = await supabase
