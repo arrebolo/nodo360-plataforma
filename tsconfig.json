@@ -41,6 +41,7 @@
     "node_modules",
     "scripts",
     "src",
-    "backup"
+    "backup",
+    "backups"
   ]
 }

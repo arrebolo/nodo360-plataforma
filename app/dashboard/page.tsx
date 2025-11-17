@@ -187,11 +187,11 @@ export default function DashboardPage() {
                 </div>
               </div>
               <Link
-                href="/cursos/fundamentos-bitcoin/intro-criptografia"
+                href="/cursos"
                 className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#FFD700] text-white font-bold rounded-xl hover:scale-105 transition-all duration-300"
               >
                 <Play className="w-5 h-5" />
-                Continuar Lección
+                Ver Mis Cursos
               </Link>
             </div>
           </div>

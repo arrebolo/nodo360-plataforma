@@ -29,7 +29,9 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Logo size="sm" showText priority className="flex-shrink-0" href="/" />
+          <Link href="/" className="flex-shrink-0" aria-label="Nodo360 Home">
+            <Logo size="sm" showText priority />
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">

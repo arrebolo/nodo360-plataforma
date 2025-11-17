@@ -16,12 +16,12 @@ export const dynamic = 'force-dynamic' // Genera bajo demanda
 export const dynamicParams = true // Permite slugs no pre-generados
 
 interface LessonPageProps {
-  params: { slug: string; lessonSlug: string }
+  params: { courseSlug: string; moduleSlug: string; lessonSlug: string }
 }
 
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const lesson = await getLessonBySlug(resolvedParams.slug, resolvedParams.lessonSlug)
+  const lesson = await getLessonBySlug(resolvedParams.courseSlug, resolvedParams.lessonSlug)
 
   if (!lesson) {
     return {
@@ -40,18 +40,28 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const resolvedParams = await params
 
   console.log('🚀 [LessonPage] Renderizando lección:', {
-    courseSlug: resolvedParams.slug,
+    courseSlug: resolvedParams.courseSlug,
+    moduleSlug: resolvedParams.moduleSlug,
     lessonSlug: resolvedParams.lessonSlug,
   })
 
   // Paralelizar queries para mejor performance
   const [lesson, allCourseLessons] = await Promise.all([
-    getLessonBySlug(resolvedParams.slug, resolvedParams.lessonSlug),
-    getAllLessonsForCourse(resolvedParams.slug),
+    getLessonBySlug(resolvedParams.courseSlug, resolvedParams.lessonSlug),
+    getAllLessonsForCourse(resolvedParams.courseSlug),
   ])
 
   if (!lesson) {
     console.log('❌ [LessonPage] Lección no encontrada')
+    notFound()
+  }
+
+  // Verificar que la lección pertenece al módulo correcto
+  if (lesson.module.slug !== resolvedParams.moduleSlug) {
+    console.log('❌ [LessonPage] La lección no pertenece a este módulo:', {
+      expectedModule: resolvedParams.moduleSlug,
+      actualModule: lesson.module.slug,
+    })
     notFound()
   }
 
@@ -67,20 +77,25 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   // Ordenar lecciones por order_index
   const sortedLessons = allCourseLessons
-    .map((l) => ({ slug: l.slug, order_index: l.order_index }))
+    .map((l) => ({
+      slug: l.slug,
+      order_index: l.order_index,
+      moduleSlug: l.module.slug
+    }))
     .sort((a, b) => a.order_index - b.order_index)
 
   // Encontrar la siguiente lección
   const currentLessonIndex = sortedLessons.findIndex((l) => l.slug === lesson.slug)
-  const nextLessonSlug =
+  const nextLessonData =
     currentLessonIndex >= 0 && currentLessonIndex < sortedLessons.length - 1
-      ? sortedLessons[currentLessonIndex + 1].slug
+      ? sortedLessons[currentLessonIndex + 1]
       : undefined
 
   console.log('📊 [LessonPage] Progreso:', {
     currentIndex: currentLessonIndex,
     total: sortedLessons.length,
-    nextSlug: nextLessonSlug,
+    nextSlug: nextLessonData?.slug,
+    nextModule: nextLessonData?.moduleSlug,
   })
 
   // NUEVO SISTEMA: Si tiene content_json, usar nuevo renderer
@@ -89,12 +104,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
       // Versión Premium
       return (
         <LessonPageWrapper
-          courseSlug={resolvedParams.slug}
+          courseSlug={resolvedParams.courseSlug}
+          moduleSlug={resolvedParams.moduleSlug}
           lessonSlug={lesson.slug}
           lessonId={lesson.id}
           isPremium={isPremium}
           allLessons={sortedLessons}
-          nextLessonSlug={nextLessonSlug}
+          nextLessonSlug={nextLessonData?.slug}
+          nextLessonModuleSlug={nextLessonData?.moduleSlug}
         >
           <PremiumLessonRenderer
             content={lesson.content_json!}
@@ -111,12 +128,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
       // Versión Gratuita
       return (
         <LessonPageWrapper
-          courseSlug={resolvedParams.slug}
+          courseSlug={resolvedParams.courseSlug}
+          moduleSlug={resolvedParams.moduleSlug}
           lessonSlug={lesson.slug}
           lessonId={lesson.id}
           isPremium={isPremium}
           allLessons={sortedLessons}
-          nextLessonSlug={nextLessonSlug}
+          nextLessonSlug={nextLessonData?.slug}
+          nextLessonModuleSlug={nextLessonData?.moduleSlug}
         >
           <LessonRenderer content={lesson.content_json!} progress={0} />
         </LessonPageWrapper>
@@ -130,21 +149,22 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   // Necesitamos obtener next/prev lessons para el layout antiguo
   // Usamos la lógica de navegación manual
-  const prevLessonSlug =
-    currentLessonIndex > 0 ? sortedLessons[currentLessonIndex - 1].slug : undefined
+  const prevLessonData =
+    currentLessonIndex > 0 ? sortedLessons[currentLessonIndex - 1] : undefined
 
   // Crear objetos Lesson simplificados para navegación
-  const nextLesson = nextLessonSlug
-    ? allCourseLessons.find((l) => l.slug === nextLessonSlug)
+  const nextLesson = nextLessonData
+    ? allCourseLessons.find((l) => l.slug === nextLessonData.slug)
     : null
-  const previousLesson = prevLessonSlug
-    ? allCourseLessons.find((l) => l.slug === prevLessonSlug)
+  const previousLesson = prevLessonData
+    ? allCourseLessons.find((l) => l.slug === prevLessonData.slug)
     : null
 
   return (
     <OldLessonLayoutFull
       lesson={lesson as any} // OldLessonLayoutFull espera estructura antigua
-      courseSlug={resolvedParams.slug}
+      courseSlug={resolvedParams.courseSlug}
+      moduleSlug={resolvedParams.moduleSlug}
       previousLesson={previousLesson as any}
       nextLesson={nextLesson as any}
     />

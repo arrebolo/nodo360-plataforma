@@ -7,17 +7,21 @@ import { useRouter } from 'next/navigation'
 
 interface CompleteButtonProps {
   courseSlug: string
+  moduleSlug: string
   lessonSlug: string
   lessonId: string
   nextLessonSlug?: string
+  nextLessonModuleSlug?: string
   isCompleted: boolean
 }
 
 export function CompleteButton({
   courseSlug,
+  moduleSlug,
   lessonSlug,
   lessonId,
   nextLessonSlug,
+  nextLessonModuleSlug,
   isCompleted: initialCompleted
 }: CompleteButtonProps) {
   const [isCompleted, setIsCompleted] = useState(initialCompleted)
@@ -38,8 +42,8 @@ export function CompleteButton({
 
     // Pequeño delay antes de navegar para asegurar que el evento se procese
     setTimeout(() => {
-      if (nextLessonSlug) {
-        router.push(`/cursos/${courseSlug}/${nextLessonSlug}`)
+      if (nextLessonSlug && nextLessonModuleSlug) {
+        router.push(`/cursos/${courseSlug}/modulos/${nextLessonModuleSlug}/lecciones/${nextLessonSlug}`)
       } else {
         // Volver a la página del curso para ver progreso
         router.push(`/cursos/${courseSlug}`)
@@ -48,8 +52,8 @@ export function CompleteButton({
   }
 
   const handleNext = () => {
-    if (nextLessonSlug) {
-      router.push(`/cursos/${courseSlug}/${nextLessonSlug}`)
+    if (nextLessonSlug && nextLessonModuleSlug) {
+      router.push(`/cursos/${courseSlug}/modulos/${nextLessonModuleSlug}/lecciones/${nextLessonSlug}`)
     } else {
       router.push(`/cursos/${courseSlug}`)
     }

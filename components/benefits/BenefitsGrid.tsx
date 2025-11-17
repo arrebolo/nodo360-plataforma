@@ -1,10 +1,40 @@
 'use client'
 
-import { LucideIcon } from 'lucide-react'
+import {
+  Target,
+  Video,
+  Code2,
+  Briefcase,
+  Users,
+  MessageCircle,
+  MessageSquare,
+  Calendar,
+  Trophy,
+  Lightbulb,
+  Users2,
+  Zap,
+  LucideIcon
+} from 'lucide-react'
 import { BenefitCard } from './BenefitCard'
 
+// Icon mapping - maps string keys to Lucide components
+const ICON_MAP: Record<string, LucideIcon> = {
+  target: Target,
+  video: Video,
+  code2: Code2,
+  briefcase: Briefcase,
+  users: Users,
+  messageCircle: MessageCircle,
+  messageSquare: MessageSquare,
+  calendar: Calendar,
+  trophy: Trophy,
+  lightbulb: Lightbulb,
+  users2: Users2,
+  zap: Zap,
+} as const
+
 interface Benefit {
-  icon: LucideIcon
+  iconKey: string
   title: string
   description: string
 }
@@ -37,14 +67,23 @@ export function BenefitsGrid({ benefits, title, subtitle }: BenefitsGridProps) {
           lg:grid-cols-3
           gap-6
         ">
-          {benefits.map((benefit, index) => (
-            <BenefitCard
-              key={index}
-              icon={benefit.icon}
-              title={benefit.title}
-              description={benefit.description}
-            />
-          ))}
+          {benefits.map((benefit, index) => {
+            const IconComponent = ICON_MAP[benefit.iconKey]
+
+            if (!IconComponent) {
+              console.warn(`Icon not found for key: ${benefit.iconKey}`)
+              return null
+            }
+
+            return (
+              <BenefitCard
+                key={index}
+                icon={IconComponent}
+                title={benefit.title}
+                description={benefit.description}
+              />
+            )
+          })}
         </div>
       </div>
     </div>

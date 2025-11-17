@@ -56,14 +56,14 @@ export function HeroSection() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
-                href="#cursos-gratis"
+                href="/cursos?filter=gratis"
                 className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] rounded-xl text-white font-semibold text-lg hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
               >
                 Explorar Cursos Gratis
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
-                href="#cursos-premium"
+                href="/cursos?filter=premium"
                 className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#FFD700] to-[#FFA500] rounded-xl text-black font-semibold text-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all duration-300 hover:scale-105"
               >
                 Ver Cursos Premium

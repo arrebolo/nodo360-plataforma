@@ -157,7 +157,7 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
                     return (
                       <Link
                         key={lesson.id}
-                        href={`/cursos/${course.slug}/${lesson.slug}`}
+                        href={`/cursos/${course.slug}/modulos/${module.slug}/lecciones/${lesson.slug}`}
                         className={`px-4 py-3 flex items-center gap-3 hover:bg-[#1a1a1a] transition-colors ${
                           isCurrent ? 'bg-[#F7931A]/10 border-l-2 border-[#F7931A]' : ''
                         }`}

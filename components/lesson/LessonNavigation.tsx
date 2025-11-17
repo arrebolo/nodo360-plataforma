@@ -10,16 +10,18 @@ import { toast } from 'sonner'
 interface LessonNavigationProps {
   lessonId: string
   courseSlug: string
+  moduleSlug: string
   courseId: string
   totalLessons: number
-  prevLesson?: { slug: string; title: string } | null
-  nextLesson?: { slug: string; title: string } | null
+  prevLesson?: { slug: string; title: string; moduleSlug: string } | null
+  nextLesson?: { slug: string; title: string; moduleSlug: string } | null
   onComplete?: () => void
 }
 
 export function LessonNavigation({
   lessonId,
   courseSlug,
+  moduleSlug,
   courseId,
   totalLessons,
   prevLesson,
@@ -82,7 +84,7 @@ export function LessonNavigation({
 
     // 3. Navegar a siguiente lección o al curso
     if (nextLesson) {
-      router.push(`/cursos/${courseSlug}/${nextLesson.slug}`)
+      router.push(`/cursos/${courseSlug}/modulos/${nextLesson.moduleSlug}/lecciones/${nextLesson.slug}`)
     } else {
       router.push(`/cursos/${courseSlug}`)
     }
@@ -95,7 +97,7 @@ export function LessonNavigation({
           {/* Previous Button */}
           {prevLesson ? (
             <Link
-              href={`/cursos/${courseSlug}/${prevLesson.slug}`}
+              href={`/cursos/${courseSlug}/modulos/${prevLesson.moduleSlug}/lecciones/${prevLesson.slug}`}
               className="flex items-center gap-2 px-4 py-2 bg-nodo-card border border-nodo-icon text-gray-400 rounded-lg hover:bg-nodo-bg hover:text-white hover:border-[#F7931A]/30 transition-all group"
             >
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

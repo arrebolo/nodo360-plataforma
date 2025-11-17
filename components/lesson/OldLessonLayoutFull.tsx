@@ -7,6 +7,7 @@ interface OldLessonLayoutFullProps {
   lesson: Lesson & {
     module: {
       id: string
+      slug: string
       title: string
       course: {
         id: string
@@ -16,13 +17,15 @@ interface OldLessonLayoutFullProps {
     }
   }
   courseSlug: string
-  previousLesson?: {slug: string; title: string} | null
-  nextLesson?: {slug: string; title: string} | null
+  moduleSlug: string
+  previousLesson?: {slug: string; title: string; module: {slug: string}} | null
+  nextLesson?: {slug: string; title: string; module: {slug: string}} | null
 }
 
 export function OldLessonLayoutFull({
   lesson,
   courseSlug,
+  moduleSlug,
   previousLesson,
   nextLesson,
 }: OldLessonLayoutFullProps) {
@@ -114,12 +117,22 @@ export function OldLessonLayoutFull({
           )}
 
           {/* Lesson Content */}
-          <div className="prose prose-invert prose-lg max-w-none mb-12">
-            <div
-              className="text-white/80 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: lesson.content || '' }}
-            />
-          </div>
+          {lesson.content && lesson.content.trim() !== '' ? (
+            <div className="prose prose-invert prose-lg max-w-none mb-12">
+              <div
+                className="text-white/80 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: lesson.content }}
+              />
+            </div>
+          ) : (
+            <div className="prose prose-invert prose-lg max-w-none mb-12">
+              <div className="text-white/80 leading-relaxed">
+                <p className="text-white/50 italic">
+                  Esta lección no tiene contenido de texto. Por favor, revisa el video o los recursos adicionales.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Attachments */}
           {lesson.attachments && Array.isArray(lesson.attachments) && lesson.attachments.length > 0 && (
@@ -175,7 +188,7 @@ export function OldLessonLayoutFull({
             <div className="flex-1">
               {previousLesson && (
                 <Link
-                  href={`/cursos/${courseSlug}/${previousLesson.slug}`}
+                  href={`/cursos/${courseSlug}/modulos/${previousLesson.module.slug}/lecciones/${previousLesson.slug}`}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-white group"
                 >
                   <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,7 +205,7 @@ export function OldLessonLayoutFull({
             <div className="flex-1 flex justify-end">
               {nextLesson && (
                 <Link
-                  href={`/cursos/${courseSlug}/${nextLesson.slug}`}
+                  href={`/cursos/${courseSlug}/modulos/${nextLesson.module.slug}/lecciones/${nextLesson.slug}`}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] hover:shadow-lg hover:shadow-[#ff6b35]/20 rounded-lg transition-all text-white group"
                 >
                   <div className="text-right">

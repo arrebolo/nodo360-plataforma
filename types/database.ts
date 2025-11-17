@@ -80,10 +80,12 @@ export interface Module {
   id: string
   course_id: string
   title: string
+  slug: string
   description: string | null
   order_index: number
   total_lessons: number
   total_duration_minutes: number
+  requires_quiz: boolean
   created_at: string
   updated_at: string
 }
@@ -399,16 +401,73 @@ export interface LessonProgress {
 }
 
 /**
+ * Quiz Questions Table
+ * Stores quiz questions for module assessments
+ */
+export interface QuizQuestion {
+  id: string
+  module_id: string
+  question: string
+  explanation: string | null
+  options: string[] // JSON array of options
+  correct_answer: number // 0-based index
+  order_index: number
+  difficulty: 'easy' | 'medium' | 'hard'
+  points: number
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Quiz Attempts Table
+ * Stores user quiz attempts and scores
+ */
+export interface QuizAttempt {
+  id: string
+  user_id: string
+  module_id: string
+  score: number // Percentage 0-100
+  total_questions: number
+  correct_answers: number
+  passed: boolean // true if score >= 70%
+  answers: QuizAnswer[] // JSON array
+  time_spent_seconds: number | null
+  completed_at: string
+  created_at: string
+}
+
+/**
+ * Quiz Answer Structure (stored in QuizAttempt.answers)
+ */
+export interface QuizAnswer {
+  question_id: string
+  selected_answer: number
+  correct: boolean
+}
+
+/**
  * Certificates Table
- * Certificates earned by completing courses
+ * Certificates earned by completing modules or courses
  */
 export interface Certificate {
   id: string
   user_id: string
   course_id: string
-  issued_at: string
+  module_id: string | null
+  type: 'module' | 'course'
   certificate_number: string
+  title: string
+  description: string | null
   certificate_url: string | null
+  certificate_hash: string | null
+  nft_token_id: string | null
+  nft_contract_address: string | null
+  nft_chain: string | null
+  nft_tx_hash: string | null
+  verification_url: string | null
+  qr_code_url: string | null
+  issued_at: string
+  expires_at: string | null
 }
 
 /**
@@ -497,6 +556,30 @@ export interface CertificateWithCourse extends Certificate {
 }
 
 /**
+ * Certificate with Module and Course Details
+ */
+export interface CertificateWithDetails extends Certificate {
+  course: Pick<Course, 'id' | 'title' | 'slug' | 'thumbnail_url'>
+  module?: Pick<Module, 'id' | 'title' | 'order_index'>
+  user: Pick<User, 'id' | 'full_name' | 'email'>
+}
+
+/**
+ * Quiz Attempt with Questions
+ */
+export interface QuizAttemptWithQuestions extends QuizAttempt {
+  questions: QuizQuestion[]
+}
+
+/**
+ * Module with Quiz Info
+ */
+export interface ModuleWithQuiz extends Module {
+  quiz_questions: QuizQuestion[]
+  user_best_attempt?: QuizAttempt | null
+}
+
+/**
  * Achievement Definition
  * Metadata for what each achievement means
  */
@@ -529,6 +612,8 @@ export type InsertUserProfile = Omit<
   UserProfile,
   'id' | 'created_at' | 'updated_at'
 >
+export type InsertQuizQuestion = Omit<QuizQuestion, 'id' | 'created_at' | 'updated_at'>
+export type InsertQuizAttempt = Omit<QuizAttempt, 'id' | 'created_at'>
 
 /**
  * Example usage:

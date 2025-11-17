@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getCourseBySlug } from '@/lib/db/courses-queries'
-import { LessonList } from '@/components/course'
+import { ModuleListEnhanced } from '@/components/course'
 import type { Metadata } from 'next'
 
 // Configuración de Next.js para rutas dinámicas
@@ -9,12 +9,12 @@ export const dynamic = 'force-dynamic' // Genera bajo demanda
 export const dynamicParams = true // Permite slugs no pre-generados
 
 interface CoursePageProps {
-  params: { slug: string }
+  params: { courseSlug: string }
 }
 
 export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const course = await getCourseBySlug(resolvedParams.slug)
+  const course = await getCourseBySlug(resolvedParams.courseSlug)
 
   if (!course) {
     return {
@@ -31,12 +31,12 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 export default async function CoursePage({ params }: CoursePageProps) {
   const resolvedParams = await params
 
-  console.log('🚀 [CoursePage] Renderizando curso:', resolvedParams.slug)
+  console.log('🚀 [CoursePage] Renderizando curso:', resolvedParams.courseSlug)
 
-  const course = await getCourseBySlug(resolvedParams.slug)
+  const course = await getCourseBySlug(resolvedParams.courseSlug)
 
   if (!course) {
-    console.log('❌ [CoursePage] Curso no encontrado:', resolvedParams.slug)
+    console.log('❌ [CoursePage] Curso no encontrado:', resolvedParams.courseSlug)
     notFound()
   }
 
@@ -146,7 +146,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               {/* CTA Button */}
               {sortedModules.length > 0 && sortedModules[0].lessons && sortedModules[0].lessons.length > 0 && (
                 <Link
-                  href={`/cursos/${course.slug}/${sortedModules[0].lessons[0].slug}`}
+                  href={`/cursos/${course.slug}/modulos/${sortedModules[0].slug}/lecciones/${sortedModules[0].lessons[0].slug}`}
                   className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-medium rounded-lg hover:shadow-lg hover:shadow-[#ff6b35]/20 transition-all"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,7 +199,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
           )}
 
-          <LessonList
+          <ModuleListEnhanced
             courseSlug={course.slug}
             modules={sortedModules}
             isPremium={course.is_premium || false}

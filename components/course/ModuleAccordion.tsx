@@ -54,7 +54,10 @@ export function ModuleAccordion({
     }
 
     // Navegar a la lección
-    router.push(`/cursos/${course.slug}/${lesson.slug}`)
+    const module = course.modules.find(m => m.id === moduleId)
+    if (module) {
+      router.push(`/cursos/${course.slug}/modulos/${module.slug}/lecciones/${lesson.slug}`)
+    }
   }
 
   const getLessonIcon = (state: LessonState, isActive: boolean) => {

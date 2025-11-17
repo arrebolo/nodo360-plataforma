@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import type { Course } from '@/types/database'
 import {
@@ -88,12 +89,12 @@ export default async function HomePage() {
           {/* CTA */}
           {freeCourses.length > 0 && (
             <div className="mt-12 text-center">
-              <a
-                href="/cursos"
+              <Link
+                href="/cursos?filter=free"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-semibold hover:border-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
               >
-                Ver Todos los Cursos Gratis
-              </a>
+                Explorar Cursos Gratis →
+              </Link>
             </div>
           )}
         </div>
@@ -146,12 +147,12 @@ export default async function HomePage() {
           {/* CTA */}
           {premiumCourses.length > 0 && (
             <div className="mt-12 text-center">
-              <a
+              <Link
                 href="/cursos?filter=premium"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#FFD700] to-[#FFA500] rounded-xl text-black font-semibold hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all duration-300 hover:scale-105"
               >
-                Ver Todos los Cursos Premium
-              </a>
+                Ver Cursos Premium ✨ →
+              </Link>
             </div>
           )}
         </div>
@@ -184,18 +185,18 @@ export default async function HomePage() {
                 Únete a miles de estudiantes que ya están construyendo el futuro descentralizado
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a
-                  href="#cursos-gratis"
+                <Link
+                  href="/cursos?filter=free"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
                 >
-                  Comenzar Gratis
-                </a>
-                <a
-                  href="#comunidad"
+                  Explorar Cursos Gratis →
+                </Link>
+                <Link
+                  href="/comunidad"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-semibold hover:border-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
                 >
-                  Unirse a la Comunidad
-                </a>
+                  Unirse a la Comunidad →
+                </Link>
               </div>
             </div>
           </div>
