@@ -1,188 +1,188 @@
-# CLAUDE.md - Nodo360 Platform Documentation
+# CLAUDE.md - Documentación Plataforma Nodo360
 
-> **Last Updated**: 2025-11-17
-> **Project**: nodo360-plataforma
-> **Purpose**: Comprehensive guide for AI assistants working on the Nodo360 educational platform
-
----
-
-## Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [Architecture & Tech Stack](#architecture--tech-stack)
-3. [Codebase Structure](#codebase-structure)
-4. [Database Schema & Types](#database-schema--types)
-5. [Key Conventions & Patterns](#key-conventions--patterns)
-6. [Development Workflow](#development-workflow)
-7. [Critical Rules for AI Assistants](#critical-rules-for-ai-assistants)
-8. [Common Tasks & Examples](#common-tasks--examples)
-9. [Troubleshooting](#troubleshooting)
+> **Última Actualización**: 2025-11-17
+> **Proyecto**: nodo360-plataforma
+> **Propósito**: Guía completa para asistentes de IA trabajando en la plataforma educativa Nodo360
 
 ---
 
-## Project Overview
+## Tabla de Contenidos
 
-**Nodo360** is a Next.js-based educational platform focused on Bitcoin, blockchain, and cryptocurrency education. The platform provides:
-
-- **Course Management**: Structured courses with modules and lessons
-- **Video Content**: Integration with video platforms for educational content
-- **User Progress Tracking**: Track lesson completion and watch time
-- **Premium Content**: Support for both free and premium courses/lessons
-- **Community Features**: Newsletter, mentorship requests, and user engagement
-
-### Key Features
-
-- Server-side rendering with Next.js 16
-- Type-safe database queries with Supabase
-- Responsive UI with Tailwind CSS v4
-- User authentication and authorization
-- Progress tracking and bookmarking
-- Search functionality
-- SEO optimization with structured data
+1. [Visión General del Proyecto](#visión-general-del-proyecto)
+2. [Arquitectura y Stack Tecnológico](#arquitectura-y-stack-tecnológico)
+3. [Estructura del Código](#estructura-del-código)
+4. [Esquema de Base de Datos y Tipos](#esquema-de-base-de-datos-y-tipos)
+5. [Convenciones y Patrones Clave](#convenciones-y-patrones-clave)
+6. [Flujo de Desarrollo](#flujo-de-desarrollo)
+7. [Reglas Críticas para Asistentes IA](#reglas-críticas-para-asistentes-ia)
+8. [Tareas Comunes y Ejemplos](#tareas-comunes-y-ejemplos)
+9. [Solución de Problemas](#solución-de-problemas)
 
 ---
 
-## Architecture & Tech Stack
+## Visión General del Proyecto
+
+**Nodo360** es una plataforma educativa basada en Next.js enfocada en educación sobre Bitcoin, blockchain y criptomonedas. La plataforma proporciona:
+
+- **Gestión de Cursos**: Cursos estructurados con módulos y lecciones
+- **Contenido en Video**: Integración con plataformas de video para contenido educativo
+- **Seguimiento de Progreso del Usuario**: Rastrea el completado de lecciones y tiempo de visualización
+- **Contenido Premium**: Soporte para cursos/lecciones gratuitos y premium
+- **Funcionalidades de Comunidad**: Newsletter, solicitudes de mentoría y engagement de usuarios
+
+### Características Principales
+
+- Renderizado del lado del servidor con Next.js 16
+- Consultas a base de datos con tipado seguro usando Supabase
+- UI responsiva con Tailwind CSS v4
+- Autenticación y autorización de usuarios
+- Seguimiento de progreso y marcadores
+- Funcionalidad de búsqueda
+- Optimización SEO con datos estructurados
+
+---
+
+## Arquitectura y Stack Tecnológico
 
 ### Frontend
 
 - **Framework**: Next.js 16 (App Router)
 - **React**: v19.2.0
 - **TypeScript**: v5
-- **Styling**: Tailwind CSS v4
-- **Icons**: Lucide React
+- **Estilos**: Tailwind CSS v4
+- **Iconos**: Lucide React
 
 ### Backend
 
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
+- **Base de Datos**: Supabase (PostgreSQL)
+- **Autenticación**: Supabase Auth
 - **API**: Next.js API Routes
 - **ORM**: Supabase Client (@supabase/supabase-js)
 
-### Configuration
+### Configuración
 
-- **Path Aliases**: `@/*` maps to project root
-- **TypeScript Config**: Strict mode enabled
-- **ESLint**: Next.js recommended config
+- **Alias de Rutas**: `@/*` mapea a la raíz del proyecto
+- **Config TypeScript**: Modo estricto habilitado
+- **ESLint**: Configuración recomendada de Next.js
 
-### Project Structure Pattern
+### Patrón de Estructura del Proyecto
 
 ```
 Next.js App Router + Supabase
-├── Server Components (default)
-│   ├── Fetch data from Supabase
-│   └── Render on server
-└── Client Components ('use client')
-    ├── Interactive UI
-    └── Client-side state
+├── Componentes de Servidor (por defecto)
+│   ├── Obtiene datos de Supabase
+│   └── Renderiza en el servidor
+└── Componentes de Cliente ('use client')
+    ├── UI interactiva
+    └── Estado del lado del cliente
 ```
 
 ---
 
-## Codebase Structure
+## Estructura del Código
 
 ```
 /nodo360-plataforma
-├── app/                          # Next.js App Router pages
-│   ├── page.tsx                  # Home page
-│   ├── layout.tsx                # Root layout
-│   ├── cursos/                   # Courses section
-│   │   ├── page.tsx              # Course listing
-│   │   └── [slug]/               # Dynamic course pages
-│   │       ├── page.tsx          # Course detail page
-│   │       └── [lessonSlug]/     # Dynamic lesson pages
-│   │           └── page.tsx      # Lesson player page
-│   ├── dashboard/                # User dashboard
-│   ├── comunidad/                # Community page
-│   ├── mentoria/                 # Mentorship page
-│   ├── proyectos/                # Projects page
-│   └── api/                      # API routes
-│       ├── mentorship/           # Mentorship API
-│       └── newsletter/           # Newsletter API
+├── app/                          # Páginas Next.js App Router
+│   ├── page.tsx                  # Página de inicio
+│   ├── layout.tsx                # Layout raíz
+│   ├── cursos/                   # Sección de cursos
+│   │   ├── page.tsx              # Listado de cursos
+│   │   └── [slug]/               # Páginas dinámicas de cursos
+│   │       ├── page.tsx          # Página de detalle del curso
+│   │       └── [lessonSlug]/     # Páginas dinámicas de lecciones
+│   │           └── page.tsx      # Página del reproductor de lección
+│   ├── dashboard/                # Panel de usuario
+│   ├── comunidad/                # Página de comunidad
+│   ├── mentoria/                 # Página de mentoría
+│   ├── proyectos/                # Página de proyectos
+│   └── api/                      # Rutas de API
+│       ├── mentorship/           # API de mentoría
+│       └── newsletter/           # API de newsletter
 │
-├── components/                   # React components
-│   ├── common/                   # Shared components
-│   ├── navigation/               # Navigation components
-│   ├── course/                   # Course-related components
-│   ├── lesson/                   # Lesson-related components
-│   │   └── premium/              # Premium lesson components
-│   ├── home/                     # Home page components
-│   └── search/                   # Search components
+├── components/                   # Componentes React
+│   ├── common/                   # Componentes compartidos
+│   ├── navigation/               # Componentes de navegación
+│   ├── course/                   # Componentes relacionados con cursos
+│   ├── lesson/                   # Componentes relacionados con lecciones
+│   │   └── premium/              # Componentes de lecciones premium
+│   ├── home/                     # Componentes de la página de inicio
+│   └── search/                   # Componentes de búsqueda
 │
-├── lib/                          # Utility libraries
-│   ├── supabase/                 # Supabase clients and helpers
-│   │   ├── client.ts             # Client-side Supabase client
-│   │   ├── server.ts             # Server-side Supabase client
-│   │   ├── types.ts              # Supabase generated types
-│   │   ├── helpers.ts            # Supabase helper functions
+├── lib/                          # Bibliotecas de utilidades
+│   ├── supabase/                 # Clientes y helpers de Supabase
+│   │   ├── client.ts             # Cliente Supabase del lado del cliente
+│   │   ├── server.ts             # Cliente Supabase del lado del servidor
+│   │   ├── types.ts              # Tipos generados de Supabase
+│   │   ├── helpers.ts            # Funciones helper de Supabase
 │   │   └── index.ts              # Exports
-│   ├── db/                       # Database queries
-│   │   ├── courses-queries.ts    # Course/lesson queries
-│   │   └── queries.ts            # Other queries
-│   ├── utils/                    # Utility functions
-│   │   └── logger.ts             # Logging utility
-│   ├── analytics.ts              # Analytics tracking
-│   ├── brand-config.ts           # Brand configuration
-│   ├── community-config.ts       # Community settings
-│   ├── filter-utils.ts           # Course filtering
-│   ├── lesson-helpers.ts         # Lesson utility functions
-│   ├── progress-manager.ts       # Progress tracking
-│   ├── search-utils.ts           # Search utilities
-│   └── structured-data.ts        # SEO structured data
+│   ├── db/                       # Consultas a base de datos
+│   │   ├── courses-queries.ts    # Consultas de cursos/lecciones
+│   │   └── queries.ts            # Otras consultas
+│   ├── utils/                    # Funciones de utilidad
+│   │   └── logger.ts             # Utilidad de logging
+│   ├── analytics.ts              # Seguimiento de analytics
+│   ├── brand-config.ts           # Configuración de marca
+│   ├── community-config.ts       # Configuración de comunidad
+│   ├── filter-utils.ts           # Filtrado de cursos
+│   ├── lesson-helpers.ts         # Funciones de utilidad para lecciones
+│   ├── progress-manager.ts       # Seguimiento de progreso
+│   ├── search-utils.ts           # Utilidades de búsqueda
+│   └── structured-data.ts        # Datos estructurados para SEO
 │
-├── types/                        # TypeScript type definitions
-│   ├── database.ts               # Database types (PRIMARY)
-│   └── lesson-content.ts         # Lesson content types
+├── types/                        # Definiciones de tipos TypeScript
+│   ├── database.ts               # Tipos de base de datos (PRINCIPAL)
+│   └── lesson-content.ts         # Tipos de contenido de lecciones
 │
-├── supabase/                     # Supabase configuration
-│   └── schema.sql                # Database schema (504 lines)
+├── supabase/                     # Configuración de Supabase
+│   └── schema.sql                # Esquema de base de datos (504 líneas)
 │
 ├── hooks/                        # React hooks
 │
-├── data/                         # Static data files
+├── data/                         # Archivos de datos estáticos
 │
-├── backup/                       # Backup files
-│   └── cursos-old/               # Legacy course code
+├── backup/                       # Archivos de respaldo
+│   └── cursos-old/               # Código legacy de cursos
 │
-├── src/                          # Additional source code
-│   ├── core/                     # Core functionality
-│   └── lib/                      # Additional libraries
-│       └── nodo360-resources/    # Resource management
+├── src/                          # Código fuente adicional
+│   ├── core/                     # Funcionalidad central
+│   └── lib/                      # Bibliotecas adicionales
+│       └── nodo360-resources/    # Gestión de recursos
 │
-├── scripts/                      # Build and migration scripts
-│   └── migrate-courses.ts        # Course migration script
+├── scripts/                      # Scripts de build y migración
+│   └── migrate-courses.ts        # Script de migración de cursos
 │
-├── .claude/                      # Claude Code configuration
+├── .claude/                      # Configuración de Claude Code
 │
-├── next.config.ts                # Next.js configuration
-├── tsconfig.json                 # TypeScript configuration
-├── tailwind.config.js            # Tailwind CSS configuration
-├── package.json                  # Dependencies and scripts
+├── next.config.ts                # Configuración de Next.js
+├── tsconfig.json                 # Configuración de TypeScript
+├── tailwind.config.js            # Configuración de Tailwind CSS
+├── package.json                  # Dependencias y scripts
 │
-└── Documentation
-    ├── CLAUDE.md                 # This file
-    ├── README.md                 # Project README
-    ├── SCHEMA_APPLICATION.md     # Schema setup guide
+└── Documentación
+    ├── CLAUDE.md                 # Este archivo
+    ├── README.md                 # README del proyecto
+    ├── SCHEMA_APPLICATION.md     # Guía de configuración del esquema
     └── LOGO-IMPLEMENTATION-REPORT.md
 ```
 
 ---
 
-## Database Schema & Types
+## Esquema de Base de Datos y Tipos
 
-### Database Tables
+### Tablas de Base de Datos
 
-The platform uses **7 core tables**:
+La plataforma utiliza **7 tablas principales**:
 
-1. **`users`** - User profiles (extends auth.users)
-2. **`courses`** - Course information
-3. **`modules`** - Course modules/sections
-4. **`lessons`** - Individual lessons
-5. **`user_progress`** - Lesson completion tracking
-6. **`bookmarks`** - User bookmarks
-7. **`notes`** - User notes with timestamps
+1. **`users`** - Perfiles de usuario (extiende auth.users)
+2. **`courses`** - Información de cursos
+3. **`modules`** - Módulos/secciones de cursos
+4. **`lessons`** - Lecciones individuales
+5. **`user_progress`** - Seguimiento de completado de lecciones
+6. **`bookmarks`** - Marcadores de usuario
+7. **`notes`** - Notas de usuario con timestamps
 
-### Key Relationships
+### Relaciones Clave
 
 ```
 users (1) ──┬── (many) user_progress
@@ -199,14 +199,14 @@ lessons (1) ──┬── (many) user_progress
               └── (many) notes
 ```
 
-### Type System
+### Sistema de Tipos
 
-All database types are defined in **`types/database.ts`**. This is the **single source of truth** for types.
+Todos los tipos de base de datos están definidos en **`types/database.ts`**. Esta es la **única fuente de verdad** para los tipos.
 
-#### Core Types
+#### Tipos Básicos
 
 ```typescript
-// Basic entity types
+// Tipos de entidades básicas
 type Course
 type Module
 type Lesson
@@ -222,47 +222,47 @@ type CourseStatus = 'draft' | 'published' | 'archived'
 type CourseCategory = 'bitcoin' | 'blockchain' | 'defi' | 'nfts' | 'development' | 'trading' | 'other'
 ```
 
-#### Joined Types
+#### Tipos con Relaciones
 
 ```typescript
-// With relationships
-type CourseWithInstructor       // Course + instructor details
-type CourseWithModules          // Course + modules + lessons (full tree)
-type LessonWithRelations        // Lesson + module + course (CRITICAL - see below)
-type LessonWithDetails          // Lesson + partial module/course
+// Con relaciones
+type CourseWithInstructor       // Course + detalles del instructor
+type CourseWithModules          // Course + modules + lessons (árbol completo)
+type LessonWithRelations        // Lesson + module + course (CRÍTICO - ver abajo)
+type LessonWithDetails          // Lesson + module/course parcial
 ```
 
-#### Insert/Update Types
+#### Tipos Insert/Update
 
 ```typescript
-type InsertCourse   // Omits: id, created_at, updated_at, published_at
-type InsertModule   // Omits: id, created_at, updated_at
-type InsertLesson   // Omits: id, created_at, updated_at
+type InsertCourse   // Omite: id, created_at, updated_at, published_at
+type InsertModule   // Omite: id, created_at, updated_at
+type InsertLesson   // Omite: id, created_at, updated_at
 type UpdateCourse   // Partial<Course> & { id: string }
 // etc.
 ```
 
-### CRITICAL: Data Structure Convention
+### CRÍTICO: Convención de Estructura de Datos
 
-**ALWAYS use singular relationship names:**
+**SIEMPRE usar nombres de relaciones en singular:**
 
 ```typescript
-// ✅ CORRECT - Use this structure ALWAYS
+// ✅ CORRECTO - Usar esta estructura SIEMPRE
 lesson.module.course  // Singular
 
-// ❌ WRONG - Never use this
+// ❌ INCORRECTO - Nunca usar esto
 lesson.modules.courses  // Plural
 ```
 
-This convention is enforced in `lib/db/courses-queries.ts` and must be maintained across the entire codebase.
+Esta convención se aplica en `lib/db/courses-queries.ts` y debe mantenerse en todo el código base.
 
 ---
 
-## Key Conventions & Patterns
+## Convenciones y Patrones Clave
 
-### 1. Data Fetching Pattern
+### 1. Patrón de Obtención de Datos
 
-**Server Components (Preferred)**
+**Componentes de Servidor (Preferido)**
 
 ```typescript
 // app/cursos/[slug]/page.tsx
@@ -279,7 +279,7 @@ export default async function CoursePage({ params }: { params: { slug: string } 
 }
 ```
 
-**Client Components (When Needed)**
+**Componentes de Cliente (Cuando sea Necesario)**
 
 ```typescript
 'use client'
@@ -303,32 +303,32 @@ export function ClientComponent() {
 }
 ```
 
-### 2. Database Query Pattern
+### 2. Patrón de Consultas a Base de Datos
 
-**Location**: All queries in `lib/db/courses-queries.ts`
+**Ubicación**: Todas las consultas en `lib/db/courses-queries.ts`
 
-**Pattern**: Separate queries to ensure data structure consistency
+**Patrón**: Consultas separadas para asegurar consistencia en la estructura de datos
 
 ```typescript
-// GOOD: Separate queries, manual joins
+// BUENO: Consultas separadas, joins manuales
 export async function getLessonBySlug(
   courseSlug: string,
   lessonSlug: string
 ): Promise<LessonWithRelations | null> {
-  // STEP 1: Get course
+  // PASO 1: Obtener el curso
   const { data: course } = await supabase
     .from('courses')
     .select('id, title, slug, description, is_premium')
     .eq('slug', courseSlug)
     .single()
 
-  // STEP 2: Get modules
+  // PASO 2: Obtener los módulos
   const { data: modules } = await supabase
     .from('modules')
     .select('*')
     .eq('course_id', course.id)
 
-  // STEP 3: Get lesson (filtered by module IDs)
+  // PASO 3: Obtener la lección (filtrada por IDs de módulo)
   const moduleIds = modules.map(m => m.id)
   const { data: lesson } = await supabase
     .from('lessons')
@@ -337,14 +337,14 @@ export async function getLessonBySlug(
     .in('module_id', moduleIds)
     .single()
 
-  // STEP 4: Get full module
+  // PASO 4: Obtener el módulo completo
   const { data: module } = await supabase
     .from('modules')
     .select('*')
     .eq('id', lesson.module_id)
     .single()
 
-  // STEP 5: Return with consistent structure
+  // PASO 5: Retornar con estructura consistente
   return {
     ...lesson,
     module: {
@@ -355,82 +355,82 @@ export async function getLessonBySlug(
 }
 ```
 
-**Why this pattern?**
-- Ensures `lesson.module.course` (singular) structure
-- Filters lessons by course modules to prevent cross-course duplicates
-- Provides full control over returned data shape
+**¿Por qué este patrón?**
+- Asegura la estructura `lesson.module.course` (singular)
+- Filtra lecciones por módulos del curso para prevenir duplicados entre cursos
+- Proporciona control total sobre la forma de los datos retornados
 
-### 3. Logging Convention
+### 3. Convención de Logging
 
 ```typescript
 import { logger } from '@/lib/utils/logger'
 
-console.log('🔍 [functionName] Starting operation:', { param1, param2 })
-console.log('✅ [functionName] Success:', result)
+console.log('🔍 [functionName] Iniciando operación:', { param1, param2 })
+console.log('✅ [functionName] Éxito:', result)
 console.error('❌ [functionName] Error:', error)
 logger.error('[functionName] Error:', error)
 ```
 
-**Emoji Convention**:
-- 🔍 - Starting operation
-- ✅ - Success
+**Convención de Emojis**:
+- 🔍 - Iniciando operación
+- ✅ - Éxito
 - ❌ - Error
 - ℹ️ - Info
-- ⚠️ - Warning
+- ⚠️ - Advertencia
 
-### 4. File Naming Convention
+### 4. Convención de Nombres de Archivos
 
-- **Pages**: `page.tsx` (Next.js convention)
-- **Layouts**: `layout.tsx` (Next.js convention)
-- **Components**: `ComponentName.tsx` (PascalCase)
-- **Utilities**: `kebab-case.ts`
-- **Types**: `database.ts`, `lesson-content.ts`
+- **Pages**: `page.tsx` (convención Next.js)
+- **Layouts**: `layout.tsx` (convención Next.js)
+- **Componentes**: `ComponentName.tsx` (PascalCase)
+- **Utilidades**: `kebab-case.ts`
+- **Tipos**: `database.ts`, `lesson-content.ts`
 - **Queries**: `*-queries.ts`
 
-### 5. Import Alias Pattern
+### 5. Patrón de Alias de Importación
 
-Always use the `@/` alias for imports:
+Siempre usar el alias `@/` para importaciones:
 
 ```typescript
-// ✅ CORRECT
+// ✅ CORRECTO
 import { Course } from '@/types/database'
 import { getCourseBySlug } from '@/lib/db/courses-queries'
 import { createClient } from '@/lib/supabase/server'
 
-// ❌ WRONG
+// ❌ INCORRECTO
 import { Course } from '../../../types/database'
 ```
 
-### 6. Component Structure Pattern
+### 6. Patrón de Estructura de Componentes
 
 ```typescript
-// 1. Imports
+// 1. Importaciones
 import { type ComponentProps } from 'react'
 import { type Course } from '@/types/database'
 
-// 2. Type definitions
+// 2. Definiciones de tipos
 interface CourseCardProps {
   course: Course
   onClick?: () => void
 }
 
-// 3. Component
+// 3. Componente
 export function CourseCard({ course, onClick }: CourseCardProps) {
   return (
     <div>
-      {/* Component JSX */}
+      {/* JSX del componente */}
     </div>
   )
 }
 
-// 4. Exports (if needed)
+// 4. Exports (si es necesario)
 export type { CourseCardProps }
 ```
 
-### 7. Error Handling Pattern
+### 7. Patrón de Manejo de Errores
 
 ```typescript
-// In Server Components
+// En Componentes de Servidor
 async function getData() {
   const supabase = await createClient()
 
@@ -441,13 +441,13 @@ async function getData() {
   if (error) {
     console.error('❌ [getData] Error:', error)
     logger.error('[getData] Error:', error)
-    throw error  // Let Next.js error boundary handle it
+    throw error  // Dejar que el error boundary de Next.js lo maneje
   }
 
   return data
 }
 
-// In API Routes
+// En Rutas de API
 export async function GET(request: Request) {
   try {
     const data = await getData()
@@ -455,7 +455,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('❌ [API] Error:', error)
     return Response.json(
-      { error: 'Failed to fetch data' },
+      { error: 'Error al obtener datos' },
       { status: 500 }
     )
   }
@@ -464,33 +464,33 @@ export async function GET(request: Request) {
 
 ---
 
-## Development Workflow
+## Flujo de Desarrollo
 
-### Getting Started
+### Inicio Rápido
 
 ```bash
-# Install dependencies
+# Instalar dependencias
 npm install
 
-# Run development server
+# Ejecutar servidor de desarrollo
 npm run dev
 
-# Build for production
+# Build para producción
 npm run build
 
-# Start production server
+# Iniciar servidor de producción
 npm start
 
-# Lint code
+# Lint del código
 npm run lint
 
-# Run migration script
+# Ejecutar script de migración
 npm run migrate-courses
 ```
 
-### Environment Setup
+### Configuración del Entorno
 
-Required environment variables in `.env.local`:
+Variables de entorno requeridas en `.env.local`:
 
 ```bash
 # Supabase
@@ -502,63 +502,63 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-### Git Workflow
+### Flujo de Git
 
-**Branch Naming**:
-- Feature branches: `claude/claude-md-{session-id}`
-- All development on feature branches
-- Never push directly to main
+**Nombres de Ramas**:
+- Ramas de features: `claude/claude-md-{session-id}`
+- Todo el desarrollo en ramas de features
+- Nunca hacer push directamente a main
 
-**Commit Convention**:
+**Convención de Commits**:
 ```bash
-# Examples
-feat: add user dashboard
-fix: resolve lesson navigation bug
-refactor: simplify course query structure
-docs: update CLAUDE.md
+# Ejemplos
+feat: agregar dashboard de usuario
+fix: resolver bug de navegación de lecciones
+refactor: simplificar estructura de consultas de cursos
+docs: actualizar CLAUDE.md
 ```
 
-### Database Changes
+### Cambios en la Base de Datos
 
-1. **Schema changes**: Update `supabase/schema.sql`
-2. **Type changes**: Update `types/database.ts`
-3. **Query changes**: Update `lib/db/courses-queries.ts`
-4. **Test**: Verify data structure consistency
+1. **Cambios en el schema**: Actualizar `supabase/schema.sql`
+2. **Cambios en tipos**: Actualizar `types/database.ts`
+3. **Cambios en queries**: Actualizar `lib/db/courses-queries.ts`
+4. **Probar**: Verificar consistencia de estructura de datos
 
 ---
 
-## Critical Rules for AI Assistants
+## Reglas Críticas para Asistentes IA
 
-### ⚠️ ALWAYS
+### ⚠️ SIEMPRE
 
-1. **Use singular relationship names**: `lesson.module.course` (never plural)
-2. **Read files before editing**: Always use Read tool before Edit/Write
-3. **Follow type definitions**: Use types from `types/database.ts`
-4. **Use path aliases**: Import with `@/` prefix
-5. **Log operations**: Use emoji logging convention
-6. **Check data structure**: Verify `lesson.module.course` structure in queries
-7. **Preserve TypeScript strict mode**: Maintain type safety
-8. **Use server components**: Prefer server components for data fetching
-9. **Handle errors properly**: Log and throw/return appropriate errors
-10. **Test data flow**: Verify end-to-end data structure consistency
+1. **Usar nombres de relaciones en singular**: `lesson.module.course` (nunca plural)
+2. **Leer archivos antes de editar**: Siempre usar herramienta Read antes de Edit/Write
+3. **Seguir definiciones de tipos**: Usar tipos de `types/database.ts`
+4. **Usar alias de rutas**: Importar con prefijo `@/`
+5. **Registrar operaciones**: Usar convención de logging con emojis
+6. **Verificar estructura de datos**: Verificar estructura `lesson.module.course` en consultas
+7. **Preservar modo estricto de TypeScript**: Mantener seguridad de tipos
+8. **Usar componentes de servidor**: Preferir componentes de servidor para obtención de datos
+9. **Manejar errores apropiadamente**: Registrar y lanzar/retornar errores apropiados
+10. **Probar flujo de datos**: Verificar consistencia de estructura de datos de extremo a extremo
 
-### ⚠️ NEVER
+### ⚠️ NUNCA
 
-1. **Never use plural relationships**: `lessons.modules.courses` is WRONG
-2. **Never skip file reads**: Always read before editing
-3. **Never ignore types**: All database operations must be typed
-4. **Never commit without testing**: Verify changes don't break structure
-5. **Never mix data structures**: Maintain consistency across codebase
-6. **Never use relative imports**: Use `@/` alias instead
-7. **Never disable TypeScript checks**: Keep strict mode enabled
-8. **Never bypass Supabase clients**: Use provided client utilities
-9. **Never hardcode data**: Use database queries or configuration files
-10. **Never skip logging**: Always log operations for debugging
+1. **Nunca usar relaciones plurales**: `lessons.modules.courses` está MAL
+2. **Nunca saltarse lectura de archivos**: Siempre leer antes de editar
+3. **Nunca ignorar tipos**: Todas las operaciones de base de datos deben estar tipadas
+4. **Nunca hacer commit sin probar**: Verificar que los cambios no rompan la estructura
+5. **Nunca mezclar estructuras de datos**: Mantener consistencia en todo el código base
+6. **Nunca usar importaciones relativas**: Usar alias `@/` en su lugar
+7. **Nunca deshabilitar checks de TypeScript**: Mantener modo estricto habilitado
+8. **Nunca bypass de clientes Supabase**: Usar utilidades de cliente proporcionadas
+9. **Nunca hardcodear datos**: Usar consultas de base de datos o archivos de configuración
+10. **Nunca saltarse logging**: Siempre registrar operaciones para debugging
 
-### 🎯 Data Structure Rule (MOST CRITICAL)
+### 🎯 Regla de Estructura de Datos (MÁS CRÍTICO)
 
 ```typescript
-// ✅ ALWAYS use this structure
+// ✅ SIEMPRE usar esta estructura
 interface LessonWithRelations {
   ...lessonFields,
   module: {
@@ -569,45 +569,45 @@ interface LessonWithRelations {
   }
 }
 
-// Access pattern: lesson.module.course
-const courseTitle = lesson.module.course.title  // ✅ CORRECT
+// Patrón de acceso: lesson.module.course
+const courseTitle = lesson.module.course.title  // ✅ CORRECTO
 
-// ❌ NEVER use this
-const courseTitle = lesson.modules.courses.title  // ❌ WRONG - Will break everything
+// ❌ NUNCA usar esto
+const courseTitle = lesson.modules.courses.title  // ❌ MAL - Romperá todo
 ```
 
-**Why this matters:**
-- Recent refactoring established this as the standard
-- All components expect this structure
-- Mixing structures causes runtime errors
-- Queries are built to ensure this structure
+**Por qué esto importa:**
+- Una refactorización reciente estableció esto como el estándar
+- Todos los componentes esperan esta estructura
+- Mezclar estructuras causa errores en tiempo de ejecución
+- Las consultas están construidas para asegurar esta estructura
 
-### 🔍 Before Making Changes
+### 🔍 Antes de Hacer Cambios
 
 **Checklist**:
-- [ ] Read the file you're about to modify
-- [ ] Check `types/database.ts` for correct types
-- [ ] Review `lib/db/courses-queries.ts` for query patterns
-- [ ] Verify data structure matches `lesson.module.course` pattern
-- [ ] Test that changes don't break existing components
-- [ ] Add appropriate logging with emojis
-- [ ] Update types if schema changes
+- [ ] Leer el archivo que estás por modificar
+- [ ] Verificar `types/database.ts` para los tipos correctos
+- [ ] Revisar `lib/db/courses-queries.ts` para patrones de consultas
+- [ ] Verificar que la estructura de datos coincida con el patrón `lesson.module.course`
+- [ ] Probar que los cambios no rompan componentes existentes
+- [ ] Agregar logging apropiado con emojis
+- [ ] Actualizar tipos si el schema cambia
 
 ---
 
-## Common Tasks & Examples
+## Tareas Comunes y Ejemplos
 
-### Task 1: Create a New Database Query
+### Tarea 1: Crear una Nueva Consulta de Base de Datos
 
-**File**: `lib/db/courses-queries.ts`
+**Archivo**: `lib/db/courses-queries.ts`
 
 ```typescript
 /**
- * Get featured courses
- * @returns List of featured courses with instructor info
+ * Obtener cursos destacados
+ * @returns Lista de cursos destacados con info del instructor
  */
 export async function getFeaturedCourses(): Promise<CourseWithInstructor[]> {
-  console.log('🔍 [getFeaturedCourses] Fetching featured courses...')
+  console.log('🔍 [getFeaturedCourses] Obteniendo cursos destacados...')
 
   const supabase = await createClient()
 
@@ -622,7 +622,7 @@ export async function getFeaturedCourses(): Promise<CourseWithInstructor[]> {
       )
     `)
     .eq('status', 'published')
-    .eq('is_featured', true)  // Assuming this field exists
+    .eq('is_featured', true)  // Asumiendo que este campo existe
     .order('created_at', { ascending: false })
     .limit(6)
 
@@ -632,14 +632,14 @@ export async function getFeaturedCourses(): Promise<CourseWithInstructor[]> {
     throw error
   }
 
-  console.log(`✅ [getFeaturedCourses] ${data?.length || 0} courses found`)
+  console.log(`✅ [getFeaturedCourses] ${data?.length || 0} cursos encontrados`)
   return data || []
 }
 ```
 
-### Task 2: Create a New Page
+### Tarea 2: Crear una Nueva Página
 
-**File**: `app/featured/page.tsx`
+**Archivo**: `app/featured/page.tsx`
 
 ```typescript
 import { getFeaturedCourses } from '@/lib/db/courses-queries'
@@ -647,8 +647,8 @@ import { CourseCard } from '@/components/course/CourseCard'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Featured Courses - Nodo360',
-  description: 'Our most popular Bitcoin and blockchain courses',
+  title: 'Cursos Destacados - Nodo360',
+  description: 'Nuestros cursos más populares de Bitcoin y blockchain',
 }
 
 export default async function FeaturedPage() {
@@ -656,7 +656,7 @@ export default async function FeaturedPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">Featured Courses</h1>
+      <h1 className="text-4xl font-bold mb-8">Cursos Destacados</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.map((course) => (
@@ -668,12 +668,12 @@ export default async function FeaturedPage() {
 }
 ```
 
-### Task 3: Add a New Type
+### Tarea 3: Agregar un Nuevo Tipo
 
-**File**: `types/database.ts`
+**Archivo**: `types/database.ts`
 
 ```typescript
-// Add to the file
+// Agregar al archivo
 export interface Review {
   id: string
   user_id: string
@@ -691,10 +691,10 @@ export interface ReviewWithUser extends Review {
 export type InsertReview = Omit<Review, 'id' | 'created_at' | 'updated_at'>
 ```
 
-**File**: `supabase/schema.sql`
+**Archivo**: `supabase/schema.sql`
 
 ```sql
--- Add to schema.sql
+-- Agregar a schema.sql
 CREATE TABLE public.reviews (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
@@ -711,9 +711,9 @@ CREATE INDEX idx_reviews_course_id ON public.reviews(course_id);
 CREATE INDEX idx_reviews_user_id ON public.reviews(user_id);
 ```
 
-### Task 4: Create an API Endpoint
+### Tarea 4: Crear un Endpoint de API
 
-**File**: `app/api/reviews/route.ts`
+**Archivo**: `app/api/reviews/route.ts`
 
 ```typescript
 import { createClient } from '@/lib/supabase/server'
@@ -723,19 +723,19 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient()
 
-    // Get authenticated user
+    // Obtener usuario autenticado
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return Response.json(
-        { error: 'Unauthorized' } as ApiResponse,
+        { error: 'No autorizado' } as ApiResponse,
         { status: 401 }
       )
     }
 
-    // Parse request
+    // Parsear request
     const body: InsertReview = await request.json()
 
-    // Insert review
+    // Insertar review
     const { data, error } = await supabase
       .from('reviews')
       .insert({
@@ -748,27 +748,27 @@ export async function POST(request: Request) {
     if (error) {
       console.error('❌ [POST /api/reviews] Error:', error)
       return Response.json(
-        { error: 'Failed to create review' } as ApiResponse,
+        { error: 'Error al crear review' } as ApiResponse,
         { status: 500 }
       )
     }
 
-    console.log('✅ [POST /api/reviews] Review created:', data.id)
+    console.log('✅ [POST /api/reviews] Review creado:', data.id)
     return Response.json({ data } as ApiResponse)
 
   } catch (error) {
-    console.error('❌ [POST /api/reviews] Unexpected error:', error)
+    console.error('❌ [POST /api/reviews] Error inesperado:', error)
     return Response.json(
-      { error: 'Internal server error' } as ApiResponse,
+      { error: 'Error interno del servidor' } as ApiResponse,
       { status: 500 }
     )
   }
 }
 ```
 
-### Task 5: Update a Component to Use New Query
+### Tarea 5: Actualizar un Componente para Usar Nueva Consulta
 
-**File**: `components/course/CourseReviews.tsx`
+**Archivo**: `components/course/CourseReviews.tsx`
 
 ```typescript
 import { createClient } from '@/lib/supabase/server'
@@ -796,7 +796,7 @@ export async function CourseReviews({ courseId }: CourseReviewsProps) {
 
   if (error) {
     console.error('❌ [CourseReviews] Error:', error)
-    return <div>Failed to load reviews</div>
+    return <div>Error al cargar reviews</div>
   }
 
   const typedReviews = reviews as ReviewWithUser[]
@@ -821,17 +821,17 @@ export async function CourseReviews({ courseId }: CourseReviewsProps) {
 
 ---
 
-## Troubleshooting
+## Solución de Problemas
 
-### Problem: Wrong data structure returned
+### Problema: Estructura de datos incorrecta retornada
 
-**Symptom**: Getting `lesson.modules.courses` instead of `lesson.module.course`
+**Síntoma**: Obtener `lesson.modules.courses` en lugar de `lesson.module.course`
 
-**Solution**:
-1. Check the query in `lib/db/courses-queries.ts`
-2. Verify using separate queries pattern (not nested Supabase joins)
-3. Manually construct the return object with correct structure
-4. Example:
+**Solución**:
+1. Verificar la consulta en `lib/db/courses-queries.ts`
+2. Verificar uso del patrón de consultas separadas (no joins anidados de Supabase)
+3. Construir manualmente el objeto de retorno con la estructura correcta
+4. Ejemplo:
    ```typescript
    return {
      ...lesson,
@@ -842,77 +842,77 @@ export async function CourseReviews({ courseId }: CourseReviewsProps) {
    }
    ```
 
-### Problem: TypeScript errors on database queries
+### Problema: Errores de TypeScript en consultas de base de datos
 
-**Solution**:
-1. Check types in `types/database.ts`
-2. Verify Supabase query matches expected type
-3. Use type assertion if necessary: `data as CourseWithModules`
-4. Make sure to import types from `@/types/database`
+**Solución**:
+1. Verificar tipos en `types/database.ts`
+2. Verificar que la consulta de Supabase coincida con el tipo esperado
+3. Usar aserción de tipo si es necesario: `data as CourseWithModules`
+4. Asegurarse de importar tipos desde `@/types/database`
 
-### Problem: Lessons from wrong course appearing
+### Problema: Lecciones del curso incorrecto aparecen
 
-**Solution**:
-1. In `getLessonBySlug`, filter lessons by course's module IDs
-2. Never query lessons directly by slug without course context
-3. Use the pattern in `courses-queries.ts`:
+**Solución**:
+1. En `getLessonBySlug`, filtrar lecciones por IDs de módulos del curso
+2. Nunca consultar lecciones directamente por slug sin contexto de curso
+3. Usar el patrón en `courses-queries.ts`:
    ```typescript
    const moduleIds = modules.map(m => m.id)
    const { data: lesson } = await supabase
      .from('lessons')
      .eq('slug', lessonSlug)
-     .in('module_id', moduleIds)  // Filter by course modules
+     .in('module_id', moduleIds)  // Filtrar por módulos del curso
    ```
 
-### Problem: Supabase client errors
+### Problema: Errores de cliente Supabase
 
-**Solution**:
-1. Server components: `import { createClient } from '@/lib/supabase/server'`
-2. Client components: `import { createClient } from '@/lib/supabase/client'`
-3. Check environment variables in `.env.local`
-4. Verify Supabase project is active
+**Solución**:
+1. Componentes de servidor: `import { createClient } from '@/lib/supabase/server'`
+2. Componentes de cliente: `import { createClient } from '@/lib/supabase/client'`
+3. Verificar variables de entorno en `.env.local`
+4. Verificar que el proyecto de Supabase esté activo
 
-### Problem: Build errors
+### Problema: Errores de build
 
-**Solution**:
-1. Run `npm run build` to see detailed errors
-2. Check for:
-   - Missing return types on async functions
-   - Type mismatches in props
-   - Unused variables (remove or prefix with `_`)
-   - Missing await on async calls
-3. Fix TypeScript errors before committing
+**Solución**:
+1. Ejecutar `npm run build` para ver errores detallados
+2. Verificar:
+   - Tipos de retorno faltantes en funciones async
+   - Desajustes de tipos en props
+   - Variables no usadas (eliminar o prefijo con `_`)
+   - Falta de await en llamadas async
+3. Corregir errores de TypeScript antes de hacer commit
 
-### Problem: Missing data in queries
+### Problema: Datos faltantes en consultas
 
-**Solution**:
-1. Check console logs for query steps
-2. Verify database has the expected data
-3. Check RLS (Row Level Security) policies in Supabase
-4. Verify user is authenticated for protected routes
-5. Check query filters (eq, in, etc.)
+**Solución**:
+1. Verificar logs de consola para los pasos de consulta
+2. Verificar que la base de datos tenga los datos esperados
+3. Verificar políticas RLS (Row Level Security) en Supabase
+4. Verificar que el usuario esté autenticado para rutas protegidas
+5. Verificar filtros de consulta (eq, in, etc.)
 
 ---
 
-## Additional Resources
+## Recursos Adicionales
 
-### Documentation Files
+### Archivos de Documentación
 
-- **`README.md`**: Project overview and setup instructions
-- **`SCHEMA_APPLICATION.md`**: Detailed guide for applying database schema
-- **`LOGO-IMPLEMENTATION-REPORT.md`**: Logo implementation details
-- **`supabase/schema.sql`**: Complete database schema (504 lines)
+- **`README.md`**: Visión general del proyecto e instrucciones de configuración
+- **`SCHEMA_APPLICATION.md`**: Guía detallada para aplicar esquema de base de datos
+- **`LOGO-IMPLEMENTATION-REPORT.md`**: Detalles de implementación del logo
+- **`supabase/schema.sql`**: Esquema completo de base de datos (504 líneas)
 
-### Key Files to Reference
+### Archivos Clave para Referencias
 
-- **`types/database.ts`**: All type definitions (550 lines)
-- **`lib/db/courses-queries.ts`**: Query patterns (478 lines)
-- **`lib/supabase/server.ts`**: Server Supabase client
-- **`lib/supabase/client.ts`**: Client Supabase client
-- **`next.config.ts`**: Next.js configuration
-- **`tsconfig.json`**: TypeScript configuration
+- **`types/database.ts`**: Todas las definiciones de tipos (550 líneas)
+- **`lib/db/courses-queries.ts`**: Patrones de consulta (478 líneas)
+- **`lib/supabase/server.ts`**: Cliente Supabase de servidor
+- **`lib/supabase/client.ts`**: Cliente Supabase de cliente
+- **`next.config.ts`**: Configuración de Next.js
+- **`tsconfig.json`**: Configuración de TypeScript
 
-### External Documentation
+### Documentación Externa
 
 - **Next.js**: https://nextjs.org/docs
 - **Supabase**: https://supabase.com/docs
@@ -921,23 +921,23 @@ export async function CourseReviews({ courseId }: CourseReviewsProps) {
 
 ---
 
-## Quick Reference
+## Referencia Rápida
 
-### Most Used Commands
+### Comandos Más Usados
 
 ```bash
-npm run dev              # Start development server
-npm run build            # Build for production
-npm run lint             # Run ESLint
+npm run dev              # Iniciar servidor de desarrollo
+npm run build            # Build para producción
+npm run lint             # Ejecutar ESLint
 ```
 
-### Most Used Imports
+### Importaciones Más Usadas
 
 ```typescript
-// Types
+// Tipos
 import type { Course, CourseWithModules, LessonWithRelations } from '@/types/database'
 
-// Queries
+// Consultas
 import { getCourseBySlug, getLessonBySlug, getAllCourses } from '@/lib/db/courses-queries'
 
 // Supabase
@@ -949,33 +949,33 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 ```
 
-### Most Important Types
+### Tipos Más Importantes
 
 ```typescript
-LessonWithRelations  // lesson.module.course structure
-CourseWithModules    // Full course tree
-CourseWithInstructor // Course with instructor info
+LessonWithRelations  // estructura lesson.module.course
+CourseWithModules    // Árbol completo de curso
+CourseWithInstructor // Curso con info del instructor
 ```
 
 ---
 
-## Final Notes
+## Notas Finales
 
-This is a living document. Update it whenever:
-- Database schema changes
-- New patterns are established
-- New conventions are adopted
-- Critical bugs are discovered and fixed
-- New features require new workflows
+Este es un documento vivo. Actualizarlo cuando:
+- El esquema de base de datos cambie
+- Se establezcan nuevos patrones
+- Se adopten nuevas convenciones
+- Se descubran y corrijan bugs críticos
+- Nuevas funcionalidades requieran nuevos flujos de trabajo
 
-**Remember**: The goal is to maintain consistency, type safety, and the `lesson.module.course` data structure across the entire codebase.
+**Recordar**: El objetivo es mantener consistencia, seguridad de tipos, y la estructura de datos `lesson.module.course` en todo el código base.
 
-When in doubt:
-1. Check this file
-2. Review `types/database.ts`
-3. Follow patterns in `lib/db/courses-queries.ts`
-4. Test thoroughly before committing
+Cuando tengas dudas:
+1. Verifica este archivo
+2. Revisa `types/database.ts`
+3. Sigue los patrones en `lib/db/courses-queries.ts`
+4. Prueba exhaustivamente antes de hacer commit
 
 ---
 
-**Happy coding!** 🚀
+**¡Feliz codificación!** 🚀
