@@ -1,0 +1,6 @@
+export { UserNotes } from './UserNotes'
+export { Bookmarks } from './Bookmarks'
+export { CertificateProgress } from './CertificateProgress'
+export { DiscussionSection } from './DiscussionSection'
+export { AdvancedResources } from './AdvancedResources'
+export { PremiumLessonRenderer } from './PremiumLessonRenderer'

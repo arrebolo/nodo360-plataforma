@@ -2,7 +2,14 @@
 
 /* Nodo360 Custom Theme - Tailwind v4 */
 @theme inline {
-  /* Colores de Nodo360 */
+  /* Colores de Nodo360 - Nueva Paleta */
+  --color-nodo-bg: #2d3748;
+  --color-nodo-card: #374151;
+  --color-nodo-icon: #4b5563;
+  --color-bitcoin-orange: #F7931A;
+  --color-bitcoin-gold: #FDB931;
+
+  /* Colores legacy (mantener para compatibilidad) */
   --color-nodo-black: #000000;
   --color-nodo-dark: #0d1117;
   --color-nodo-border: #30363d;
@@ -83,4 +90,15 @@ html {
 
 .delay-700 {
   animation-delay: 700ms;
+}
+
+/* Animación de gradiente para fondo del dashboard */
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 15s ease infinite;
 }

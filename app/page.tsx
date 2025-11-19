@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import type { Course } from '@/types/database'
 import {
@@ -9,6 +10,7 @@ import {
   StatsSection,
   NewsletterSection
 } from '@/components/home'
+import { DashboardButton } from '@/components/navigation/DashboardButton'
 
 export const metadata = {
   title: 'Nodo360 - Aprende Bitcoin y Blockchain en Español',
@@ -58,6 +60,26 @@ async function getPremiumCourses(): Promise<Course[]> {
 }
 
 export default async function HomePage() {
+  // Obtener usuario autenticado
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let userRole = null
+  let userName = null
+  let userAvatar = null
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role, full_name, avatar_url')
+      .eq('id', user.id)
+      .single()
+
+    userRole = profile?.role
+    userName = profile?.full_name
+    userAvatar = profile?.avatar_url
+  }
+
   // Fetch courses in parallel
   const [freeCourses, premiumCourses] = await Promise.all([
     getFreeCourses(),
@@ -65,7 +87,32 @@ export default async function HomePage() {
   ])
 
   return (
-    <main className="min-h-screen bg-[#1a1f2e]">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
+      {/* Header fijo */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#1a1f2e]/80 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center shadow-lg shadow-[#ff6b35]/20">
+                <span className="text-white font-bold text-2xl">N</span>
+              </div>
+              <div className="hidden sm:block">
+                <span className="text-white font-bold text-2xl">NODO360</span>
+                <div className="text-xs text-white/60">Educación Bitcoin</div>
+              </div>
+            </Link>
+            <DashboardButton
+              isAuthenticated={!!user}
+              userRole={userRole}
+              userName={userName}
+              userAvatar={userAvatar}
+            />
+          </div>
+        </div>
+      </header>
+
+      {/* Contenido principal */}
+      <main className="pt-20 min-h-screen bg-[#1a1f2e]">
       {/* Hero Section */}
       <HeroSection />
 
@@ -88,12 +135,12 @@ export default async function HomePage() {
           {/* CTA */}
           {freeCourses.length > 0 && (
             <div className="mt-12 text-center">
-              <a
-                href="/cursos"
+              <Link
+                href="/cursos?filter=free"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-semibold hover:border-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
               >
-                Ver Todos los Cursos Gratis
-              </a>
+                Explorar Cursos Gratis →
+              </Link>
             </div>
           )}
         </div>
@@ -146,12 +193,12 @@ export default async function HomePage() {
           {/* CTA */}
           {premiumCourses.length > 0 && (
             <div className="mt-12 text-center">
-              <a
+              <Link
                 href="/cursos?filter=premium"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#FFD700] to-[#FFA500] rounded-xl text-black font-semibold hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all duration-300 hover:scale-105"
               >
-                Ver Todos los Cursos Premium
-              </a>
+                Ver Cursos Premium ✨ →
+              </Link>
             </div>
           )}
         </div>
@@ -184,23 +231,24 @@ export default async function HomePage() {
                 Únete a miles de estudiantes que ya están construyendo el futuro descentralizado
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a
-                  href="#cursos-gratis"
+                <Link
+                  href="/cursos?filter=free"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
                 >
-                  Comenzar Gratis
-                </a>
-                <a
-                  href="#comunidad"
+                  Explorar Cursos Gratis →
+                </Link>
+                <Link
+                  href="/comunidad"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-semibold hover:border-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
                 >
-                  Unirse a la Comunidad
-                </a>
+                  Unirse a la Comunidad →
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </div>
   )
 }

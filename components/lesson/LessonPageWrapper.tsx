@@ -8,21 +8,25 @@ import { ProgressManager } from '@/lib/progress-manager'
 interface LessonPageWrapperProps {
   children: ReactNode
   courseSlug: string
+  moduleSlug: string
   lessonSlug: string
   lessonId: string
   isPremium: boolean
-  allLessons: Array<{ slug: string; order_index: number }>
+  allLessons: Array<{ slug: string; order_index: number; moduleSlug?: string }>
   nextLessonSlug?: string
+  nextLessonModuleSlug?: string
 }
 
 export function LessonPageWrapper({
   children,
   courseSlug,
+  moduleSlug,
   lessonSlug,
   lessonId,
   isPremium,
   allLessons,
-  nextLessonSlug
+  nextLessonSlug,
+  nextLessonModuleSlug
 }: LessonPageWrapperProps) {
   const [isCompleted, setIsCompleted] = useState(false)
 
@@ -56,9 +60,11 @@ export function LessonPageWrapper({
               </div>
               <CompleteButton
                 courseSlug={courseSlug}
+                moduleSlug={moduleSlug}
                 lessonSlug={lessonSlug}
                 lessonId={lessonId}
                 nextLessonSlug={nextLessonSlug}
+                nextLessonModuleSlug={nextLessonModuleSlug}
                 isCompleted={isCompleted}
               />
             </div>

@@ -1,0 +1,7 @@
+export { HeroSection } from './HeroSection'
+export { CourseGrid } from './CourseGrid'
+export { CommunitySection } from './CommunitySection'
+export { ProjectsRoadmap } from './ProjectsRoadmap'
+export { MentorshipSection } from './MentorshipSection'
+export { StatsSection } from './StatsSection'
+export { NewsletterSection } from './NewsletterSection'

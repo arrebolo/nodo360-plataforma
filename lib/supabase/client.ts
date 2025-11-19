@@ -1,32 +1,31 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+'use client'
 
-// Validar que las variables de entorno existen
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { createBrowserClient } from '@supabase/ssr'
+import type { Database } from './types'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Las variables de entorno NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY son requeridas'
-  );
+/**
+ * Cliente de Supabase para Client Components
+ * Usa createBrowserClient de @supabase/ssr para manejo correcto de cookies
+ */
+export function createClient() {
+  console.log('🔍 [Supabase Client] Creando cliente de navegador')
+
+  return createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 }
-
-// Crear el cliente de Supabase
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-});
 
 // Helper para verificar la conexión
 export async function testConnection() {
   try {
-    const { data, error } = await supabase.from('courses').select('count');
-    if (error) throw error;
-    return { success: true, message: 'Conexión exitosa a Supabase' };
+    const supabase = createClient()
+    const { data, error } = await supabase.from('courses').select('count')
+    if (error) throw error
+    console.log('✅ [Supabase Client] Conexión exitosa')
+    return { success: true, message: 'Conexión exitosa a Supabase' }
   } catch (error) {
-    console.error('Error al conectar con Supabase:', error);
-    return { success: false, message: 'Error de conexión', error };
+    console.error('❌ [Supabase Client] Error al conectar:', error)
+    return { success: false, message: 'Error de conexión', error }
   }
 }

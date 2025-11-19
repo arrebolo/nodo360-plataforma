@@ -7,6 +7,7 @@ interface OldLessonLayoutFullProps {
   lesson: Lesson & {
     module: {
       id: string
+      slug: string
       title: string
       course: {
         id: string
@@ -16,13 +17,15 @@ interface OldLessonLayoutFullProps {
     }
   }
   courseSlug: string
-  previousLesson?: {slug: string; title: string} | null
-  nextLesson?: {slug: string; title: string} | null
+  moduleSlug: string
+  previousLesson?: {slug: string; title: string; module: {slug: string}} | null
+  nextLesson?: {slug: string; title: string; module: {slug: string}} | null
 }
 
 export function OldLessonLayoutFull({
   lesson,
   courseSlug,
+  moduleSlug,
   previousLesson,
   nextLesson,
 }: OldLessonLayoutFullProps) {
@@ -114,12 +117,22 @@ export function OldLessonLayoutFull({
           )}
 
           {/* Lesson Content */}
-          <div className="prose prose-invert prose-lg max-w-none mb-12">
-            <div
-              className="text-white/80 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: lesson.content || '' }}
-            />
-          </div>
+          {lesson.content && lesson.content.trim() !== '' ? (
+            <div className="prose prose-invert prose-lg max-w-none mb-12">
+              <div
+                className="text-white/80 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: lesson.content }}
+              />
+            </div>
+          ) : (
+            <div className="prose prose-invert prose-lg max-w-none mb-12">
+              <div className="text-white/80 leading-relaxed">
+                <p className="text-white/50 italic">
+                  Esta lección no tiene contenido de texto. Por favor, revisa el video o los recursos adicionales.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Attachments */}
           {lesson.attachments && Array.isArray(lesson.attachments) && lesson.attachments.length > 0 && (

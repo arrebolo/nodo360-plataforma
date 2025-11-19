@@ -1,5 +1,8 @@
-import { supabase } from './client';
+import { createClient } from './client';
 import type { Database } from './types';
+
+// Crear instancia del cliente
+const supabase = createClient();
 
 // Tipos para facilitar el uso
 type Course = Database['public']['Tables']['courses']['Row'];

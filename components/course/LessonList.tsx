@@ -16,6 +16,7 @@ interface Lesson {
 
 interface Module {
   id: string
+  slug: string
   title: string
   description: string | null
   order_index: number
@@ -71,24 +72,6 @@ export function LessonList({ courseSlug, modules, isPremium }: LessonListProps) 
 
   return (
     <div className="space-y-4">
-      {/* Solo para desarrollo - Botón para resetear progreso */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-          <button
-            onClick={() => {
-              if (confirm('¿Resetear progreso del curso?')) {
-                ProgressManager.resetProgress()
-                loadProgress()
-                alert('Progreso reseteado')
-              }
-            }}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
-          >
-            🔄 Resetear Progreso (Dev)
-          </button>
-        </div>
-      )}
-
       {sortedModules.map((module, moduleIndex) => (
           <div
             key={module.id}

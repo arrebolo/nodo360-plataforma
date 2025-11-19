@@ -7,17 +7,21 @@ import { useRouter } from 'next/navigation'
 
 interface CompleteButtonProps {
   courseSlug: string
+  moduleSlug: string
   lessonSlug: string
   lessonId: string
   nextLessonSlug?: string
+  nextLessonModuleSlug?: string
   isCompleted: boolean
 }
 
 export function CompleteButton({
   courseSlug,
+  moduleSlug,
   lessonSlug,
   lessonId,
   nextLessonSlug,
+  nextLessonModuleSlug,
   isCompleted: initialCompleted
 }: CompleteButtonProps) {
   const [isCompleted, setIsCompleted] = useState(initialCompleted)

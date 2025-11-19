@@ -1,0 +1,816 @@
+ NODO360 HOME - ELEMENTOR VERSION
+     Página principal optimizada para WordPress/Elementor
+     Copiar y pegar TODO en widget HTML de Elementor
+     ============================================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* CONTAINER */
+div.nodo360-home {
+    background: #000000 !important;
+    color: #ffffff !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+div.nodo360-home * {
+    box-sizing: border-box !important;
+}
+.home-container {
+    width: 100% !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+    padding: 0 1rem !important;
+}
+/* HERO SECTION */
+.home-hero {
+    background: linear-gradient(180deg, #000000 0%, #0d1117 100%) !important;
+    padding: 120px 20px !important;
+    text-align: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+.home-hero h1 {
+    color: #ffffff !important;
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    margin: 0 0 1rem 0 !important;
+}
+.home-hero h1 span {
+    color: #dc2626 !important;
+}
+.home-hero p {
+    color: #d1d5db !important;
+    font-size: 1.25rem !important;
+    line-height: 1.625 !important;
+    margin: 0 auto 2.5rem auto !important;
+    max-width: 800px !important;
+}
+.hero-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+/* BUTTONS */
+.home-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    padding: 14px 32px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    border-radius: 8px !important;
+    border: 2px solid transparent !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+.home-btn-primary {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+}
+.home-btn-primary:hover {
+    background: #b91c1c !important;
+    border-color: #b91c1c !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 16px rgba(220, 38, 38, 0.3) !important;
+}
+.home-btn-outline {
+    background: transparent !important;
+    color: #ffffff !important;
+    border-color: #30363d !important;
+}
+.home-btn-outline:hover {
+    background: #0d1117 !important;
+    border-color: #dc2626 !important;
+    transform: translateY(-2px) !important;
+}
+.home-btn-large {
+    padding: 18px 40px !important;
+    font-size: 1.125rem !important;
+}
+/* STATS SECTION */
+.home-stats {
+    background: #0d1117 !important;
+    padding: 80px 20px !important;
+    border-top: 1px solid #30363d !important;
+    border-bottom: 1px solid #30363d !important;
+}
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 3rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+}
+.stat-item {
+    text-align: center !important;
+}
+.stat-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem !important;
+}
+.stat-number {
+    color: #dc2626 !important;
+    font-size: 3rem !important;
+    font-weight: 800 !important;
+    margin-bottom: 0.5rem !important;
+    display: block !important;
+}
+.stat-label {
+    color: #9ca3af !important;
+    font-size: 1rem !important;
+}
+/* SECTION TITLE */
+.section-title {
+    color: #ffffff !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    margin: 0 0 1rem 0 !important;
+}
+.section-subtitle {
+    color: #9ca3af !important;
+    font-size: 1.125rem !important;
+    text-align: center !important;
+    margin: 0 auto 3rem auto !important;
+    max-width: 700px !important;
+}
+/* PILARES SECTION */
+.home-pilares {
+    background: #000000 !important;
+    padding: 80px 20px !important;
+}
+.pilares-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+}
+.pilar-card {
+    background: #0d1117 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 16px !important;
+    padding: 3rem 2rem !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    display: block !important;
+}
+.pilar-card:hover {
+    border-color: #dc2626 !important;
+    transform: translateY(-8px) !important;
+    box-shadow: 0 20px 40px rgba(220, 38, 38, 0.2) !important;
+}
+.pilar-icon {
+    font-size: 4rem !important;
+    margin-bottom: 1.5rem !important;
+    display: block !important;
+}
+.pilar-card h3 {
+    color: #ffffff !important;
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 1rem 0 !important;
+}
+.pilar-card p {
+    color: #d1d5db !important;
+    font-size: 1.125rem !important;
+    line-height: 1.625 !important;
+    margin: 0 0 1.5rem 0 !important;
+}
+/* PREVIEW FORMACION */
+.home-preview-formacion {
+    background: #0d1117 !important;
+    padding: 80px 20px !important;
+}
+.preview-courses-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto 3rem auto !important;
+}
+.preview-course-card {
+    background: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 12px !important;
+    padding: 2rem !important;
+    transition: all 0.3s ease !important;
+}
+.preview-course-card:hover {
+    border-color: #dc2626 !important;
+    transform: translateY(-4px) !important;
+}
+.course-badges {
+    display: flex !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1rem !important;
+    flex-wrap: wrap !important;
+}
+.badge {
+    padding: 4px 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    border-radius: 6px !important;
+}
+.badge-gratuito {
+    background: #10b981 !important;
+    color: #ffffff !important;
+}
+.badge-beginner {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
+}
+.preview-course-card h3 {
+    color: #ffffff !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 0.75rem 0 !important;
+}
+.preview-course-card p {
+    color: #d1d5db !important;
+    font-size: 1rem !important;
+    line-height: 1.625 !important;
+    margin: 0 !important;
+}
+.preview-link {
+    text-align: center !important;
+    margin-top: 2rem !important;
+}
+.preview-link a {
+    color: #dc2626 !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+.preview-link a:hover {
+    color: #b91c1c !important;
+    text-decoration: underline !important;
+}
+/* PREVIEW COMUNIDAD */
+.home-preview-comunidad {
+    background: #000000 !important;
+    padding: 80px 20px !important;
+}
+.comunidad-content {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 3rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+    align-items: center !important;
+}
+.comunidad-text h3 {
+    color: #ffffff !important;
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 1.5rem 0 !important;
+}
+.comunidad-features {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 0 2rem 0 !important;
+}
+.comunidad-features li {
+    color: #d1d5db !important;
+    font-size: 1.125rem !important;
+    padding: 1rem 0 !important;
+    border-top: 1px solid #30363d !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+}
+.comunidad-features li:first-child {
+    border-top: none !important;
+}
+.feature-icon {
+    font-size: 1.5rem !important;
+}
+.comunidad-visual {
+    background: #0d1117 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 16px !important;
+    padding: 3rem !important;
+    text-align: center !important;
+}
+.comunidad-visual p {
+    color: #9ca3af !important;
+    font-size: 1rem !important;
+    margin-bottom: 2rem !important;
+}
+.community-icons {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 2rem !important;
+    font-size: 3rem !important;
+}
+/* RUTAS SECTION */
+.home-rutas {
+    background: #0d1117 !important;
+    padding: 80px 20px !important;
+}
+.rutas-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+}
+.ruta-card {
+    background: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 12px !important;
+    padding: 2rem !important;
+    transition: all 0.3s ease !important;
+}
+.ruta-card:hover {
+    border-color: #dc2626 !important;
+    transform: translateY(-4px) !important;
+}
+.ruta-card h3 {
+    color: #ffffff !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 1rem 0 !important;
+}
+.ruta-card p {
+    color: #d1d5db !important;
+    font-size: 1rem !important;
+    margin: 0 0 1rem 0 !important;
+}
+.ruta-meta {
+    color: #9ca3af !important;
+    font-size: 0.875rem !important;
+}
+/* TESTIMONIOS SECTION */
+.home-testimonios {
+    background: #000000 !important;
+    padding: 80px 20px !important;
+}
+.testimonios-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+}
+.testimonio-card {
+    background: #0d1117 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 12px !important;
+    padding: 2rem !important;
+}
+.testimonio-stars {
+    color: #f59e0b !important;
+    font-size: 1.25rem !important;
+    margin-bottom: 1rem !important;
+}
+.testimonio-text {
+    color: #d1d5db !important;
+    font-size: 1.125rem !important;
+    line-height: 1.625 !important;
+    margin: 0 0 1.5rem 0 !important;
+    font-style: italic !important;
+}
+.testimonio-author {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+}
+.author-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    background: #dc2626 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.5rem !important;
+}
+.author-info h4 {
+    color: #ffffff !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    margin: 0 0 0.25rem 0 !important;
+}
+.author-info p {
+    color: #9ca3af !important;
+    font-size: 0.875rem !important;
+    margin: 0 !important;
+}
+/* FAQ SECTION */
+.home-faq {
+    background: #0d1117 !important;
+    padding: 80px 20px !important;
+}
+.faq-container {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+}
+.faq-item {
+    background: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 8px !important;
+    margin-bottom: 1rem !important;
+    overflow: hidden !important;
+}
+.faq-question {
+    width: 100% !important;
+    padding: 1.5rem !important;
+    background: transparent !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.faq-question:hover {
+    color: #dc2626 !important;
+}
+.faq-icon {
+    font-size: 1.5rem !important;
+    transition: transform 0.3s ease !important;
+}
+.faq-item.active .faq-icon {
+    transform: rotate(180deg) !important;
+}
+.faq-answer {
+    max-height: 0 !important;
+    overflow: hidden !important;
+    transition: max-height 0.3s ease !important;
+}
+.faq-item.active .faq-answer {
+    max-height: 500px !important;
+}
+.faq-answer-content {
+    padding: 0 1.5rem 1.5rem 1.5rem !important;
+    color: #d1d5db !important;
+    font-size: 1rem !important;
+    line-height: 1.625 !important;
+}
+/* CTA FINAL */
+.home-cta-final {
+    background: linear-gradient(180deg, #000000 0%, #0d1117 100%) !important;
+    padding: 100px 20px !important;
+}
+.cta-final-content {
+    text-align: center !important;
+    margin-bottom: 3rem !important;
+}
+.cta-final-content h2 {
+    color: #ffffff !important;
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    margin: 0 0 1rem 0 !important;
+}
+.cta-final-content p {
+    color: #d1d5db !important;
+    font-size: 1.25rem !important;
+    max-width: 700px !important;
+    margin: 0 auto !important;
+}
+.cta-options {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    max-width: 900px !important;
+    margin: 0 auto !important;
+}
+.cta-option {
+    background: #0d1117 !important;
+    border: 2px solid #30363d !important;
+    border-radius: 16px !important;
+    padding: 3rem 2rem !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+}
+.cta-option:hover {
+    border-color: #dc2626 !important;
+    transform: translateY(-4px) !important;
+}
+.cta-option-premium {
+    border-color: #dc2626 !important;
+    background: linear-gradient(135deg, #0d1117 0%, rgba(220, 38, 38, 0.1) 100%) !important;
+}
+.cta-badge {
+    display: inline-block !important;
+    padding: 6px 16px !important;
+    background: #10b981 !important;
+    color: #ffffff !important;
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    border-radius: 20px !important;
+    margin-bottom: 1.5rem !important;
+}
+.cta-badge-premium {
+    background: #dc2626 !important;
+}
+.cta-option h3 {
+    color: #ffffff !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 1rem 0 !important;
+}
+.cta-option p {
+    color: #d1d5db !important;
+    font-size: 1.125rem !important;
+    margin: 0 0 2rem 0 !important;
+}
+.cta-features {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 0 2rem 0 !important;
+    text-align: left !important;
+}
+.cta-features li {
+    color: #d1d5db !important;
+    font-size: 1rem !important;
+    padding: 0.75rem 0 !important;
+    border-top: 1px solid #30363d !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+}
+.cta-features li:first-child {
+    border-top: none !important;
+}
+/* RESPONSIVE */
+@media (min-width: 640px) {
+    .hero-buttons {
+        flex-direction: row !important;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (min-width: 768px) {
+    .home-hero h1 {
+        font-size: 3.5rem !important;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+    .pilares-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .preview-courses-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .comunidad-content {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .rutas-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .testimonios-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .cta-options {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (min-width: 1024px) {
+    .home-hero h1 {
+        font-size: 4rem !important;
+    }
+}
+</style>
+    <!-- HERO SECTION -->
+    <section>
+            <h1>Domina Bitcoin y Web3</h1>
+            <p>Plataforma educativa líder en Bitcoin, blockchain y tecnologías descentralizadas</p>
+                <a href="#formacion">
+                    🎓
+                    Explorar Cursos
+                </a>
+                <a href="https://nodo360-cursos.vercel.app/cursos">
+                    👥
+                    Unirse a la Comunidad
+                </a>
+    </section>
+    <!-- STATS SECTION -->
+    <section>
+                    📚
+                    25+
+                    Cursos
+                    👥
+                    5,000+
+                    Estudiantes
+                    ⭐
+                    4.8/5
+                    Valoración
+                    🎓
+                    15+
+                    Expertos
+    </section>
+    <!-- PILARES SECTION -->
+    <section>
+            <h2>Los 3 Pilares de Nodo360</h2>
+            <p>Formación, comunidad y proyectos reales para construir tu futuro en Web3</p>
+                <a href="/formacion">
+                    🎓
+                    <h3>Formación</h3>
+                    <p>Cursos completos de Bitcoin, Blockchain, DeFi y desarrollo Web3 desde cero hasta nivel avanzado</p>
+                    Explorar Cursos →
+                </a>
+                <a href="/comunidad">
+                    👥
+                    <h3>Comunidad</h3>
+                    <p>Conecta con miles de estudiantes, mentores y builders que comparten tu visión del futuro descentralizado</p>
+                    Unirse Ahora →
+                </a>
+                <a href="/proyectos">
+                    🚀
+                    <h3>Proyectos</h3>
+                    <p>Participa en proyectos reales, DAOs y aplicaciones descentralizadas con impacto en el mundo real</p>
+                    Ver Proyectos →
+                </a>
+    </section>
+    <!-- PREVIEW FORMACION -->
+    <section id="formacion">
+            <h2>Cursos Destacados</h2>
+            <p>Aprende de expertos con contenido actualizado y proyectos prácticos</p>
+                <a href="https://nodo360-cursos.vercel.app/cursos/bitcoin-desde-cero" style="text-decoration: none; color: inherit; display: block;">
+<article>
+                        GRATUITO
+                        BEGINNER
+                    <h3>Introducción a Bitcoin</h3>
+                    <p>Descubre qué es Bitcoin, cómo funciona y por qué está revolucionando el dinero</p>
+                </article>
+                </a>
+                <a href="https://nodo360-cursos.vercel.app/cursos/fundamentos-blockchain" style="text-decoration: none; color: inherit; display: block;">
+                <article>
+                        GRATUITO
+                        BEGINNER
+                    <h3>Fundamentos de Blockchain</h3>
+                    <p>Entiende la tecnología que impulsa Bitcoin y las criptomonedas del futuro</p>
+                </article>
+                </a>
+                <article>
+                        GRATUITO
+                        BEGINNER
+                    <a href="https://nodo360-cursos.vercel.app/cursos/primera-wallet" style="text-decoration: none; color: inherit; display: block;">
+                    <h3>Tu Primera Wallet</h3>
+                    <p>Aprende a crear, usar y proteger tu wallet de Bitcoin de forma segura</p>
+                </article>
+                </a>
+                <a href="https://nodo360-cursos.vercel.app/cursos">Ver todos los cursos →</a>
+    </section>
+    <!-- PREVIEW COMUNIDAD -->
+    <section id="comunidad">
+            <h2>Únete a la Comunidad</h2>
+            <p>Miles de estudiantes y profesionales construyendo el futuro descentralizado</p>
+                    <h3>Aprende, colabora y crece junto a los mejores</h3>
+                    <ul>
+                        <li>
+                            💬
+                            Acceso a Discord privado y canales especializados
+                        </li>
+                        <li>
+                            📝
+                            Foro interno para debates técnicos profundos
+                        </li>
+                        <li>
+                            🎯
+                            Mentoría personalizada con expertos del sector
+                        </li>
+                        <li>
+                            🤝
+                            Networking con builders, inversores y fundadores
+                        </li>
+                        <li>
+                            📅
+                            Eventos exclusivos, workshops y hackathons
+                        </li>
+                    </ul>
+                    <a href="/comunidad">Unirse a la Comunidad →</a>
+                    <p>Conéctate en múltiples plataformas</p>
+                        💬
+                        📱
+                        📝
+    </section>
+    <!-- RUTAS SECTION -->
+    <section>
+            <h2>Rutas de Aprendizaje</h2>
+            <p>Sigue un camino estructurado desde principiante hasta experto</p>
+                <article>
+                    <h3>⚡ Camino Bitcoin</h3>
+                    <p>De principiante a experto en Bitcoin: protocolo, Lightning Network y desarrollo</p>
+                    5 cursos | 40 horas totales
+                </article>
+                <article>
+                    <h3>💎 Camino Ethereum & DeFi</h3>
+                    <p>Domina smart contracts, DeFi, DAOs y el ecosistema Ethereum completo</p>
+                    4 cursos | 35 horas totales
+                </article>
+                <article>
+                    <h3>🌐 Camino Full Stack Web3</h3>
+                    <p>Conviértete en desarrollador completo de aplicaciones descentralizadas</p>
+                    6 cursos | 50 horas totales
+                </article>
+    </section>
+    <!-- TESTIMONIOS SECTION -->
+    <section>
+            <h2>Lo que dicen nuestros estudiantes</h2>
+            <p>Miles de profesionales han transformado su carrera con Nodo360</p>
+                <article>
+                    ⭐⭐⭐⭐⭐
+                    <p>"Gracias a Nodo360 pasé de no entender nada de Bitcoin a conseguir mi primer trabajo como desarrollador blockchain. Los cursos son prácticos y la comunidad increíble."</p>
+                        👨
+                            <h4>Carlos Martínez</h4>
+                            <p>Blockchain Developer</p>
+                </article>
+                <article>
+                    ⭐⭐⭐⭐⭐
+                    <p>"La mejor inversión que he hecho. En 6 meses dominé DeFi y smart contracts. Ahora estoy lanzando mi propia DAO con el apoyo de la comunidad de Nodo360."</p>
+                        👩
+                            <h4>Ana García</h4>
+                            <p>DAO Founder</p>
+                </article>
+                <article>
+                    ⭐⭐⭐⭐⭐
+                    <p>"Contenido de altísima calidad y siempre actualizado. Los instructores son profesionales del sector que realmente saben de lo que hablan. 100% recomendable."</p>
+                        👨
+                            <h4>Miguel Rodríguez</h4>
+                            <p>Full Stack Web3 Developer</p>
+                </article>
+    </section>
+    <!-- FAQ SECTION -->
+    <section>
+            <h2>Preguntas Frecuentes</h2>
+            <p>Resolvemos todas tus dudas sobre Nodo360</p>
+                    <button>
+                        ¿Necesito conocimientos previos para empezar?
+                        ▼
+                    </button>
+                            No, nuestros cursos comienzan desde cero. Tenemos rutas de aprendizaje para principiantes absolutos que te guían paso a paso desde los fundamentos hasta niveles avanzados. Solo necesitas ganas de aprender.
+                    <button>
+                        ¿Cuál es la diferencia entre los planes gratuito y premium?
+                        ▼
+                    </button>
+                            El plan gratuito te da acceso a cursos básicos y la comunidad en Telegram. El plan premium incluye todos los cursos avanzados, mentoría personalizada, acceso a proyectos reales de DAOs, networking exclusivo y certificaciones oficiales.
+                    <button>
+                        ¿Los cursos están actualizados?
+                        ▼
+                    </button>
+                            Sí, actualizamos constantemente el contenido para reflejar los últimos avances en Bitcoin, blockchain y Web3. Nuestros instructores son profesionales activos en el sector que mantienen los cursos al día con las mejores prácticas.
+                    <button>
+                        ¿Puedo conseguir trabajo después de los cursos?
+                        ▼
+                    </button>
+                            Absolutamente. Muchos de nuestros estudiantes han conseguido trabajos como desarrolladores blockchain, analistas DeFi, auditores de smart contracts y más. Además, tenemos una bolsa de trabajo exclusiva y conexiones con empresas del sector.
+                    <button>
+                        ¿Ofrecen certificados?
+                        ▼
+                    </button>
+                            Sí, al completar cada curso recibes un certificado digital verificable en blockchain. Los certificados premium incluyen validación NFT y son reconocidos por empresas del ecosistema Web3.
+                    <button>
+                        ¿Puedo cancelar mi suscripción en cualquier momento?
+                        ▼
+                    </button>
+                            Sí, puedes cancelar tu suscripción premium en cualquier momento sin penalizaciones. Mantendrás acceso hasta el final de tu periodo de facturación actual.
+    </section>
+    <!-- CTA FINAL -->
+    <section>
+                <h2>Comienza tu viaje en Web3 hoy</h2>
+                <p>Elige el plan que mejor se adapte a tus objetivos</p>
+                    GRATIS
+                    <h3>Acceso Gratuito</h3>
+                    <p>Empieza a aprender sin compromiso</p>
+                    <ul>
+                        <li>✓ 3 cursos básicos gratuitos</li>
+                        <li>✓ Comunidad en Telegram</li>
+                        <li>✓ Recursos descargables</li>
+                        <li>✓ Acceso de por vida</li>
+                    </ul>
+                    <a href="#registro">Empezar Gratis</a>
+                    PREMIUM
+                    <h3>Acceso Premium</h3>
+                    <p>Desbloquea todo el potencial de Nodo360</p>
+                    <ul>
+                        <li>✓ Todos los cursos (25+)</li>
+                        <li>✓ Discord privado y foro</li>
+                        <li>✓ Mentoría personalizada</li>
+                        <li>✓ Proyectos reales en DAOs</li>
+                        <li>✓ Certificaciones NFT</li>
+                        <li>✓ Networking exclusivo</li>
+                    </ul>
+                    <a href="#premium">Hazte Premium</a>
+    </section>
