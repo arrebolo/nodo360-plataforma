@@ -30,7 +30,16 @@
       "Bash(git rm:*)",
       "Bash(if exist .next rmdir /s /q .next)",
       "Bash(cmd /c \"if exist .next rmdir /s /q .next\")",
-      "Bash(cmd /c \"if exist node_modules\\.cache rmdir /s /q node_modules\\.cache\")"
+      "Bash(cmd /c \"if exist node_modules\\.cache rmdir /s /q node_modules\\.cache\")",
+      "Bash(npx supabase:*)",
+      "Bash(lib/supabase/types-new.ts)",
+      "Bash(del libsupabasetypes-new.ts 2)",
+      "Bash(if [ -d \"app/cursos/[courseSlug]\" ])",
+      "Bash(then mv \"app/cursos/[courseSlug]\" \"app/cursos/[slug]\")",
+      "Bash(else echo \"⚠️ No existe [courseSlug]\")",
+      "Bash(fi)",
+      "Bash(move \"[courseId]\" \"[id]\")",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

@@ -7,7 +7,7 @@
  */
 
 import type { Module, QuizAttempt } from '@/types/database'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 export interface ModuleAccessResult {
   canAccess: boolean
@@ -34,6 +34,7 @@ export async function checkModuleAccess(
   moduleId: string,
   courseIsFree: boolean
 ): Promise<ModuleAccessResult> {
+  const supabase = createClient()
 
   // Get module info
   const { data: module, error: moduleError } = await supabase
@@ -169,6 +170,7 @@ export async function getAccessibleModules(
   courseId: string,
   courseIsFree: boolean
 ): Promise<string[]> {
+  const supabase = createClient()
 
   // Get all modules for the course
   const { data: modules } = await supabase
@@ -208,6 +210,7 @@ export async function getNextLockedModule(
   module: Module | null
   reason: string
 }> {
+  const supabase = createClient()
 
   const { data: modules } = await supabase
     .from('modules')

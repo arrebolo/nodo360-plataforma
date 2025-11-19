@@ -7,7 +7,7 @@
  */
 
 import type { Lesson } from '@/types/database'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { checkModuleAccess } from './checkModuleAccess'
 
 export interface LessonAccessResult {
@@ -35,6 +35,7 @@ export async function checkLessonAccess(
   lessonId: string,
   courseIsFree: boolean
 ): Promise<LessonAccessResult> {
+  const supabase = createClient()
 
   // Get lesson info with module
   const { data: lesson, error: lessonError } = await supabase
@@ -188,6 +189,7 @@ export async function getAccessibleLessons(
   moduleId: string,
   courseIsFree: boolean
 ): Promise<string[]> {
+  const supabase = createClient()
 
   // First check if module is accessible
   const moduleAccess = await checkModuleAccess(userId, moduleId, courseIsFree)
@@ -233,6 +235,7 @@ export async function getNextAvailableLesson(
   courseId: string,
   courseIsFree: boolean
 ): Promise<Lesson | null> {
+  const supabase = createClient()
 
   // Get all modules for the course
   const { data: modules } = await supabase
@@ -307,6 +310,7 @@ export async function calculateCourseProgress(
   userId: string,
   courseId: string
 ): Promise<number> {
+  const supabase = createClient()
 
   // Get total lessons in course
   const { data: lessons } = await supabase

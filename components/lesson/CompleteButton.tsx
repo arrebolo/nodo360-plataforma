@@ -42,8 +42,8 @@ export function CompleteButton({
 
     // Pequeño delay antes de navegar para asegurar que el evento se procese
     setTimeout(() => {
-      if (nextLessonSlug && nextLessonModuleSlug) {
-        router.push(`/cursos/${courseSlug}/modulos/${nextLessonModuleSlug}/lecciones/${nextLessonSlug}`)
+      if (nextLessonSlug) {
+        router.push(`/cursos/${courseSlug}/${nextLessonSlug}`)
       } else {
         // Volver a la página del curso para ver progreso
         router.push(`/cursos/${courseSlug}`)
@@ -52,8 +52,8 @@ export function CompleteButton({
   }
 
   const handleNext = () => {
-    if (nextLessonSlug && nextLessonModuleSlug) {
-      router.push(`/cursos/${courseSlug}/modulos/${nextLessonModuleSlug}/lecciones/${nextLessonSlug}`)
+    if (nextLessonSlug) {
+      router.push(`/cursos/${courseSlug}/${nextLessonSlug}`)
     } else {
       router.push(`/cursos/${courseSlug}`)
     }

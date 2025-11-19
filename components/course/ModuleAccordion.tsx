@@ -56,7 +56,7 @@ export function ModuleAccordion({
     // Navegar a la lección
     const module = course.modules.find(m => m.id === moduleId)
     if (module) {
-      router.push(`/cursos/${course.slug}/modulos/${module.slug}/lecciones/${lesson.slug}`)
+      router.push(`/cursos/${course.slug}/${lesson.slug}`)
     }
   }
 

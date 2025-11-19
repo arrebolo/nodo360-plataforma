@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
 /**
@@ -82,6 +82,8 @@ export async function uploadCertificate(
   pdfBlob: Blob,
   type: "module" | "course"
 ): Promise<UploadCertificateResult> {
+  const supabase = createClient()
+
   try {
     // Validate file size
     if (pdfBlob.size > MAX_FILE_SIZE) {
@@ -221,6 +223,8 @@ export async function getCertificateUrl(
   userId: string,
   type: "module" | "course"
 ): Promise<string | null> {
+  const supabase = createClient()
+
   try {
     const path = getCertificatePath(userId, certificateId, type);
 
@@ -259,6 +263,8 @@ export async function checkCertificateExists(
   userId: string,
   type: "module" | "course"
 ): Promise<boolean> {
+  const supabase = createClient()
+
   try {
     const path = getCertificatePath(userId, certificateId, type);
 
@@ -300,6 +306,8 @@ export async function deleteCertificate(
   userId: string,
   type: "module" | "course"
 ): Promise<boolean> {
+  const supabase = createClient()
+
   try {
     const path = getCertificatePath(userId, certificateId, type);
 
@@ -330,6 +338,8 @@ export async function getCertificateMetadata(
   userId: string,
   type: "module" | "course"
 ): Promise<CertificateStorageMetadata | null> {
+  const supabase = createClient()
+
   try {
     const path = getCertificatePath(userId, certificateId, type);
     const folder = path.split("/").slice(0, -1).join("/");
@@ -388,6 +398,8 @@ export async function downloadCertificateBlob(
   userId: string,
   type: "module" | "course"
 ): Promise<Blob | null> {
+  const supabase = createClient()
+
   try {
     const path = getCertificatePath(userId, certificateId, type);
 
@@ -419,8 +431,9 @@ export async function getUserStorageStats(userId: string): Promise<{
   moduleCount: number;
   courseCount: number;
 }> {
-  try {
+  const supabase = createClient()
 
+  try {
     // List all files in user's folders
     const { data: moduleFiles } = await supabase.storage
       .from(BUCKET_NAME)

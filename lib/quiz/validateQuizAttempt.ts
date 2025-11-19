@@ -10,7 +10,7 @@ import type {
   QuizAnswer,
   InsertQuizAttempt,
 } from '@/types/database'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 export interface QuizSubmission {
   moduleId: string
@@ -95,6 +95,7 @@ export async function submitQuizAttempt(
   submission: QuizSubmission,
   questions: QuizQuestion[]
 ): Promise<QuizResult | { error: string }> {
+  const supabase = createClient()
 
   // Validate answers
   const result = validateQuizAnswers(questions, submission.answers)
@@ -141,6 +142,7 @@ export async function getBestQuizAttempt(
   userId: string,
   moduleId: string
 ): Promise<QuizAttempt | null> {
+  const supabase = createClient()
 
   const { data: attempt } = await supabase
     .from('quiz_attempts')
@@ -166,6 +168,7 @@ export async function getQuizAttempts(
   userId: string,
   moduleId: string
 ): Promise<QuizAttempt[]> {
+  const supabase = createClient()
 
   const { data: attempts } = await supabase
     .from('quiz_attempts')
@@ -188,6 +191,7 @@ export async function hasPassedModuleQuiz(
   userId: string,
   moduleId: string
 ): Promise<boolean> {
+  const supabase = createClient()
 
   const { data: attempts } = await supabase
     .from('quiz_attempts')
@@ -210,6 +214,7 @@ export async function getQuizQuestions(
   moduleId: string,
   includeAnswers: boolean = false
 ): Promise<QuizQuestion[]> {
+  const supabase = createClient()
 
   const { data: questions } = await supabase
     .from('quiz_questions')

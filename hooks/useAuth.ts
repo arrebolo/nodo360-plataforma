@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useUser } from "./useUser";
 
@@ -49,6 +49,7 @@ interface SignInData {
  * ```
  */
 export function useAuth() {
+  const supabase = createClient()
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const [loading, setLoading] = useState(false);
@@ -168,7 +169,10 @@ export function useAuth() {
       setLoading(true);
       setError(null);
 
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      console.log('🔍 [useAuth] Iniciando OAuth con:', provider);
+      console.log('🔍 [useAuth] Redirect URL:', `${window.location.origin}/auth/callback`);
+
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -176,9 +180,22 @@ export function useAuth() {
       });
 
       if (oauthError) {
+        console.error('❌ [useAuth/OAuth] Error completo:', oauthError);
+        console.error('❌ [useAuth/OAuth] Mensaje:', oauthError.message);
+        console.error('❌ [useAuth/OAuth] Status:', oauthError.status);
+        console.error('❌ [useAuth/OAuth] Código:', oauthError.code);
         throw oauthError;
       }
+
+      if (data.url) {
+        console.log('✅ [useAuth/OAuth] URL de autorización recibida:', data.url);
+      } else {
+        console.error('❌ [useAuth/OAuth] No se recibió URL de autorización');
+        console.error('❌ [useAuth/OAuth] Data:', data);
+      }
     } catch (err) {
+      console.error('❌ [useAuth/OAuth] Error inesperado:', err);
+      console.error('❌ [useAuth/OAuth] Tipo:', typeof err);
       setError(
         err instanceof Error ? err : new Error("Failed to sign in with OAuth")
       );

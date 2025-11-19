@@ -1,5 +1,5 @@
 // Exportar cliente y funciones de conexión
-export { supabase, testConnection } from './client';
+export { createClient, testConnection } from './client';
 
 // Exportar tipos
 export type { Database } from './types';

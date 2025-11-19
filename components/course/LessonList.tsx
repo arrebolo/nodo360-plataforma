@@ -186,7 +186,7 @@ export function LessonList({ courseSlug, modules, isPremium }: LessonListProps) 
                   return (
                     <Link
                       key={lesson.id}
-                      href={`/cursos/${courseSlug}/modulos/${module.slug}/lecciones/${lesson.slug}`}
+                      href={`/cursos/${courseSlug}/${lesson.slug}`}
                       className="block p-4 bg-white/0 hover:bg-white/5 transition-colors group"
                     >
                       <div className="flex items-center gap-4">

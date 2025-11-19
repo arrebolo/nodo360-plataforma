@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { User } from "@/types/database";
 
 /**
@@ -27,6 +27,7 @@ import { User } from "@/types/database";
  * ```
  */
 export function useUser() {
+  const supabase = createClient()
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -124,6 +125,7 @@ export function useUser() {
  * ```
  */
 export function useIsAuthenticated() {
+  const supabase = createClient()
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 

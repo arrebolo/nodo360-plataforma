@@ -188,7 +188,7 @@ export function OldLessonLayoutFull({
             <div className="flex-1">
               {previousLesson && (
                 <Link
-                  href={`/cursos/${courseSlug}/modulos/${previousLesson.module.slug}/lecciones/${previousLesson.slug}`}
+                  href={`/cursos/${courseSlug}/${previousLesson.slug}`}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-white group"
                 >
                   <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,7 +205,7 @@ export function OldLessonLayoutFull({
             <div className="flex-1 flex justify-end">
               {nextLesson && (
                 <Link
-                  href={`/cursos/${courseSlug}/modulos/${nextLesson.module.slug}/lecciones/${nextLesson.slug}`}
+                  href={`/cursos/${courseSlug}/${nextLesson.slug}`}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] hover:shadow-lg hover:shadow-[#ff6b35]/20 rounded-lg transition-all text-white group"
                 >
                   <div className="text-right">

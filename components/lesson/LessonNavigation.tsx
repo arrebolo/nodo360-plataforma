@@ -84,7 +84,7 @@ export function LessonNavigation({
 
     // 3. Navegar a siguiente lección o al curso
     if (nextLesson) {
-      router.push(`/cursos/${courseSlug}/modulos/${nextLesson.moduleSlug}/lecciones/${nextLesson.slug}`)
+      router.push(`/cursos/${courseSlug}/${nextLesson.slug}`)
     } else {
       router.push(`/cursos/${courseSlug}`)
     }
@@ -97,7 +97,7 @@ export function LessonNavigation({
           {/* Previous Button */}
           {prevLesson ? (
             <Link
-              href={`/cursos/${courseSlug}/modulos/${prevLesson.moduleSlug}/lecciones/${prevLesson.slug}`}
+              href={`/cursos/${courseSlug}/${prevLesson.slug}`}
               className="flex items-center gap-2 px-4 py-2 bg-nodo-card border border-nodo-icon text-gray-400 rounded-lg hover:bg-nodo-bg hover:text-white hover:border-[#F7931A]/30 transition-all group"
             >
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

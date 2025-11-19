@@ -61,7 +61,7 @@ export function UserProgressWidget({
             Siguiente pendiente:
           </h3>
           <Link
-            href={`/cursos/${courseId}/modulos/${nextLesson.moduleSlug}/lecciones/${nextLesson.lessonSlug}`}
+            href={`/cursos/${courseId}/${nextLesson.lessonSlug}`}
             className="flex items-center gap-3 p-3 rounded-lg border border-nodo-icon hover:border-[#F7931A] hover:bg-nodo-bg transition-all group"
           >
             <div className="flex-1 min-w-0">

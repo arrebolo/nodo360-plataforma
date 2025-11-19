@@ -1,0 +1,76 @@
+{
+  "presets": [
+    {
+      "id": "bitcoin-orange",
+      "name": "Bitcoin Naranja",
+      "url": "/avatars/bitcoin-orange.svg",
+      "category": "bitcoin"
+    },
+    {
+      "id": "bitcoin-gold",
+      "name": "Bitcoin Dorado",
+      "url": "/avatars/bitcoin-gold.svg",
+      "category": "bitcoin"
+    },
+    {
+      "id": "lightning",
+      "name": "Lightning",
+      "url": "/avatars/lightning.svg",
+      "category": "bitcoin"
+    },
+    {
+      "id": "satoshi",
+      "name": "Satoshi",
+      "url": "/avatars/satoshi.svg",
+      "category": "bitcoin"
+    },
+    {
+      "id": "node",
+      "name": "Nodo",
+      "url": "/avatars/node.svg",
+      "category": "bitcoin"
+    },
+    {
+      "id": "blockchain",
+      "name": "Blockchain",
+      "url": "/avatars/blockchain.svg",
+      "category": "crypto"
+    },
+    {
+      "id": "wallet",
+      "name": "Wallet",
+      "url": "/avatars/wallet.svg",
+      "category": "crypto"
+    },
+    {
+      "id": "hodler",
+      "name": "Hodler",
+      "url": "/avatars/hodler.svg",
+      "category": "crypto"
+    },
+    {
+      "id": "miner",
+      "name": "Minero",
+      "url": "/avatars/miner.svg",
+      "category": "bitcoin"
+    },
+    {
+      "id": "keys",
+      "name": "Llaves",
+      "url": "/avatars/keys.svg",
+      "category": "crypto"
+    },
+    {
+      "id": "rocket",
+      "name": "Rocket",
+      "url": "/avatars/rocket.svg",
+      "category": "fun"
+    },
+    {
+      "id": "diamond",
+      "name": "Diamond",
+      "url": "/avatars/diamond.svg",
+      "category": "fun"
+    }
+  ]
+}
