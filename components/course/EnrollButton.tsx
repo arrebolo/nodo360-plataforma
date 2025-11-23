@@ -2,122 +2,138 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { toast } from 'sonner'
+import { CheckCircle, Loader2 } from 'lucide-react'
 
 interface EnrollButtonProps {
   courseId: string
   courseSlug: string
-  isEnrolled?: boolean
+  isEnrolled: boolean
+  isAuthenticated: boolean
+  firstLessonSlug?: string
   className?: string
 }
 
 export default function EnrollButton({
   courseId,
   courseSlug,
-  isEnrolled = false,
-  className = '',
+  isEnrolled,
+  isAuthenticated,
+  firstLessonSlug,
+  className = ''
 }: EnrollButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [enrolled, setEnrolled] = useState(isEnrolled)
+  const [error, setError] = useState<string | null>(null)
 
   const handleEnroll = async () => {
-    console.log('🎓 [EnrollButton] Iniciando inscripción al curso:', courseId)
+    console.log('🔍 [EnrollButton] Iniciando inscripción...')
+    console.log('📊 [EnrollButton] Datos:', {
+      courseId,
+      courseSlug,
+      isEnrolled,
+      isAuthenticated,
+      firstLessonSlug
+    })
+
+    // Si no está autenticado, redirigir a login
+    if (!isAuthenticated) {
+      console.log('⚠️  [EnrollButton] Usuario no autenticado, redirigiendo a login')
+      router.push(`/login?redirect=/cursos/${courseSlug}`)
+      return
+    }
+
     setLoading(true)
+    setError(null)
 
     try {
-      const supabase = createClient()
+      console.log('📤 [EnrollButton] Enviando inscripción...')
+      console.log('   courseId:', courseId)
 
-      // Verificar autenticación
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const response = await fetch('/api/enroll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ courseId }),
+      })
 
-      if (authError || !user) {
-        console.log('❌ [EnrollButton] Usuario no autenticado, redirigiendo a login')
-        toast.error('Debes iniciar sesión para inscribirte')
-        router.push(`/login?redirect=/cursos/${courseSlug}`)
-        return
-      }
+      console.log('📥 [EnrollButton] Response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      })
 
-      console.log('✅ [EnrollButton] Usuario autenticado:', user.id)
+      const data = await response.json()
+      console.log('📊 [EnrollButton] Response data:', data)
 
-      // Verificar si ya está inscrito
-      const { data: existingEnrollment, error: checkError } = await supabase
-        .from('course_enrollments')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('course_id', courseId)
-        .single()
-
-      if (existingEnrollment) {
-        console.log('ℹ️ [EnrollButton] Usuario ya está inscrito')
-        toast.info('Ya estás inscrito en este curso')
-        setEnrolled(true)
-        router.refresh()
-        return
-      }
-
-      // Crear inscripción
-      const { error: enrollError } = await supabase
-        .from('course_enrollments')
-        .insert({
-          user_id: user.id,
-          course_id: courseId,
-        } as any) // TODO: Regenerar tipos de Supabase si hay error de tipos
-
-      if (enrollError) {
-        console.error('❌ [EnrollButton] Error al inscribirse:', enrollError)
-        toast.error('Error al inscribirse en el curso')
-        return
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al inscribirse')
       }
 
       console.log('✅ [EnrollButton] Inscripción exitosa')
-      toast.success('¡Te has inscrito exitosamente! 🎉')
       setEnrolled(true)
 
-      // Refrescar la página para mostrar el nuevo estado
-      router.refresh()
-    } catch (error) {
-      console.error('❌ [EnrollButton] Error inesperado:', error)
-      toast.error('Ocurrió un error inesperado')
+      // Redirigir a primera lección si existe
+      if (firstLessonSlug) {
+        router.push(`/cursos/${courseSlug}/${firstLessonSlug}`)
+      } else {
+        // Si no hay primera lección, refrescar página para mostrar botón actualizado
+        router.refresh()
+      }
+    } catch (err) {
+      console.error('❌ [EnrollButton] Error:', err)
+      setError(err instanceof Error ? err.message : 'Error al inscribirse')
     } finally {
       setLoading(false)
     }
   }
 
+  // Si ya está inscrito, mostrar botón de "Ir al curso"
   if (enrolled) {
     return (
-      <div className={`inline-flex items-center gap-2 px-8 py-4 bg-white/10 text-white font-medium rounded-lg border border-white/20 ${className}`}>
-        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-        Ya estás inscrito
+      <div className={`space-y-3 ${className}`}>
+        <div className="flex items-center gap-2 text-green-500">
+          <CheckCircle className="w-5 h-5" />
+          <span className="font-medium">Inscrito en este curso</span>
+        </div>
+
+        {firstLessonSlug && (
+          <button
+            onClick={() => router.push(`/cursos/${courseSlug}/${firstLessonSlug}`)}
+            className="w-full px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition"
+          >
+            Continuar Curso
+          </button>
+        )}
       </div>
     )
   }
 
   return (
-    <button
-      onClick={handleEnroll}
-      disabled={loading}
-      className={`inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-medium rounded-lg hover:shadow-lg hover:shadow-[#ff6b35]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-    >
-      {loading ? (
-        <>
-          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          Inscribiendo...
-        </>
-      ) : (
-        <>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Inscribirse Gratis
-        </>
+    <div className={`space-y-3 ${className}`}>
+      <button
+        onClick={handleEnroll}
+        disabled={loading}
+        className="w-full px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Inscribiendo...
+          </>
+        ) : (
+          <>
+            {isAuthenticated ? 'Inscribirse Gratis' : 'Iniciar Sesión para Inscribirse'}
+          </>
+        )}
+      </button>
+
+      {error && (
+        <div className="px-4 py-2 bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg text-sm">
+          {error}
+        </div>
       )}
-    </button>
+    </div>
   )
 }

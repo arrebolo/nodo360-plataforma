@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { CheckCircle2, ChevronLeft, ChevronRight, BookOpen, Clock } from 'lucide-react'
+import NextLessonButton from '@/components/lesson/NextLessonButton'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -67,6 +68,27 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   console.log('✅ [LessonPage] Lección encontrada:', lesson.title)
 
+  // Verify authentication and lesson completion
+  const { data: { user } } = await supabase.auth.getUser()
+  let isCompleted = false
+
+  if (user) {
+    const { data: progress } = await supabase
+      .from('user_progress')
+      .select('is_completed')
+      .eq('user_id', user.id)
+      .eq('lesson_id', lesson.id)
+      .maybeSingle()
+
+    isCompleted = !!progress?.is_completed
+
+    console.log('🔍 [LessonPage] Progreso del usuario:', {
+      userId: user.id,
+      lessonId: lesson.id,
+      isCompleted
+    })
+  }
+
   // Get all lessons in the same module (for navigation)
   const { data: allLessons } = await supabase
     .from('lessons')
@@ -76,6 +98,62 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   const currentIndex = allLessons?.findIndex(l => l.id === lesson.id) ?? -1
   const previousLesson = currentIndex > 0 ? allLessons?.[currentIndex - 1] : null
+
+  // ✅ NUEVA LÓGICA: Calcular siguiente lección (puede ser del siguiente módulo)
+  let nextLessonData: { slug: string; title: string } | null = null
+  let isLastLessonOfModule = false
+  let isLastLessonOfCourse = false
+
+  // Buscar siguiente lección en el módulo actual
+  if (currentIndex < (allLessons?.length ?? 0) - 1) {
+    const nextInModule = allLessons?.[currentIndex + 1]
+    if (nextInModule) {
+      nextLessonData = {
+        slug: nextInModule.slug,
+        title: nextInModule.title
+      }
+    }
+  } else {
+    // Es última lección del módulo
+    isLastLessonOfModule = true
+
+    // Buscar siguiente módulo
+    const { data: allModules } = await supabase
+      .from('modules')
+      .select('id, order_index, lessons:lessons(id, slug, title, order_index)')
+      .eq('course_id', lesson.module.course_id)
+      .order('order_index', { ascending: true })
+
+    if (allModules) {
+      const currentModuleIndex = allModules.findIndex(m => m.id === lesson.module_id)
+
+      if (currentModuleIndex !== -1 && currentModuleIndex < allModules.length - 1) {
+        // Hay siguiente módulo
+        const nextModule = allModules[currentModuleIndex + 1]
+        const nextModuleLessons = (nextModule.lessons || []).sort((a: any, b: any) => a.order_index - b.order_index)
+
+        if (nextModuleLessons.length > 0) {
+          // Primera lección del siguiente módulo
+          nextLessonData = {
+            slug: nextModuleLessons[0].slug,
+            title: nextModuleLessons[0].title
+          }
+        }
+      } else {
+        // Es el último módulo = última lección del curso
+        isLastLessonOfCourse = true
+      }
+    }
+  }
+
+  console.log('🔍 [LessonPage] Navegación:', {
+    currentLesson: lesson.title,
+    nextLesson: nextLessonData?.title || 'Ninguna',
+    isLastLessonOfModule,
+    isLastLessonOfCourse
+  })
+
+  // Mantener variable nextLesson para navegación antigua (botones anterior/siguiente)
   const nextLesson = currentIndex < (allLessons?.length ?? 0) - 1 ? allLessons?.[currentIndex + 1] : null
 
   // Extract YouTube video ID from URL
@@ -167,6 +245,21 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 <div className="prose prose-invert max-w-none">
                   <p className="text-white/70 whitespace-pre-wrap">{lesson.content}</p>
                 </div>
+              </div>
+            )}
+
+            {/* Next Lesson Button (Auto-completes before navigating) */}
+            {user && (
+              <div className="mb-6">
+                <NextLessonButton
+                  currentLessonId={lesson.id}
+                  currentLessonSlug={lesson.slug}
+                  courseSlug={lesson.module.course.slug}
+                  moduleTitle={lesson.module.title}
+                  nextLesson={nextLessonData}
+                  isLastLessonOfCourse={isLastLessonOfCourse}
+                  isAlreadyCompleted={isCompleted}
+                />
               </div>
             )}
 

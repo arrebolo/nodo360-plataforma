@@ -15,6 +15,18 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'nodo360.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
     ],
     minimumCacheTTL: 60,
   },

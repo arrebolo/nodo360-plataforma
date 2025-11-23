@@ -534,10 +534,16 @@ export interface DashboardStats {
 
 /**
  * Enrollment with Course Details
+ * Includes realProgress calculated from user_progress table
  */
 export interface EnrollmentWithCourse extends CourseEnrollment {
   course: Course
   lastLesson?: Lesson
+  realProgress?: {
+    completedLessons: number
+    totalLessons: number
+    percentage: number
+  }
 }
 
 /**

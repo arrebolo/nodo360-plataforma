@@ -29,10 +29,12 @@ interface Module {
 }
 
 interface ModuleListEnhancedProps {
+  courseId: string
   courseSlug: string
   modules: Module[]
   isPremium: boolean
   userId?: string
+  unlockedModuleIds?: string[]  // ✅ IDs de módulos desbloqueados desde tabla
 }
 
 /**
@@ -47,10 +49,12 @@ interface ModuleListEnhancedProps {
  * - UI profesional
  */
 export function ModuleListEnhanced({
+  courseId,
   courseSlug,
   modules,
   isPremium,
-  userId
+  userId,
+  unlockedModuleIds = []
 }: ModuleListEnhancedProps) {
   const [isClient, setIsClient] = useState(false)
   const [progressState, setProgressState] = useState<Record<string, boolean>>({})
@@ -69,14 +73,90 @@ export function ModuleListEnhanced({
       .sort((a, b) => a.order_index - b.order_index)
   }, [modules])
 
-  // Función para cargar progreso
+  // Función para cargar progreso desde Supabase (cuando hay userId)
+  const loadProgressFromSupabase = useCallback(async () => {
+    console.log('🔍 [ModuleListEnhanced] Cargando progreso desde API...')
+    console.log('   courseId:', courseId)
+    console.log('   userId:', userId)
+
+    if (!userId) {
+      // Si no hay usuario, usar localStorage como fallback
+      console.log('   ⚠️ No hay userId, usando localStorage')
+      const updatedProgress: Record<string, boolean> = {}
+      allLessons.forEach(lesson => {
+        updatedProgress[lesson.slug] = ProgressManager.isLessonCompleted(courseSlug, lesson.slug)
+      })
+      setProgressState(updatedProgress)
+      return
+    }
+
+    try {
+      // Llamar al nuevo endpoint de progreso de curso
+      const url = `/api/course-progress?courseId=${courseId}`
+      console.log('   📡 Llamando a:', url)
+
+      const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      console.log('📥 [ModuleListEnhanced] Response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      })
+
+      // Si la respuesta no es ok, NO romper - usar fallback
+      if (!response.ok) {
+        const body = await response.text().catch(() => '')
+        console.error('❌ [ModuleListEnhanced] Error al cargar progreso:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: body.substring(0, 200) // Solo primeros 200 chars
+        })
+
+        // FALLBACK: Sin progreso, solo módulo 1 desbloqueado
+        console.log('⚠️  [ModuleListEnhanced] Usando fallback: progreso vacío')
+        setProgressState({})
+        return
+      }
+
+      // Parsear respuesta
+      const data = await response.json()
+      console.log('✅ [ModuleListEnhanced] Progreso cargado:', {
+        completedCount: data.completedLessonIds?.length || 0,
+        stats: data.stats
+      })
+
+      // Actualizar estado con lecciones completadas
+      const completedLessonIds = data.completedLessonIds || []
+      const completedSet = new Set(completedLessonIds)
+
+      // Mapear a estado de progreso por slug
+      const updatedProgress: Record<string, boolean> = {}
+      allLessons.forEach(lesson => {
+        updatedProgress[lesson.slug] = completedSet.has(lesson.id)
+      })
+
+      setProgressState(updatedProgress)
+      console.log('   ✓ Lecciones completadas en estado:', Object.keys(updatedProgress).filter(k => updatedProgress[k]).length)
+
+    } catch (error) {
+      // Si hay exception, NO romper - usar fallback
+      console.error('❌ [ModuleListEnhanced] Exception al cargar progreso:', error)
+      console.log('⚠️  [ModuleListEnhanced] Usando fallback: progreso vacío')
+
+      // FALLBACK: Sin progreso
+      setProgressState({})
+    }
+  }, [courseId, courseSlug, allLessons, userId])
+
+  // Función para cargar progreso (backward compatibility)
   const loadProgress = useCallback(() => {
-    const updatedProgress: Record<string, boolean> = {}
-    allLessons.forEach(lesson => {
-      updatedProgress[lesson.slug] = ProgressManager.isLessonCompleted(courseSlug, lesson.slug)
-    })
-    setProgressState(updatedProgress)
-  }, [courseSlug, allLessons])
+    loadProgressFromSupabase()
+  }, [loadProgressFromSupabase])
 
   // Función para cargar datos de quiz desde Supabase
   const loadQuizData = useCallback(async () => {
@@ -183,8 +263,13 @@ export function ModuleListEnhanced({
     ).length
     const allLessonsCompleted = completedCount === moduleLessons.length && moduleLessons.length > 0
 
+    console.log(`🔍 [getModuleStatus] Módulo ${moduleIndex + 1}: ${module.title}`)
+    console.log(`   Lecciones: ${completedCount}/${moduleLessons.length}`)
+    console.log(`   Todas completadas: ${allLessonsCompleted}`)
+
     // Módulo 1: Siempre desbloqueado
     if (module.order_index === 1) {
+      console.log(`   ✅ Módulo 1: Siempre desbloqueado`)
       // Verificar estado de completado
       if (module.requires_quiz && allLessonsCompleted) {
         // Verificar si quiz fue aprobado
@@ -203,60 +288,40 @@ export function ModuleListEnhanced({
       return 'unlocked'
     }
 
-    // Para cursos GRATUITOS: Módulos 2+ bloqueados hasta completar anterior
-    // NOTA: Todos los cursos actuales son gratuitos, no hay modelo premium todavía
-    if (!isPremium) {
-      return 'locked' // Bloqueado hasta completar quiz del módulo anterior
-    }
+    // ✅ NUEVO: Verificar si está desbloqueado en la tabla
+    const isUnlockedInTable = unlockedModuleIds.includes(module.id)
+    console.log(`   🔍 Desbloqueado en tabla: ${isUnlockedInTable}`)
 
-    // Para cursos PREMIUM: Verificar módulo anterior
-    const previousModule = sortedModules[moduleIndex - 1]
-    if (!previousModule) {
-      // Si no hay módulo anterior, desbloquear (caso edge)
-      return 'unlocked'
-    }
-
-    const prevModuleLessons = previousModule.lessons || []
-    const prevCompletedCount = prevModuleLessons.filter(lesson =>
-      progressState[lesson.slug]
-    ).length
-    const prevAllLessonsCompleted = prevCompletedCount === prevModuleLessons.length && prevModuleLessons.length > 0
-
-    // Si módulo anterior requiere quiz
-    if (previousModule.requires_quiz) {
-      // Verificar si al menos completó todas las lecciones del módulo anterior
-      if (!prevAllLessonsCompleted) {
-        return 'locked'
-      }
-      // Verificar si quiz del módulo anterior fue aprobado
-      const prevQuizStatus = quizData[previousModule.id]?.status
-      if (prevQuizStatus !== 'passed') {
-        return 'locked' // Bloqueado hasta aprobar quiz del módulo anterior
-      }
-      // Módulo anterior completado correctamente
-    }
-
-    // Si módulo anterior NO requiere quiz, solo verificar lecciones
-    if (!prevAllLessonsCompleted) {
+    if (!isUnlockedInTable) {
+      console.log(`   🔒 BLOQUEADO: No está en user_unlocked_modules`)
       return 'locked'
     }
 
-    // Módulo anterior completado, este módulo está desbloqueado
-    // Ahora verificar estado de este módulo
+    // Si está desbloqueado, verificar estado de progreso
+    console.log(`   🔓 DESBLOQUEADO: Verificando progreso...`)
+
+    // Verificar si está completado
     if (module.requires_quiz && allLessonsCompleted) {
-      // Verificar si quiz fue aprobado
-      const currentQuizStatus = quizData[module.id]?.status
-      if (currentQuizStatus === 'passed') {
+      const quizStatus = quizData[module.id]?.status
+      if (quizStatus === 'passed') {
+        console.log(`   ✅ COMPLETADO: Lecciones + quiz aprobado`)
         return 'completed'
       }
-      return 'in_progress' // Lecciones completadas, falta aprobar quiz
-    }
-    if (allLessonsCompleted && !module.requires_quiz) {
-      return 'completed'
-    }
-    if (completedCount > 0) {
+      console.log(`   📊 EN PROGRESO: Lecciones completas, falta quiz`)
       return 'in_progress'
     }
+
+    if (allLessonsCompleted && !module.requires_quiz) {
+      console.log(`   ✅ COMPLETADO: Todas las lecciones`)
+      return 'completed'
+    }
+
+    if (completedCount > 0) {
+      console.log(`   📊 EN PROGRESO: ${completedCount}/${moduleLessons.length}`)
+      return 'in_progress'
+    }
+
+    console.log(`   🔓 DESBLOQUEADO: Sin progreso aún`)
     return 'unlocked'
   }
 
