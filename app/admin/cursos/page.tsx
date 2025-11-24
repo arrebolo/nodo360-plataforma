@@ -11,20 +11,32 @@ export default async function AdminCoursesPage() {
   const supabase = await createClient()
 
   // Fetch courses with counts
-  const { data: courses } = await supabase
+  const { data: courses, error: coursesError } = await supabase
     .from('courses')
     .select(`
       *,
-      modules:modules(count),
-      lessons:lessons(count),
+      modules:modules(
+        id,
+        lessons:lessons(count)
+      ),
       enrollments:course_enrollments(count)
     `)
     .order('created_at', { ascending: false })
 
+  if (coursesError) {
+    console.error('❌ [Admin Courses] Error al cargar cursos:', coursesError)
+  }
+
   // Calculate stats
   const totalCourses = courses?.length || 0
-  const totalModules = courses?.reduce((acc, course) => acc + (course.modules?.[0]?.count || 0), 0) || 0
-  const totalLessons = courses?.reduce((acc, course) => acc + (course.lessons?.[0]?.count || 0), 0) || 0
+  const totalModules = courses?.reduce((acc, course) => acc + (course.modules?.length || 0), 0) || 0
+  // Count total lessons through modules
+  const totalLessons = courses?.reduce((acc, course) => {
+    const modulesLessons = course.modules?.reduce((modAcc: number, mod: any) => {
+      return modAcc + (mod.lessons?.[0]?.count || 0)
+    }, 0) || 0
+    return acc + modulesLessons
+  }, 0) || 0
   const totalEnrollments = courses?.reduce((acc, course) => acc + (course.enrollments?.[0]?.count || 0), 0) || 0
 
   console.log('✅ [Admin Courses] Cursos cargados:', totalCourses)

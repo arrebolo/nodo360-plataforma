@@ -39,7 +39,14 @@
       "Bash(else echo \"⚠️ No existe [courseSlug]\")",
       "Bash(fi)",
       "Bash(move \"[courseId]\" \"[id]\")",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(cmd /c \"tasklist | findstr node\")",
+      "Bash(timeout 5 bash:*)",
+      "Bash(timeout 10 bash:*)",
+      "Bash(netstat:*)",
+      "Bash(wc:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []
