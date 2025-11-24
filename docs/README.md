@@ -11,7 +11,12 @@ docs/
 ├── README.md (este archivo)
 ├── guides/          # Guías activas y documentación de referencia
 ├── reports/         # Reportes de auditorías y análisis
-└── archive/         # Archivos históricos (fixes y fases completadas)
+└── archive/         # Archivos históricos organizados por categoría
+    ├── fixes/       # Soluciones a problemas específicos
+    ├── phases/      # Documentación de fases completadas
+    ├── actions/     # Planes de acción y pasos rápidos
+    ├── solutions/   # Soluciones completas y sistemas
+    └── misc/        # Reportes, diagnósticos y guías temporales
 ```
 
 ---
@@ -66,33 +71,51 @@ Análisis, auditorías y reportes del proyecto:
 
 ## 📦 Archivo (`/archive`)
 
-Documentación histórica de fases y fixes completados:
+Documentación histórica organizada por categoría. Estos archivos se conservan para referencia histórica pero las soluciones ya están aplicadas en el código activo.
 
-### Fases Completadas
+### 🔧 Fixes (`/archive/fixes`) - 5 archivos
+Soluciones a problemas específicos aplicados al código:
+- FIX-DASHBOARD-PROGRESO.md
+- FIX-DESBLOQUEO-MODULOS.md
+- FIX-ERROR-500-ENROLL.md
+- FIX-FINAL-DASHBOARD.md
+- FIX-GAMIFICATION-SYSTEM.md
+
+### 📋 Phases (`/archive/phases`) - 5 archivos
+Documentación de fases de desarrollo completadas:
 - FASE_2_AUTENTICACION.md
-- FASE-3A-*.md (3 archivos)
+- FASE-3A-QUICK-START.md
+- FASE-3A-RESUMEN.md
+- FASE-3A-TESTING.md
 - FASE-3B-GAMIFICACION.md
 
-### Fixes Aplicados
-- FIX-*.md (6 archivos)
-- SOLUCION-*.md (4 archivos)
+### ⚡ Actions (`/archive/actions`) - 3 archivos
+Planes de acción inmediata y pasos rápidos:
+- ACCION-INMEDIATA.md
+- ACCION-RAPIDA-DASHBOARDS.md
+- ACCION-RAPIDA-FIX.md
 
-### Acciones y Sistemas
-- ACCION-*.md (3 archivos)
-- SISTEMA-*.md (3 archivos)
+### 🛠️ Solutions (`/archive/solutions`) - 5 archivos
+Soluciones completas y documentación de sistemas:
+- SISTEMA-PROGRESO-LECCIONES.md
+- SISTEMA-SERVER-SIDE-SIMPLE.md
+- SOLUCION-COMPLETA-PROGRESO.md
+- SOLUCION-DASHBOARDS-VACIOS.md
+- SOLUCION-RAPIDA-ENROLLMENTS.md
 
-### Testing y Diagnósticos
-- TESTING-*.md
-- DIAGNOSTICO-*.md
-- CHECKLIST-*.md
-
-### Guías y Reportes Históricos
-- GUIA-*.md
-- REPORTE-*.md
-- RESUMEN-*.md
-- PASOS-*.md
-
-**Nota**: Estos archivos se conservan para referencia histórica pero las soluciones ya están aplicadas en el código activo.
+### 📝 Misc (`/archive/misc`) - 11 archivos
+Reportes de diagnóstico, testing, checklists y guías temporales:
+- APLICAR-MIGRATION-VISUAL.md
+- CHECKLIST-TESTING-FINAL.md
+- DIAGNOSTICO-COMPLETO-FINAL.md
+- GAMIFICACION-QUICK-START.md
+- GUIA-RAPIDA-PROGRESO.md
+- INICIO-RAPIDO.md
+- PASOS-FINALES.md
+- REPORTE-DEBUG-ENROLLMENTS.md
+- RESUMEN-FIX-INSCRIPCION.md
+- SIGUIENTE-PASO-AHORA.md
+- TESTING-INSCRIPCION.md
 
 ---
 
