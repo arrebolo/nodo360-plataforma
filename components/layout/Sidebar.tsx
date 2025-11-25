@@ -11,10 +11,12 @@ import {
   BookOpen,
   Settings,
   User,
+  Vote,
 } from 'lucide-react'
 
 const navItems = [
   { href: '/cursos', icon: GraduationCap, label: 'Cursos' },
+  { href: '/gobernanza', icon: Vote, label: 'Gobernanza' },
   { href: '/comunidad', icon: Users, label: 'Comunidad' },
   { href: '/proyectos', icon: Rocket, label: 'Proyectos' },
   { href: '/mentoria', icon: MessageCircle, label: 'Mentoría' },

@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin/auth'
-import Sidebar from '@/components/admin/Sidebar'
+import AdminSidebar from '@/components/admin/AdminSidebar'
+import AdminHeader from '@/components/admin/AdminHeader'
 
 export const metadata = {
   title: 'Panel Admin | Nodo360',
@@ -15,21 +16,16 @@ export default async function AdminLayout({
   const { profile } = await requireAdmin('/admin')
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
-      <div className="flex h-screen">
-        {/* Sidebar */}
-        <aside className="w-64 flex-shrink-0">
-          <Sidebar
-            userEmail={profile.email || 'Admin'}
-            userRole={profile.role}
-          />
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-8">
-            {children}
-          </div>
+    <div className="min-h-screen bg-[#0a0d14] flex">
+      <AdminSidebar />
+      <div className="flex-1 flex flex-col min-h-screen">
+        <AdminHeader user={{
+          full_name: profile.full_name,
+          email: profile.email || 'Admin',
+          role: profile.role
+        }} />
+        <main className="flex-1 p-8 overflow-auto">
+          {children}
         </main>
       </div>
     </div>

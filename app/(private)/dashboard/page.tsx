@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getUserRoles } from '@/lib/roles/getUserRoles'
+import { RoleBasedDashboard } from '@/components/dashboard/RoleBasedDashboard'
 
 async function getActivePathProgress(userId: string) {
   console.log('🔍 [getActivePathProgress] Obteniendo progreso de ruta...')
@@ -243,11 +245,12 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const [pathProgress, enrollments, leaderboard, recentActivity] = await Promise.all([
+  const [pathProgress, enrollments, leaderboard, recentActivity, userRolesData] = await Promise.all([
     getActivePathProgress(user.id),
     getUserEnrollments(user.id),
     getLeaderboard(),
-    getRecentActivity(user.id)
+    getRecentActivity(user.id),
+    getUserRoles(user.id)
   ])
 
   const { data: stats } = await supabase
@@ -307,6 +310,17 @@ export default async function DashboardPage() {
             Bienvenido de nuevo, <span className="text-white font-medium">{user.email}</span>
           </p>
         </div>
+
+        {/* Paneles según rol del usuario */}
+        {(userRolesData.roles.length > 1 || userRolesData.highestRole !== 'user') && (
+          <div className="mb-8">
+            <RoleBasedDashboard
+              highestRole={userRolesData.highestRole}
+              roles={userRolesData.roles}
+              userName={user.email || undefined}
+            />
+          </div>
+        )}
 
         {pathProgress && (
           <div className="mb-8">
