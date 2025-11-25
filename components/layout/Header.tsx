@@ -14,6 +14,7 @@ export function Header() {
 
   const navLinks = [
     { href: '/cursos', label: 'Cursos' },
+    { href: '/gobernanza', label: 'Gobernanza' },
     { href: '/comunidad', label: 'Comunidad' },
     { href: '/proyectos', label: 'Proyectos' },
     { href: '/mentoria', label: 'Mentoría' },
