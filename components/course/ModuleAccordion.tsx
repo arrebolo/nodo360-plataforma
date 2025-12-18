@@ -171,7 +171,7 @@ export function ModuleAccordion({
                         `}>
                           {lessonIndex + 1}. {lesson.title}
                         </div>
-                        {lesson.video_duration_minutes > 0 && (
+                        {lesson.video_duration_minutes && lesson.video_duration_minutes > 0 && (
                           <div className="text-xs text-gray-500 mt-1">
                             {lesson.video_duration_minutes} min
                           </div>

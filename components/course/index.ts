@@ -1,11 +1,13 @@
 // Core Components
 export { LessonList } from './LessonList'
-export { ModuleListEnhanced } from './ModuleListEnhanced'
+export { LessonLinkItem } from './LessonLinkItem'
+export { LessonQuiz } from './LessonQuiz'
 export { ModuleQuizSection } from './ModuleQuizSection'
 export { ModuleCard } from './ModuleCard'
 export { ModuleAccordion } from './ModuleAccordion'
 export { CourseSidebar } from './CourseSidebar'
 export { CourseCard } from './CourseCard'
+export { CourseCardCompact } from './CourseCardCompact'
 export { CourseGrid } from './CourseGrid'
 
 // New Simplified Components

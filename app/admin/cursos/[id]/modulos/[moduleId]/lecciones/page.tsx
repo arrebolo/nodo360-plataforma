@@ -11,11 +11,14 @@ interface PageProps {
     id: string
     moduleId: string
   }>
+  searchParams: Promise<{ created?: string }>
 }
 
-export default async function LessonListPage({ params }: PageProps) {
+export default async function LessonListPage({ params, searchParams }: PageProps) {
   await requireAdmin()
   const { id, moduleId } = await params
+  const resolvedSearchParams = await searchParams
+  const showCreatedMessage = resolvedSearchParams?.created === '1'
   const courseId = id
   const supabase = await createClient()
 
@@ -45,6 +48,10 @@ export default async function LessonListPage({ params }: PageProps) {
     .order('order_index', { ascending: true })
 
   const totalLessons = lessons?.length || 0
+  // Calcular max order_index para determinar si una lección es la última
+  const maxOrderIndex = lessons && lessons.length > 0
+    ? Math.max(...lessons.map(l => l.order_index))
+    : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f1419] via-[#1a1f2e] to-[#0f1419] text-white p-6">
@@ -89,6 +96,13 @@ export default async function LessonListPage({ params }: PageProps) {
             Nueva Lección
           </Link>
         </div>
+
+        {/* Mensaje de éxito al crear lección */}
+        {showCreatedMessage && (
+          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+            ✅ Lección creada correctamente. Puedes añadir otra o volver al curso.
+          </div>
+        )}
 
         {/* Lecciones List */}
         {totalLessons === 0 ? (
@@ -168,8 +182,8 @@ export default async function LessonListPage({ params }: PageProps) {
                       <ReorderLessonButtons
                         lessonId={lesson.id}
                         moduleId={moduleId}
-                        currentIndex={index}
-                        totalLessons={totalLessons}
+                        currentIndex={lesson.order_index}
+                        maxOrderIndex={maxOrderIndex}
                       />
 
                       <Link

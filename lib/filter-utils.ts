@@ -2,9 +2,17 @@
  * Filter Utilities
  *
  * Helper functions for filtering courses
+ * NOTA: Los filtros se basan en los campos reales de la BD
  */
 
 import type { Course, CourseFilters } from '@/types/database'
+
+/**
+ * Convierte total_duration_minutes a horas para filtrado
+ */
+function getDurationHours(course: Course): number {
+  return Math.ceil((course.total_duration_minutes || 0) / 60)
+}
 
 /**
  * Filter courses based on selected filters
@@ -16,14 +24,9 @@ export function filterCourses(courses: Course[], filters: CourseFilters): Course
       return false
     }
 
-    // Filtro de categoría
-    if (filters.category !== 'all' && course.category !== filters.category) {
-      return false
-    }
-
-    // Filtro de duración
+    // Filtro de duración (basado en total_duration_minutes)
     if (filters.duration !== 'all') {
-      const hours = course.duration_hours
+      const hours = getDurationHours(course)
       const matchesDuration =
         (filters.duration === 'short' && hours < 5) ||
         (filters.duration === 'medium' && hours >= 5 && hours < 10) ||
@@ -57,20 +60,17 @@ export function getFilterCounts(courses: Course[]) {
       intermediate: courses.filter(c => c.level === 'intermediate').length,
       advanced: courses.filter(c => c.level === 'advanced').length,
     },
-    byCategory: {
-      bitcoin: courses.filter(c => c.category === 'bitcoin').length,
-      blockchain: courses.filter(c => c.category === 'blockchain').length,
-      defi: courses.filter(c => c.category === 'defi').length,
-      nfts: courses.filter(c => c.category === 'nfts').length,
-      development: courses.filter(c => c.category === 'development').length,
-      trading: courses.filter(c => c.category === 'trading').length,
-      other: courses.filter(c => c.category === 'other').length,
-    },
     byDuration: {
-      short: courses.filter(c => c.duration_hours < 5).length,
-      medium: courses.filter(c => c.duration_hours >= 5 && c.duration_hours < 10).length,
-      long: courses.filter(c => c.duration_hours >= 10 && c.duration_hours < 20).length,
-      veryLong: courses.filter(c => c.duration_hours >= 20).length,
+      short: courses.filter(c => getDurationHours(c) < 5).length,
+      medium: courses.filter(c => {
+        const h = getDurationHours(c)
+        return h >= 5 && h < 10
+      }).length,
+      long: courses.filter(c => {
+        const h = getDurationHours(c)
+        return h >= 10 && h < 20
+      }).length,
+      veryLong: courses.filter(c => getDurationHours(c) >= 20).length,
     },
     free: courses.filter(c => !c.is_premium).length,
     premium: courses.filter(c => c.is_premium).length,
@@ -87,16 +87,6 @@ export function getFilterLabel(filterType: string, value: string): string {
       beginner: 'Principiante',
       intermediate: 'Intermedio',
       advanced: 'Avanzado',
-    },
-    category: {
-      all: 'Todas',
-      bitcoin: 'Bitcoin',
-      blockchain: 'Blockchain',
-      defi: 'DeFi',
-      nfts: 'NFTs',
-      development: 'Desarrollo',
-      trading: 'Trading',
-      other: 'Otros',
     },
     duration: {
       all: 'Todas',
@@ -121,7 +111,6 @@ export function getFilterLabel(filterType: string, value: string): string {
 export function hasActiveFilters(filters: CourseFilters): boolean {
   return (
     filters.level !== 'all' ||
-    filters.category !== 'all' ||
     filters.duration !== 'all' ||
     filters.type !== 'all'
   )
@@ -133,7 +122,6 @@ export function hasActiveFilters(filters: CourseFilters): boolean {
 export function resetFilters(): CourseFilters {
   return {
     level: 'all',
-    category: 'all',
     duration: 'all',
     type: 'all',
   }

@@ -1,0 +1,47 @@
+MENTORSHIP SYSTEM BACKUP MANIFEST
+=================================
+Fecha: 2025-12-01
+
+Archivos incluidos:
+
+SQL:
+  - mentorship-schema.sql
+
+APIs:
+  - api/mentorship/educators/route.ts
+  - api/mentorship/educators/[slug]/route.ts
+  - api/mentorship/specialties/route.ts
+  - api/mentorship/sessions/route.ts
+  - api/mentorship/sessions/[id]/route.ts
+  - api/mentorship/sessions/[id]/review/route.ts
+  - api/mentorship/sessions/[id]/notes/route.ts
+  - api/mentorship/availability/route.ts
+  - api/mentorship/credits/route.ts
+
+Paginas Publicas:
+  - pages/public/formadores/page.tsx
+  - pages/public/formadores/[slug]/page.tsx
+  - pages/public/instructores/page.tsx
+  - pages/public/mentores/page.tsx
+
+Dashboard Alumno:
+  - pages/dashboard/mis-sesiones/page.tsx
+  - pages/dashboard/mis-sesiones/[id]/page.tsx
+  - pages/dashboard/ser-formador/page.tsx
+
+Dashboard Formador:
+  - pages/dashboard/formador/page.tsx
+  - pages/dashboard/formador/sesiones/page.tsx
+  - pages/dashboard/formador/sesiones/[id]/page.tsx
+  - pages/dashboard/formador/disponibilidad/page.tsx
+  - pages/dashboard/formador/perfil/page.tsx
+
+Admin:
+  - pages/admin/formadores/page.tsx
+  - pages/admin/formadores/[id]/page.tsx
+  - pages/admin/formadores/solicitudes/page.tsx
+  - pages/admin/formadores/promociones/page.tsx
+
+Navegacion (modificados):
+  - app/_components/MainHeader.tsx (enlace a /formadores)
+  - components/UserMenu.tsx (seccion Mentoria)

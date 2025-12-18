@@ -1,157 +1,182 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Plus, Trash2, StickyNote } from 'lucide-react'
-import {
-  getLessonNotes,
-  addLessonNote,
-  deleteLessonNote,
-  type Note,
-} from '@/lib/utils/progress'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Loader2, Save } from 'lucide-react'
 
-interface LessonNotesProps {
-  lessonId: string
+type Note = {
+  id: string
+  content: string
+  created_at: string
 }
 
-export function LessonNotes({ lessonId }: LessonNotesProps) {
+export default function LessonNotes({ lessonId }: { lessonId: string }) {
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [notes, setNotes] = useState<Note[]>([])
-  const [newNoteText, setNewNoteText] = useState('')
-  const [isAdding, setIsAdding] = useState(false)
+  const [newNote, setNewNote] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  // Cargar notas
   useEffect(() => {
-    loadNotes()
+    const fetchNotes = async () => {
+      try {
+        const supabase = createClient()
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
 
-    // Listener para actualizaciones
-    const handleUpdate = () => loadNotes()
-    window.addEventListener('note-added', handleUpdate)
-    window.addEventListener('note-deleted', handleUpdate)
+        if (userError || !user) {
+          setError('Debes iniciar sesión para guardar notas.')
+          setLoading(false)
+          return
+        }
 
-    return () => {
-      window.removeEventListener('note-added', handleUpdate)
-      window.removeEventListener('note-deleted', handleUpdate)
+        const { data, error: notesError } = await supabase
+          .from('notes')
+          .select('id, content, created_at')
+          .eq('user_id', user.id)
+          .eq('lesson_id', lessonId)
+          .order('created_at', { ascending: false })
+
+        if (notesError) {
+          console.error('[LessonNotes] Error cargando notas:', notesError)
+          setError('No se pudieron cargar tus notas.')
+        } else {
+          setNotes(data || [])
+        }
+      } catch (err) {
+        console.error('[LessonNotes] Error inesperado:', err)
+        setError('Error inesperado al cargar tus notas.')
+      } finally {
+        setLoading(false)
+      }
     }
+
+    fetchNotes()
   }, [lessonId])
 
-  const loadNotes = () => {
-    const loaded = getLessonNotes(lessonId)
-    setNotes(loaded)
-  }
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newNote.trim()) return
 
-  const handleAddNote = () => {
-    if (!newNoteText.trim()) return
-
-    try {
-      addLessonNote(lessonId, newNoteText.trim())
-      setNewNoteText('')
-      setIsAdding(false)
-    } catch (error) {
-      console.error('Error adding note:', error)
-      alert('Error al agregar nota')
-    }
-  }
-
-  const handleDeleteNote = (noteId: string) => {
-    if (!confirm('¿Eliminar esta nota?')) return
+    setSaving(true)
+    setError(null)
 
     try {
-      deleteLessonNote(lessonId, noteId)
-    } catch (error) {
-      console.error('Error deleting note:', error)
-      alert('Error al eliminar nota')
-    }
-  }
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp)
-    return new Intl.DateTimeFormat('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date)
+      if (!user) {
+        setError('Debes iniciar sesión para guardar notas.')
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('notes')
+        .insert({
+          user_id: user.id,
+          lesson_id: lessonId,
+          content: newNote.trim(),
+        } as any)
+        .select('id, content, created_at')
+        .single()
+
+      if (error) {
+        console.error('[LessonNotes] Error guardando nota:', error)
+        setError('No se pudo guardar la nota.')
+      } else if (data) {
+        setNotes((prev) => [data, ...prev])
+        setNewNote('')
+      }
+    } catch (err) {
+      console.error('[LessonNotes] Error inesperado al guardar nota:', err)
+      setError('Error inesperado al guardar la nota.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
-    <div className="bg-[#1a1a1a] rounded-xl border border-white/10 p-6">
-      {/* Header */}
+    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-          <StickyNote className="w-5 h-5" />
-          Mis Notas
-        </h3>
-        {!isAdding && (
-          <button
-            onClick={() => setIsAdding(true)}
-            className="p-1.5 rounded-lg bg-[#dc2626] text-white hover:bg-[#b91c1c] transition-colors"
-            aria-label="Agregar nota"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        )}
+        <h2 className="text-lg font-bold text-white">Mis notas de esta lección</h2>
       </div>
 
-      {/* Add Note Form */}
-      {isAdding && (
-        <div className="mb-4 p-3 bg-black/30 rounded-lg border border-white/10">
-          <textarea
-            value={newNoteText}
-            onChange={(e) => setNewNoteText(e.target.value)}
-            placeholder="Escribe tu nota aquí..."
-            className="w-full bg-transparent text-white text-sm placeholder:text-white/30 border-none outline-none resize-none min-h-[80px]"
-            autoFocus
-          />
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={handleAddNote}
-              className="px-3 py-1.5 bg-[#dc2626] text-white text-xs font-medium rounded hover:bg-[#b91c1c] transition-colors"
-            >
-              Guardar
-            </button>
-            <button
-              onClick={() => {
-                setIsAdding(false)
-                setNewNoteText('')
-              }}
-              className="px-3 py-1.5 bg-[#2a2a2a] text-white text-xs font-medium rounded hover:bg-[#3a3a3a] transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
+      {loading ? (
+        <div className="flex items-center gap-2 text-sm text-white/60">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Cargando tus notas...
         </div>
-      )}
-
-      {/* Notes List */}
-      <div className="space-y-3 max-h-[400px] overflow-y-auto">
-        {notes.length === 0 ? (
-          <div className="text-center py-8">
-            <StickyNote className="w-12 h-12 text-white/20 mx-auto mb-3" />
-            <p className="text-sm text-white/50">No tienes notas aún</p>
-            <p className="text-xs text-white/30 mt-1">
-              Haz clic en + para agregar una
-            </p>
-          </div>
-        ) : (
-          notes.map((note) => (
-            <div
-              key={note.id}
-              className="p-3 bg-black/30 rounded-lg border border-white/10 group"
-            >
-              <div className="flex justify-between items-start gap-2 mb-2">
-                <p className="text-xs text-white/50">{formatDate(note.timestamp)}</p>
-                <button
-                  onClick={() => handleDeleteNote(note.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/20 rounded"
-                  aria-label="Eliminar nota"
-                >
-                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                </button>
-              </div>
-              <p className="text-sm text-white/80 whitespace-pre-wrap">{note.text}</p>
+      ) : (
+        <>
+          {error && (
+            <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/40 px-3 py-2 text-sm text-red-200">
+              {error}
             </div>
-          ))
-        )}
-      </div>
+          )}
+
+          {/* Formulario para nueva nota */}
+          <form onSubmit={handleSave} className="space-y-3 mb-6">
+            <textarea
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#f7931a] resize-none"
+              placeholder="Escribe aquí tus notas, ideas o recordatorios sobre esta lección..."
+            />
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={saving || !newNote.trim()}
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#ff6b35] to-[#f7931a] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Guardar nota
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Lista de notas existentes */}
+          {notes.length > 0 ? (
+            <div className="space-y-3">
+              {notes.map((note) => (
+                <div
+                  key={note.id}
+                  className="rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-sm text-white/80"
+                >
+                  <p className="whitespace-pre-wrap">{note.content}</p>
+                  <p className="mt-1 text-[11px] text-white/40">
+                    {new Date(note.created_at).toLocaleString('es-ES', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-white/50">
+              Aún no has guardado notas en esta lección. Usa el cuadro de arriba para añadir
+              tus primeras notas.
+            </p>
+          )}
+        </>
+      )}
     </div>
   )
 }

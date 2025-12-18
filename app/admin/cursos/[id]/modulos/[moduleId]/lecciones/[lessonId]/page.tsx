@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/admin/auth'
 import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -57,7 +58,6 @@ export default async function EditLessonPage({ params }: PageProps) {
     console.log('✏️ [Update Lesson] Iniciando actualización de lección:', lessonId)
 
     await requireAdmin()
-    const supabase = await createClient()
 
     // Preparar datos de la lección (sin cambiar order_index)
     const lessonData = {
@@ -69,12 +69,16 @@ export default async function EditLessonPage({ params }: PageProps) {
       video_duration_minutes: formData.get('video_duration_minutes')
         ? parseInt(formData.get('video_duration_minutes') as string)
         : null,
+      slides_url: formData.get('slides_url') as string || null,
+      pdf_url: formData.get('pdf_url') as string || null,
+      resources_url: formData.get('resources_url') as string || null,
       is_free_preview: formData.get('is_free_preview') === 'on',
     }
 
     console.log('✏️ [Update Lesson] Datos:', lessonData)
 
-    const { error } = await supabase
+    // Actualizar lección (usar admin para bypass RLS)
+    const { error } = await supabaseAdmin
       .from('lessons')
       .update(lessonData)
       .eq('id', lessonId)

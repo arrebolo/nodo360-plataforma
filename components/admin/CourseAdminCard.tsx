@@ -5,8 +5,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Edit, Trash2, Eye, BookOpen, Users, Clock } from 'lucide-react'
-import { deleteCourse } from '@/lib/admin/actions'
+import { deleteCourseAction } from '@/app/admin/cursos/actions'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 interface CourseAdminCardProps {
   course: {
@@ -19,6 +20,7 @@ interface CourseAdminCardProps {
     is_premium: boolean
     thumbnail_url: string | null
     created_at: string
+    published_at: string | null
     modules?: { count: number }[]
     lessons?: { count: number }[]
     enrollments?: { count: number }[]
@@ -27,6 +29,7 @@ interface CourseAdminCardProps {
 }
 
 export default function CourseAdminCard({ course, onDelete }: CourseAdminCardProps) {
+  const router = useRouter()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -36,14 +39,22 @@ export default function CourseAdminCard({ course, onDelete }: CourseAdminCardPro
 
   const handleDelete = async () => {
     setDeleting(true)
-    const result = await deleteCourse(course.id)
 
-    if (result.success) {
-      toast.success('Curso eliminado correctamente')
-      onDelete?.()
-    } else {
-      toast.error(result.error || 'Error al eliminar curso')
+    try {
+      const result = await deleteCourseAction(course.id)
+
+      if (result.success) {
+        toast.success('Curso eliminado correctamente')
+        onDelete?.()
+        router.refresh()
+      } else {
+        toast.error(result.error || 'Error al eliminar curso')
+      }
+    } catch (err: any) {
+      console.error('Error eliminando curso:', err)
+      toast.error('Error inesperado al eliminar')
     }
+
     setDeleting(false)
     setShowDeleteConfirm(false)
   }
@@ -85,12 +96,24 @@ export default function CourseAdminCard({ course, onDelete }: CourseAdminCardPro
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-2">
+            {/* Badge de estado: Publicado / Borrador */}
+            {course.published_at ? (
+              <span className="px-3 py-1 text-xs font-semibold rounded-full border backdrop-blur-sm bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                Publicado
+              </span>
+            ) : (
+              <span className="px-3 py-1 text-xs font-semibold rounded-full border backdrop-blur-sm bg-amber-500/20 text-amber-400 border-amber-500/30">
+                Borrador
+              </span>
+            )}
             <span className={`px-3 py-1 text-xs font-semibold rounded-full border backdrop-blur-sm ${statusConfig.color}`}>
               {statusConfig.label}
             </span>
-            <span className={`px-3 py-1 text-xs font-semibold rounded-full border backdrop-blur-sm ${levelConfig[course.level].color}`}>
-              {levelConfig[course.level].label}
-            </span>
+            {course.level && (
+              <span className={`px-3 py-1 text-xs font-semibold rounded-full border backdrop-blur-sm ${levelConfig[course.level]?.color || levelConfig.beginner.color}`}>
+                {levelConfig[course.level]?.label || 'Basico'}
+              </span>
+            )}
           </div>
         </div>
 
@@ -110,7 +133,7 @@ export default function CourseAdminCard({ course, onDelete }: CourseAdminCardPro
           <div className="flex items-center gap-4 mb-6 text-xs text-white/50">
             <div className="flex items-center gap-1.5">
               <BookOpen className="w-4 h-4 text-[#24D4FF]" />
-              <span>{modulesCount} módulos</span>
+              <span>{modulesCount} modulos</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-[#00C98D]" />
@@ -172,10 +195,10 @@ export default function CourseAdminCard({ course, onDelete }: CourseAdminCardPro
             </div>
 
             <h3 className="text-xl font-bold text-white text-center mb-2">
-              ¿Eliminar curso?
+              Eliminar curso?
             </h3>
             <p className="text-white/60 text-center mb-6">
-              Esta acción no se puede deshacer. Se eliminarán todos los módulos, lecciones y progreso asociados.
+              Esta accion no se puede deshacer. Se eliminaran todos los modulos, lecciones, progreso y certificados asociados.
             </p>
 
             <div className="flex gap-3">

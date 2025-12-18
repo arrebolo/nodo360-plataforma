@@ -73,15 +73,15 @@ const nextConfig: NextConfig = {
     ]
   },
 
-  // Redirects si es necesario
+  // Redirects
   async redirects() {
     return [
-      // Ejemplo: redirigir versiones antiguas de URLs
-      // {
-      //   source: '/old-path',
-      //   destination: '/new-path',
-      //   permanent: true,
-      // },
+      // Redirigir /verificar/* a /certificados/* (301 permanente)
+      {
+        source: '/verificar/:code*',
+        destination: '/certificados/:code*',
+        permanent: true,
+      },
     ]
   },
 

@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { getLevelFromXp } from '@/lib/gamification/leveling'
+import UserLevel from '@/components/gamification/UserLevel'
 
 interface GamificationStats {
   stats: {
@@ -187,7 +189,7 @@ export default function GamificationSection({ userId }: { userId: string }) {
                   </div>
                 </div>
                 <div className="text-emerald-400 font-bold">
-                  +{activity.xp_earned} XP
+                  +{activity.xp_amount} XP
                 </div>
               </div>
             ))}

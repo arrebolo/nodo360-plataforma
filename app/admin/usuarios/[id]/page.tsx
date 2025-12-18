@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/admin/auth'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Mail, Calendar, Trophy, Zap, BookOpen, Shield, Target } from 'lucide-react'
+import { ArrowLeft, Mail, Calendar, Trophy, Zap, BookOpen, Shield, Target, RotateCcw } from 'lucide-react'
 import ChangeRoleForm from './ChangeRoleForm'
 import AdjustXPForm from './AdjustXPForm'
 
@@ -27,7 +27,7 @@ async function getUserDetail(userId: string) {
 
   // Cursos inscritos
   const { data: enrollments } = await supabase
-    .from('enrollments')
+    .from('course_enrollments')
     .select(`
       *,
       course:course_id (id, title, slug, level)
@@ -195,6 +195,24 @@ export default async function UserDetailPage({
             </h3>
             <AdjustXPForm userId={user.id} currentXP={stats?.total_xp || 0} />
           </div>
+
+          {/* Reiniciar Cursos */}
+          <Link
+            href={`/admin/usuarios/${user.id}/reiniciar-cursos`}
+            className="block bg-red-500/10 rounded-xl p-6 border border-red-500/30 hover:border-red-500/50 transition-all group"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
+                <RotateCcw className="text-red-400" size={20} />
+              </div>
+              <h3 className="text-lg font-semibold text-red-400">
+                Reiniciar Cursos
+              </h3>
+            </div>
+            <p className="text-sm text-red-300/70">
+              Eliminar progreso y certificados de cursos seleccionados
+            </p>
+          </Link>
 
           {/* Info adicional */}
           <div className="bg-white/5 rounded-xl p-6 border border-white/10">

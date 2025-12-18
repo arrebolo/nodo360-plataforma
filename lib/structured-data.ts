@@ -37,7 +37,7 @@ export function generateCourseStructuredData(course: Course) {
     hasCourseInstance: {
       '@type': 'CourseInstance',
       courseMode: 'online',
-      courseWorkload: `PT${course.duration_hours}H`,
+      courseWorkload: `PT${Math.ceil((course.total_duration_minutes || 0) / 60)}H`,
     },
     ...(course.thumbnail_url && {
       image: course.thumbnail_url

@@ -2,42 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { PLATFORM_ROLES, type PlatformRole } from '@/lib/auth/roles'
 
 interface ChangeRoleFormProps {
   userId: string
-  currentRole: string
+  currentRole: PlatformRole
 }
-
-const ROLES = [
-  {
-    value: 'student',
-    label: 'Estudiante',
-    description: 'Usuario estándar de la plataforma',
-    color: 'bg-gray-500',
-    level: 1
-  },
-  {
-    value: 'instructor',
-    label: 'Instructor',
-    description: 'Puede crear y gestionar cursos',
-    color: 'bg-blue-500',
-    level: 2
-  },
-  {
-    value: 'mentor',
-    label: 'Mentor',
-    description: 'Guía estudiantes, privilegios especiales',
-    color: 'bg-purple-500',
-    level: 3
-  },
-  {
-    value: 'admin',
-    label: 'Administrador',
-    description: 'Control total del sistema',
-    color: 'bg-red-500',
-    level: 4
-  },
-]
 
 export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormProps) {
   const [selectedRole, setSelectedRole] = useState(currentRole)
@@ -80,8 +50,8 @@ export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormPr
     }
   }
 
-  const currentRoleInfo = ROLES.find(r => r.value === currentRole)
-  const selectedRoleInfo = ROLES.find(r => r.value === selectedRole)
+  const currentRoleInfo = PLATFORM_ROLES.find(r => r.value === currentRole)
+  const selectedRoleInfo = PLATFORM_ROLES.find(r => r.value === selectedRole)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -95,7 +65,7 @@ export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormPr
 
       {/* Selector de roles con cards */}
       <div className="grid grid-cols-1 gap-2">
-        {ROLES.map((role) => (
+        {PLATFORM_ROLES.map((role) => (
           <label
             key={role.value}
             className={`
@@ -112,7 +82,7 @@ export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormPr
               name="role"
               value={role.value}
               checked={selectedRole === role.value}
-              onChange={(e) => setSelectedRole(e.target.value)}
+              onChange={(e) => setSelectedRole(e.target.value as PlatformRole)}
               className="sr-only"
             />
 

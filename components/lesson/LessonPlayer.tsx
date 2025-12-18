@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FileText, Video } from 'lucide-react'
 import type { Lesson } from '@/types/database'
 import { markLessonStarted } from '@/lib/utils/progress'
@@ -62,7 +62,7 @@ export function LessonPlayer({
             {lesson.description && (
               <p className="text-gray-400 leading-relaxed">{lesson.description}</p>
             )}
-            {lesson.video_duration_minutes > 0 && (
+            {lesson.video_duration_minutes && lesson.video_duration_minutes > 0 && (
               <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
                 <Video className="w-4 h-4" />
                 <span>{lesson.video_duration_minutes} minutos</span>
@@ -82,116 +82,40 @@ export function LessonPlayer({
         </div>
       )}
 
-      {/* JSON Content (if structured content exists) */}
-      {lesson.content_json && (
-        <div className="bg-nodo-card border border-nodo-icon rounded-xl p-8">
-          <LessonContentRenderer content={lesson.content_json} />
-        </div>
-      )}
-
-      {/* Attachments */}
-      {lesson.attachments && lesson.attachments.length > 0 && (
+      {/* Recursos adicionales: slides y resources URLs */}
+      {(lesson.slides_url || lesson.resources_url) && (
         <div className="bg-nodo-card border border-nodo-icon rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4">📎 Archivos adjuntos</h3>
+          <h3 className="text-lg font-bold text-white mb-4">📎 Recursos</h3>
           <div className="space-y-2">
-            {lesson.attachments.map((attachment, index) => (
+            {lesson.slides_url && (
               <a
-                key={index}
-                href={attachment.url}
+                href={lesson.slides_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 rounded-lg border border-nodo-icon hover:border-[#F7931A] hover:bg-nodo-bg transition-all group"
               >
                 <FileText className="w-5 h-5 text-gray-400 group-hover:text-[#F7931A]" />
-                <div className="flex-1">
-                  <div className="font-medium text-white group-hover:text-[#F7931A]">
-                    {attachment.name}
-                  </div>
-                  {attachment.size && (
-                    <div className="text-xs text-gray-500">
-                      {formatFileSize(attachment.size)}
-                    </div>
-                  )}
-                </div>
-                <span className="text-xs px-2 py-1 bg-gray-800 text-gray-400 rounded uppercase">
-                  {attachment.type}
+                <span className="font-medium text-white group-hover:text-[#F7931A]">
+                  📊 Ver Slides
                 </span>
               </a>
-            ))}
+            )}
+            {lesson.resources_url && (
+              <a
+                href={lesson.resources_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 rounded-lg border border-nodo-icon hover:border-[#F7931A] hover:bg-nodo-bg transition-all group"
+              >
+                <FileText className="w-5 h-5 text-gray-400 group-hover:text-[#F7931A]" />
+                <span className="font-medium text-white group-hover:text-[#F7931A]">
+                  📚 Descargar Guía
+                </span>
+              </a>
+            )}
           </div>
         </div>
       )}
     </div>
   )
-}
-
-// Helper: Render structured JSON content
-function LessonContentRenderer({ content }: { content: any }) {
-  if (!content || !content.blocks) {
-    return null
-  }
-
-  return (
-    <div className="space-y-6">
-      {content.blocks.map((block: any, index: number) => {
-        switch (block.type) {
-          case 'heading':
-            const level = block.level || 2
-            return React.createElement(
-              `h${level}`,
-              { key: index, className: 'text-white font-bold' },
-              block.text
-            )
-
-          case 'paragraph':
-            return (
-              <p key={index} className="text-gray-300 leading-relaxed">
-                {block.text}
-              </p>
-            )
-
-          case 'list':
-            const ListTag = block.ordered ? 'ol' : 'ul'
-            return (
-              <ListTag key={index} className="text-gray-300 space-y-2 list-inside">
-                {block.items?.map((item: string, i: number) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ListTag>
-            )
-
-          case 'code':
-            return (
-              <pre key={index} className="bg-[#0f172a] p-4 rounded-lg overflow-x-auto">
-                <code className="text-sm text-[#F7931A]">{block.code}</code>
-              </pre>
-            )
-
-          case 'quote':
-            return (
-              <blockquote
-                key={index}
-                className="border-l-4 border-[#F7931A] pl-4 italic text-gray-400"
-              >
-                {block.text}
-              </blockquote>
-            )
-
-          default:
-            return null
-        }
-      })}
-    </div>
-  )
-}
-
-// Helper: Format file size
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes'
-
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }

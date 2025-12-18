@@ -8,14 +8,14 @@ interface ReorderLessonButtonsProps {
   lessonId: string
   moduleId: string
   currentIndex: number
-  totalLessons: number
+  maxOrderIndex: number
 }
 
 export function ReorderLessonButtons({
   lessonId,
   moduleId,
   currentIndex,
-  totalLessons
+  maxOrderIndex
 }: ReorderLessonButtonsProps) {
   const [isReordering, setIsReordering] = useState(false)
   const router = useRouter()
@@ -49,7 +49,7 @@ export function ReorderLessonButtons({
   }
 
   const isFirst = currentIndex === 0
-  const isLast = currentIndex === totalLessons - 1
+  const isLast = currentIndex === maxOrderIndex
 
   return (
     <div className="flex flex-col gap-1">

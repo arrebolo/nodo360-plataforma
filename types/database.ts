@@ -5,7 +5,8 @@
  * These types should match the schema defined in supabase/schema.sql
  */
 
-import type { LessonContent } from './lesson-content'
+// Los tipos de contenido adicionales se importan cuando se necesiten
+// import type { LessonContent } from './lesson-content'
 
 // =====================================================
 // ENUMS
@@ -14,7 +15,6 @@ import type { LessonContent } from './lesson-content'
 export type UserRole = 'student' | 'instructor' | 'admin'
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
 export type CourseStatus = 'draft' | 'published' | 'archived'
-export type CourseCategory = 'bitcoin' | 'blockchain' | 'defi' | 'nfts' | 'development' | 'trading' | 'other'
 export type MentorshipRequestStatus = 'pending' | 'contacted' | 'scheduled' | 'completed'
 
 // =====================================================
@@ -43,6 +43,8 @@ export interface User {
 /**
  * Courses Table
  * Stores course information
+ *
+ * NOTA: Este tipo debe coincidir con lib/supabase/types.ts > courses
  */
 export interface Course {
   id: string
@@ -53,13 +55,10 @@ export interface Course {
   thumbnail_url: string | null
   banner_url: string | null
   level: CourseLevel
-  category: CourseCategory
   status: CourseStatus
   price: number
   is_free: boolean
   is_premium: boolean
-  duration_hours: number
-  tags: string[]
   instructor_id: string | null
   total_modules: number
   total_lessons: number
@@ -67,6 +66,9 @@ export interface Course {
   enrolled_count: number
   meta_title: string | null
   meta_description: string | null
+  duration_label: string | null
+  is_certifiable: boolean
+  order_index: number
   created_at: string
   updated_at: string
   published_at: string | null
@@ -75,12 +77,14 @@ export interface Course {
 /**
  * Modules Table
  * Stores course modules (sections)
+ *
+ * NOTA: Este tipo debe coincidir con lib/supabase/types.ts > modules
  */
 export interface Module {
   id: string
   course_id: string
   title: string
-  slug: string
+  slug: string | null
   description: string | null
   order_index: number
   total_lessons: number
@@ -93,19 +97,21 @@ export interface Module {
 /**
  * Lessons Table
  * Stores individual lessons
+ *
+ * NOTA: Este tipo debe coincidir con lib/supabase/types.ts > lessons
  */
 export interface Lesson {
   id: string
   module_id: string
   title: string
-  description: string | null
   slug: string
+  description: string | null
   order_index: number
   content: string | null
-  content_json: LessonContent | null
   video_url: string | null
-  video_duration_minutes: number
-  attachments: Attachment[]
+  video_duration_minutes: number | null
+  slides_url: string | null
+  resources_url: string | null
   is_free_preview: boolean
   created_at: string
   updated_at: string
@@ -293,7 +299,6 @@ export interface SearchResults {
  */
 export interface CourseFilters {
   level: CourseLevel | 'all'
-  category: CourseCategory | 'all'
   duration: 'all' | 'short' | 'medium' | 'long' | 'very-long'
   type: 'all' | 'free' | 'premium'
 }

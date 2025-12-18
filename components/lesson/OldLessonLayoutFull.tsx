@@ -105,7 +105,7 @@ export function OldLessonLayoutFull({
                   allowFullScreen
                 />
               </div>
-              {lesson.video_duration_minutes > 0 && (
+              {lesson.video_duration_minutes && lesson.video_duration_minutes > 0 && (
                 <div className="flex items-center gap-2 mt-4 text-white/50 text-sm">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -134,51 +134,55 @@ export function OldLessonLayoutFull({
             </div>
           )}
 
-          {/* Attachments */}
-          {lesson.attachments && Array.isArray(lesson.attachments) && lesson.attachments.length > 0 && (
+          {/* Recursos adicionales */}
+          {(lesson.slides_url || lesson.resources_url) && (
             <div className="mb-12">
               <h2 className="text-2xl font-bold text-white mb-4">Recursos adicionales</h2>
               <div className="grid gap-3">
-                {lesson.attachments.map((attachment: any, index: number) => (
+                {lesson.slides_url && (
                   <a
-                    key={index}
-                    href={attachment.url}
+                    href={lesson.slides_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 p-4 bg-white/5 rounded-lg border border-white/10 hover:border-[#ff6b35]/50 hover:bg-white/10 transition-all group"
                   >
                     <div className="w-10 h-10 rounded-lg bg-[#ff6b35]/20 flex items-center justify-center group-hover:bg-[#ff6b35]/30 transition">
-                      {attachment.type === 'pdf' && (
-                        <svg className="w-5 h-5 text-[#ff6b35]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                      )}
-                      {attachment.type === 'link' && (
-                        <svg className="w-5 h-5 text-[#ff6b35]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                        </svg>
-                      )}
-                      {!['pdf', 'link'].includes(attachment.type) && (
-                        <svg className="w-5 h-5 text-[#ff6b35]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      )}
+                      <svg className="w-5 h-5 text-[#ff6b35]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
                     </div>
                     <div className="flex-1">
                       <div className="text-white font-medium group-hover:text-[#ff6b35] transition">
-                        {attachment.name}
+                        📊 Ver Slides
                       </div>
-                      {attachment.size && (
-                        <div className="text-xs text-white/40 mt-1">
-                          {(attachment.size / 1024 / 1024).toFixed(2)} MB
-                        </div>
-                      )}
                     </div>
                     <svg className="w-5 h-5 text-white/30 group-hover:text-[#ff6b35] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                   </a>
-                ))}
+                )}
+                {lesson.resources_url && (
+                  <a
+                    href={lesson.resources_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-4 bg-white/5 rounded-lg border border-white/10 hover:border-[#ff6b35]/50 hover:bg-white/10 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[#ff6b35]/20 flex items-center justify-center group-hover:bg-[#ff6b35]/30 transition">
+                      <svg className="w-5 h-5 text-[#ff6b35]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-white font-medium group-hover:text-[#ff6b35] transition">
+                        📚 Descargar Guía
+                      </div>
+                    </div>
+                    <svg className="w-5 h-5 text-white/30 group-hover:text-[#ff6b35] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                )}
               </div>
             </div>
           )}

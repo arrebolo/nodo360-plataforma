@@ -48,7 +48,16 @@
       "Bash(wc:*)",
       "Bash(pkill:*)",
       "Bash(git merge:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(grep:*)",
+      "Bash(mv:*)",
+      "Bash(timeout 30 npm run dev:*)",
+      "Bash(for f in \"components/course/ModuleListEnhanced.tsx\" \"components/course/ModuleStatusBadge.tsx\" \"components/course/ModuleQuizSection.tsx\" \"components/course/LessonHeader.tsx\" \"components/course/LessonContent.tsx\" \"components/lesson/CompleteLessonButton.tsx\" \"components/lesson/NotesPanel.tsx\" \"components/lesson/ActivityTracker.tsx\" \"components/learning/NextLessonButton.tsx\")",
+      "Bash(do test -f \"$f\")",
+      "Bash(done)",
+      "Bash(for d in \"app/api/progress\" \"app/api/learning\" \"app/api/notes\" \"app/api/activity\" \"app/api/complete\" \"app/api/certificates\")",
+      "Bash(do:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

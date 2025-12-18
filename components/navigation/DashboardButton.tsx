@@ -108,10 +108,10 @@ export function DashboardButton({ isAuthenticated, userRole, userName, userAvata
           <div className="py-2">
             {/* Mi Perfil - PRIMERO - SIEMPRE VISIBLE */}
             <Link
-              href="/dashboard/perfil"
+              href="/perfil"
               onClick={() => setIsOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 text-white transition ${
-                pathname === '/dashboard/perfil'
+                pathname === '/perfil'
                   ? 'bg-[#00C98D]/10 border-l-2 border-[#00C98D]'
                   : 'hover:bg-white/5'
               }`}

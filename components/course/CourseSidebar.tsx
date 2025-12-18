@@ -182,7 +182,7 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
                         >
                           {lesson.title}
                         </span>
-                        {lesson.video_duration_minutes > 0 && (
+                        {lesson.video_duration_minutes && lesson.video_duration_minutes > 0 && (
                           <span className="text-xs text-gray-600">
                             {lesson.video_duration_minutes}min
                           </span>

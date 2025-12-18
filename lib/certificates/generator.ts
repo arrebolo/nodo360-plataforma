@@ -208,10 +208,9 @@ export async function generateAndIssueCertificate(
       module = moduleData;
     }
 
-    // 4. GENERATE CERTIFICATE NUMBER AND VERIFICATION CODE
+    // 4. GENERATE CERTIFICATE NUMBER AND VERIFICATION URL
     const certificateNumber = await generateCertificateNumber();
-    const verificationCode = generateVerificationCode();
-    const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/verificar/${verificationCode}`;
+    const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/certificados/${certificateNumber}`;
 
     // 5. CREATE CERTIFICATE RECORD IN DATABASE (without URL yet)
     const { data: certificate, error: createError } = await supabase

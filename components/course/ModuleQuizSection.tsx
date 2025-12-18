@@ -22,7 +22,7 @@ interface ModuleQuizSectionProps {
  * ModuleQuizSection Component
  *
  * Muestra el estado del quiz de un módulo de manera visual y atractiva.
- * Se integra dentro de ModuleListEnhanced para mostrar información del quiz.
+ * Se integra en la página de cursos para mostrar información del quiz.
  */
 export function ModuleQuizSection({
   courseSlug,

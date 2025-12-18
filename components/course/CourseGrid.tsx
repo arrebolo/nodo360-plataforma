@@ -1,4 +1,4 @@
-import { CourseCard } from './CourseCard'
+import { CourseCardCompact } from './CourseCardCompact'
 import type { CourseWithInstructor } from '@/types/database'
 
 interface CourseGridProps {
@@ -35,14 +35,38 @@ export function CourseGrid({ courses, getProgress }: CourseGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {courses.map((course) => (
-        <CourseCard
-          key={course.id}
-          course={course}
-          progress={getProgress ? getProgress(course.id) : undefined}
-        />
-      ))}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+      {courses.map((course) => {
+        // Formatear duración: convertir minutos a "Xh Ym" o "Xh"
+        const mins = course.total_duration_minutes || 0
+        const hours = Math.floor(mins / 60)
+        const remainMins = mins % 60
+        const durationLabel = hours > 0
+          ? remainMins > 0
+            ? `${hours}h ${remainMins}m`
+            : `${hours}h`
+          : mins > 0
+            ? `${mins}m`
+            : null
+
+        return (
+          <CourseCardCompact
+            key={course.id}
+            course={{
+              id: course.id,
+              slug: course.slug,
+              title: course.title,
+              subtitle: course.description || null,
+              thumbnail_url: course.thumbnail_url || null,
+              is_free: course.is_free,
+              is_premium: course.is_premium,
+              level: course.level || null,
+              total_lessons: course.total_lessons || null,
+              duration_label: durationLabel,
+            }}
+          />
+        )
+      })}
     </div>
   )
 }

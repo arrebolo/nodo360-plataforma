@@ -1,0 +1,540 @@
+@import "tailwindcss";
+
+/* =========================================
+   SISTEMA DE DISENO NODO360 - WEB3 / DAO
+   ========================================= */
+
+/* Nodo360 Custom Theme - Tailwind v4 */
+@theme inline {
+  /* Colores de Nodo360 - Nueva Paleta */
+  --color-nodo-bg: #050712;
+  --color-nodo-bg-elevated: #0b0f1f;
+  --color-nodo-card: #111827;
+  --color-nodo-surface: rgba(15, 23, 42, 0.85);
+  --color-nodo-icon: #4b5563;
+  --color-bitcoin-orange: #f7931a;
+  --color-bitcoin-gold: #fdb931;
+
+  /* Colores legacy (mantener para compatibilidad) */
+  --color-nodo-black: #000000;
+  --color-nodo-dark: #0d1117;
+  --color-nodo-border: #30363d;
+  --color-nodo-red: #dc2626;
+  --color-nodo-red-dark: #b91c1c;
+  --color-nodo-red-light: #ef4444;
+
+  /* Grises personalizados */
+  --color-nodo-gray-300: #d1d5db;
+  --color-nodo-gray-400: #9ca3af;
+  --color-nodo-gray-500: #6b7280;
+  --color-nodo-gray-800: #1f2937;
+
+  /* Tipografia */
+  --font-sans: Inter, system-ui, sans-serif;
+
+  /* Variables de fondo y texto */
+  --color-background: var(--color-nodo-bg);
+  --color-foreground: #ffffff;
+}
+
+:root {
+  /* Colores base (mas suaves) */
+  --n360-bg: #0a0c12;
+  --n360-bg-elevated: #10131e;
+  --n360-surface: #131826;
+  --n360-surface-soft: rgba(19, 24, 38, 0.75);
+
+  /* Paleta principal suavizada */
+  --n360-primary: #f8a94a;
+  --n360-primary-soft: rgba(248, 169, 74, 0.12);
+
+  /* Acentos Web3 muy suavizados */
+  --n360-accent-blue: #6bd8f3;
+  --n360-accent-blue-soft: rgba(107, 216, 243, 0.12);
+
+  --n360-accent-green: #4bdd8c;
+  --n360-accent-green-soft: rgba(75, 221, 140, 0.10);
+
+  /* Neutrales */
+  --n360-text: #d6dae3;
+  --n360-text-soft: #a2a8b6;
+  --n360-border-subtle: rgba(150, 160, 180, 0.18);
+  --n360-border-strong: rgba(150, 160, 180, 0.28);
+
+  /* Sombras suaves */
+  --n360-shadow-soft: 0 14px 35px rgba(0, 0, 0, 0.45);
+  --n360-shadow-strong: 0 20px 55px rgba(0, 0, 0, 0.55);
+
+  /* Blur mas suave */
+  --n360-blur-strong: 18px;
+
+  /* Bordes */
+  --n360-radius-lg: 16px;
+  --n360-radius-xl: 20px;
+  --n360-radius-pill: 999px;
+
+  /* Tipografia */
+  --n360-font-sans: system-ui, -apple-system, Inter, 'SF Pro Text', sans-serif;
+
+  --background: var(--n360-bg);
+  --foreground: #ffffff;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* =========================
+   BASE HTML / BODY
+   ========================= */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--n360-font-sans);
+  background:
+    radial-gradient(circle at top left, rgba(107, 216, 243, 0.08), transparent 60%),
+    radial-gradient(circle at top right, rgba(248, 169, 74, 0.06), transparent 65%),
+    radial-gradient(circle at bottom, rgba(75, 221, 140, 0.07), transparent 70%),
+    var(--n360-bg);
+  color: var(--n360-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar sutil en modo oscuro */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.9);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(55, 65, 81, 0.9);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 1);
+}
+
+/* =========================
+   LINKS / TEXTOS
+   ========================= */
+
+a {
+  color: var(--n360-accent-blue);
+  text-decoration: none;
+  transition: color 0.18s ease, opacity 0.18s ease;
+}
+
+a:hover {
+  color: var(--n360-primary);
+  opacity: 0.95;
+}
+
+/* =========================
+   LAYOUTS GENERICOS
+   ========================= */
+
+/* Pagina base DAO/Web3 */
+.n360-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at top left, rgba(0, 212, 255, 0.08), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(247, 147, 26, 0.07), transparent 55%),
+    var(--n360-bg);
+}
+
+/* Contenedor principal de contenido */
+.n360-container {
+  max-width: 1120px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Secciones generales (ej. bloques de curso, comunidad, mentoria) */
+.n360-section {
+  border-radius: var(--n360-radius-xl);
+  border: 1px solid var(--n360-border-subtle);
+  background: linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.96),
+      rgba(15, 23, 42, 0.88)
+    );
+  box-shadow: var(--n360-shadow-soft);
+  padding: 1.5rem;
+  backdrop-filter: blur(var(--n360-blur-strong));
+}
+
+/* Variante "columna" para dashboards de curso, etc. */
+.n360-section--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* =========================
+   CARDS / BLOQUES
+   ========================= */
+
+/* Card principal (para cursos, modulos, bloques destacados) */
+.n360-card {
+  border-radius: var(--n360-radius-lg);
+  border: 1px solid var(--n360-border-subtle);
+  background: radial-gradient(
+      circle at top left,
+      rgba(0, 212, 255, 0.16),
+      transparent 55%
+    ),
+    radial-gradient(circle at bottom right, rgba(247, 147, 26, 0.14), transparent 55%),
+    rgba(15, 23, 42, 0.96);
+  box-shadow: var(--n360-shadow-soft);
+  padding: 1.1rem 1.25rem;
+}
+
+/* Card mas ligera, ideal para elementos secundarios (lecciones, badges...) */
+.n360-card-ghost {
+  border-radius: var(--n360-radius-lg);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.5),
+    rgba(15, 23, 42, 0.8)
+  );
+  padding: 0.95rem 1.1rem;
+}
+
+/* Card clickable (hover) */
+.n360-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.16s ease, transform 0.12s ease, box-shadow 0.16s ease,
+    background 0.2s ease;
+}
+
+.n360-card--clickable:hover {
+  border-color: rgba(247, 147, 26, 0.7);
+  transform: translateY(-1px);
+  box-shadow: var(--n360-shadow-strong);
+}
+
+/* =========================
+   BADGES / PILLS
+   ========================= */
+
+/* Badge pequeno (estado: completado, bloqueado, en progreso...) */
+.n360-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.85);
+  color: var(--n360-text-soft);
+}
+
+/* Variantes de estado */
+.n360-badge--primary {
+  border-color: rgba(247, 147, 26, 0.85);
+  background: var(--n360-primary-soft);
+  color: var(--n360-primary);
+}
+
+.n360-badge--success {
+  border-color: rgba(34, 197, 94, 0.85);
+  background: var(--n360-accent-green-soft);
+  color: var(--n360-accent-green);
+}
+
+.n360-badge--info {
+  border-color: rgba(56, 189, 248, 0.9);
+  background: var(--n360-accent-blue-soft);
+  color: var(--n360-accent-blue);
+}
+
+/* Badge Instructor */
+.n360-badge--instructor {
+  border-color: rgba(59, 130, 246, 0.85);
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+/* Badge Mentor */
+.n360-badge--mentor {
+  border-color: rgba(245, 158, 11, 0.85);
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+/* Pill clickable (tabs, filtros de cursos) */
+.n360-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--n360-radius-pill);
+  font-size: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(15, 23, 42, 0.7);
+  color: var(--n360-text-soft);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease,
+    transform 0.1s ease;
+}
+
+.n360-pill:hover {
+  border-color: rgba(247, 147, 26, 0.85);
+  color: var(--n360-primary);
+  transform: translateY(-0.5px);
+}
+
+.n360-pill--active {
+  border-color: rgba(247, 147, 26, 0.95);
+  background: radial-gradient(
+    circle at top left,
+    rgba(247, 147, 26, 0.28),
+    rgba(15, 23, 42, 0.95)
+  );
+  color: var(--n360-text);
+}
+
+/* =========================
+   BOTONES GENERICOS
+   ========================= */
+
+.n360-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.95),
+    rgba(15, 23, 42, 0.8)
+  );
+  color: var(--n360-text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.1s ease,
+    box-shadow 0.16s ease;
+}
+
+.n360-btn:hover {
+  border-color: rgba(247, 147, 26, 0.9);
+  background: radial-gradient(
+    circle at top left,
+    rgba(247, 147, 26, 0.35),
+    rgba(15, 23, 42, 0.96)
+  );
+  box-shadow: var(--n360-shadow-soft);
+  transform: translateY(-0.5px);
+}
+
+.n360-btn--primary {
+  border-color: rgba(247, 147, 26, 0.95);
+  background: linear-gradient(
+    135deg,
+    #fbbf24,
+    #f97316,
+    #ea580c
+  );
+  color: #0b0f1f;
+}
+
+.n360-btn--primary:hover {
+  box-shadow: 0 18px 40px rgba(248, 148, 30, 0.4);
+}
+
+.n360-btn--ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.n360-btn--ghost:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+/* =========================
+   TEXTO AUXILIAR
+   ========================= */
+
+.n360-label-muted {
+  font-size: 0.75rem;
+  color: var(--n360-text-soft);
+}
+
+/* Util para indicadores de progreso, certificados, etc. */
+.n360-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* =========================
+   INPUTS Y FORMULARIOS
+   ========================= */
+
+.n360-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--n360-radius-lg);
+  border: 1px solid var(--n360-border-subtle);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--n360-text);
+  font-size: 0.9rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.n360-input:focus {
+  outline: none;
+  border-color: var(--n360-primary);
+  box-shadow: 0 0 0 3px var(--n360-primary-soft);
+}
+
+.n360-input::placeholder {
+  color: var(--n360-text-soft);
+}
+
+.n360-select {
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--n360-border-subtle);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--n360-text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.n360-select:focus {
+  outline: none;
+  border-color: var(--n360-primary);
+}
+
+/* =========================
+   ANIMACIONES
+   ========================= */
+
+/* Animacion para sidebar movil */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Animaciones para homepage */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+.animate-fade-in-delayed {
+  animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+/* Utility class for animation delays */
+.delay-500 {
+  animation-delay: 500ms;
+}
+
+.delay-700 {
+  animation-delay: 700ms;
+}
+
+/* Animacion de gradiente para fondo del dashboard */
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 15s ease infinite;
+}
+
+/* Animaciones para onboarding */
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes scale-in {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+/* Pulse suave para indicadores */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Glow effect para elementos destacados */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(247, 147, 26, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(247, 147, 26, 0.5); }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}

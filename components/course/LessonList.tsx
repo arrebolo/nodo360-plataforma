@@ -118,7 +118,7 @@ export function LessonList({ courseSlug, modules, isPremium }: LessonListProps) 
                               {lesson.title}
                             </h4>
                             <div className="flex items-center gap-3 mt-1">
-                              {lesson.video_duration_minutes > 0 && (
+                              {lesson.video_duration_minutes && lesson.video_duration_minutes > 0 && (
                                 <p className="text-xs text-white/40 flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
                                   {lesson.video_duration_minutes} min
@@ -165,7 +165,7 @@ export function LessonList({ courseSlug, modules, isPremium }: LessonListProps) 
                             <h4 className="text-white/50 font-medium">
                               {lesson.title}
                             </h4>
-                            {lesson.video_duration_minutes > 0 && (
+                            {lesson.video_duration_minutes && lesson.video_duration_minutes > 0 && (
                               <p className="text-xs text-white/30 mt-1 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {lesson.video_duration_minutes} min
@@ -209,7 +209,7 @@ export function LessonList({ courseSlug, modules, isPremium }: LessonListProps) 
                             {lesson.title}
                           </h4>
                           <div className="flex items-center gap-3 mt-1">
-                            {lesson.video_duration_minutes > 0 && (
+                            {lesson.video_duration_minutes && lesson.video_duration_minutes > 0 && (
                               <p className="text-xs text-white/40 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {lesson.video_duration_minutes} min

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/admin/auth'
 import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -45,10 +46,9 @@ export default async function NewLessonPage({ params }: PageProps) {
     console.log('📝 [Create Lesson] Iniciando creación de lección')
 
     await requireAdmin()
-    const supabase = await createClient()
 
-    // Obtener el máximo order_index actual para este módulo
-    const { data: maxOrderData } = await supabase
+    // Obtener el máximo order_index actual para este módulo (usar admin para bypass RLS)
+    const { data: maxOrderData } = await supabaseAdmin
       .from('lessons')
       .select('order_index')
       .eq('module_id', moduleId)
@@ -63,6 +63,7 @@ export default async function NewLessonPage({ params }: PageProps) {
     // Preparar datos de la lección
     const lessonData = {
       module_id: moduleId,
+      course_id: courseId,
       title: formData.get('title') as string,
       slug: formData.get('slug') as string,
       description: formData.get('description') as string || null,
@@ -71,13 +72,17 @@ export default async function NewLessonPage({ params }: PageProps) {
       video_duration_minutes: formData.get('video_duration_minutes')
         ? parseInt(formData.get('video_duration_minutes') as string)
         : null,
+      slides_url: formData.get('slides_url') as string || null,
+      pdf_url: formData.get('pdf_url') as string || null,
+      resources_url: formData.get('resources_url') as string || null,
       is_free_preview: formData.get('is_free_preview') === 'on',
       order_index: nextOrderIndex,
     }
 
     console.log('📝 [Create Lesson] Datos:', lessonData)
 
-    const { error } = await supabase
+    // Crear lección (usar admin para bypass RLS)
+    const { error } = await supabaseAdmin
       .from('lessons')
       .insert(lessonData)
 
@@ -89,7 +94,8 @@ export default async function NewLessonPage({ params }: PageProps) {
     console.log('✅ [Create Lesson] Lección creada correctamente')
 
     revalidatePath(`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones`)
-    redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones`)
+    // Flujo guiado: redirigir con parámetro de éxito
+    redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones?created=1`)
   }
 
   return (

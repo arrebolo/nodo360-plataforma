@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin/auth'
 
@@ -12,11 +12,11 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     await requireAdmin()
     const resolvedParams = await params
-    const supabase = await createClient()
 
     console.log('🗑️ [Delete Lesson API] ID de la lección:', resolvedParams.id)
 
-    const { error } = await supabase
+    // Eliminar lección (usar admin para bypass RLS)
+    const { error } = await supabaseAdmin
       .from('lessons')
       .delete()
       .eq('id', resolvedParams.id)

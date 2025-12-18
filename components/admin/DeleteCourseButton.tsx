@@ -1,8 +1,9 @@
+// components/admin/DeleteCourseButton.tsx
 'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
+import { deleteCourseAction } from '@/app/admin/cursos/actions'
 
 interface DeleteCourseButtonProps {
   courseId: string
@@ -10,48 +11,54 @@ interface DeleteCourseButtonProps {
 }
 
 export function DeleteCourseButton({ courseId, courseTitle }: DeleteCourseButtonProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleDelete = async () => {
-    // Confirmación
-    if (!confirm(`¿Eliminar el curso "${courseTitle}"?\n\nEsta acción eliminará:\n• Todos los módulos\n• Todas las lecciones\n• Todo el progreso de usuarios\n\nEsta acción no se puede deshacer.`)) {
-      return
-    }
+    // Confirmacion
+    const confirmed = window.confirm(
+      `Eliminar el curso "${courseTitle}"?\n\nEsta accion eliminara tambien todos los modulos, lecciones, progreso de usuarios y certificados asociados.\n\nEsta accion no se puede deshacer.`
+    )
 
-    setIsDeleting(true)
+    if (!confirmed) return
+
+    setLoading(true)
+    setError(null)
 
     try {
-      console.log('🗑️ [Delete Button] Eliminando curso:', courseId)
+      const result = await deleteCourseAction(courseId)
 
-      // Llamar al endpoint de delete
-      const response = await fetch(`/api/admin/courses/${courseId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar curso')
+      if (!result.success) {
+        setError(result.error || 'Error al eliminar')
+        return
       }
 
-      console.log('✅ [Delete Button] Curso eliminado')
-      router.push('/admin/cursos')
+      // Refrescar la pagina
       router.refresh()
-    } catch (error) {
-      console.error('❌ [Delete Button] Error:', error)
-      alert('Error al eliminar el curso')
-      setIsDeleting(false)
+    } catch (err: any) {
+      console.error('Error:', err)
+      setError(err.message || 'Error inesperado')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleDelete}
-      disabled={isDeleting}
-      className="flex items-center gap-2 px-6 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <Trash2 className={`w-5 h-5 ${isDeleting ? 'animate-pulse' : ''}`} />
-      {isDeleting ? 'Eliminando...' : 'Eliminar Curso'}
-    </button>
+    <div className="inline-flex flex-col items-end">
+      <button
+        type="button"
+        onClick={handleDelete}
+        disabled={loading}
+        className="text-[12px] text-[#E15B5B] hover:text-[#FF7B7B] hover:underline disabled:opacity-50 disabled:cursor-not-allowed transition"
+      >
+        {loading ? 'Eliminando...' : 'Eliminar'}
+      </button>
+      {error && (
+        <span className="text-[10px] text-[#E15B5B] mt-1 max-w-[150px] text-right">
+          {error}
+        </span>
+      )}
+    </div>
   )
 }

@@ -55,13 +55,23 @@ export default async function AdminCoursesPage() {
             </p>
           </div>
 
-          <Link
-            href="/admin/cursos/nuevo"
-            className="group px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] hover:from-[#ff7a45] hover:to-[#ffa52a] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,107,53,0.4)] flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-            Crear Curso
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/rutas"
+              className="px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#24D4FF]/50 text-white font-medium rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(36,212,255,0.2)] flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Gestionar rutas
+            </Link>
+
+            <Link
+              href="/admin/cursos/nuevo"
+              className="group px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] hover:from-[#ff7a45] hover:to-[#ffa52a] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,107,53,0.4)] flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+              Crear Curso
+            </Link>
+          </div>
         </div>
       </div>
 

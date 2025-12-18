@@ -18,6 +18,15 @@ export default async function LeaderboardPage() {
     redirect('/login')
   }
 
+  // Obtener XP del usuario
+  const { data: stats } = await supabase
+    .from('user_gamification_stats')
+    .select('total_xp')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  const totalXp = stats?.total_xp ?? 0
+
   return (
     <div className="min-h-screen bg-[#1a1f2e] text-white">
       {/* Fondo animado */}
@@ -46,7 +55,7 @@ export default async function LeaderboardPage() {
           {/* Sidebar - User Stats */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
-              <UserLevel variant="card" />
+              <UserLevel totalXp={totalXp} />
 
               {/* Tips Card */}
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">

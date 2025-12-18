@@ -18,6 +18,15 @@ export default async function BadgesPage() {
     redirect('/login')
   }
 
+  // Obtener XP del usuario
+  const { data: stats } = await supabase
+    .from('user_gamification_stats')
+    .select('total_xp')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  const totalXp = stats?.total_xp ?? 0
+
   return (
     <div className="min-h-screen bg-[#1a1f2e] text-white">
       {/* Fondo animado */}
@@ -43,7 +52,7 @@ export default async function BadgesPage() {
 
         {/* User Level Overview */}
         <div className="mb-12">
-          <UserLevel variant="card" />
+          <UserLevel totalXp={totalXp} />
         </div>
 
         {/* All Badges */}

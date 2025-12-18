@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/admin/auth'
 import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -14,14 +15,13 @@ async function createModule(courseId: string, formData: FormData) {
 
   console.log('🔍 [Create Module] Creando módulo para curso:', courseId)
 
-  const supabase = await createClient()
   await requireAdmin()
 
   const title = formData.get('title') as string
   const description = (formData.get('description') as string) || null
 
-  // Obtener el order_index más alto
-  const { data: lastModule } = await supabase
+  // Obtener el order_index más alto (usar admin para bypass RLS)
+  const { data: lastModule } = await supabaseAdmin
     .from('modules')
     .select('order_index')
     .eq('course_id', courseId)
@@ -41,8 +41,8 @@ async function createModule(courseId: string, formData: FormData) {
 
   console.log('📊 [Create Module] Datos:', { title, orderIndex, slug })
 
-  // Crear módulo
-  const { data, error } = await supabase
+  // Crear módulo (usar admin para bypass RLS)
+  const { data, error } = await supabaseAdmin
     .from('modules')
     .insert({
       course_id: courseId,
@@ -64,7 +64,8 @@ async function createModule(courseId: string, formData: FormData) {
   console.log('✅ [Create Module] Módulo creado:', data.id)
 
   revalidatePath(`/admin/cursos/${courseId}/modulos`)
-  redirect(`/admin/cursos/${courseId}/modulos/${data.id}/lecciones`)
+  // Flujo guiado: redirigir a crear primera lección del módulo
+  redirect(`/admin/cursos/${courseId}/modulos/${data.id}/lecciones/nueva`)
 }
 
 export default async function NuevoModuloPage({ params }: NuevoModuloPageProps) {

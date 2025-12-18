@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { isValidRole } from '@/lib/auth/roles'
 
 export async function PUT(
   request: Request,
@@ -30,8 +31,8 @@ export async function PUT(
 
     const { role } = await request.json()
 
-    // Validar que el rol es válido
-    if (!['student', 'instructor', 'mentor', 'admin'].includes(role)) {
+    // Validar que el rol es válido usando el helper centralizado
+    if (!isValidRole(role)) {
       return NextResponse.json({ error: 'Rol inválido' }, { status: 400 })
     }
 
