@@ -1,129 +1,114 @@
-'use client'
-
-import Link from 'next/link'
-import { ArrowRight, Users, BookOpen, Sparkles } from 'lucide-react'
-import { Logo } from '@/components/common'
+import Image from "next/image"
+import Link from "next/link"
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#ff6b35]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#FFD700]/10 rounded-full blur-3xl animate-pulse delay-700" />
-      </div>
+    <section className="relative">
+      {/* Background layers (from globals.css) */}
+      <div className="n360-bg" />
+      <div className="n360-grid" />
 
-      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left column: Content */}
-          <div className="text-center lg:text-left space-y-8 animate-fade-in">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-[#ff6b35]/20 backdrop-blur-sm">
-              <Sparkles className="w-4 h-4 text-[#FFD700]" />
-              <span className="text-sm text-white/90">La plataforma educativa #1 en español</span>
+      <div className="mx-auto w-full max-w-6xl px-5 py-16 md:py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-2">
+          {/* Left */}
+          <div>
+            <div className="n360-badge text-white/80">
+              <span className="text-[color:var(--accent-btc)]">●</span>
+              <span className="text-sm">Formación Web3 práctica, en español</span>
+              <span className="text-xs text-white/55">Certificados verificables</span>
             </div>
 
-            {/* Logo mobile */}
-            <div className="lg:hidden flex justify-center mb-8">
-              <div className="relative">
-                <Logo
-                  size="md"
-                  priority
-                  imageClassName="animate-fade-in drop-shadow-[0_0_25px_rgba(255,107,53,0.3)]"
-                />
-                {/* Glow effect mobile */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#ff6b35]/20 to-[#FFD700]/20 blur-xl -z-10" />
-              </div>
-            </div>
+            <h1 className="mt-6 text-5xl font-semibold tracking-tight text-white md:text-6xl">
+              Aprende Bitcoin,
+              <span className="block">
+                Blockchain y{" "}
+                <span className="text-[color:var(--accent-btc)]">Web3</span>
+              </span>
+            </h1>
 
-            {/* Main heading */}
-            <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
-                Domina{' '}
-                <span className="bg-gradient-to-r from-[#ff6b35] to-[#f7931a] bg-clip-text text-transparent">
-                  Bitcoin
-                </span>
-                {' '}y{' '}
-                <span className="bg-gradient-to-r from-[#FFD700] to-[#FFA500] bg-clip-text text-transparent">
-                  Blockchain
-                </span>
-              </h1>
-              <p className="text-xl sm:text-2xl text-white/70 max-w-2xl">
-                La plataforma educativa más completa en español. Aprende desde cero o especialízate en Web3.
-              </p>
-            </div>
+            <p className="mt-5 max-w-xl text-lg text-white/70">
+              Cursos claros, rutas guiadas y progreso real. Entra gratis, avanza módulo a módulo y obtén certificados verificables.
+            </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Link
-                href="#cursos-gratis"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] rounded-xl text-white font-semibold text-lg hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
-              >
-                Explorar Cursos Gratis
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/cursos" className="n360-btn n360-btn-primary">
+                Explorar cursos gratis
+                <span aria-hidden>→</span>
               </Link>
-              <Link
-                href="#cursos-premium"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#FFD700] to-[#FFA500] rounded-xl text-black font-semibold text-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all duration-300 hover:scale-105"
-              >
-                Ver Cursos Premium
-                <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+
+              <Link href="/cursos?filter=premium" className="n360-btn n360-btn-secondary">
+                Ver premium
+                <span aria-hidden>↗</span>
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
-              <div className="text-center lg:text-left">
-                <div className="flex items-center justify-center lg:justify-start gap-2 mb-1">
-                  <Users className="w-5 h-5 text-[#ff6b35]" />
-                  <div className="text-3xl font-bold text-white">5K+</div>
-                </div>
-                <div className="text-sm text-white/60">Estudiantes</div>
+            <div className="mt-10 grid max-w-xl grid-cols-3 gap-6 text-white/80">
+              <div className="n360-glass p-4">
+                <div className="text-2xl font-semibold">5K+</div>
+                <div className="text-xs text-white/60">Estudiantes</div>
               </div>
-              <div className="text-center lg:text-left">
-                <div className="flex items-center justify-center lg:justify-start gap-2 mb-1">
-                  <BookOpen className="w-5 h-5 text-[#FFD700]" />
-                  <div className="text-3xl font-bold text-white">25+</div>
-                </div>
-                <div className="text-sm text-white/60">Cursos</div>
+              <div className="n360-glass p-4">
+                <div className="text-2xl font-semibold">25+</div>
+                <div className="text-xs text-white/60">Cursos</div>
               </div>
-              <div className="text-center lg:text-left">
-                <div className="flex items-center justify-center lg:justify-start gap-2 mb-1">
-                  <Sparkles className="w-5 h-5 text-[#f7931a]" />
-                  <div className="text-3xl font-bold text-white">50+</div>
-                </div>
-                <div className="text-sm text-white/60">Horas</div>
+              <div className="n360-glass p-4">
+                <div className="text-2xl font-semibold">Rutas</div>
+                <div className="text-xs text-white/60">Aprendizaje guiado</div>
               </div>
             </div>
           </div>
 
-          {/* Right column: Visual */}
-          <div className="relative hidden lg:block animate-fade-in-delayed">
-            <div className="relative">
-              {/* Logo real de Nodo360 */}
-              <div className="relative z-10 rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm p-12 flex items-center justify-center min-h-[400px]">
-                <div className="relative">
-                  <Logo
-                    size="xl"
-                    priority
-                    imageClassName="animate-fade-in drop-shadow-[0_0_30px_rgba(255,107,53,0.3)]"
+          {/* Right: Product preview */}
+          <div className="relative">
+            <div className="n360-glass p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-white/60">Vista previa</div>
+                  <div className="mt-1 font-semibold">Ruta: Fundamentos de Bitcoin</div>
+                </div>
+                <div className="text-xs text-white/60">Progreso</div>
+              </div>
+
+              <div className="mt-5 n360-glass p-5">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-[rgba(247,147,26,0.18)] border border-[rgba(247,147,26,0.25)]" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Bitcoin para principiantes</div>
+                    <div className="mt-1 text-xs text-white/60">Módulo 1 · Lección 3</div>
+                  </div>
+                  <div className="text-xs text-white/60">32%</div>
+                </div>
+
+                <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full w-[32%] bg-[color:var(--accent-btc)]" />
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-xs text-white/60">Certificado al completar</div>
+                  <div className="text-xs text-white/80">Verificable</div>
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between n360-glass p-4">
+                <div className="flex items-center gap-3">
+                  <Image
+                    src="/imagenes/logo-nodo360.png"
+                    alt="Nodo360"
+                    width={44}
+                    height={44}
+                    className="rounded-xl"
                   />
-                  {/* Glow effect adicional */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#ff6b35]/20 to-[#FFD700]/20 blur-2xl -z-10" />
+                  <div>
+                    <div className="text-sm font-semibold">Nodo360</div>
+                    <div className="text-xs text-white/60">Educación Bitcoin</div>
+                  </div>
                 </div>
+                <div className="text-xs text-white/60">Live</div>
               </div>
-
-              {/* Floating elements */}
-              <div className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-[#ff6b35] to-[#f7931a] rounded-2xl rotate-12 blur-xl opacity-50 animate-pulse" />
-              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-br from-[#FFD700] to-[#FFA500] rounded-2xl -rotate-12 blur-xl opacity-50 animate-pulse delay-500" />
             </div>
-          </div>
-        </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-2">
-            <div className="w-1.5 h-3 bg-white/50 rounded-full" />
+            {/* Controlled glow (subtle) */}
+            <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[28px] bg-[radial-gradient(ellipse_at_center,rgba(247,147,26,0.18),transparent_60%)]" />
           </div>
         </div>
       </div>

@@ -1,71 +1,234 @@
 @import "tailwindcss";
 
-/* Nodo360 Custom Theme - Tailwind v4 */
+/* =========================================================
+   Nodo360 — Global Theme (Web3 · Tailwind v4)
+   ========================================================= */
+
+/* ---------- Design Tokens (CSS Variables) ---------- */
 @theme inline {
-  /* Colores de Nodo360 */
+  /* Base colors */
   --color-nodo-black: #000000;
   --color-nodo-dark: #0d1117;
   --color-nodo-border: #30363d;
-  --color-nodo-red: #dc2626;
-  --color-nodo-red-dark: #b91c1c;
-  --color-nodo-red-light: #ef4444;
 
-  /* Grises personalizados */
+  /* Bitcoin-inspired accents */
+  --accent-btc: #f7931a;
+  --accent-btc-strong: #ff6b35;
+  --accent-btc-soft: rgba(247, 147, 26, 0.18);
+
+  /* Secondary soft accents */
+  --accent-green-soft: rgba(0, 200, 150, 0.14);
+  --accent-blue-soft: rgba(80, 150, 255, 0.12);
+  --accent-red-soft: rgba(239, 68, 68, 0.12);
+
+  /* Grays */
   --color-nodo-gray-300: #d1d5db;
   --color-nodo-gray-400: #9ca3af;
   --color-nodo-gray-500: #6b7280;
   --color-nodo-gray-800: #1f2937;
 
-  /* Tipografía */
-  --font-sans: Inter, system-ui, sans-serif;
+  /* Typography
+     (The real font is injected by Next Font in layout.tsx) */
+  --font-sans: ui-sans-serif, system-ui, -apple-system,
+               BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-  /* Variables de fondo y texto */
+  /* Background / foreground */
   --color-background: var(--color-nodo-black);
   --color-foreground: #ffffff;
+
+  /* UI tokens (Web3 look) */
+  --radius-xl: 16px;
+  --radius-2xl: 22px;
+
+  --border-subtle: rgba(255, 255, 255, 0.10);
+
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.28);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-blur: 14px;
+
+  /* Focus / accessibility */
+  --focus-ring: rgba(247, 147, 26, 0.45);
 }
 
+/* ---------- Root / Base ---------- */
 :root {
-  --background: var(--color-nodo-black);
-  --foreground: #ffffff;
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth scroll */
-html {
-  scroll-behavior: smooth;
+/* ---------- Text selection ---------- */
+::selection {
+  background: rgba(247, 147, 26, 0.25);
+  color: #ffffff;
 }
 
-/* Animación para sidebar móvil */
+/* ---------- Focus visible ---------- */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* ---------- Scrollbar (Chromium / Edge) ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  border: 2px solid rgba(0, 0, 0, 0.55);
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* =========================================================
+   Web3 Layout & Background Utilities
+   ========================================================= */
+
+/* Shell wrapper */
+.n360-shell {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Background mesh / glow */
+.n360-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background:
+    radial-gradient(1000px 600px at 20% 10%, rgba(247,147,26,0.18), transparent 55%),
+    radial-gradient(900px 520px at 85% 30%, rgba(80,150,255,0.12), transparent 60%),
+    radial-gradient(900px 520px at 55% 95%, rgba(0,200,150,0.10), transparent 60%),
+    linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(0,0,0,0.0));
+}
+
+/* Subtle grid overlay */
+.n360-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -9;
+  opacity: 0.20;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse at top, black 35%, transparent 70%);
+}
+
+/* =========================================================
+   Web3 Components Utilities
+   ========================================================= */
+
+/* Glass card */
+.n360-glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+/* Hairline border */
+.n360-hairline {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+/* Badge */
+.n360-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Buttons */
+.n360-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-weight: 650;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.n360-btn:hover {
+  transform: translateY(-1px);
+}
+
+.n360-btn:active {
+  transform: translateY(0);
+}
+
+/* Primary (Bitcoin) */
+.n360-btn-primary {
+  color: #ffffff;
+  background: linear-gradient(
+    90deg,
+    var(--accent-btc),
+    var(--accent-btc-strong)
+  );
+  box-shadow: 0 14px 34px rgba(247, 147, 26, 0.22);
+}
+
+/* Secondary (glass) */
+.n360-btn-secondary {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.n360-btn-secondary:hover {
+  border-color: rgba(247, 147, 26, 0.45);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+/* =========================================================
+   Animations
+   ========================================================= */
+
+/* Slide in (mobile sidebar) */
 @keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
 .animate-slide-in {
   animation: slideIn 0.3s ease-out;
 }
 
-/* Animaciones para homepage */
+/* Fade in */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
@@ -76,11 +239,17 @@ html {
   animation: fadeIn 0.8s ease-out 0.2s both;
 }
 
-/* Utility class for animation delays */
-.delay-500 {
-  animation-delay: 500ms;
-}
+/* Utility delays */
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
 
-.delay-700 {
-  animation-delay: 700ms;
+/* Reduced motion (accessibility) */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  .animate-slide-in,
+  .animate-fade-in,
+  .animate-fade-in-delayed {
+    animation: none !important;
+  }
 }
