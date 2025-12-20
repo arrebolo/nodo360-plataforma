@@ -3,15 +3,15 @@ import Link from "next/link"
 
 export function HeroSection() {
   return (
-    <section className="relative">
+    <section className="relative hero-animated-bg">
       {/* Background layers (from globals.css) */}
       <div className="n360-bg" />
       <div className="n360-grid" />
 
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 md:py-20">
-        <div className="grid items-center gap-10 lg:grid-cols-2">
-          {/* Left */}
-          <div>
+      <div className="mx-auto w-full max-w-6xl px-5 py-16 md:py-24">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          {/* Left - Texto */}
+          <div className="max-w-lg">
             <div className="n360-badge text-white/80">
               <span className="text-[color:var(--accent-btc)]">●</span>
               <span className="text-sm">Formación Web3 práctica, en español</span>
@@ -30,16 +30,21 @@ export function HeroSection() {
               Cursos claros, rutas guiadas y progreso real. Entra gratis, avanza módulo a módulo y obtén certificados verificables.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/cursos" className="n360-btn n360-btn-primary">
-                Explorar cursos gratis
-                <span aria-hidden>→</span>
-              </Link>
+            <div className="mt-8">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link href="/cursos" className="n360-btn n360-btn-primary">
+                  Explorar cursos gratis
+                  <span aria-hidden>→</span>
+                </Link>
 
-              <Link href="/cursos?filter=premium" className="n360-btn n360-btn-secondary">
-                Ver premium
-                <span aria-hidden>↗</span>
-              </Link>
+                <Link href="/cursos?filter=premium" className="n360-btn n360-btn-secondary">
+                  Ver premium
+                  <span aria-hidden>↗</span>
+                </Link>
+              </div>
+              <p className="mt-3 text-xs text-white/50">
+                Sin tarjeta de crédito · Certificados verificables en blockchain
+              </p>
             </div>
 
             <div className="mt-10 grid max-w-xl grid-cols-3 gap-6 text-white/80">
@@ -59,8 +64,13 @@ export function HeroSection() {
           </div>
 
           {/* Right: Product preview */}
-          <div className="relative">
-            <div className="n360-glass p-6">
+          <div className="relative scale-[1.02] hover:scale-[1.04] transition-transform duration-300">
+            {/* Etiqueta flotante */}
+            <div className="absolute -top-3 left-6 z-10 px-3 py-1 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] rounded-full text-xs font-medium text-white shadow-lg shadow-orange-500/25">
+              Tu progreso real
+            </div>
+
+            <div className="n360-glass p-6 shadow-xl shadow-orange-500/10 hover:shadow-orange-500/20 transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-white/60">Vista previa</div>

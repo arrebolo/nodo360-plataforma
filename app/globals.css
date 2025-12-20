@@ -1,63 +1,84 @@
 @import "tailwindcss";
 
 /* =========================================================
-   Nodo360 — Global Theme (Web3 · Tailwind v4)
+   Nodo360 — Design System (LMS Professional + Web3 Accent)
    ========================================================= */
 
-/* ---------- Design Tokens (CSS Variables) ---------- */
+/* ---------- Design Tokens ---------- */
 @theme inline {
-  /* Base colors */
-  --color-nodo-black: #000000;
-  --color-nodo-dark: #0d1117;
-  --color-nodo-border: #30363d;
+  /* === SEMANTIC COLORS === */
 
-  /* Bitcoin-inspired accents */
-  --accent-btc: #f7931a;
-  --accent-btc-strong: #ff6b35;
-  --accent-btc-soft: rgba(247, 147, 26, 0.18);
+  /* Background layers (from darkest to lightest) */
+  --color-bg-base: #0a0d12;
+  --color-bg-surface: #12161c;
+  --color-bg-elevated: #1a1f28;
+  --color-bg-overlay: #232a36;
 
-  /* Secondary soft accents */
-  --accent-green-soft: rgba(0, 200, 150, 0.14);
-  --accent-blue-soft: rgba(80, 150, 255, 0.12);
-  --accent-red-soft: rgba(239, 68, 68, 0.12);
+  /* Text hierarchy */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-disabled: #475569;
 
-  /* Grays */
-  --color-nodo-gray-300: #d1d5db;
-  --color-nodo-gray-400: #9ca3af;
-  --color-nodo-gray-500: #6b7280;
-  --color-nodo-gray-800: #1f2937;
+  /* Border colors */
+  --color-border-default: rgba(255, 255, 255, 0.08);
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-border-strong: rgba(255, 255, 255, 0.15);
 
-  /* Typography
-     (The real font is injected by Next Font in layout.tsx) */
-  --font-sans: ui-sans-serif, system-ui, -apple-system,
-               BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Accent (Bitcoin-inspired - used sparingly) */
+  --color-accent: #f7931a;
+  --color-accent-hover: #ff9f2e;
+  --color-accent-muted: rgba(247, 147, 26, 0.15);
+  --color-accent-subtle: rgba(247, 147, 26, 0.08);
 
-  /* Background / foreground */
-  --color-background: var(--color-nodo-black);
-  --color-foreground: #ffffff;
+  /* Semantic states */
+  --color-success: #22c55e;
+  --color-success-muted: rgba(34, 197, 94, 0.15);
+  --color-warning: #eab308;
+  --color-warning-muted: rgba(234, 179, 8, 0.15);
+  --color-danger: #ef4444;
+  --color-danger-muted: rgba(239, 68, 68, 0.15);
+  --color-info: #3b82f6;
+  --color-info-muted: rgba(59, 130, 246, 0.15);
 
-  /* UI tokens (Web3 look) */
-  --radius-xl: 16px;
-  --radius-2xl: 22px;
+  /* Premium accent */
+  --color-premium: #fbbf24;
+  --color-premium-muted: rgba(251, 191, 36, 0.15);
 
-  --border-subtle: rgba(255, 255, 255, 0.10);
+  /* === TYPOGRAPHY === */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.28);
+  /* === SPACING & SIZING === */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
 
-  /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-blur: 14px;
+  /* === SHADOWS === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.35);
 
-  /* Focus / accessibility */
-  --focus-ring: rgba(247, 147, 26, 0.45);
+  /* Accent shadows (for CTAs) */
+  --shadow-accent: 0 4px 20px rgba(247, 147, 26, 0.25);
+  --shadow-accent-lg: 0 8px 32px rgba(247, 147, 26, 0.3);
+
+  /* === TRANSITIONS === */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* === FOCUS === */
+  --focus-ring: 0 0 0 2px var(--color-bg-base), 0 0 0 4px var(--color-accent);
 }
 
 /* ---------- Root / Base ---------- */
 :root {
-  --background: var(--color-background);
-  --foreground: var(--color-foreground);
+  --background: var(--color-bg-base);
+  --foreground: var(--color-text-primary);
 }
 
 html {
@@ -70,186 +91,380 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
 /* ---------- Text selection ---------- */
 ::selection {
-  background: rgba(247, 147, 26, 0.25);
-  color: #ffffff;
+  background: var(--color-accent-muted);
+  color: var(--color-text-primary);
 }
 
 /* ---------- Focus visible ---------- */
 :focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
-/* ---------- Scrollbar (Chromium / Edge) ---------- */
+/* ---------- Scrollbar ---------- */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  border: 2px solid rgba(0, 0, 0, 0.55);
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--color-bg-surface);
 }
 
 /* =========================================================
-   Web3 Layout & Background Utilities
+   BACKGROUNDS
    ========================================================= */
 
-/* Shell wrapper */
-.n360-shell {
-  position: relative;
-  min-height: 100vh;
-}
-
-/* Background mesh / glow */
-.n360-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -10;
+/* Subtle gradient background for app shell */
+.bg-app {
   background:
-    radial-gradient(1000px 600px at 20% 10%, rgba(247,147,26,0.18), transparent 55%),
-    radial-gradient(900px 520px at 85% 30%, rgba(80,150,255,0.12), transparent 60%),
-    radial-gradient(900px 520px at 55% 95%, rgba(0,200,150,0.10), transparent 60%),
-    linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(0,0,0,0.0));
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(247, 147, 26, 0.06), transparent),
+    var(--color-bg-base);
 }
 
-/* Subtle grid overlay */
-.n360-grid {
-  position: fixed;
-  inset: 0;
-  z-index: -9;
-  opacity: 0.20;
-  background-image:
-    linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(ellipse at top, black 35%, transparent 70%);
+/* Clean background for public/marketing pages */
+.bg-public {
+  background:
+    radial-gradient(ellipse 100% 80% at 50% -30%, rgba(247, 147, 26, 0.04), transparent),
+    linear-gradient(to bottom, var(--color-bg-base), var(--color-bg-surface));
 }
 
 /* =========================================================
-   Web3 Components Utilities
+   COMPONENT STYLES
    ========================================================= */
 
-/* Glass card */
-.n360-glass {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
-  backdrop-filter: blur(var(--glass-blur));
+/* --- Cards --- */
+.card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
-/* Hairline border */
-.n360-hairline {
-  border: 1px solid rgba(255, 255, 255, 0.10);
+.card:hover {
+  border-color: var(--color-border-strong);
 }
 
-/* Badge */
-.n360-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
+.card-elevated {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
 }
 
-/* Buttons */
-.n360-btn {
+/* --- Buttons --- */
+.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 18px;
-  border-radius: 14px;
-  font-weight: 650;
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    background 160ms ease;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: none;
 }
 
-.n360-btn:hover {
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: white;
+  box-shadow: var(--shadow-accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  box-shadow: var(--shadow-accent-lg);
   transform: translateY(-1px);
 }
 
-.n360-btn:active {
+.btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
 
-/* Primary (Bitcoin) */
-.n360-btn-primary {
-  color: #ffffff;
-  background: linear-gradient(
-    90deg,
-    var(--accent-btc),
-    var(--accent-btc-strong)
-  );
-  box-shadow: 0 14px 34px rgba(247, 147, 26, 0.22);
+.btn-secondary {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
 }
 
-/* Secondary (glass) */
-.n360-btn-secondary {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-bg-overlay);
+  border-color: var(--color-border-strong);
 }
 
-.n360-btn-secondary:hover {
-  border-color: rgba(247, 147, 26, 0.45);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+}
+
+.btn-lg {
+  padding: 14px 28px;
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* --- Inputs --- */
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
+}
+
+/* --- Badges --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.badge-default {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+}
+
+.badge-accent {
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+}
+
+.badge-success {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+}
+
+.badge-warning {
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
+}
+
+.badge-danger {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+.badge-premium {
+  background: var(--color-premium-muted);
+  color: var(--color-premium);
+}
+
+/* --- Nav Items (Sidebar) --- */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.nav-item:hover {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
+.nav-item-active {
+  background: var(--color-accent-subtle);
+  color: var(--color-text-primary);
+}
+
+.nav-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+}
+
+/* --- Progress Bar --- */
+.progress {
+  width: 100%;
+  height: 6px;
+  background: var(--color-bg-overlay);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.progress-bar-success {
+  background: var(--color-success);
 }
 
 /* =========================================================
-   Animations
+   LAYOUT UTILITIES
    ========================================================= */
 
-/* Slide in (mobile sidebar) */
+/* Container */
+.container-narrow {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.container-default {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.container-wide {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Section spacing */
+.section {
+  padding: 64px 0;
+}
+
+.section-lg {
+  padding: 96px 0;
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
 @keyframes slideIn {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
 }
 
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
-}
-
-/* Fade in */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.25s ease-out;
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.8s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.animate-fade-in-delayed {
-  animation: fadeIn 0.8s ease-out 0.2s both;
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
 }
 
-/* Utility delays */
-.delay-500 { animation-delay: 500ms; }
-.delay-700 { animation-delay: 700ms; }
-
-/* Reduced motion (accessibility) */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 
   .animate-slide-in,
   .animate-fade-in,
-  .animate-fade-in-delayed {
+  .animate-fade-in-up {
     animation: none !important;
   }
+}
+
+/* =========================================================
+   TYPOGRAPHY UTILITIES
+   ========================================================= */
+
+.text-gradient-accent {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-premium {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* =========================================================
+   LEGACY COMPATIBILITY (gradual migration)
+   ========================================================= */
+
+/* Keep old classes working during transition */
+.n360-glass {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+}
+
+.n360-btn-primary {
+  background: var(--color-accent);
+  color: white;
+}
+
+.n360-btn-secondary {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
 }
