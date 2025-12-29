@@ -42,6 +42,7 @@
     "scripts",
     "src",
     "backup",
-    "backups"
+    "backups",
+    "_backup_cleanup_*"
   ]
 }

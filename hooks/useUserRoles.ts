@@ -4,8 +4,13 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { UserRole, getHighestRole } from '@/types/roles'
 
-interface UserRoleRow {
-  role: string
+// Mapeo de roles de la base de datos a roles del sistema
+const DB_ROLE_MAP: Record<string, UserRole> = {
+  student: 'user',
+  instructor: 'mentor',
+  admin: 'admin',
+  mentor: 'mentor',
+  council: 'council',
 }
 
 interface UseUserRolesReturn {
@@ -35,17 +40,18 @@ export function useUserRoles(): UseUserRolesReturn {
           return
         }
 
+        // Obtener rol desde la tabla users
         const { data, error: fetchError } = await supabase
-          .from('user_roles')
+          .from('users')
           .select('role')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
+          .eq('id', user.id)
+          .single()
 
         if (fetchError) throw fetchError
 
-        const rolesData = data as UserRoleRow[] | null
-        if (rolesData && rolesData.length > 0) {
-          setRoles(rolesData.map(r => r.role as UserRole))
+        if (data?.role) {
+          const mappedRole = DB_ROLE_MAP[data.role] || 'user'
+          setRoles([mappedRole])
         } else {
           setRoles(['user'])
         }

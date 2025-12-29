@@ -7,9 +7,9 @@ import { LessonCallout } from './LessonCallout'
 import { CodeBlock } from './CodeBlock'
 import { InteractiveList } from './InteractiveList'
 import { QuizBlock } from './QuizBlock'
-import { ProgressBar } from './ProgressBar'
 import { TableOfContents } from './TableOfContents'
 import { CommunityButton } from './CommunityButton'
+import { ProgressBar } from '@/components/ui/ProgressBar'
 
 interface LessonRendererProps {
   content: LessonContent
@@ -106,7 +106,7 @@ export function LessonRenderer({ content, progress = 0 }: LessonRendererProps) {
 
   return (
     <div className="min-h-screen bg-gray-950">
-      <ProgressBar progress={progress} estimatedTime={content.estimatedReadingTime} />
+      <ProgressBar percentage={progress} size="sm" showLabel={false} className="sticky top-0 z-10" />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">

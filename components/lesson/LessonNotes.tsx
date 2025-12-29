@@ -1,157 +1,162 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Plus, Trash2, StickyNote } from 'lucide-react'
-import {
-  getLessonNotes,
-  addLessonNote,
-  deleteLessonNote,
-  type Note,
-} from '@/lib/utils/progress'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { StickyNote } from 'lucide-react'
 
-interface LessonNotesProps {
-  lessonId: string
-}
+export function LessonNotes({ lessonId }: { lessonId: string }) {
+  const isUuid = (v?: string | null) =>
+    typeof v === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)
 
-export function LessonNotes({ lessonId }: LessonNotesProps) {
-  const [notes, setNotes] = useState<Note[]>([])
-  const [newNoteText, setNewNoteText] = useState('')
-  const [isAdding, setIsAdding] = useState(false)
+  const idsReady = isUuid(lessonId)
+  const draftKey = useMemo(() => `nodo360_note_draft_${lessonId}`, [lessonId])
 
-  // Cargar notas
+  const [value, setValue] = useState('')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const lastCloudValueRef = useRef<string>('')
+
   useEffect(() => {
-    loadNotes()
+    const draft = window.localStorage.getItem(draftKey)
+    if (draft != null) setValue(draft)
 
-    // Listener para actualizaciones
-    const handleUpdate = () => loadNotes()
-    window.addEventListener('note-added', handleUpdate)
-    window.addEventListener('note-deleted', handleUpdate)
+    if (!idsReady) return
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        setStatus('loading')
+        setErrorMsg(null)
+
+        const res = await fetch(`/api/notes?lessonId=${lessonId}`)
+        const json = await res.json()
+
+        if (cancelled) return
+
+        if (!res.ok) {
+          setStatus('idle')
+          return
+        }
+
+        if (json?.note?.content != null) {
+          setValue(json.note.content)
+          lastCloudValueRef.current = json.note.content
+          window.localStorage.removeItem(draftKey)
+        } else {
+          lastCloudValueRef.current = draft ?? ''
+        }
+
+        setStatus('idle')
+      } catch (e: any) {
+        if (cancelled) return
+        setStatus('error')
+        setErrorMsg(e?.message ?? 'Error cargando nota')
+      }
+    })()
 
     return () => {
-      window.removeEventListener('note-added', handleUpdate)
-      window.removeEventListener('note-deleted', handleUpdate)
+      cancelled = true
     }
-  }, [lessonId])
+  }, [lessonId, draftKey, idsReady])
 
-  const loadNotes = () => {
-    const loaded = getLessonNotes(lessonId)
-    setNotes(loaded)
-  }
+  useEffect(() => {
+    window.localStorage.setItem(draftKey, value)
+  }, [value, draftKey])
 
-  const handleAddNote = () => {
-    if (!newNoteText.trim()) return
+  const dirty = value !== lastCloudValueRef.current
+  const hasText = value.trim().length > 0
+
+  const canSave = idsReady && dirty && hasText && status !== 'saving' && status !== 'loading'
+
+  const disabledReason = !idsReady
+    ? 'lessonId inválido'
+    : status === 'loading'
+    ? 'cargando'
+    : status === 'saving'
+    ? 'guardando'
+    : !hasText
+    ? 'vacío'
+    : !dirty
+    ? 'sin cambios'
+    : null
+
+  const handleSave = async () => {
+    console.log('[LessonNotes] click guardar', { idsReady, dirty, status, len: value.length })
+
+    if (!canSave) return
 
     try {
-      addLessonNote(lessonId, newNoteText.trim())
-      setNewNoteText('')
-      setIsAdding(false)
-    } catch (error) {
-      console.error('Error adding note:', error)
-      alert('Error al agregar nota')
+      setStatus('saving')
+      setErrorMsg(null)
+
+      const res = await fetch('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonId, content: value }),
+      })
+
+      const json = await res.json()
+
+      if (!res.ok) throw new Error(json?.error ?? 'Error al guardar nota')
+
+      lastCloudValueRef.current = value
+      window.localStorage.removeItem(draftKey)
+
+      setStatus('saved')
+      setTimeout(() => setStatus('idle'), 800)
+    } catch (e: any) {
+      setStatus('error')
+      setErrorMsg(e?.message ?? 'Error al guardar nota')
     }
-  }
-
-  const handleDeleteNote = (noteId: string) => {
-    if (!confirm('¿Eliminar esta nota?')) return
-
-    try {
-      deleteLessonNote(lessonId, noteId)
-    } catch (error) {
-      console.error('Error deleting note:', error)
-      alert('Error al eliminar nota')
-    }
-  }
-
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp)
-    return new Intl.DateTimeFormat('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date)
   }
 
   return (
     <div className="bg-[#1a1a1a] rounded-xl border border-white/10 p-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <StickyNote className="w-5 h-5" />
-          Mis Notas
+          Mis notas
         </h3>
-        {!isAdding && (
-          <button
-            onClick={() => setIsAdding(true)}
-            className="p-1.5 rounded-lg bg-[#dc2626] text-white hover:bg-[#b91c1c] transition-colors"
-            aria-label="Agregar nota"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        )}
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={!canSave}
+          className="text-xs rounded-full px-3 py-1 border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed text-white"
+          title={disabledReason ? `No se puede guardar: ${disabledReason}` : 'Guardar'}
+        >
+          {status === 'loading'
+            ? 'Cargando...'
+            : status === 'saving'
+            ? 'Guardando...'
+            : status === 'saved'
+            ? 'Guardado'
+            : !idsReady
+            ? 'Guardar (local)'
+            : 'Guardar'}
+        </button>
       </div>
 
-      {/* Add Note Form */}
-      {isAdding && (
-        <div className="mb-4 p-3 bg-black/30 rounded-lg border border-white/10">
-          <textarea
-            value={newNoteText}
-            onChange={(e) => setNewNoteText(e.target.value)}
-            placeholder="Escribe tu nota aquí..."
-            className="w-full bg-transparent text-white text-sm placeholder:text-white/30 border-none outline-none resize-none min-h-[80px]"
-            autoFocus
-          />
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={handleAddNote}
-              className="px-3 py-1.5 bg-[#dc2626] text-white text-xs font-medium rounded hover:bg-[#b91c1c] transition-colors"
-            >
-              Guardar
-            </button>
-            <button
-              onClick={() => {
-                setIsAdding(false)
-                setNewNoteText('')
-              }}
-              className="px-3 py-1.5 bg-[#2a2a2a] text-white text-xs font-medium rounded hover:bg-[#3a3a3a] transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
+      <textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={idsReady ? 'Escribe aquí tus ideas clave...' : 'Modo local (lessonId inválido).'}
+        className="w-full min-h-[220px] rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-white outline-none focus:ring-2 focus:ring-white/10 placeholder:text-white/30"
+      />
+
+      <div className="mt-2 flex items-center justify-between text-xs text-white/40">
+        <span>{value.length} caracteres</span>
+        <span>
+          {!idsReady ? 'Modo local.' : !hasText ? 'Vacío.' : dirty ? 'Cambios sin guardar.' : 'Sin cambios.'}
+        </span>
+      </div>
+
+      {status === 'error' && errorMsg ? (
+        <div className="mt-3 text-xs rounded-xl border border-red-500/20 bg-red-500/10 p-2 text-red-200">
+          Error: {errorMsg}
         </div>
-      )}
-
-      {/* Notes List */}
-      <div className="space-y-3 max-h-[400px] overflow-y-auto">
-        {notes.length === 0 ? (
-          <div className="text-center py-8">
-            <StickyNote className="w-12 h-12 text-white/20 mx-auto mb-3" />
-            <p className="text-sm text-white/50">No tienes notas aún</p>
-            <p className="text-xs text-white/30 mt-1">
-              Haz clic en + para agregar una
-            </p>
-          </div>
-        ) : (
-          notes.map((note) => (
-            <div
-              key={note.id}
-              className="p-3 bg-black/30 rounded-lg border border-white/10 group"
-            >
-              <div className="flex justify-between items-start gap-2 mb-2">
-                <p className="text-xs text-white/50">{formatDate(note.timestamp)}</p>
-                <button
-                  onClick={() => handleDeleteNote(note.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/20 rounded"
-                  aria-label="Eliminar nota"
-                >
-                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                </button>
-              </div>
-              <p className="text-sm text-white/80 whitespace-pre-wrap">{note.text}</p>
-            </div>
-          ))
-        )}
-      </div>
+      ) : null}
     </div>
   )
 }

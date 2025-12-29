@@ -6,14 +6,27 @@
  */
 
 import type { LessonContent } from './lesson-content'
+import type { Database as SupabaseDatabase } from '@/lib/supabase/types'
+
+// Re-export Database type for use across the app
+export type Database = SupabaseDatabase
+
+// =====================================================
+// LEARNING PATHS TYPES (from Supabase schema)
+// =====================================================
+
+export type LearningPath = SupabaseDatabase['public']['Tables']['learning_paths']['Row']
+export type LearningPathCourse = SupabaseDatabase['public']['Tables']['learning_path_courses']['Row']
+export type LearningPathInsert = SupabaseDatabase['public']['Tables']['learning_paths']['Insert']
+export type LearningPathUpdate = SupabaseDatabase['public']['Tables']['learning_paths']['Update']
 
 // =====================================================
 // ENUMS
 // =====================================================
 
-export type UserRole = 'student' | 'instructor' | 'admin'
+export type UserRole = 'student' | 'instructor' | 'admin' | 'mentor' | 'council'
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
-export type CourseStatus = 'draft' | 'published' | 'archived'
+export type CourseStatus = 'draft' | 'published' | 'archived' | 'coming_soon'
 export type CourseCategory = 'bitcoin' | 'blockchain' | 'defi' | 'nfts' | 'development' | 'trading' | 'other'
 export type MentorshipRequestStatus = 'pending' | 'contacted' | 'scheduled' | 'completed'
 
@@ -33,8 +46,9 @@ export interface User {
   role: UserRole
   bio: string | null
   website: string | null
-  twitter_handle: string | null
-  github_handle: string | null
+  twitter: string | null
+  github: string | null
+  linkedin: string | null
   created_at: string
   updated_at: string
   last_seen_at: string | null
@@ -148,6 +162,19 @@ export interface Note {
   lesson_id: string
   content: string
   video_timestamp_seconds: number | null
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * User Lesson Notes Table (persistent per user + lesson)
+ */
+export interface UserLessonNote {
+  id: string
+  user_id: string
+  course_id: string
+  lesson_id: string
+  content: string
   created_at: string
   updated_at: string
 }
@@ -321,6 +348,7 @@ export type InsertUserProgress = Omit<
 >
 export type InsertBookmark = Omit<Bookmark, 'id' | 'created_at'>
 export type InsertNote = Omit<Note, 'id' | 'created_at' | 'updated_at'>
+export type InsertUserLessonNote = Omit<UserLessonNote, 'id' | 'created_at' | 'updated_at'>
 export type InsertMentorshipRequest = Omit<
   MentorshipRequest,
   'id' | 'status' | 'created_at' | 'updated_at'
@@ -328,6 +356,10 @@ export type InsertMentorshipRequest = Omit<
 export type InsertNewsletterSubscriber = Omit<
   NewsletterSubscriber,
   'id' | 'subscribed_at'
+>
+export type InsertCourseFinalQuizAttempt = Omit<
+  CourseFinalQuizAttempt,
+  'id' | 'created_at'
 >
 
 /**
@@ -339,6 +371,8 @@ export type UpdateModule = Partial<Module> & { id: string }
 export type UpdateLesson = Partial<Lesson> & { id: string }
 export type UpdateUserProgress = Partial<UserProgress> & { id: string }
 export type UpdateNote = Partial<Note> & { id: string }
+export type UpdateUserLessonNote = Partial<UserLessonNote> & { id: string }
+export type UpdateCourseFinalQuizAttempt = Partial<CourseFinalQuizAttempt> & { id: string }
 
 // =====================================================
 // API RESPONSE TYPES
@@ -443,6 +477,23 @@ export interface QuizAnswer {
   question_id: string
   selected_answer: number
   correct: boolean
+}
+
+/**
+ * Course Final Quiz Attempts Table
+ */
+export interface CourseFinalQuizAttempt {
+  id: string
+  user_id: string
+  course_id: string
+  score: number
+  total_questions: number
+  correct_answers: number
+  passed: boolean
+  answers: QuizAnswer[]
+  time_spent_seconds: number | null
+  completed_at: string
+  created_at: string
 }
 
 /**

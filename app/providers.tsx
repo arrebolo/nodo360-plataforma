@@ -1,18 +1,19 @@
 'use client'
 
 import { Toaster } from 'sonner'
-import { Sidebar } from '@/components/layout/Sidebar'
+import { AppShell } from '@/components/navigation/AppShell'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+interface ProvidersProps {
+  children: React.ReactNode
+}
+
+export function Providers({ children }: ProvidersProps) {
   return (
     <>
-      {/* Sidebar - Desktop (fixed left) + Mobile (bottom nav) */}
-      <Sidebar />
-
-      {/* Main content with padding for sidebar */}
-      <main className="lg:pl-16 min-h-screen pb-20 lg:pb-0">
+      {/* AppShell - Sidebar + Topbar + Main */}
+      <AppShell>
         {children}
-      </main>
+      </AppShell>
 
       {/* Toast notifications */}
       <Toaster

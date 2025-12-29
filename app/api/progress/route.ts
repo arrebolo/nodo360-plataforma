@@ -1,36 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { awardXP } from '@/lib/gamification/awardXP'
 
 /**
  * POST /api/progress
- * Marca una lección como completada
+ * Marca una lección como completada y otorga XP (dinámico por system_settings).
  * Body: { lessonId: string }
- *
- * SIMPLE: Solo guarda el progreso. El Server Component recalculará TODO.
  */
 export async function POST(request: NextRequest) {
   console.log('🔍 [API POST /progress] Iniciando...')
 
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
 
     if (authError || !user) {
       console.error('❌ [API POST /progress] No autenticado')
-      return NextResponse.json(
-        { error: 'Debes iniciar sesión' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Debes iniciar sesión' }, { status: 401 })
     }
 
     const { lessonId } = await request.json()
 
     if (!lessonId) {
       console.error('❌ [API POST /progress] lessonId faltante')
-      return NextResponse.json(
-        { error: 'lessonId es requerido' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'lessonId es requerido' }, { status: 400 })
     }
 
     console.log('📊 [API POST /progress] Guardando progreso:', {
@@ -38,7 +34,22 @@ export async function POST(request: NextRequest) {
       lessonId
     })
 
-    // Guardar progreso (upsert)
+    // 1) Comprobar si ya estaba completada (para evitar XP duplicado)
+    const { data: existingProgress, error: existingError } = await supabase
+      .from('user_progress')
+      .select('is_completed')
+      .eq('user_id', user.id)
+      .eq('lesson_id', lessonId)
+      .maybeSingle()
+
+    if (existingError) {
+      console.error('❌ [API POST /progress] Error leyendo progreso previo:', existingError)
+      return NextResponse.json({ error: 'Error al leer progreso' }, { status: 500 })
+    }
+
+    const alreadyCompleted = existingProgress?.is_completed === true
+
+    // 2) Guardar progreso (upsert)
     const { error: progressError } = await supabase
       .from('user_progress')
       .upsert(
@@ -47,32 +58,41 @@ export async function POST(request: NextRequest) {
           lesson_id: lessonId,
           is_completed: true,
           completed_at: new Date().toISOString(),
-          watch_time_seconds: 0,
+          watch_time_seconds: 0
         },
-        {
-          onConflict: 'user_id,lesson_id'
-        }
+        { onConflict: 'user_id,lesson_id' }
       )
 
     if (progressError) {
       console.error('❌ [API POST /progress] Error al guardar:', progressError)
-      return NextResponse.json(
-        { error: 'Error al guardar progreso' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Error al guardar progreso' }, { status: 500 })
     }
 
     console.log('✅ [API POST /progress] Progreso guardado correctamente')
 
+    // 3) Si ya estaba completada, no otorgamos XP de nuevo
+    if (alreadyCompleted) {
+      return NextResponse.json({
+        success: true,
+        message: 'Lección ya estaba completada (sin XP adicional)'
+      })
+    }
+
+    // 4) Otorgar XP centralizado (settings + niveles)
+    const xpResult = await awardXP({
+      userId: user.id,
+      eventType: 'lesson_completed',
+      context: { lessonId },
+      description: `Lección completada: ${lessonId}`
+    })
+
     return NextResponse.json({
       success: true,
-      message: 'Lección completada'
+      message: 'Lección completada',
+      ...xpResult
     })
   } catch (error) {
     console.error('❌ [API POST /progress] Exception:', error)
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

@@ -8,8 +8,6 @@ import type { Database } from './types'
  * Usa createBrowserClient de @supabase/ssr para manejo correcto de cookies
  */
 export function createClient() {
-  console.log('🔍 [Supabase Client] Creando cliente de navegador')
-
   return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

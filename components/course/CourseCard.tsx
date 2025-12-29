@@ -1,27 +1,40 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import type { CourseWithInstructor } from '@/types/database'
 import { Clock, BookOpen, BarChart3 } from 'lucide-react'
 
+import type { CourseWithOwner } from '@/lib/types/course'
+import type { CourseWithInstructor } from '@/types/database'
+
+// Tipo de transición: soporta owner (nuevo) e instructor (legacy)
+type CourseCardCourse = (CourseWithOwner & { instructor?: any }) | CourseWithInstructor
+
 interface CourseCardProps {
-  course: CourseWithInstructor
+  course: CourseCardCourse
   progress?: {
     completed: number
     total: number
     percentage: number
+    isCompleted?: boolean
   }
 }
 
 export function CourseCard({ course, progress }: CourseCardProps) {
-  const hasProgress = progress && progress.percentage > 0
-  const isCompleted = progress && (progress.percentage === 100 || (progress as any).isCompleted)
+  const hasProgress = !!progress && progress.percentage > 0
+  const isCompleted =
+    !!progress &&
+    (progress.percentage === 100 || progress.isCompleted === true)
 
   const getButtonText = () => {
     if (isCompleted) return '✓ Revisar'
     if (hasProgress) return '▶ Continuar'
     return '🚀 Comenzar'
   }
+
+  // Autor unificado: owner (mentor/instructor) o instructor legacy
+  const author = (course as any).owner ?? (course as any).instructor
+  const authorInitial = author?.full_name?.[0] || 'N'
+  const authorName = author?.full_name || 'Equipo Nodo360'
 
   return (
     <Link href={`/cursos/${course.slug}`} className="group block">
@@ -38,11 +51,14 @@ export function CourseCard({ course, progress }: CourseCardProps) {
             <div className="w-full h-full flex items-center justify-center">
               {/* Grid pattern */}
               <div className="absolute inset-0 opacity-10">
-                <div className="h-full w-full" style={{
-                  backgroundImage: `linear-gradient(#F7931A 1px, transparent 1px),
-                                   linear-gradient(90deg, #F7931A 1px, transparent 1px)`,
-                  backgroundSize: '20px 20px'
-                }} />
+                <div
+                  className="h-full w-full"
+                  style={{
+                    backgroundImage: `linear-gradient(#F7931A 1px, transparent 1px),
+                                     linear-gradient(90deg, #F7931A 1px, transparent 1px)`,
+                    backgroundSize: '20px 20px',
+                  }}
+                />
               </div>
               <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#F7931A] to-[#FDB931] flex items-center justify-center">
                 <BookOpen className="w-10 h-10 text-black" />
@@ -50,7 +66,7 @@ export function CourseCard({ course, progress }: CourseCardProps) {
             </div>
           )}
 
-          {/* Badge Overlay */}
+          {/* Badges */}
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             <Badge variant={course.is_free ? 'free' : 'premium'} />
             {isCompleted && <Badge variant="completed" />}
@@ -73,20 +89,30 @@ export function CourseCard({ course, progress }: CourseCardProps) {
           <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
             <div className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
-              <span>{Math.round((course.total_duration_minutes || 0) / 60)}h</span>
+              <span>
+                {Math.round((course.total_duration_minutes || 0) / 60)}h
+              </span>
             </div>
+
             <div className="flex items-center gap-1">
               <BookOpen className="w-3.5 h-3.5" />
               <span>{course.total_lessons || 0} lecciones</span>
             </div>
+
             <div className="flex items-center gap-1">
               <BarChart3 className="w-3.5 h-3.5" />
-              <span className="capitalize">{course.level === 'beginner' ? 'Principiante' : course.level === 'intermediate' ? 'Intermedio' : 'Avanzado'}</span>
+              <span className="capitalize">
+                {course.level === 'beginner'
+                  ? 'Principiante'
+                  : course.level === 'intermediate'
+                  ? 'Intermedio'
+                  : 'Avanzado'}
+              </span>
             </div>
           </div>
 
-          {/* Progress Section */}
-          {hasProgress && (
+          {/* Progress */}
+          {hasProgress && progress && (
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
                 <span>Progreso</span>
@@ -105,27 +131,19 @@ export function CourseCard({ course, progress }: CourseCardProps) {
           )}
 
           {/* Button */}
-          <Button
-            variant="primary"
-            size="md"
-            className="w-full"
-            onClick={(e) => {
-              e.preventDefault()
-              window.location.href = `/cursos/${course.slug}`
-            }}
-          >
+          <Button variant="primary" size="md" className="w-full">
             {getButtonText()}
           </Button>
 
-          {/* Instructor */}
-          {course.instructor && (
+          {/* Author */}
+          {author && (
             <div className="mt-4 pt-4 border-t border-[#2a2a2a]">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#F7931A] to-[#FDB931] flex items-center justify-center text-xs text-black font-bold">
-                  {course.instructor.full_name?.[0] || 'I'}
+                  {authorInitial}
                 </div>
                 <span className="text-xs text-gray-500">
-                  {course.instructor.full_name || 'Instructor'}
+                  {authorName}
                 </span>
               </div>
             </div>

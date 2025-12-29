@@ -29,6 +29,9 @@ export default async function VerificationPage({
   const resolvedParams = await params;
   const supabase = await createClient();
 
+  // Get current user for header
+  const { data: { user } } = await supabase.auth.getUser();
+
   // Get certificate by verification URL
   const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/verificar/${resolvedParams.verificationCode}`;
 
@@ -48,20 +51,6 @@ export default async function VerificationPage({
   if (error || !certificate) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
-        {/* Header */}
-        <header className="border-b border-white/10 bg-[#1a1f2e]/80 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <Link href="/" className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">N</span>
-                </div>
-                <span className="text-white font-bold text-xl">NODO360</span>
-              </Link>
-            </div>
-          </div>
-        </header>
-
         {/* Not Found Content */}
         <div className="max-w-2xl mx-auto px-4 py-16">
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8 text-center">
@@ -108,26 +97,6 @@ export default async function VerificationPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
-      {/* Header */}
-      <header className="border-b border-white/10 bg-[#1a1f2e]/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center">
-                <span className="text-white font-bold text-xl">N</span>
-              </div>
-              <span className="text-white font-bold text-xl">NODO360</span>
-            </Link>
-            <Link
-              href="/cursos"
-              className="text-white/70 hover:text-white transition"
-            >
-              Ver cursos
-            </Link>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-4xl mx-auto px-4 py-16">
         {/* Status Banner */}
         <div

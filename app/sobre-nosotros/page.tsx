@@ -1,5 +1,6 @@
 import { Target, Eye, Heart, Users, Zap, Shield, Globe, TrendingUp, Award, BookOpen, MessageCircle } from 'lucide-react'
 import { Metadata } from 'next'
+import { Footer } from '@/components/navigation/Footer'
 
 export const metadata: Metadata = {
   title: 'Sobre Nosotros - Nodo360 | Misión, Visión y Valores',
@@ -350,6 +351,8 @@ export default function SobreNosotrosPage() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </main>
   )
 }

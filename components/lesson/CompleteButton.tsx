@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { CheckCircle, ArrowRight } from 'lucide-react'
-import { ProgressManager } from '@/lib/progress-manager'
 import { useRouter } from 'next/navigation'
 
 interface CompleteButtonProps {
@@ -22,41 +21,62 @@ export function CompleteButton({
   lessonId,
   nextLessonSlug,
   nextLessonModuleSlug,
-  isCompleted: initialCompleted
+  isCompleted: initialCompleted,
 }: CompleteButtonProps) {
   const [isCompleted, setIsCompleted] = useState(initialCompleted)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const handleComplete = () => {
-    // Marcar como completada
-    ProgressManager.markLessonCompleted(courseSlug, lessonSlug, lessonId)
-    setIsCompleted(true)
+  const handleComplete = async () => {
+    try {
+      setLoading(true)
 
-    // CRÍTICO: Disparar evento para actualizar la UI
-    window.dispatchEvent(new CustomEvent('lesson-completed', {
-      detail: { courseSlug, lessonSlug }
-    }))
+      // ✅ Contrato real de tu API: solo { lessonId }
+      const res = await fetch('/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonId }),
+      })
 
-    // Log para debug
-    console.log('✅ Lección marcada como completada:', lessonSlug)
+      const data = await res.json().catch(() => ({}))
 
-    // Pequeño delay antes de navegar para asegurar que el evento se procese
-    setTimeout(() => {
-      if (nextLessonSlug) {
-        router.push(`/cursos/${courseSlug}/${nextLessonSlug}`)
-      } else {
-        // Volver a la página del curso para ver progreso
-        router.push(`/cursos/${courseSlug}`)
+      if (!res.ok) {
+        throw new Error(data?.error || 'Error al guardar progreso')
       }
-    }, 300)
+
+      setIsCompleted(true)
+
+      // CRÍTICO: evento para refrescar UI dependiente
+      window.dispatchEvent(
+        new CustomEvent('lesson-completed', {
+          detail: { courseSlug, moduleSlug, lessonSlug, lessonId },
+        })
+      )
+
+      console.log('✅ Lección marcada como completada:', lessonSlug)
+
+      // Refresca server components/progreso
+      router.refresh()
+
+      // Navegación como antes (con pequeño delay)
+      setTimeout(() => {
+        if (nextLessonSlug) {
+          router.push(`/cursos/${courseSlug}/${nextLessonSlug}`)
+        } else {
+          router.push(`/cursos/${courseSlug}`)
+        }
+      }, 200)
+    } catch (e) {
+      console.error('❌ Error completando lección:', e)
+      // MVP: dejamos solo log. Si quieres, añadimos toast.
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleNext = () => {
-    if (nextLessonSlug) {
-      router.push(`/cursos/${courseSlug}/${nextLessonSlug}`)
-    } else {
-      router.push(`/cursos/${courseSlug}`)
-    }
+    if (nextLessonSlug) router.push(`/cursos/${courseSlug}/${nextLessonSlug}`)
+    else router.push(`/cursos/${courseSlug}`)
   }
 
   if (isCompleted && nextLessonSlug) {
@@ -68,7 +88,8 @@ export function CompleteButton({
         </div>
         <button
           onClick={handleNext}
-          className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#ff8c5a] hover:from-[#ff8c5a] hover:to-[#FFD700] text-white font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 mx-auto"
+          disabled={loading}
+          className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#ff8c5a] hover:from-[#ff8c5a] hover:to-[#FFD700] text-white font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 mx-auto disabled:opacity-60"
         >
           Siguiente Lección
           <ArrowRight className="w-5 h-5" />
@@ -86,7 +107,8 @@ export function CompleteButton({
         </div>
         <button
           onClick={() => router.push(`/cursos/${courseSlug}`)}
-          className="text-[#ff6b35] hover:text-[#ff8c5a] transition-colors"
+          disabled={loading}
+          className="text-[#ff6b35] hover:text-[#ff8c5a] transition-colors disabled:opacity-60"
         >
           ← Volver al curso
         </button>
@@ -97,10 +119,11 @@ export function CompleteButton({
   return (
     <button
       onClick={handleComplete}
-      className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#ff8c5a] hover:from-[#ff8c5a] hover:to-[#FFD700] text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+      disabled={loading}
+      className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#ff8c5a] hover:from-[#ff8c5a] hover:to-[#FFD700] text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:scale-100"
     >
       <CheckCircle className="w-5 h-5" />
-      Marcar como Completada
+      {loading ? 'Guardando…' : 'Marcar como Completada'}
     </button>
   )
 }

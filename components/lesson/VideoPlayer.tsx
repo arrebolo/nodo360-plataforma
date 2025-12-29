@@ -1,89 +1,103 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import type { VideoBlock } from '@/types/lesson-content'
+import Image from "next/image";
+import { useEffect, useRef } from "react";
 
-interface VideoPlayerProps {
-  block: VideoBlock
-}
+type Props = {
+  videoUrl?: string | null;
+  posterUrl?: string | null; // opcional por lección
+  defaultPosterUrl?: string; // por defecto para toda Nodo360
+  onWatchTime?: (seconds: number) => void; // acumular
+  onActivity?: () => void; // last_activity ping
+};
 
-export function VideoPlayer({ block }: VideoPlayerProps) {
-  const [isLoaded, setIsLoaded] = useState(false)
+export default function VideoPlayer({
+  videoUrl,
+  posterUrl,
+  defaultPosterUrl = "/images/lesson-cover-default.jpg",
+  onWatchTime,
+  onActivity,
+}: Props) {
+  const watchSecondsRef = useRef(0);
 
-  const getEmbedUrl = (url: string, provider?: string) => {
-    // YouTube
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      const videoId = url.includes('youtu.be')
-        ? url.split('youtu.be/')[1]?.split('?')[0]
-        : url.split('v=')[1]?.split('&')[0]
-      return `https://www.youtube.com/embed/${videoId}`
+  // Ping de actividad mínimo (cada 30s si el usuario está en la lección)
+  useEffect(() => {
+    if (!onActivity) return;
+    onActivity();
+    const id = setInterval(() => onActivity(), 30_000);
+    return () => clearInterval(id);
+  }, [onActivity]);
+
+  // Tracking simple para HTML5 video (si usas YouTube/Vimeo, lo integramos después)
+  const onTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const v = e.currentTarget;
+    // aproximación: acumulamos segundos enteros
+    const current = Math.floor(v.currentTime);
+    if (current > watchSecondsRef.current) {
+      watchSecondsRef.current = current;
+      onWatchTime?.(current);
     }
+  };
 
-    // Vimeo
-    if (url.includes('vimeo.com')) {
-      const videoId = url.split('vimeo.com/')[1]?.split('?')[0]
-      return `https://player.vimeo.com/video/${videoId}`
-    }
-
-    // Direct URL
-    return url
+  if (!videoUrl) {
+    return (
+      <div className="w-full">
+        <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] aspect-video">
+          <Image
+            src={posterUrl || defaultPosterUrl}
+            alt="Portada de la lección"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          <div className="absolute bottom-3 left-3 right-3">
+            <div className="inline-flex items-center gap-2 rounded-xl bg-black/50 px-3 py-2 text-xs text-white/80 border border-white/10">
+              Sin vídeo en esta lección · Continúa con los recursos y el contenido
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const embedUrl = getEmbedUrl(block.url, block.provider)
-  const isDirectVideo = !embedUrl.includes('youtube.com') && !embedUrl.includes('vimeo.com')
+  // Caso base HTML5 (si videoUrl es mp4/webm). YouTube/Vimeo lo resolvemos en el siguiente paso.
+  const isHtml5 =
+    videoUrl.endsWith(".mp4") ||
+    videoUrl.endsWith(".webm") ||
+    videoUrl.endsWith(".ogg");
 
-  return (
-    <div className="w-full mb-8">
-      <div className="relative w-full rounded-lg overflow-hidden bg-gray-900 shadow-xl">
-        <div className="relative pb-[56.25%]">
-          {!isLoaded && block.thumbnail && (
-            <div className="absolute inset-0">
-              <img
-                src={block.thumbnail}
-                alt="Video thumbnail"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                <button
-                  onClick={() => setIsLoaded(true)}
-                  className="w-16 h-16 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 transition-colors"
-                >
-                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {(isLoaded || !block.thumbnail) && (
-            <>
-              {isDirectVideo ? (
-                <video
-                  src={embedUrl}
-                  controls
-                  className="absolute inset-0 w-full h-full"
-                  onLoadedData={() => setIsLoaded(true)}
-                />
-              ) : (
-                <iframe
-                  src={embedUrl}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full"
-                  onLoad={() => setIsLoaded(true)}
-                />
-              )}
-            </>
-          )}
+  if (isHtml5) {
+    return (
+      <div className="w-full">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black aspect-video">
+          <video
+            className="h-full w-full"
+            controls
+            playsInline
+            preload="metadata"
+            onTimeUpdate={onTimeUpdate}
+            onPlay={() => onActivity?.()}
+            onPause={() => onActivity?.()}
+          >
+            <source src={videoUrl} />
+          </video>
         </div>
+      </div>
+    );
+  }
 
-        {block.duration && (
-          <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/80 text-white text-sm rounded-md">
-            {Math.floor(block.duration / 60)}:{String(block.duration % 60).padStart(2, '0')}
-          </div>
-        )}
+  // Placeholder para YouTube/Vimeo/externos (mantiene estética y no rompe)
+  return (
+    <div className="w-full">
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-black aspect-video">
+        <iframe
+          src={videoUrl}
+          className="h-full w-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
       </div>
     </div>
-  )
+  );
 }

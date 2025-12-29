@@ -1,76 +1,66 @@
 'use client'
 
-import { ReactNode, useState, useEffect } from 'react'
-import { AccessGuard } from './AccessGuard'
-import { CompleteButton } from './CompleteButton'
-import { ProgressManager } from '@/lib/progress-manager'
+import React from 'react'
 
-interface LessonPageWrapperProps {
-  children: ReactNode
-  courseSlug: string
-  moduleSlug: string
-  lessonSlug: string
-  lessonId: string
-  isPremium: boolean
-  allLessons: Array<{ slug: string; order_index: number; moduleSlug?: string }>
-  nextLessonSlug?: string
-  nextLessonModuleSlug?: string
+// ✅ default export
+import AccessGuard from './AccessGuard'
+import LessonShell from './LessonShell'
+
+// ✅ named exports (confirmado por errores)
+import { LessonPlayer } from './LessonPlayer'
+import { LessonResourcesPanel } from './LessonResourcesPanel'
+import { LessonNotesPanel } from './LessonNotesPanel'
+
+type LessonPageCourse = {
+  id: string
+  slug: string
+  title?: string | null
+}
+
+type Lesson = {
+  id: string
+  slug: string
+  title?: string | null
+  description?: string | null
+  video_url?: string | null
+  slides_url?: string | null
+  pdf_url?: string | null
+  resources_url?: string | null
+  content_json?: any
+  attachments?: any
+  is_free_preview?: boolean | null
 }
 
 export function LessonPageWrapper({
-  children,
-  courseSlug,
-  moduleSlug,
-  lessonSlug,
-  lessonId,
-  isPremium,
-  allLessons,
-  nextLessonSlug,
-  nextLessonModuleSlug
-}: LessonPageWrapperProps) {
-  const [isCompleted, setIsCompleted] = useState(false)
-
-  useEffect(() => {
-    // Check if lesson is completed
-    const completed = ProgressManager.isLessonCompleted(courseSlug, lessonSlug)
-    setIsCompleted(completed)
-  }, [courseSlug, lessonSlug])
-
+  course,
+  lesson,
+  userId,
+}: {
+  course: LessonPageCourse
+  lesson: Lesson
+  userId: string | null
+}) {
   return (
     <AccessGuard
-      courseSlug={courseSlug}
-      lessonSlug={lessonSlug}
-      isPremium={isPremium}
-      allLessons={allLessons}
+      courseId={course.id}
+      courseSlug={course.slug}
+      lessonId={lesson.id}
+      userId={userId}
     >
-      {children}
+      <LessonShell course={course} lesson={lesson}>
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          {/* Contenido principal */}
+          <div className="space-y-6">
+            <LessonPlayer course={course} lesson={lesson} />
+          </div>
 
-      {/* Complete button at the bottom */}
-      <div className="bg-gradient-to-b from-[#252b3d] to-[#1a1f2e] border-t border-white/10">
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div className="text-center sm:text-left">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  ¿Terminaste esta lección?
-                </h3>
-                <p className="text-white/70 text-sm">
-                  Marca como completada para desbloquear la siguiente lección
-                </p>
-              </div>
-              <CompleteButton
-                courseSlug={courseSlug}
-                moduleSlug={moduleSlug}
-                lessonSlug={lessonSlug}
-                lessonId={lessonId}
-                nextLessonSlug={nextLessonSlug}
-                nextLessonModuleSlug={nextLessonModuleSlug}
-                isCompleted={isCompleted}
-              />
-            </div>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <LessonResourcesPanel course={course} lesson={lesson} />
+            <LessonNotesPanel course={course} lesson={lesson} userId={userId} />
           </div>
         </div>
-      </div>
+      </LessonShell>
     </AccessGuard>
   )
 }
