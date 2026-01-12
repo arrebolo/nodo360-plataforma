@@ -211,11 +211,11 @@ export async function getAllLessonsForCourse(
 
   // PASO 4: Mapear con estructura consistente
   return (lessons || []).map((lesson) => {
-    const module = modules.find((m) => m.id === lesson.module_id)!
+    const lessonModule = modules.find((m) => m.id === lesson.module_id)!
     return {
       ...lesson,
       module: {
-        ...module,
+        ...lessonModule,
         course: course as Course,
       },
     }

@@ -128,10 +128,10 @@ export async function areAllModulesCompleted(
     }
 
     // Check if user has passed all required modules
-    for (const module of requiredModules) {
+    for (const mod of requiredModules) {
       const { data: passed } = await supabase.rpc("has_passed_module_quiz", {
         p_user_id: userId,
-        p_module_id: module.id,
+        p_module_id: mod.id,
       });
 
       if (!passed) {
@@ -178,24 +178,24 @@ export async function getCourseProgress(userId: string, courseId: string) {
       { completed: boolean; score?: number }
     > = {};
 
-    for (const module of modules) {
-      if (module.requires_quiz) {
+    for (const mod of modules) {
+      if (mod.requires_quiz) {
         const { data: attempt } = await supabase.rpc(
           "get_best_quiz_attempt",
           {
             p_user_id: userId,
-            p_module_id: module.id,
+            p_module_id: mod.id,
           }
         );
 
         if (attempt && attempt.passed) {
           completedModules++;
-          moduleStatus[module.id] = {
+          moduleStatus[mod.id] = {
             completed: true,
             score: attempt.score,
           };
         } else {
-          moduleStatus[module.id] = { completed: false };
+          moduleStatus[mod.id] = { completed: false };
         }
       }
     }

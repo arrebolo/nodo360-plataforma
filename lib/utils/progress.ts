@@ -333,14 +333,14 @@ export function getLessonState(
 
   try {
     // Find the lesson
-    const module = course.modules.find(m => {
+    const foundModule = course.modules.find(m => {
       // Try to match by slug if available, otherwise by id
       return m.id === moduleSlug || (moduleSlug && moduleSlug.length > 0)
     })
 
-    if (!module) return 'locked'
+    if (!foundModule) return 'locked'
 
-    const lesson = module.lessons.find(l => l.slug === lessonSlug)
+    const lesson = foundModule.lessons.find(l => l.slug === lessonSlug)
     if (!lesson) return 'locked'
 
     // Check if completed
@@ -489,17 +489,17 @@ export function getFirstAvailableLesson(course: CourseWithModules): LessonLocati
     // Find first incomplete lesson
     for (const lesson of allLessons) {
       if (!isLessonCompleted(lesson.id)) {
-        const module = course.modules.find(m =>
+        const lessonModule = course.modules.find(m =>
           m.lessons.some(l => l.id === lesson.id)
         )
 
-        if (!module) continue
+        if (!lessonModule) continue
 
         return {
-          moduleId: module.id,
+          moduleId: lessonModule.id,
           lessonId: lesson.id,
           lessonSlug: lesson.slug,
-          moduleTitle: module.title,
+          moduleTitle: lessonModule.title,
           lessonTitle: lesson.title
         }
       }

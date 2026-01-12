@@ -156,13 +156,13 @@ export async function checkCoursePublishability(courseId: string): Promise<Publi
       lessonCountByModule.set(lesson.module_id, (lessonCountByModule.get(lesson.module_id) || 0) + 1)
     }
 
-    for (const module of modules) {
-      const lessonCount = lessonCountByModule.get(module.id) || 0
+    for (const mod of modules) {
+      const lessonCount = lessonCountByModule.get(mod.id) || 0
       if (lessonCount === 0) {
         hardErrors.push({
           code: 'MODULE_EMPTY',
-          message: `El módulo "${module.title}" no tiene lecciones.`,
-          field: `module_${module.id}`
+          message: `El módulo "${mod.title}" no tiene lecciones.`,
+          field: `module_${mod.id}`
         })
       }
     }

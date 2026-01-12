@@ -1,5 +1,6 @@
 import { Target, Eye, Heart, Users, Zap, Shield, Globe, TrendingUp, Award, BookOpen, MessageCircle } from 'lucide-react'
 import { Metadata } from 'next'
+import Link from 'next/link'
 import { Footer } from '@/components/navigation/Footer'
 
 export const metadata: Metadata = {
@@ -333,20 +334,20 @@ export default function SobreNosotrosPage() {
               Únete a miles de estudiantes que ya están construyendo su futuro en Web3
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/cursos"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-105"
               >
                 <BookOpen className="w-5 h-5" />
                 Explorar Cursos
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/comunidad"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-lg rounded-xl hover:border-brand-light/50 transition-all duration-300 hover:scale-105"
               >
                 <Users className="w-5 h-5" />
                 Unirse a la Comunidad
-              </a>
+              </Link>
             </div>
           </div>
         </div>

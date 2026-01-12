@@ -190,7 +190,7 @@ export async function generateAndIssueCertificate(
       };
     }
 
-    let module = null;
+    let courseModule = null;
     if (type === "module" && moduleId) {
       const { data: moduleData, error: moduleError } = await supabase
         .from("modules")
@@ -205,7 +205,7 @@ export async function generateAndIssueCertificate(
         };
       }
 
-      module = moduleData;
+      courseModule = moduleData;
     }
 
     // 4. GENERATE CERTIFICATE NUMBER AND VERIFICATION CODE
@@ -224,11 +224,11 @@ export async function generateAndIssueCertificate(
         certificate_number: certificateNumber,
         title:
           type === "module"
-            ? `Certificado de Módulo: ${module?.title}`
+            ? `Certificado de Módulo: ${courseModule?.title}`
             : `Certificado de Curso: ${course.title}`,
         description:
           type === "module"
-            ? `Certificado de completación del módulo "${module?.title}" del curso "${course.title}"`
+            ? `Certificado de completación del módulo "${courseModule?.title}" del curso "${course.title}"`
             : `Certificado de completación del curso completo "${course.title}"`,
         verification_url: verificationUrl,
         // certificate_url will be updated after upload
@@ -251,7 +251,7 @@ export async function generateAndIssueCertificate(
       userName: user.full_name || user.email,
       userEmail: user.email,
       courseTitle: course.title,
-      moduleTitle: module?.title,
+      moduleTitle: courseModule?.title,
       type,
       issuedDate: new Date(),
       verificationUrl,
@@ -334,13 +334,13 @@ export async function issueModuleCertificate(
   const supabase = await createClient();
 
   // Get course ID from module
-  const { data: module, error } = await supabase
+  const { data: modData, error } = await supabase
     .from("modules")
     .select("course_id")
     .eq("id", moduleId)
     .single();
 
-  if (error || !module) {
+  if (error || !modData) {
     return {
       success: false,
       error: "Module not found",
@@ -349,7 +349,7 @@ export async function issueModuleCertificate(
 
   return generateAndIssueCertificate({
     userId,
-    courseId: module.course_id,
+    courseId: modData.course_id,
     moduleId,
     type: "module",
     quizAttemptId,
@@ -393,16 +393,16 @@ export async function issueCourseCertificate(
   }
 
   // Check if user has passed all required modules
-  for (const module of requiredModules) {
+  for (const mod of requiredModules) {
     const { data: passed } = await supabase.rpc("has_passed_module_quiz", {
       p_user_id: userId,
-      p_module_id: module.id,
+      p_module_id: mod.id,
     });
 
     if (!passed) {
       return {
         success: false,
-        error: `Not all required modules completed. Module ${module.id} not passed.`,
+        error: `Not all required modules completed. Module ${mod.id} not passed.`,
       };
     }
   }

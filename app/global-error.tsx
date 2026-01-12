@@ -56,6 +56,7 @@ export default function GlobalError({
               Intentar de nuevo
             </button>
 
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error renders outside normal React context */}
             <a
               href="/"
               className="block w-full px-6 py-3 border border-white/20 text-white font-medium rounded-xl hover:bg-white/5 transition-all"

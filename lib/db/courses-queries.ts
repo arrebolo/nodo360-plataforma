@@ -283,8 +283,8 @@ export async function getAllLessonsForCourse(
 
   // PASO 4: Mapear lecciones con estructura consistente
   const lessonsWithRelations: LessonWithRelations[] = (lessons || []).map((lesson) => {
-    const module = modules.find((m) => m.id === lesson.module_id)
-    if (!module) {
+    const lessonModule = modules.find((m) => m.id === lesson.module_id)
+    if (!lessonModule) {
       console.error('❌ [getAllLessonsForCourse] Módulo no encontrado para lección:', {
         lessonId: lesson.id,
         moduleId: lesson.module_id,
@@ -295,7 +295,7 @@ export async function getAllLessonsForCourse(
     return {
       ...lesson,
       module: {
-        ...module,
+        ...lessonModule,
         course: course as Course,
       },
     }
