@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronDown, ChevronRight, Lock } from 'lucide-react'
 import { isLessonCompleted } from '@/lib/utils/progress'
-import { ProgressBar } from '@/components/ui/ProgressBar'
 import type { CourseWithModules } from '@/types/database'
 
 interface CourseSidebarProps {
@@ -35,13 +34,9 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
       setCompletedLessons(completed)
     }
 
-    // Initial load
     updateCompletedLessons()
 
-    // Listeners para actualizaciones en tiempo real
-    const handleProgressUpdate = () => {
-      updateCompletedLessons()
-    }
+    const handleProgressUpdate = () => updateCompletedLessons()
 
     window.addEventListener('lesson-completed', handleProgressUpdate)
     window.addEventListener('lesson-uncompleted', handleProgressUpdate)
@@ -69,11 +64,7 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
   const toggleModule = (moduleId: string) => {
     setExpandedModules((prev) => {
       const next = new Set(prev)
-      if (next.has(moduleId)) {
-        next.delete(moduleId)
-      } else {
-        next.add(moduleId)
-      }
+      next.has(moduleId) ? next.delete(moduleId) : next.add(moduleId)
       return next
     })
   }
@@ -81,23 +72,26 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
   const sortedModules = [...course.modules].sort((a, b) => a.order_index - b.order_index)
 
   return (
-    <div className="bg-[#0a0a0a] rounded-xl border border-[#2a2a2a] overflow-hidden">
+    <div className="bg-dark rounded-xl border border-dark-border overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-[#2a2a2a]">
+      <div className="p-6 border-b border-dark-border">
         <h3 className="text-lg font-bold text-white mb-4">Contenido del curso</h3>
+
         {progress && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-400">Progreso</span>
-              <span className="font-bold text-[#F7931A]">{progress.percentage}%</span>
+              <span className="text-white/60">Progreso</span>
+              <span className="font-bold text-brand">{progress.percentage}%</span>
             </div>
-            <div className="h-2 bg-[#1a1a1a] rounded-full overflow-hidden">
+
+            <div className="h-2 bg-dark-tertiary rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#F7931A] to-[#FDB931] rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-brand-light to-brand rounded-full transition-all duration-500"
                 style={{ width: `${progress.percentage}%` }}
               />
             </div>
-            <p className="text-xs text-gray-500">
+
+            <p className="text-xs text-white/50">
               {progress.completed} de {progress.total} lecciones
             </p>
           </div>
@@ -113,23 +107,23 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
           )
 
           return (
-            <div key={module.id} className="border-b border-[#2a2a2a] last:border-b-0">
+            <div key={module.id} className="border-b border-dark-border last:border-b-0">
               {/* Module Header */}
               <button
                 onClick={() => toggleModule(module.id)}
-                className="w-full p-4 flex items-center justify-between hover:bg-[#1a1a1a] transition-colors text-left"
+                className="w-full p-4 flex items-center justify-between text-left transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
                 aria-expanded={isExpanded}
               >
                 <div className="flex-1">
                   <h4 className="font-medium text-white">{module.title}</h4>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-white/50 mt-1">
                     {sortedLessons.length} lecciones
                   </p>
                 </div>
                 {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  <ChevronDown className="w-5 h-5 text-white/60 flex-shrink-0" />
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-white/60 flex-shrink-0" />
                 )}
               </button>
 
@@ -139,7 +133,7 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
                   {sortedLessons.map((lesson) => {
                     const isCompleted = completedLessons.has(lesson.id)
                     const isCurrent = lesson.slug === currentLessonSlug
-                    const isLocked = false // TODO: Implementar lógica de bloqueo para premium
+                    const isLocked = false // TODO: lógica premium
 
                     if (isLocked) {
                       return (
@@ -147,9 +141,9 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
                           key={lesson.id}
                           className="px-4 py-3 flex items-center gap-3 opacity-50"
                         >
-                          <Lock className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                          <span className="text-sm text-gray-500 flex-1">{lesson.title}</span>
-                          <span className="text-xs text-gray-600">🔒</span>
+                          <Lock className="w-4 h-4 text-white/40 flex-shrink-0" />
+                          <span className="text-sm text-white/50 flex-1">{lesson.title}</span>
+                          <span className="text-xs text-white/40">🔒</span>
                         </div>
                       )
                     }
@@ -158,32 +152,37 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
                       <Link
                         key={lesson.id}
                         href={`/cursos/${course.slug}/${lesson.slug}`}
-                        className={`px-4 py-3 flex items-center gap-3 hover:bg-[#1a1a1a] transition-colors ${
-                          isCurrent ? 'bg-[#F7931A]/10 border-l-2 border-[#F7931A]' : ''
-                        }`}
+                        className={[
+                          'px-4 py-3 flex items-center gap-3 transition-colors',
+                          'hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30',
+                          isCurrent ? 'bg-brand/10 border-l-2 border-brand' : '',
+                        ].join(' ')}
                       >
                         <div className="w-4 h-4 flex-shrink-0">
                           {isCompleted ? (
                             <span className="text-emerald-400">✓</span>
                           ) : isCurrent ? (
-                            <span className="text-[#F7931A]">→</span>
+                            <span className="text-brand">→</span>
                           ) : (
-                            <span className="text-gray-600">□</span>
+                            <span className="text-white/40">□</span>
                           )}
                         </div>
+
                         <span
-                          className={`text-sm flex-1 ${
+                          className={[
+                            'text-sm flex-1',
                             isCurrent
                               ? 'text-white font-medium'
                               : isCompleted
-                              ? 'text-gray-400'
-                              : 'text-gray-500'
-                          }`}
+                              ? 'text-white/60'
+                              : 'text-white/50',
+                          ].join(' ')}
                         >
                           {lesson.title}
                         </span>
+
                         {lesson.video_duration_minutes > 0 && (
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-white/40">
                             {lesson.video_duration_minutes}min
                           </span>
                         )}
@@ -198,20 +197,14 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
       </div>
 
       {/* Resources Section */}
-      <div className="p-6 border-t border-[#2a2a2a] space-y-4">
+      <div className="p-6 border-t border-dark-border space-y-4">
         <div>
-          <h4 className="text-sm font-medium text-white mb-3">📚 Recursos Útiles</h4>
+          <h4 className="text-sm font-medium text-white mb-3">📚 Recursos útiles</h4>
           <div className="space-y-2">
-            <a
-              href="#"
-              className="block text-sm text-gray-400 hover:text-[#F7931A] transition-colors"
-            >
+            <a href="#" className="block text-sm text-white/60 hover:text-brand transition-colors">
               📄 Documentación oficial
             </a>
-            <a
-              href="#"
-              className="block text-sm text-gray-400 hover:text-[#F7931A] transition-colors"
-            >
+            <a href="#" className="block text-sm text-white/60 hover:text-brand transition-colors">
               💾 Archivos del curso
             </a>
           </div>
@@ -221,7 +214,7 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
           <h4 className="text-sm font-medium text-white mb-3">💬 Comunidad</h4>
           <Link
             href="/comunidad"
-            className="block w-full px-4 py-2 bg-gradient-to-r from-[#F7931A] to-[#FDB931] text-black text-sm font-medium rounded-lg hover:shadow-lg hover:shadow-[#F7931A]/20 transition-all text-center"
+            className="block w-full px-4 py-2 bg-gradient-to-r from-brand-light to-brand text-black text-sm font-medium rounded-lg transition-all text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
           >
             Ir a la comunidad
           </Link>
@@ -230,3 +223,5 @@ export function CourseSidebar({ course, currentLessonSlug, progress }: CourseSid
     </div>
   )
 }
+
+

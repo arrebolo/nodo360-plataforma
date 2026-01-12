@@ -20,6 +20,7 @@ export interface QuizSubmission {
   userId: string
   moduleId: string
   answers: QuizAnswer[]
+  timeSpentSeconds?: number
 }
 
 export interface QuizResult {
@@ -43,12 +44,12 @@ export function validateQuizAnswers(
 
     return {
       ...userAnswer,
-      is_correct: question?.correct_option === userAnswer.selected_option
+      correct: question?.correct_answer === userAnswer.selected_answer
     }
   })
 
   const totalQuestions = questions.length
-  const correctAnswers = detailedAnswers.filter((a) => a.is_correct).length
+  const correctAnswers = detailedAnswers.filter((a) => a.correct).length
 
   const score = Math.round((correctAnswers / totalQuestions) * 100)
   const passed = score >= PASSING_SCORE
@@ -69,7 +70,7 @@ export async function submitQuizAttempt(
 ): Promise<QuizResult | { error: string }> {
   const supabase = await createClient()
 
-  const { userId, moduleId, answers } = submission
+  const { userId, moduleId, answers, timeSpentSeconds } = submission
 
   // 1️⃣ Validar respuestas
   const result = validateQuizAnswers(questions, answers)
@@ -90,11 +91,17 @@ export async function submitQuizAttempt(
   const alreadyPassedBefore = (previousAttempts?.length || 0) > 0
 
   // 3️⃣ Guardar intento
+  const correctCount = result.answers.filter((a) => a.correct).length
   const attemptData: InsertQuizAttempt = {
     user_id: userId,
     module_id: moduleId,
     score: result.score,
-    passed: result.passed
+    passed: result.passed,
+    total_questions: questions.length,
+    correct_answers: correctCount,
+    answers: result.answers,
+    time_spent_seconds: timeSpentSeconds ?? null,
+    completed_at: new Date().toISOString(),
   }
 
   const { data: attempt, error } = await supabase
@@ -189,3 +196,5 @@ export async function hasPassedModuleQuiz(
 
   return (attempts?.length || 0) > 0
 }
+
+

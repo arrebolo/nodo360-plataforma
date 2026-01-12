@@ -2,14 +2,11 @@
 
 import React from 'react'
 
-// ✅ default export
-import AccessGuard from './AccessGuard'
-import LessonShell from './LessonShell'
-
-// ✅ named exports (confirmado por errores)
-import { LessonPlayer } from './LessonPlayer'
-import { LessonResourcesPanel } from './LessonResourcesPanel'
-import { LessonNotesPanel } from './LessonNotesPanel'
+/**
+ * @deprecated This component is no longer used.
+ * The lesson page now uses LessonPlayer directly with server-fetched data.
+ * See: app/cursos/[slug]/[lessonSlug]/page.tsx
+ */
 
 type LessonPageCourse = {
   id: string
@@ -26,8 +23,8 @@ type Lesson = {
   slides_url?: string | null
   pdf_url?: string | null
   resources_url?: string | null
-  content_json?: any
-  attachments?: any
+  content_json?: unknown
+  attachments?: unknown
   is_free_preview?: boolean | null
 }
 
@@ -40,27 +37,22 @@ export function LessonPageWrapper({
   lesson: Lesson
   userId: string | null
 }) {
+  // This is a deprecated component - redirect to the lesson page
   return (
-    <AccessGuard
-      courseId={course.id}
-      courseSlug={course.slug}
-      lessonId={lesson.id}
-      userId={userId}
-    >
-      <LessonShell course={course} lesson={lesson}>
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          {/* Contenido principal */}
-          <div className="space-y-6">
-            <LessonPlayer course={course} lesson={lesson} />
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <LessonResourcesPanel course={course} lesson={lesson} />
-            <LessonNotesPanel course={course} lesson={lesson} userId={userId} />
-          </div>
-        </div>
-      </LessonShell>
-    </AccessGuard>
+    <div className="p-8 text-center">
+      <p className="text-neutral-500">
+        Este componente esta deprecado. Usa la nueva pagina de leccion.
+      </p>
+      <a
+        href={`/cursos/${course.slug}/${lesson.slug}`}
+        className="text-orange-600 underline"
+      >
+        Ir a la leccion
+      </a>
+    </div>
   )
 }
+
+export default LessonPageWrapper
+
+

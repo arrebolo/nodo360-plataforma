@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 interface EnrollButtonProps {
   courseId: string
@@ -19,7 +20,7 @@ export default function EnrollButton({
   isEnrolled,
   isAuthenticated,
   firstLessonSlug,
-  className = ''
+  className = '',
 }: EnrollButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -27,18 +28,8 @@ export default function EnrollButton({
   const [error, setError] = useState<string | null>(null)
 
   const handleEnroll = async () => {
-    console.log('🔍 [EnrollButton] Iniciando inscripción...')
-    console.log('📊 [EnrollButton] Datos:', {
-      courseId,
-      courseSlug,
-      isEnrolled,
-      isAuthenticated,
-      firstLessonSlug
-    })
-
     // Si no está autenticado, redirigir a login
     if (!isAuthenticated) {
-      console.log('⚠️  [EnrollButton] Usuario no autenticado, redirigiendo a login')
       router.push(`/login?redirect=/cursos/${courseSlug}`)
       return
     }
@@ -47,9 +38,6 @@ export default function EnrollButton({
     setError(null)
 
     try {
-      console.log('📤 [EnrollButton] Enviando inscripción...')
-      console.log('   courseId:', courseId)
-
       const response = await fetch('/api/enroll', {
         method: 'POST',
         headers: {
@@ -58,53 +46,46 @@ export default function EnrollButton({
         body: JSON.stringify({ courseId }),
       })
 
-      console.log('📥 [EnrollButton] Response:', {
-        status: response.status,
-        ok: response.ok,
-        statusText: response.statusText
-      })
-
       const data = await response.json()
-      console.log('📊 [EnrollButton] Response data:', data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Error al inscribirse')
       }
 
-      console.log('✅ [EnrollButton] Inscripción exitosa')
       setEnrolled(true)
 
       // Redirigir a primera lección si existe
       if (firstLessonSlug) {
         router.push(`/cursos/${courseSlug}/${firstLessonSlug}`)
       } else {
-        // Si no hay primera lección, refrescar página para mostrar botón actualizado
         router.refresh()
       }
     } catch (err) {
-      console.error('❌ [EnrollButton] Error:', err)
+      console.error('[EnrollButton] Error:', err)
       setError(err instanceof Error ? err.message : 'Error al inscribirse')
     } finally {
       setLoading(false)
     }
   }
 
-  // Si ya está inscrito, mostrar botón de "Ir al curso"
+  // Si ya esta inscrito, mostrar boton de "Ir al curso"
   if (enrolled) {
     return (
       <div className={`space-y-3 ${className}`}>
-        <div className="flex items-center gap-2 text-green-500">
+        <div className="flex items-center gap-2 text-success">
           <CheckCircle className="w-5 h-5" />
-          <span className="font-medium">Inscrito en este curso</span>
+          <span className="font-medium text-sm">Inscrito en este curso</span>
         </div>
 
         {firstLessonSlug && (
-          <button
+          <Button
+            variant="primary"
             onClick={() => router.push(`/cursos/${courseSlug}/${firstLessonSlug}`)}
-            className="w-full px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition"
+            className="w-full"
           >
-            Continuar Curso
-          </button>
+            Continuar curso
+            <span aria-hidden className="text-white/80">→</span>
+          </Button>
         )}
       </div>
     )
@@ -112,28 +93,27 @@ export default function EnrollButton({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <button
+      <Button
+        variant="primary"
         onClick={handleEnroll}
         disabled={loading}
-        className="w-full px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        isLoading={loading}
+        className="w-full"
       >
-        {loading ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Inscribiendo...
-          </>
-        ) : (
-          <>
-            {isAuthenticated ? 'Inscribirse Gratis' : 'Iniciar Sesión para Inscribirse'}
-          </>
-        )}
-      </button>
+        {loading
+          ? 'Inscribiendo...'
+          : isAuthenticated
+          ? 'Inscribirse gratis'
+          : 'Iniciar sesión para inscribirse'}
+      </Button>
 
       {error && (
-        <div className="px-4 py-2 bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg text-sm">
+        <div className="px-3 py-2 bg-error/10 border border-error/20 text-error rounded-xl text-sm">
           {error}
         </div>
       )}
     </div>
   )
 }
+
+

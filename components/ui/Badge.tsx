@@ -1,45 +1,56 @@
-interface BadgeProps {
-  variant: 'premium' | 'free' | 'completed' | 'in-progress' | 'new'
-  className?: string
+import * as React from 'react'
+
+type BadgeVariant =
+  | 'default'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info'
+  | 'premium'
+
+type BadgeSize = 'sm' | 'md'
+
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: BadgeVariant
+  size?: BadgeSize
 }
 
-export function Badge({ variant, className = '' }: BadgeProps) {
-  const variants = {
-    premium: {
-      icon: '🔒',
-      text: 'Premium',
-      className: 'bg-gradient-to-r from-[#F7931A] to-[#FDB931] text-black',
-    },
-    free: {
-      icon: '🆓',
-      text: 'Gratis',
-      className: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    },
-    completed: {
-      icon: '✓',
-      text: 'Completado',
-      className: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    },
-    'in-progress': {
-      icon: '⏳',
-      text: 'En progreso',
-      className: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    },
-    new: {
-      icon: '✨',
-      text: 'Nuevo',
-      className: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
-    },
-  }
+const base =
+  'inline-flex items-center gap-1 rounded-full font-medium whitespace-nowrap ' +
+  'border transition-colors ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30'
 
-  const config = variants[variant]
+const sizeStyles: Record<BadgeSize, string> = {
+  sm: 'px-2.5 py-1 text-[11px]',
+  md: 'px-3 py-1.5 text-xs',
+}
 
+const variantStyles: Record<BadgeVariant, string> = {
+  default: 'bg-white/5 text-muted border-dark-border',
+  success: 'bg-success/15 text-success border-success/30',
+  warning: 'bg-warning/15 text-warning border-warning/30',
+  error: 'bg-error/15 text-error border-error/30',
+  info: 'bg-info/15 text-info border-info/30',
+  premium: 'bg-brand/15 text-brand border-brand/30',
+}
+
+function Badge({
+  variant = 'default',
+  size = 'md',
+  className = '',
+  ...props
+}: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.className} ${className}`}
-    >
-      <span>{config.icon}</span>
-      <span>{config.text}</span>
-    </span>
+      className={[
+        base,
+        sizeStyles[size],
+        variantStyles[variant],
+        className,
+      ].join(' ')}
+      {...props}
+    />
   )
 }
+
+export default Badge

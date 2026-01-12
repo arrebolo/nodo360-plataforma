@@ -1,5 +1,6 @@
 // lib/auth/requireInstructor.ts
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export async function requireInstructorLike() {
   const supabase = await createClient();
@@ -8,7 +9,7 @@ export async function requireInstructorLike() {
   const user = authData?.user;
 
   if (authError || !user) {
-    throw new Error("No autenticado");
+    redirect("/login?redirect=/dashboard/instructor/cursos");
   }
 
   // Tu estándar: public.users.role (student, instructor, mentor, admin)
@@ -19,13 +20,16 @@ export async function requireInstructorLike() {
     .single();
 
   if (profileError || !profile) {
-    throw new Error("Perfil no encontrado");
+    redirect("/dashboard");
   }
 
   const allowed = new Set(["instructor", "mentor", "admin"]);
   if (!allowed.has(profile.role)) {
-    throw new Error("No autorizado");
+    // Usuario no autorizado para esta sección, redirigir al dashboard
+    redirect("/dashboard");
   }
 
   return { userId: user.id, role: profile.role as "instructor" | "mentor" | "admin" };
 }
+
+

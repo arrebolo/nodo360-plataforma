@@ -73,8 +73,8 @@ export function NewsletterForm({
     return (
       <div className={`bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-2xl p-8 backdrop-blur-sm ${className}`}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#ff6b35]/20 to-[#f7931a]/20 rounded-xl flex items-center justify-center">
-            <Mail className="w-6 h-6 text-[#ff6b35]" />
+          <div className="w-12 h-12 bg-gradient-to-br from-brand-light/20 to-brand/20 rounded-xl flex items-center justify-center">
+            <Mail className="w-6 h-6 text-brand-light" />
           </div>
           <div>
             <h3 className="text-xl font-bold text-white">Newsletter</h3>
@@ -90,7 +90,7 @@ export function NewsletterForm({
               value={formData.name}
               onChange={handleChange}
               placeholder="Tu nombre"
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-[#ff6b35]/50 focus:ring-2 focus:ring-[#ff6b35]/20 transition-all"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-brand-light/50 focus:ring-2 focus:ring-brand-light/20 transition-all"
             />
           )}
 
@@ -101,13 +101,13 @@ export function NewsletterForm({
             onChange={handleChange}
             required
             placeholder="tu@email.com"
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-[#ff6b35]/50 focus:ring-2 focus:ring-[#ff6b35]/20 transition-all"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-brand-light/50 focus:ring-2 focus:ring-brand-light/20 transition-all"
           />
 
           <button
             type="submit"
             disabled={isSubmitting || submitStatus === 'success'}
-            className="w-full px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+            className="w-full px-6 py-3 bg-gradient-to-r from-brand-light to-brand rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>
@@ -160,7 +160,7 @@ export function NewsletterForm({
             value={formData.name}
             onChange={handleChange}
             placeholder="Tu nombre"
-            className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-[#ff6b35]/50 focus:ring-2 focus:ring-[#ff6b35]/20 transition-all"
+            className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-brand-light/50 focus:ring-2 focus:ring-brand-light/20 transition-all"
           />
         )}
 
@@ -172,14 +172,14 @@ export function NewsletterForm({
             onChange={handleChange}
             required
             placeholder="tu@email.com"
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-[#ff6b35]/50 focus:ring-2 focus:ring-[#ff6b35]/20 transition-all"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-brand-light/50 focus:ring-2 focus:ring-brand-light/20 transition-all"
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting || submitStatus === 'success'}
-          className="px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 whitespace-nowrap"
+          className="px-6 py-3 bg-gradient-to-r from-brand-light to-brand rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 whitespace-nowrap"
         >
           {isSubmitting ? (
             <>
@@ -222,3 +222,5 @@ export function NewsletterForm({
     </div>
   )
 }
+
+

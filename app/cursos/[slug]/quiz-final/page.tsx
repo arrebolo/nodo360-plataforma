@@ -71,12 +71,12 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
   console.log('🔍 [QuizFinal] Curso:', course.title, '- Preguntas:', questions.length)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
+    <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
       {/* Header */}
-      <header className="border-b border-white/10 bg-[#1a1f2e]/80 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-white/10 bg-dark-surface/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
               <span className="text-white font-bold text-xl">N</span>
             </div>
             <span className="text-white font-bold text-xl">NODO360</span>
@@ -110,7 +110,7 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
           courseTitle={course.title}
           questions={questions}
           userId={user.id}
-          redirectTo="/certificados"
+          redirectTo="/dashboard/certificados"
           fallbackUrl={`/cursos/${course.slug}`}
         />
       </main>

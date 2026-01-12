@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import ChangeRoleForm from './ChangeRoleForm'
 import AdjustXPForm from './AdjustXPForm'
 import UserXPHistory from '@/components/admin/UserXPHistory'
+import { ResetCourseSection } from '@/components/admin/ResetCourseSection'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -70,21 +71,21 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
           <div className="space-y-1">
             <h1 className="text-xl font-semibold text-white">Usuario</h1>
-            <div className="text-sm text-gray-300 space-y-0.5">
+            <div className="text-sm text-white/80 space-y-0.5">
               <div>
-                <span className="text-gray-400">ID:</span>{' '}
+                <span className="text-white/60">ID:</span>{' '}
                 <span className="text-white">{targetUser.id}</span>
               </div>
               <div>
-                <span className="text-gray-400">Email:</span>{' '}
+                <span className="text-white/60">Email:</span>{' '}
                 <span className="text-white">{targetUser.email || '—'}</span>
               </div>
               <div>
-                <span className="text-gray-400">Nombre:</span>{' '}
+                <span className="text-white/60">Nombre:</span>{' '}
                 <span className="text-white">{targetUser.full_name || '—'}</span>
               </div>
               <div>
-                <span className="text-gray-400">Rol:</span>{' '}
+                <span className="text-white/60">Rol:</span>{' '}
                 <span className="text-white">{targetUser.role}</span>
               </div>
             </div>
@@ -123,6 +124,11 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
       </div>
 
       {/* =========================================
+          REINICIAR CURSO
+      ========================================= */}
+      <ResetCourseSection userId={targetUser.id} />
+
+      {/* =========================================
           AUDITORÍA VISUAL XP
       ========================================= */}
       <UserXPHistory userId={targetUser.id} />
@@ -136,7 +142,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="bg-black/30 border border-white/10 rounded-xl px-4 py-3">
-      <div className="text-xs text-gray-400">{label}</div>
+      <div className="text-xs text-white/60">{label}</div>
       <div className="text-white font-semibold">{value}</div>
     </div>
   )

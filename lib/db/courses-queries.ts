@@ -26,8 +26,8 @@ export type { LessonWithRelations }
 // =====================================================
 
 /**
- * Get all published courses
- * @returns Lista de cursos publicados con información del instructor
+ * Get all published and coming_soon courses
+ * @returns Lista de cursos visibles con información del instructor
  */
 export async function getAllCourses(): Promise<CourseWithInstructor[]> {
   console.log('🔍 [getAllCourses] Obteniendo todos los cursos...')
@@ -44,7 +44,7 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
         avatar_url
       )
     `)
-    .eq('status', 'published')
+    .in('status', ['published', 'coming_soon'])
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -475,3 +475,5 @@ export async function getPreviousLesson(
 
   return lastLesson
 }
+
+

@@ -57,12 +57,12 @@ export default async function ProposalDetailPage({ params }: PageProps) {
   const daysRemaining = endDate ? Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0
 
   return (
-    <div className="min-h-screen bg-[#0a0d14]">
+    <div className="min-h-screen bg-dark-deep">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Back link */}
         <Link
           href="/gobernanza"
-          className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver a Gobernanza
@@ -76,14 +76,14 @@ export default async function ProposalDetailPage({ params }: PageProps) {
               {statusInfo.icon} {statusInfo.label}
             </span>
             {proposal.category_icon && (
-              <span className="px-3 py-1 rounded-full text-sm bg-white/10 text-gray-300">
+              <span className="px-3 py-1 rounded-full text-sm bg-white/10 text-white/80">
                 {proposal.category_icon} {proposal.category_name}
               </span>
             )}
             <span className={`px-3 py-1 rounded-full text-sm ${
               proposal.proposal_level === 2
                 ? 'bg-amber-500/20 text-amber-400'
-                : 'bg-gray-500/20 text-gray-400'
+                : 'bg-white/50/20 text-white/60'
             }`}>
               Nivel {proposal.proposal_level}
             </span>
@@ -93,10 +93,10 @@ export default async function ProposalDetailPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold mb-4 text-white">{proposal.title}</h1>
 
           {/* Descripción */}
-          <p className="text-lg text-gray-300 mb-6">{proposal.description}</p>
+          <p className="text-lg text-white/80 mb-6">{proposal.description}</p>
 
           {/* Meta info */}
-          <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
+          <div className="flex flex-wrap items-center gap-6 text-sm text-white/60">
             {/* Autor */}
             <div className="flex items-center gap-2">
               {proposal.author_avatar ? (
@@ -137,7 +137,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
           {proposal.tags && proposal.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
               {proposal.tags.map((tag, i) => (
-                <span key={i} className="flex items-center gap-1 px-2 py-1 bg-white/5 rounded text-sm text-gray-400">
+                <span key={i} className="flex items-center gap-1 px-2 py-1 bg-white/5 rounded text-sm text-white/60">
                   <Tag className="w-3 h-3" />
                   {tag}
                 </span>
@@ -154,7 +154,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
             {proposal.detailed_content && (
               <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                 <h2 className="text-xl font-semibold mb-4 text-white">Detalles</h2>
-                <div className="prose prose-invert max-w-none text-gray-300 whitespace-pre-wrap">
+                <div className="prose prose-invert max-w-none text-white/80 whitespace-pre-wrap">
                   {proposal.detailed_content}
                 </div>
               </div>
@@ -191,14 +191,14 @@ export default async function ProposalDetailPage({ params }: PageProps) {
                             />
                           ) : (
                             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                              <User className="w-4 h-4 text-gray-400" />
+                              <User className="w-4 h-4 text-white/60" />
                             </div>
                           )}
                           <div>
                             <p className="font-medium text-sm text-white">
                               {vote.voter?.full_name || 'Usuario'}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-white/50">
                               {vote.gpower_used} gP
                             </p>
                           </div>

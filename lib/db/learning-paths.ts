@@ -136,3 +136,5 @@ export async function getLearningPathWithCourses(
     courses,
   }
 }
+
+

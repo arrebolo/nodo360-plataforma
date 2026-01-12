@@ -8,8 +8,18 @@ function clampInt(v: string | null, def: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n))
 }
 
-export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    // FIX Next.js 16: params es Promise
+    const { id: userId } = await params
+
+    if (!userId || typeof userId !== 'string' || userId.length < 10) {
+      return NextResponse.json({ error: 'userId invalido' }, { status: 400 })
+    }
+
     // 1) Auth + rol (session client)
     const supabase = await createClient()
     const { data: authData, error: authError } = await supabase.auth.getUser()
@@ -27,11 +37,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
       return NextResponse.json({ error: 'Solo admin' }, { status: 403 })
     }
 
-    const userId = ctx.params.id
-    if (!userId) {
-      return NextResponse.json({ error: 'userId inválido' }, { status: 400 })
-    }
-
     const url = new URL(req.url)
     const limit = clampInt(url.searchParams.get('limit'), 50, 1, 200)
     const type = (url.searchParams.get('type') || '').trim()
@@ -46,7 +51,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
     let q = admin
       .from('xp_events')
-      .select('id,user_id,event_type,xp_amount,description,created_at')
+      .select('id,user_id,event_type,xp_earned,description,created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .order('id', { ascending: false })
@@ -76,9 +81,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
     return NextResponse.json({
       events,
-      nextCursor: last
-        ? { cursorCreatedAt: last.created_at, cursorId: last.id }
-        : null
+      nextCursor: last ? { cursorCreatedAt: last.created_at, cursorId: last.id } : null,
     })
   } catch (e) {
     console.error('[Admin][XP Events] Exception:', e)

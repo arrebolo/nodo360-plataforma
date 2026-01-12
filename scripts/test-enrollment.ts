@@ -311,3 +311,5 @@ testEnrollment()
     console.error('❌ Error fatal en test:', error)
     process.exit(1)
   })
+
+

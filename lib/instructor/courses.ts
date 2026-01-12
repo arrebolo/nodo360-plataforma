@@ -9,6 +9,8 @@ export type InstructorCourseForm = {
   status: "draft" | "published" | "archived" | "coming_soon";
   is_free: boolean;
   price?: number | null;
+  thumbnail_url?: string | null;
+  banner_url?: string | null;
 };
 
 export async function listMyCourses(userId: string) {
@@ -48,13 +50,58 @@ export async function getMyCourseForEdit(userId: string, courseId: string) {
 
   const { data, error } = await supabase
     .from("courses")
-    .select("id, title, slug, description, level, status, is_free, price")
+    .select(`
+      id, title, slug, description, long_description,
+      level, status, is_free, is_premium, price,
+      thumbnail_url, banner_url
+    `)
     .eq("id", courseId)
     .eq("instructor_id", userId)
     .single();
 
   if (error) throw new Error(error.message);
   return data;
+}
+
+export async function getMyCourseStats(userId: string, courseId: string) {
+  const supabase = await createClient();
+
+  // Verify ownership
+  const { data: course, error: courseError } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("id", courseId)
+    .eq("instructor_id", userId)
+    .single();
+
+  if (courseError || !course) {
+    return { modulesCount: 0, lessonsCount: 0, totalDurationMinutes: 0 };
+  }
+
+  // Get modules with lessons
+  const { data: modules } = await supabase
+    .from("modules")
+    .select(`
+      id,
+      lessons (
+        id,
+        video_duration_minutes
+      )
+    `)
+    .eq("course_id", courseId);
+
+  const modulesCount = modules?.length ?? 0;
+  let lessonsCount = 0;
+  let totalDurationMinutes = 0;
+
+  modules?.forEach(m => {
+    lessonsCount += m.lessons?.length ?? 0;
+    m.lessons?.forEach(l => {
+      totalDurationMinutes += l.video_duration_minutes ?? 0;
+    });
+  });
+
+  return { modulesCount, lessonsCount, totalDurationMinutes };
 }
 
 export async function updateMyCourse(userId: string, courseId: string, payload: InstructorCourseForm) {
@@ -73,3 +120,5 @@ export async function updateMyCourse(userId: string, courseId: string, payload: 
 
   if (error) throw new Error(error.message);
 }
+
+

@@ -62,6 +62,7 @@ export default async function NewLessonPage({ params }: PageProps) {
 
     // Preparar datos de la lección
     const lessonData = {
+      course_id: courseId,
       module_id: moduleId,
       title: formData.get('title') as string,
       slug: formData.get('slug') as string,
@@ -71,6 +72,8 @@ export default async function NewLessonPage({ params }: PageProps) {
       video_duration_minutes: formData.get('video_duration_minutes')
         ? parseInt(formData.get('video_duration_minutes') as string)
         : null,
+      slides_url: formData.get('slides_url') as string || null,
+      slides_type: formData.get('slides_type') as string || 'google_slides',
       is_free_preview: formData.get('is_free_preview') === 'on',
       order_index: nextOrderIndex,
     }
@@ -93,22 +96,22 @@ export default async function NewLessonPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f1419] via-[#1a1f2e] to-[#0f1419] text-white p-6">
+    <div className="min-h-screen bg-gradient-to-br from-dark-secondary via-dark-surface to-dark-secondary text-white p-6">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-sm">
-          <Link href="/admin/cursos" className="text-[#C5C7D3] hover:text-white transition">
+          <Link href="/admin/cursos" className="text-white/70 hover:text-white transition">
             Cursos
           </Link>
-          <span className="text-[#C5C7D3]">/</span>
-          <Link href={`/admin/cursos/${courseId}/modulos`} className="text-[#C5C7D3] hover:text-white transition">
+          <span className="text-white/70">/</span>
+          <Link href={`/admin/cursos/${courseId}/modulos`} className="text-white/70 hover:text-white transition">
             {course.title}
           </Link>
-          <span className="text-[#C5C7D3]">/</span>
-          <Link href={`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones`} className="text-[#C5C7D3] hover:text-white transition">
+          <span className="text-white/70">/</span>
+          <Link href={`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones`} className="text-white/70 hover:text-white transition">
             {module.title}
           </Link>
-          <span className="text-[#C5C7D3]">/</span>
+          <span className="text-white/70">/</span>
           <span className="text-white font-medium">Nueva Lección</span>
         </div>
 
@@ -120,7 +123,7 @@ export default async function NewLessonPage({ params }: PageProps) {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#ff6b35] to-[#f7931a] bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-brand-light to-brand bg-clip-text text-transparent">
             Nueva Lección
           </h1>
         </div>

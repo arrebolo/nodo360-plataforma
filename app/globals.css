@@ -7,19 +7,110 @@
 @source "../lib/**/*.{ts,tsx}";
 
 /* =========================================================
-   BASE GLOBAL (estable, sin @apply)
+   THEME - Paleta Unificada Nodo360
+   ========================================================= */
+@theme {
+  /* Brand Colors - Bitcoin/Crypto aesthetic */
+  --color-brand: #f7931a;
+  --color-brand-light: #ff6b35;
+  --color-brand-dark: #ea580c;
+  --color-brand-gold: #FFD700;
+  --color-brand-muted: rgba(247, 147, 26, 0.2);
+
+  /* Dark Theme Colors */
+  --color-dark: #0a0f1a;
+  --color-dark-deep: #0a0d14;
+  --color-dark-secondary: #0f1419;
+  --color-dark-tertiary: #1a1a1a;
+  --color-dark-surface: #1a1f2e;
+  --color-dark-soft: #252b3d;
+  --color-dark-border: #2a2a2a;
+  --color-dark-muted: #6b7280;
+
+  /* Text Colors */
+  --color-muted: #C5C7D3;
+  --color-text-muted: #C5C7D3;
+  --color-text-soft: #9ca3af;
+
+  /* Accent Colors (Admin/UI) */
+  --color-accent-blue: #24D4FF;
+  --color-accent-blue-dark: #1ab8e0;
+  --color-accent-cyan: #06b6d4;
+
+  /* Semantic Colors */
+  --color-success: #22c55e;
+  --color-success-light: #4ade80;
+  --color-success-dark: #16a34a;
+  --color-success-muted: rgba(34, 197, 94, 0.2);
+
+  --color-warning: #eab308;
+  --color-warning-light: #facc15;
+  --color-warning-dark: #ca8a04;
+  --color-warning-muted: rgba(234, 179, 8, 0.2);
+
+  --color-error: #ef4444;
+  --color-error-light: #f87171;
+  --color-error-dark: #dc2626;
+  --color-error-muted: rgba(239, 68, 68, 0.2);
+
+  --color-info: #3b82f6;
+  --color-info-light: #60a5fa;
+  --color-info-dark: #2563eb;
+  --color-info-muted: rgba(59, 130, 246, 0.2);
+
+  /* Premium/Gold */
+  --color-gold: #FFD700;
+  --color-gold-light: #FFA500;
+  --color-gold-muted: rgba(255, 215, 0, 0.2);
+
+  /* Social Colors */
+  --color-discord: #5865F2;
+  --color-telegram: #0088cc;
+  --color-linkedin: #0077B5;
+
+  /* Shadows */
+  --shadow-brand: 0 4px 14px 0 rgba(247, 147, 26, 0.25);
+  --shadow-brand-lg: 0 10px 40px 0 rgba(247, 147, 26, 0.3);
+  --shadow-dark: 0 4px 14px 0 rgba(0, 0, 0, 0.5);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --shadow-gold: 0 4px 14px 0 rgba(255, 215, 0, 0.3);
+  --shadow-accent-blue: 0 4px 20px 0 rgba(36, 212, 255, 0.3);
+
+  /* Animations */
+  --animate-fade-in: fadeIn 0.3s ease-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+  --animate-slide-down: slideDown 0.3s ease-out;
+  --animate-scale-in: scaleIn 0.2s ease-out;
+}
+
+/* =========================================================
+   KEYFRAMES
+   ========================================================= */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* =========================================================
+   BASE GLOBAL
    ========================================================= */
 :root {
-  color-scheme: dark;
-
-  --n360-border: rgba(255, 255, 255, 0.10);
-  --n360-panel: rgba(255, 255, 255, 0.04);
-  --n360-panel-strong: rgba(255, 255, 255, 0.06);
-  --n360-muted: rgba(255, 255, 255, 0.70);
-  --n360-subtle: rgba(255, 255, 255, 0.50);
-
-  --n360-orange: #f97316;
-  --n360-orange-hover: #fb923c;
+  color-scheme: light;
 }
 
 html {
@@ -30,8 +121,6 @@ html {
 body {
   height: 100%;
   margin: 0;
-  background: #0a0a0a;
-  color: rgba(255, 255, 255, 0.92);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "rlig" 1, "calt" 1;
@@ -39,86 +128,300 @@ body {
 
 h1, h2, h3, h4 {
   letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.95);
 }
 
 p {
-  color: rgba(255, 255, 255, 0.82);
   line-height: 1.65;
 }
 
 /* =========================================================
-   NODO360 HELPERS (sin @apply)
+   UTILITY CLASSES
    ========================================================= */
-.n360-panel {
-  border: 1px solid var(--n360-border);
-  background: var(--n360-panel);
-  border-radius: 1rem; /* ~ rounded-2xl */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
-}
 
-.n360-panel-strong {
-  border: 1px solid var(--n360-border);
-  background: var(--n360-panel-strong);
-  border-radius: 1rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
-}
-
-.n360-muted { color: var(--n360-muted); }
-.n360-subtle { color: var(--n360-subtle); }
-
-.n360-divider {
-  height: 1px;
-  width: 100%;
-  background: var(--n360-border);
-}
-
-.n360-card-hover {
-  transition: background-color 160ms ease;
-}
-.n360-card-hover:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.n360-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.75rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #0a0a0a;
-  background: var(--n360-orange);
+/* Focus ring estándar */
+.focus-ring {
   outline: none;
-  transition: background-color 160ms ease, box-shadow 160ms ease;
 }
-.n360-btn-primary:hover { background: var(--n360-orange-hover); }
-.n360-btn-primary:focus { box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.35); }
-
-.n360-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.75rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.92);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+.focus-ring:focus-visible {
   outline: none;
-  transition: background-color 160ms ease;
+  box-shadow: 0 0 0 2px var(--color-dark), 0 0 0 4px var(--color-brand-muted);
 }
-.n360-btn-secondary:hover { background: rgba(255, 255, 255, 0.06); }
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+}
+
+/* Gradiente brand */
+.gradient-brand {
+  background: linear-gradient(to right, var(--color-brand-light), var(--color-brand));
+}
+
+/* Gradiente gold (premium) */
+.gradient-gold {
+  background: linear-gradient(to right, var(--color-gold), var(--color-gold-light));
+}
+
+/* Texto con gradiente */
+.text-gradient-brand {
+  background: linear-gradient(to right, var(--color-brand-light), var(--color-brand));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(to right, var(--color-gold), var(--color-gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 /* Scrollbar */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  scrollbar-color: var(--color-dark-border) transparent;
 }
-.scrollbar-thin::-webkit-scrollbar { width: 8px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--color-dark-border);
   border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-brand-muted);
+}
+
+/* =========================================================
+   FORM CONTROLS - Tema Oscuro
+   ========================================================= */
+
+/* Fix para selects en tema oscuro */
+select,
+select option {
+  background-color: var(--color-dark-surface) !important;
+  color: white !important;
+}
+
+select {
+  color-scheme: dark;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--color-brand-light);
+}
+
+/* Date inputs en tema oscuro */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+/* Ocultar scrollbar pero mantener scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animación de entrada */
+.animate-in {
+  animation: var(--animate-fade-in);
+}
+
+/* =========================================================
+   COMPONENTES LEGACY (deprecados - migrar a Tailwind)
+   ========================================================= */
+
+/* Panel básico - usar Card component en su lugar */
+.n360-panel {
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.n360-divider {
+  height: 1px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.10);
+}
+
+/* =========================================================
+   TIPTAP EDITOR STYLES
+   ========================================================= */
+
+.ProseMirror {
+  min-height: 200px;
+  padding: 1rem;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Headings */
+.ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: white;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.ProseMirror h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Paragraphs */
+.ProseMirror p {
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Lists */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror li {
+  margin-bottom: 0.25rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Blockquote */
+.ProseMirror blockquote {
+  border-left: 4px solid #f7931a;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(247, 147, 26, 0.1);
+  padding: 0.75rem 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+/* Code inline */
+.ProseMirror code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.875em;
+  color: #ff6b35;
+}
+
+/* Code block */
+.ProseMirror pre {
+  background: #1e1e1e;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.ProseMirror pre code {
+  background: none;
+  padding: 0;
+  color: #d4d4d4;
+  font-size: 0.875rem;
+}
+
+/* Syntax highlighting */
+.ProseMirror pre .hljs-comment,
+.ProseMirror pre .hljs-quote {
+  color: #6a9955;
+}
+
+.ProseMirror pre .hljs-keyword,
+.ProseMirror pre .hljs-selector-tag {
+  color: #569cd6;
+}
+
+.ProseMirror pre .hljs-string,
+.ProseMirror pre .hljs-addition {
+  color: #ce9178;
+}
+
+.ProseMirror pre .hljs-number {
+  color: #b5cea8;
+}
+
+.ProseMirror pre .hljs-function {
+  color: #dcdcaa;
+}
+
+/* Links */
+.ProseMirror a {
+  color: #ff6b35;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a:hover {
+  color: #f7931a;
+}
+
+/* Images */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+}
+
+/* YouTube embed */
+.ProseMirror iframe {
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+  max-width: 100%;
+}
+
+/* Horizontal rule */
+.ProseMirror hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 1.5rem 0;
 }

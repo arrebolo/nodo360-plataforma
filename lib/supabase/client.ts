@@ -27,3 +27,4 @@ export async function testConnection() {
     return { success: false, message: 'Error de conexión', error }
   }
 }
+

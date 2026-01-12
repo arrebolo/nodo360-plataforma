@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface ChangeRoleFormProps {
@@ -13,7 +13,7 @@ const ROLES = [
     value: 'student',
     label: 'Estudiante',
     description: 'Usuario estándar de la plataforma',
-    color: 'bg-gray-500',
+    color: 'bg-white/50',
     level: 1
   },
   {
@@ -44,6 +44,11 @@ export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormPr
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const router = useRouter()
+
+  // Sync state when currentRole prop changes (after router.refresh())
+  useEffect(() => {
+    setSelectedRole(currentRole)
+  }, [currentRole])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,9 +91,9 @@ export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Rol actual */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+      <div className="flex items-center gap-2 text-sm text-white/60 mb-2">
         <span>Rol actual:</span>
-        <span className={`px-2 py-0.5 rounded text-white text-xs ${currentRoleInfo?.color || 'bg-gray-500'}`}>
+        <span className={`px-2 py-0.5 rounded text-white text-xs ${currentRoleInfo?.color || 'bg-white/50'}`}>
           {currentRoleInfo?.label || currentRole}
         </span>
       </div>
@@ -102,7 +107,7 @@ export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormPr
               flex items-center gap-3 p-3 rounded-lg cursor-pointer
               border-2 transition-all duration-200
               ${selectedRole === role.value
-                ? 'border-[#ff6b35] bg-[#ff6b35]/10'
+                ? 'border-brand-light bg-brand-light/10'
                 : 'border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10'
               }
             `}
@@ -123,14 +128,14 @@ export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormPr
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-white">{role.label}</span>
-                <span className="text-xs text-gray-500">Nivel {role.level}</span>
+                <span className="text-xs text-white/50">Nivel {role.level}</span>
               </div>
-              <p className="text-xs text-gray-400">{role.description}</p>
+              <p className="text-xs text-white/60">{role.description}</p>
             </div>
 
             {/* Checkmark si está seleccionado */}
             {selectedRole === role.value && (
-              <svg className="w-5 h-5 text-[#ff6b35]" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-brand-light" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             )}
@@ -156,8 +161,8 @@ export default function ChangeRoleForm({ userId, currentRole }: ChangeRoleFormPr
         className={`
           w-full py-2.5 px-4 rounded-lg font-medium transition-all
           ${selectedRole === currentRole
-            ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-            : 'bg-[#ff6b35] hover:bg-[#ff6b35]/80 text-white'
+            ? 'bg-dark-tertiary text-white/60 cursor-not-allowed'
+            : 'bg-brand-light hover:bg-brand-light/80 text-white'
           }
           disabled:opacity-50
         `}

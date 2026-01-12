@@ -91,14 +91,14 @@ export function LessonNavigation({
   }
 
   return (
-    <div className="sticky bottom-0 z-40 bg-nodo-bg border-t border-[#F7931A]/30 shadow-lg backdrop-blur-sm">
+    <div className="sticky bottom-0 z-40 bg-nodo-bg border-t border-brand/30 shadow-lg backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Previous Button */}
           {prevLesson ? (
             <Link
               href={`/cursos/${courseSlug}/${prevLesson.slug}`}
-              className="flex items-center gap-2 px-4 py-2 bg-nodo-card border border-nodo-icon text-gray-400 rounded-lg hover:bg-nodo-bg hover:text-white hover:border-[#F7931A]/30 transition-all group"
+              className="flex items-center gap-2 px-4 py-2 bg-nodo-card border border-nodo-icon text-white/60 rounded-lg hover:bg-nodo-bg hover:text-white hover:border-brand/30 transition-all group"
             >
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               <span className="hidden sm:inline text-sm font-medium">Anterior</span>
@@ -113,7 +113,7 @@ export function LessonNavigation({
             className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all ${
               isCompleted
                 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
-                : 'bg-gradient-to-r from-[#F7931A] to-[#FDB931] text-black hover:shadow-lg hover:shadow-[#F7931A]/30'
+                : 'bg-gradient-to-r from-brand to-gold text-black hover:shadow-lg hover:shadow-brand/30'
             }`}
             aria-label={isCompleted ? 'Marcar como incompleta' : 'Marcar como completada'}
           >
@@ -130,7 +130,7 @@ export function LessonNavigation({
           {nextLesson ? (
             <button
               onClick={handleNext}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#F7931A] to-[#FDB931] text-black rounded-lg hover:shadow-lg hover:shadow-[#F7931A]/30 transition-all group"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand to-gold text-black rounded-lg hover:shadow-lg hover:shadow-brand/30 transition-all group"
             >
               <span className="hidden sm:inline text-sm font-medium">Siguiente</span>
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -148,3 +148,4 @@ export function LessonNavigation({
     </div>
   )
 }
+

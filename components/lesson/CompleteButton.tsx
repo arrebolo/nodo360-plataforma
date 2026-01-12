@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CheckCircle, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useBadgeNotification } from '@/hooks/useBadgeNotification'
 
 interface CompleteButtonProps {
   courseSlug: string
@@ -26,6 +27,7 @@ export function CompleteButton({
   const [isCompleted, setIsCompleted] = useState(initialCompleted)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { notifyBadges } = useBadgeNotification()
 
   const handleComplete = async () => {
     try {
@@ -42,6 +44,11 @@ export function CompleteButton({
 
       if (!res.ok) {
         throw new Error(data?.error || 'Error al guardar progreso')
+      }
+
+      // Mostrar badges ganados (si hay)
+      if (data.awardedBadges && data.awardedBadges.length > 0) {
+        notifyBadges(data.awardedBadges)
       }
 
       setIsCompleted(true)
@@ -89,7 +96,7 @@ export function CompleteButton({
         <button
           onClick={handleNext}
           disabled={loading}
-          className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#ff8c5a] hover:from-[#ff8c5a] hover:to-[#FFD700] text-white font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 mx-auto disabled:opacity-60"
+          className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brand-light to-brand-light/80 hover:from-brand-light/80 hover:to-gold text-white font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 mx-auto disabled:opacity-60"
         >
           Siguiente Lección
           <ArrowRight className="w-5 h-5" />
@@ -108,7 +115,7 @@ export function CompleteButton({
         <button
           onClick={() => router.push(`/cursos/${courseSlug}`)}
           disabled={loading}
-          className="text-[#ff6b35] hover:text-[#ff8c5a] transition-colors disabled:opacity-60"
+          className="text-brand-light hover:text-brand-light/80 transition-colors disabled:opacity-60"
         >
           ← Volver al curso
         </button>
@@ -120,10 +127,11 @@ export function CompleteButton({
     <button
       onClick={handleComplete}
       disabled={loading}
-      className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#ff8c5a] hover:from-[#ff8c5a] hover:to-[#FFD700] text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:scale-100"
+      className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brand-light to-brand-light/80 hover:from-brand-light/80 hover:to-gold text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:scale-100"
     >
       <CheckCircle className="w-5 h-5" />
       {loading ? 'Guardando…' : 'Marcar como Completada'}
     </button>
   )
 }
+

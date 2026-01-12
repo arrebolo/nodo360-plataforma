@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Providers } from "./providers";
+import SiteHeaderServer from "@/components/navigation/SiteHeader/SiteHeaderServer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -38,10 +39,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className="font-sans">
-      {/* Base neutra. NO decoramos aquí. */}
-      <body className="min-h-screen text-white antialiased bg-[#0f1115]">
+      <body className="min-h-screen antialiased bg-dark text-white">
+        <SiteHeaderServer />
         <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
+
+

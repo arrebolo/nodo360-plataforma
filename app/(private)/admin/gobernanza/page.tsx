@@ -54,19 +54,19 @@ export default async function AdminGobernanzaPage() {
   const isAdmin = profile.role === 'admin'
 
   return (
-    <div className="min-h-screen bg-[#0a0d14]">
+    <div className="min-h-screen bg-dark-deep">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver al Admin
           </Link>
           <h1 className="text-3xl font-bold text-white">Panel de Gobernanza</h1>
-          <p className="text-gray-400 mt-1">
+          <p className="text-white/60 mt-1">
             Gestión y moderación de propuestas de la comunidad
           </p>
         </div>
@@ -127,7 +127,7 @@ export default async function AdminGobernanzaPage() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-white">Pendientes de Revisión</h2>
-                <p className="text-sm text-gray-400">Propuestas esperando aprobación para votación</p>
+                <p className="text-sm text-white/60">Propuestas esperando aprobación para votación</p>
               </div>
               <span className="ml-auto px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">
                 {pendingReview.length} pendiente{pendingReview.length !== 1 ? 's' : ''}
@@ -155,7 +155,7 @@ export default async function AdminGobernanzaPage() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-white">En Votación</h2>
-                <p className="text-sm text-gray-400">Propuestas activas en período de votación</p>
+                <p className="text-sm text-white/60">Propuestas activas en período de votación</p>
               </div>
               <span className="ml-auto px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-medium">
                 {active.length} activa{active.length !== 1 ? 's' : ''}
@@ -184,7 +184,7 @@ export default async function AdminGobernanzaPage() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-white">Aprobadas</h2>
-                <p className="text-sm text-gray-400">Propuestas aprobadas pendientes de implementación</p>
+                <p className="text-sm text-white/60">Propuestas aprobadas pendientes de implementación</p>
               </div>
               <span className="ml-auto px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
                 {passed.length} aprobada{passed.length !== 1 ? 's' : ''}
@@ -213,7 +213,7 @@ export default async function AdminGobernanzaPage() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-white">Implementadas</h2>
-                <p className="text-sm text-gray-400">Propuestas completadas</p>
+                <p className="text-sm text-white/60">Propuestas completadas</p>
               </div>
               <span className="ml-auto px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm font-medium">
                 {implemented.length}
@@ -230,7 +230,7 @@ export default async function AdminGobernanzaPage() {
                 />
               ))}
               {implemented.length > 5 && (
-                <p className="text-center text-gray-500 text-sm">
+                <p className="text-center text-white/50 text-sm">
                   +{implemented.length - 5} más implementadas
                 </p>
               )}
@@ -241,9 +241,9 @@ export default async function AdminGobernanzaPage() {
         {/* Estado vacío */}
         {allProposals.length === 0 && (
           <div className="bg-white/5 rounded-xl p-12 text-center border border-white/10">
-            <FileText className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+            <FileText className="w-16 h-16 mx-auto text-white/40 mb-4" />
             <h2 className="text-xl font-semibold mb-2 text-white">No hay propuestas</h2>
-            <p className="text-gray-400">
+            <p className="text-white/60">
               Aún no se han creado propuestas en el sistema de gobernanza.
             </p>
           </div>
@@ -267,7 +267,7 @@ function StatCard({
   highlight?: boolean
 }) {
   const colors = {
-    gray: 'bg-gray-500/20 text-gray-400',
+    gray: 'bg-white/50/20 text-white/60',
     yellow: 'bg-yellow-500/20 text-yellow-400',
     blue: 'bg-blue-500/20 text-blue-400',
     green: 'bg-green-500/20 text-green-400',
@@ -317,14 +317,14 @@ function ProposalCard({
               {statusInfo.label}
             </span>
             {proposal.category_icon && (
-              <span className="text-sm text-gray-400">
+              <span className="text-sm text-white/60">
                 {proposal.category_icon} {proposal.category_name}
               </span>
             )}
             <span className={`px-2 py-0.5 rounded text-xs ${
               proposal.proposal_level === 2
                 ? 'bg-amber-500/20 text-amber-400'
-                : 'bg-gray-500/20 text-gray-400'
+                : 'bg-white/50/20 text-white/60'
             }`}>
               Nivel {proposal.proposal_level}
             </span>
@@ -332,17 +332,17 @@ function ProposalCard({
 
           <Link
             href={`/gobernanza/${proposal.slug}`}
-            className="text-lg font-semibold hover:text-[#ff6b35] transition-colors text-white block truncate"
+            className="text-lg font-semibold hover:text-brand-light transition-colors text-white block truncate"
           >
             {proposal.title}
           </Link>
 
-          <p className="text-gray-400 text-sm mt-1 line-clamp-1">
+          <p className="text-white/60 text-sm mt-1 line-clamp-1">
             {proposal.description}
           </p>
 
           {/* Meta info */}
-          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 flex-wrap">
+          <div className="flex items-center gap-4 mt-2 text-sm text-white/50 flex-wrap">
             <span className="flex items-center gap-1">
               {proposal.author_avatar ? (
                 <img
@@ -380,3 +380,5 @@ function ProposalCard({
     </div>
   )
 }
+
+

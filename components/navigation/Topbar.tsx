@@ -15,7 +15,7 @@ export function Topbar() {
   const pathname = usePathname()
 
   return (
-    <div className="w-full border-b border-white/10 bg-black/20 backdrop-blur">
+    <div className="w-full border-b border-black/5 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="mx-auto w-full max-w-[1200px] px-4 py-3 flex items-center gap-2">
         <nav className="flex items-center gap-2">
           {topbarLinks.map((item) => {
@@ -31,8 +31,8 @@ export function Topbar() {
                 className={[
                   'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition',
                   active
-                    ? 'bg-white/[0.08] text-white border border-white/10'
-                    : 'text-white/70 hover:text-white hover:bg-white/[0.06]',
+                    ? 'bg-neutral-100 text-neutral-900 border border-neutral-200'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100',
                 ].join(' ')}
               >
                 <Icon className="h-4 w-4" />
@@ -45,3 +45,5 @@ export function Topbar() {
     </div>
   )
 }
+
+

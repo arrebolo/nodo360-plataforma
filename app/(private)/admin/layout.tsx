@@ -13,26 +13,18 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { profile } = await requireAdmin('/admin')
-
-  const displayName = profile.full_name?.trim() || 'Administrador'
-  const displayEmail = profile.email?.trim() || 'admin@nodo360'
+  // Verify admin access
+  await requireAdmin('/admin')
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex">
+    <div className="min-h-screen bg-dark flex">
       {/* Capa sutil cálida (estilo Nodo360) */}
       <div className="pointer-events-none fixed inset-0 bg-gradient-to-b from-orange-500/5 via-transparent to-emerald-500/5" />
 
       <AdminSidebar />
 
       <div className="relative flex-1 flex flex-col min-h-screen">
-        <AdminHeader
-          user={{
-            full_name: displayName,
-            email: displayEmail,
-            role: profile.role,
-          }}
-        />
+        <AdminHeader />
 
         <main className="flex-1 overflow-auto">
           <div className="mx-auto w-full max-w-6xl p-6 lg:p-8">
@@ -43,3 +35,5 @@ export default async function AdminLayout({
     </div>
   )
 }
+
+

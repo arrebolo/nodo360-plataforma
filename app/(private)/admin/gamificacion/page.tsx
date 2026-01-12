@@ -103,14 +103,14 @@ export default async function GamificacionPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Gamificación</h1>
-          <p className="text-gray-400 mt-1">
+          <p className="text-white/60 mt-1">
             Estadísticas y gestión del sistema de gamificación
           </p>
         </div>
         <div className="flex gap-3">
           <Link
             href="/admin/gamificacion/hitos"
-            className="flex items-center gap-2 px-4 py-2 bg-[#ff6b35] hover:bg-[#ff8c5a] rounded-lg transition-colors text-white font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-brand-light hover:bg-brand-light/80 rounded-lg transition-colors text-white font-medium"
           >
             <Trophy size={20} />
             Gestionar Hitos
@@ -125,7 +125,7 @@ export default async function GamificacionPage() {
             <div className="p-2 bg-yellow-500/10 rounded-lg">
               <Zap className="text-yellow-400" size={20} />
             </div>
-            <span className="text-sm text-gray-400">XP Total Otorgado</span>
+            <span className="text-sm text-white/60">XP Total Otorgado</span>
           </div>
           <p className="text-3xl font-bold text-white">
             {stats.totalXP.toLocaleString()}
@@ -137,7 +137,7 @@ export default async function GamificacionPage() {
             <div className="p-2 bg-purple-500/10 rounded-lg">
               <Trophy className="text-purple-400" size={20} />
             </div>
-            <span className="text-sm text-gray-400">Hitos Creados</span>
+            <span className="text-sm text-white/60">Hitos Creados</span>
           </div>
           <p className="text-3xl font-bold text-white">{stats.totalBadges}</p>
         </div>
@@ -147,7 +147,7 @@ export default async function GamificacionPage() {
             <div className="p-2 bg-blue-500/10 rounded-lg">
               <Users className="text-blue-400" size={20} />
             </div>
-            <span className="text-sm text-gray-400">Hitos Desbloqueados</span>
+            <span className="text-sm text-white/60">Hitos Desbloqueados</span>
           </div>
           <p className="text-3xl font-bold text-white">
             {stats.unlockedBadges}
@@ -159,7 +159,7 @@ export default async function GamificacionPage() {
             <div className="p-2 bg-emerald-500/10 rounded-lg">
               <TrendingUp className="text-emerald-400" size={20} />
             </div>
-            <span className="text-sm text-gray-400">Promedio por Usuario</span>
+            <span className="text-sm text-white/60">Promedio por Usuario</span>
           </div>
           <p className="text-3xl font-bold text-white">
             {stats.totalUsers && stats.unlockedBadges
@@ -190,10 +190,10 @@ export default async function GamificacionPage() {
                         index === 0
                           ? 'text-yellow-400'
                           : index === 1
-                          ? 'text-gray-400'
+                          ? 'text-white/60'
                           : index === 2
                           ? 'text-orange-400'
-                          : 'text-gray-500'
+                          : 'text-white/50'
                       }`}
                     >
                       #{index + 1}
@@ -204,7 +204,7 @@ export default async function GamificacionPage() {
                           user.users?.email?.split('@')[0] ||
                           'Usuario'}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-white/60">
                         Nivel {user.current_level}
                       </p>
                     </div>
@@ -215,7 +215,7 @@ export default async function GamificacionPage() {
                 </Link>
               ))
             ) : (
-              <p className="text-center text-gray-400 py-8">
+              <p className="text-center text-white/60 py-8">
                 No hay usuarios con XP
               </p>
             )}
@@ -244,7 +244,7 @@ export default async function GamificacionPage() {
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-400 py-8">
+              <p className="text-center text-white/60 py-8">
                 No hay hitos desbloqueados
               </p>
             )}
@@ -272,17 +272,17 @@ export default async function GamificacionPage() {
                     className="flex-1 flex flex-col items-center"
                   >
                     <div
-                      className="w-full bg-gradient-to-t from-[#ff6b35] to-[#f7931a] rounded-t-lg transition-all hover:from-[#ff8c5a] hover:to-[#ffa942]"
+                      className="w-full bg-gradient-to-t from-brand-light to-brand rounded-t-lg transition-all hover:from-brand-light/80 hover:to-brand"
                       style={{ height: `${height}%`, minHeight: '20px' }}
                     />
-                    <p className="mt-2 text-sm text-gray-400">Nv.{level}</p>
+                    <p className="mt-2 text-sm text-white/60">Nv.{level}</p>
                     <p className="text-xs font-bold text-white">{count}</p>
                   </div>
                 )
               })}
           </div>
         ) : (
-          <p className="text-center text-gray-400 py-8">
+          <p className="text-center text-white/60 py-8">
             No hay datos de niveles
           </p>
         )}

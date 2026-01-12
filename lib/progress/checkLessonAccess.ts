@@ -345,3 +345,5 @@ export async function calculateCourseProgress(
 
   return Math.round((completedLessons / totalLessons) * 100)
 }
+
+

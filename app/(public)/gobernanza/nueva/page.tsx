@@ -45,12 +45,12 @@ export default async function NuevaPropostaPage() {
   const { data: gpower } = await supabase.rpc('calculate_gpower', { p_user_id: user.id })
 
   return (
-    <div className="min-h-screen bg-[#0a0d14]">
+    <div className="min-h-screen bg-dark-deep">
       <div className="max-w-3xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 text-white">Crear Propuesta</h1>
-          <p className="text-gray-400">
+          <p className="text-white/60">
             Comparte tu idea con la comunidad Nodo360
           </p>
         </div>
@@ -59,11 +59,11 @@ export default async function NuevaPropostaPage() {
         <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Tu poder de voto</p>
+              <p className="text-sm text-white/60">Tu poder de voto</p>
               <p className="text-2xl font-bold text-purple-400">{gpower || 0} gP</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-400">XP acumulado</p>
+              <p className="text-sm text-white/60">XP acumulado</p>
               <p className="text-xl font-semibold text-white">{userXP} XP</p>
             </div>
           </div>
@@ -75,13 +75,13 @@ export default async function NuevaPropostaPage() {
             <h2 className="text-xl font-semibold text-red-400 mb-2">
               Requisitos no cumplidos
             </h2>
-            <p className="text-gray-300 mb-4">
+            <p className="text-white/80 mb-4">
               Necesitas al menos <strong>50 XP</strong> para crear propuestas.
             </p>
-            <p className="text-gray-400">
+            <p className="text-white/60">
               Tu XP actual: <strong>{userXP}</strong>
             </p>
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-sm text-white/50 mt-4">
               Completa lecciones y cursos para ganar XP.
             </p>
           </div>
@@ -96,3 +96,5 @@ export default async function NuevaPropostaPage() {
     </div>
   )
 }
+
+

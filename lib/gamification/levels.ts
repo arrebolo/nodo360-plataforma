@@ -34,3 +34,5 @@ export function calculateLevel(totalXP: number, rules: LevelRules) {
     xpToNextLevel
   }
 }
+
+

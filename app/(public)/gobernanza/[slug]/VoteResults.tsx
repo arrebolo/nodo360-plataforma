@@ -27,7 +27,7 @@ export function VoteResults({ proposal, percentages, quorumMet, passing }: VoteR
             style={{ width: `${percentages.against}%` }}
           />
           <div
-            className="bg-gray-500 transition-all duration-500"
+            className="bg-white/50 transition-all duration-500"
             style={{ width: `${percentages.abstain}%` }}
           />
         </div>
@@ -43,8 +43,8 @@ export function VoteResults({ proposal, percentages, quorumMet, passing }: VoteR
             <span className="text-red-400">{percentages.against}% En contra</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gray-500" />
-            <span className="text-gray-400">{percentages.abstain}% Abstención</span>
+            <div className="w-3 h-3 rounded-full bg-white/50" />
+            <span className="text-white/60">{percentages.abstain}% Abstención</span>
           </div>
         </div>
       </div>
@@ -53,11 +53,11 @@ export function VoteResults({ proposal, percentages, quorumMet, passing }: VoteR
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-white/5 rounded-lg p-3 text-center">
           <p className="text-2xl font-bold text-white">{proposal.total_votes}</p>
-          <p className="text-xs text-gray-400">Votos totales</p>
+          <p className="text-xs text-white/60">Votos totales</p>
         </div>
         <div className="bg-white/5 rounded-lg p-3 text-center">
           <p className="text-2xl font-bold text-white">{totalGPower.toFixed(1)}</p>
-          <p className="text-xs text-gray-400">gPower total</p>
+          <p className="text-xs text-white/60">gPower total</p>
         </div>
       </div>
 
@@ -72,7 +72,7 @@ export function VoteResults({ proposal, percentages, quorumMet, passing }: VoteR
           <p className={`text-sm font-medium ${quorumMet ? 'text-green-400' : 'text-yellow-400'}`}>
             {quorumMet ? 'Quorum alcanzado' : 'Quorum no alcanzado'}
           </p>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-white/60">
             {proposal.total_votes} de {proposal.quorum_required} votos requeridos
           </p>
         </div>
@@ -94,7 +94,7 @@ export function VoteResults({ proposal, percentages, quorumMet, passing }: VoteR
             <p className={`text-sm font-medium ${passing ? 'text-green-400' : 'text-red-400'}`}>
               {passing ? 'Aprobación probable' : 'Rechazo probable'}
             </p>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-white/60">
               Requiere {Math.round(proposal.approval_threshold * 100)}% para aprobar
             </p>
           </div>

@@ -237,3 +237,4 @@ export async function deleteNote(noteId: string) {
   if (error) throw error;
 }
 */
+

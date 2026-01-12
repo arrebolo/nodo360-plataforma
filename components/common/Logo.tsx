@@ -19,7 +19,7 @@ export function Logo({
   showText = false,
   className = '',
   imageClassName = '',
-  priority = false
+  priority = false,
 }: LogoProps) {
   const dimensions = brandConfig.logo.sizes[size]
 
@@ -39,7 +39,18 @@ export function Logo({
       <div className={`inline-flex items-center gap-3 ${className}`}>
         {logoImage}
         <div className="flex items-center gap-2">
-          <span className="bg-gradient-to-r from-[#ff6b35] via-[#f7931a] to-[#FFD700] bg-clip-text text-transparent font-bold text-xl">
+          <span
+            className="
+              bg-gradient-to-r
+              from-brand-light
+              via-brand
+              to-brand-gold
+              bg-clip-text
+              text-transparent
+              font-bold
+              text-xl
+            "
+          >
             NODO
           </span>
           <span className="font-bold text-xl text-white">360</span>
@@ -48,9 +59,5 @@ export function Logo({
     )
   }
 
-  return (
-    <div className={`inline-flex items-center ${className}`}>
-      {logoImage}
-    </div>
-  )
+  return <div className={`inline-flex items-center ${className}`}>{logoImage}</div>
 }

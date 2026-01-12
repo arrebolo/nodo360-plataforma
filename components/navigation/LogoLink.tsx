@@ -38,7 +38,7 @@ export function LogoLink({ children, className = '', onClick }: LogoLinkProps) {
       aria-label="Ir a inicio"
     >
       {loading ? (
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
           <Loader2 className="w-5 h-5 text-white animate-spin" />
         </div>
       ) : (
@@ -47,3 +47,5 @@ export function LogoLink({ children, className = '', onClick }: LogoLinkProps) {
     </button>
   )
 }
+
+

@@ -36,6 +36,7 @@ type AwardXPInput = {
     lessonId?: string
     courseId?: string
     quizId?: string
+    moduleId?: string
   }
 }
 
@@ -64,84 +65,122 @@ export async function awardXP(input: AwardXPInput): Promise<AwardXPResult> {
 
   const admin = createAdminClient()
 
-  // 1) Leer settings (source of truth)
-  const xpRules = await getSetting<XPRules>('xp_rules', DEFAULT_XP_RULES)
-  const levelRules = await getSetting<LevelRules>('level_rules', DEFAULT_LEVEL_RULES)
+  // 1) Leer settings (source of truth) CON FALLBACK GARANTIZADO
+  const rawXpRules = await getSetting<XPRules>('xp_rules', DEFAULT_XP_RULES)
+  const rawLevelRules = await getSetting<LevelRules>('level_rules', DEFAULT_LEVEL_RULES)
 
-  // 2) Determinar XP a otorgar
+  // Garantizar que xpRules nunca sea null/undefined
+  const xpRules: XPRules = rawXpRules ?? DEFAULT_XP_RULES
+  const levelRules: LevelRules = rawLevelRules ?? DEFAULT_LEVEL_RULES
+
+  // 2) Determinar XP a otorgar CON VALIDACION ESTRICTA
   const computedAmount = (() => {
     switch (eventType) {
       case 'lesson_completed':
-        return xpRules.lesson_completed
+        return Number(xpRules.lesson_completed) || DEFAULT_XP_RULES.lesson_completed
       case 'quiz_passed':
-        return xpRules.quiz_passed
+        return Number(xpRules.quiz_passed) || DEFAULT_XP_RULES.quiz_passed
       case 'perfect_score':
-        return xpRules.perfect_score
+        return Number(xpRules.perfect_score) || DEFAULT_XP_RULES.perfect_score
       case 'course_completed':
-        return xpRules.course_completed
+        return Number(xpRules.course_completed) || DEFAULT_XP_RULES.course_completed
       case 'daily_login':
-        return xpRules.daily_login
+        return Number(xpRules.daily_login) || DEFAULT_XP_RULES.daily_login
       case 'streak_bonus':
-        return xpRules.streak_bonus
+        return Number(xpRules.streak_bonus) || DEFAULT_XP_RULES.streak_bonus
       case 'admin_adjustment':
-        // Para admin_adjustment normalmente vendrá input.amount
         return 0
       default:
         return 0
     }
   })()
 
+  // Validar que computedAmount es numero finito
+  const safeComputedAmount = Number.isFinite(computedAmount) ? computedAmount : 0
+
   const xpToAddRaw =
     typeof input.amount === 'number' && Number.isFinite(input.amount)
       ? input.amount
-      : computedAmount
+      : safeComputedAmount
 
-  // Normalizamos: permitir negativos solo en admin_adjustment (o si tú lo permites)
-  // Por defecto: no otorgamos negativos salvo que venga explícito (admin_adjustment).
+  // Normalizamos: permitir negativos solo en admin_adjustment
   const xpToAdd =
     eventType === 'admin_adjustment'
-      ? xpToAddRaw
-      : Math.max(0, xpToAddRaw)
+      ? (Number.isFinite(xpToAddRaw) ? xpToAddRaw : 0)
+      : Math.max(0, Number.isFinite(xpToAddRaw) ? xpToAddRaw : 0)
 
-  // 3) Asegurar stats (upsert)
-  const { data: ensuredStats, error: upsertError } = await admin
+  console.log('[awardXP] DEBUG xpToAdd:', { eventType, computedAmount, safeComputedAmount, xpToAddRaw, xpToAdd })
+
+  // 3) Obtener stats actuales (puede no existir)
+  const { data: currentStats, error: statsError } = await admin
     .from('user_gamification_stats')
-    .upsert(
-      {
-        user_id: userId,
-        total_xp: 0,
-        current_level: 1,
-        xp_to_next_level: 100,
-        current_streak: 0,
-        longest_streak: 0
-      },
-      { onConflict: 'user_id' }
-    )
-    .select('total_xp')
+    .select('*')
+    .eq('user_id', userId)
     .single()
 
-  if (upsertError) {
-    throw new Error(`awardXP: error asegurando stats (${upsertError.message})`)
-  }
+  console.log('[awardXP] DEBUG currentStats:', {
+    exists: !!currentStats,
+    total_xp: currentStats?.total_xp,
+    typeof_total_xp: typeof currentStats?.total_xp,
+    error: statsError?.message
+  })
 
-  const currentXP = ensuredStats?.total_xp ?? 0
-  const newXP = Math.max(0, currentXP + xpToAdd)
+  // 4) Calcular nuevos valores CON TRIPLE VALIDACION
+  const rawCurrentXP = currentStats?.total_xp
+  const safeCurrentXP = (typeof rawCurrentXP === 'number' && Number.isFinite(rawCurrentXP))
+    ? rawCurrentXP
+    : 0
+  const rawNewXP = safeCurrentXP + xpToAdd
+  const newXP = Number.isFinite(rawNewXP) ? Math.max(0, Math.floor(rawNewXP)) : 0
 
-  // 4) Recalcular nivel
+  console.log('[awardXP] DEBUG XP calc:', { rawCurrentXP, safeCurrentXP, rawNewXP, newXP })
+
+  // Recalcular nivel
   const { level, xpToNextLevel } = calculateLevel(newXP, levelRules)
 
-  // 5) Update stats
+  // Validar resultados de calculateLevel
+  const safeLevel = (typeof level === 'number' && Number.isFinite(level) && level >= 1) ? level : 1
+  const safeXpToNextLevel = (typeof xpToNextLevel === 'number' && Number.isFinite(xpToNextLevel)) ? xpToNextLevel : 100
+
+  // Preparar datos para upsert con VALIDACION EXHAUSTIVA
+  const now = new Date().toISOString()
+  const dateOnly = now.split('T')[0]
+
+  const upsertData = {
+    user_id: userId,
+    total_xp: newXP,
+    current_level: safeLevel,
+    xp_to_next_level: safeXpToNextLevel,
+    total_badges: Math.max(0, Number(currentStats?.total_badges) || 0),
+    current_streak: Math.max(0, Number(currentStats?.current_streak) || 0),
+    longest_streak: Math.max(0, Number(currentStats?.longest_streak) || 0),
+    last_activity_date: dateOnly,
+    updated_at: now,
+    ...(currentStats ? {} : { created_at: now })
+  }
+
+  // VALIDACION FINAL: Verificar que ningun campo es null/undefined/NaN
+  const fieldsToCheck = ['total_xp', 'current_level', 'xp_to_next_level', 'total_badges', 'current_streak', 'longest_streak'] as const
+  for (const field of fieldsToCheck) {
+    const value = upsertData[field]
+    if (value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value))) {
+      console.error(`[awardXP] FATAL: Campo ${field} tiene valor invalido:`, value)
+      throw new Error(`awardXP: campo ${field} = ${value} (invalido)`)
+    }
+  }
+
+  console.log('[awardXP] Upsert data FINAL:', JSON.stringify(upsertData, null, 2))
+
+  // 5) UPSERT unico - crea si no existe, actualiza si existe
   const { error: updateError } = await admin
     .from('user_gamification_stats')
-    .update({
-      total_xp: newXP,
-      current_level: level,
-      xp_to_next_level: xpToNextLevel,
-      updated_at: new Date().toISOString()
+    .upsert(upsertData, {
+      onConflict: 'user_id',
+      ignoreDuplicates: false
     })
-    .eq('user_id', userId)
 
   if (updateError) {
+    console.error('[awardXP] Error en upsert:', updateError)
     throw new Error(`awardXP: error actualizando stats (${updateError.message})`)
   }
 
@@ -175,23 +214,28 @@ export async function awardXP(input: AwardXPInput): Promise<AwardXPResult> {
       }
     })()
 
-  const { error: eventError } = await admin.from('xp_events').insert({
-    user_id: userId,
-    event_type: eventType,
-    xp_amount: xpToAdd,
-    description,
-    created_at: new Date().toISOString()
-  })
+  // Solo insertar evento si hay XP positivo (por constraint CHECK xp_earned > 0)
+  if (xpToAdd > 0) {
+    const { error: eventError } = await admin.from('xp_events').insert({
+      user_id: userId,
+      event_type: eventType,
+      xp_earned: xpToAdd, // Columna correcta es xp_earned, no xp_amount
+      description,
+      created_at: new Date().toISOString()
+    })
 
-  if (eventError) {
-    // No rompemos el XP ya aplicado. Solo trazamos.
-    console.error('[awardXP] Error insert xp_event:', eventError)
+    if (eventError) {
+      // No rompemos el XP ya aplicado. Solo trazamos.
+      console.error('[awardXP] Error insert xp_event:', eventError)
+    }
   }
 
   return {
     xpAwarded: xpToAdd,
     totalXP: newXP,
-    level,
-    xpToNextLevel
+    level: safeLevel,
+    xpToNextLevel: safeXpToNextLevel
   }
 }
+
+

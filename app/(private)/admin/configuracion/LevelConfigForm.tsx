@@ -171,7 +171,7 @@ export default function LevelConfigForm({
         />
       </div>
 
-      <div className="bg-white/5 p-4 rounded-lg text-sm text-gray-300">
+      <div className="bg-white/5 p-4 rounded-lg text-sm text-white/80">
         {levelExamples.map((l) => (
           <div key={l.level}>
             Nivel {l.level}: {l.xp} XP
@@ -183,7 +183,7 @@ export default function LevelConfigForm({
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-2 px-6 py-3 bg-[#ff6b35] rounded-lg text-white disabled:opacity-60"
+          className="flex items-center gap-2 px-6 py-3 bg-brand-light rounded-lg text-white disabled:opacity-60"
         >
           <Save size={18} />
           {loading ? 'Guardando…' : 'Guardar Configuración'}
@@ -192,3 +192,5 @@ export default function LevelConfigForm({
     </form>
   )
 }
+
+

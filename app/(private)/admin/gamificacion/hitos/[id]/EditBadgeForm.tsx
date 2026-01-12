@@ -12,7 +12,7 @@ const emojis = [
 ]
 
 const rarityColors = {
-  common: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+  common: 'bg-white/50/20 text-white/60 border-white/30/30',
   rare: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   epic: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   legendary: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
@@ -152,7 +152,7 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-white/60 mb-2">
                   Título
                 </label>
                 <input
@@ -161,13 +161,13 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                   value={formData.title}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
                   placeholder="Ej: Primer Paso"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-white/60 mb-2">
                   Slug
                 </label>
                 <input
@@ -176,13 +176,13 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                   value={formData.slug}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
                   placeholder="primer-paso"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-white/60 mb-2">
                   Descripción
                 </label>
                 <textarea
@@ -190,13 +190,13 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                   value={formData.description}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35] resize-none"
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light resize-none"
                   placeholder="Describe qué significa este hito..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-white/60 mb-2">
                   Icono
                 </label>
                 <div className="grid grid-cols-8 gap-2">
@@ -209,7 +209,7 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                       }
                       className={`p-3 text-2xl rounded-lg transition-all ${
                         formData.icon === emoji
-                          ? 'bg-[#ff6b35] scale-110'
+                          ? 'bg-brand-light scale-110'
                           : 'bg-white/5 hover:bg-white/10'
                       }`}
                     >
@@ -227,24 +227,24 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-white/60 mb-2">
                   Categoría
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-[#1a1f2e] border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                  className="w-full px-4 py-2 bg-dark-surface border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
                 >
-                  <option value="achievement" className="bg-[#1a1f2e] text-white">Logro</option>
-                  <option value="milestone" className="bg-[#1a1f2e] text-white">Hito</option>
-                  <option value="special" className="bg-[#1a1f2e] text-white">Especial</option>
-                  <option value="seasonal" className="bg-[#1a1f2e] text-white">Temporada</option>
+                  <option value="achievement" className="bg-dark-surface text-white">Logro</option>
+                  <option value="milestone" className="bg-dark-surface text-white">Hito</option>
+                  <option value="special" className="bg-dark-surface text-white">Especial</option>
+                  <option value="seasonal" className="bg-dark-surface text-white">Temporada</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-white/60 mb-2">
                   Rareza
                 </label>
                 <div className="grid grid-cols-4 gap-3">
@@ -258,7 +258,7 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                       className={`px-4 py-2 rounded-lg border transition-all capitalize ${
                         formData.rarity === rarity
                           ? classes + ' ring-2 ring-white/30'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                          : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
                       }`}
                     >
                       {rarity}
@@ -275,26 +275,26 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-white/60 mb-2">
                   Tipo de Requisito
                 </label>
                 <select
                   name="requirement_type"
                   value={formData.requirement_type}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-[#1a1f2e] border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                  className="w-full px-4 py-2 bg-dark-surface border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
                 >
-                  <option value="lessons_completed" className="bg-[#1a1f2e] text-white">Lecciones Completadas</option>
-                  <option value="courses_completed" className="bg-[#1a1f2e] text-white">Cursos Completados</option>
-                  <option value="total_xp" className="bg-[#1a1f2e] text-white">XP Total</option>
-                  <option value="level_reached" className="bg-[#1a1f2e] text-white">Nivel Alcanzado</option>
-                  <option value="streak_days" className="bg-[#1a1f2e] text-white">Días de Racha</option>
-                  <option value="badges_earned" className="bg-[#1a1f2e] text-white">Hitos Obtenidos</option>
+                  <option value="lessons_completed" className="bg-dark-surface text-white">Lecciones Completadas</option>
+                  <option value="courses_completed" className="bg-dark-surface text-white">Cursos Completados</option>
+                  <option value="total_xp" className="bg-dark-surface text-white">XP Total</option>
+                  <option value="level_reached" className="bg-dark-surface text-white">Nivel Alcanzado</option>
+                  <option value="streak_days" className="bg-dark-surface text-white">Días de Racha</option>
+                  <option value="badges_earned" className="bg-dark-surface text-white">Hitos Obtenidos</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-white/60 mb-2">
                   Valor Requerido
                 </label>
                 <input
@@ -304,7 +304,7 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                   onChange={handleChange}
                   min="1"
                   required
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
                 />
               </div>
             </div>
@@ -322,11 +322,11 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                       is_active: e.target.checked
                     }))
                   }
-                  className="w-5 h-5 rounded bg-white/5 border-white/10 text-[#ff6b35] focus:ring-2 focus:ring-[#ff6b35]"
+                  className="w-5 h-5 rounded bg-white/5 border-white/10 text-brand-light focus:ring-2 focus:ring-brand-light"
                 />
                 <div>
                   <p className="text-white font-medium">Hito Activo</p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-white/60">
                     Los usuarios pueden desbloquear este hito
                   </p>
                 </div>
@@ -339,7 +339,7 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-[#ff6b35] hover:bg-[#ff8c5a] disabled:bg-gray-500 disabled:cursor-not-allowed rounded-lg transition-colors text-white font-medium"
+                  className="flex items-center gap-2 px-6 py-3 bg-brand-light hover:bg-brand-light disabled:bg-white/50 disabled:cursor-not-allowed rounded-lg transition-colors text-white font-medium"
                 >
                   <Save size={20} />
                   {loading ? 'Guardando...' : 'Guardar Cambios'}
@@ -393,11 +393,11 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
                 {formData.rarity}
               </div>
               <h3 className="text-xl font-bold text-white">{formData.title}</h3>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-white/60">
                 {formData.description || 'Sin descripción'}
               </p>
               <div className="pt-4 border-t border-white/10">
-                <p className="text-xs text-gray-500 uppercase font-medium mb-1">
+                <p className="text-xs text-white/50 uppercase font-medium mb-1">
                   Requisito
                 </p>
                 <p className="text-sm text-white">
@@ -413,11 +413,11 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0a0d14] border border-red-500/30 rounded-xl p-6 max-w-md w-full">
+          <div className="bg-dark-deep border border-red-500/30 rounded-xl p-6 max-w-md w-full">
             <h3 className="text-2xl font-bold text-white mb-4">
               ¿Eliminar Hito?
             </h3>
-            <p className="text-gray-300 mb-6">
+            <p className="text-white/80 mb-6">
               Esta acción no se puede deshacer. El hito "{badge.title}" será
               eliminado permanentemente.
             </p>
@@ -425,7 +425,7 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500 hover:bg-red-600 disabled:bg-gray-500 disabled:cursor-not-allowed rounded-lg transition-colors text-white font-medium"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500 hover:bg-red-600 disabled:bg-white/50 disabled:cursor-not-allowed rounded-lg transition-colors text-white font-medium"
               >
                 <Trash2 size={20} />
                 {deleting ? 'Eliminando...' : 'Sí, Eliminar'}

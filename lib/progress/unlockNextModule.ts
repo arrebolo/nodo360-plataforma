@@ -218,3 +218,5 @@ export async function getCourseProgress(userId: string, courseId: string) {
     throw error;
   }
 }
+
+

@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from './auth'
 import { generateSlug, validateCourseData, validateModuleData, validateLessonData } from './utils'
+import { checkCoursePublishability, type PublishCheckResult } from './publish-rules'
+import { normalizeTitle, normalizeSlug, normalizeDescription } from '@/lib/utils/normalize'
 
 /**
  * COURSE ACTIONS
@@ -411,3 +413,118 @@ export async function deleteLesson(lessonId: string) {
     return { success: false, error: error.message }
   }
 }
+
+/**
+ * PUBLISH ACTIONS
+ */
+
+/**
+ * Publica un curso después de validar que cumple todos los requisitos
+ */
+export async function publishCourse(
+  courseId: string,
+  forcePublish: boolean = false // Si true, ignora warnings (pero no hardErrors)
+): Promise<{
+  success: boolean
+  error?: string
+  check: PublishCheckResult
+}> {
+  // 1. Verificar permisos
+  await requireAdmin()
+
+  console.log('🔍 [publishCourse] Verificando curso:', courseId)
+
+  // 2. Ejecutar verificación de publicabilidad
+  const check = await checkCoursePublishability(courseId)
+
+  // 3. Si hay hard errors, bloquear
+  if (!check.canPublish) {
+    console.log('❌ [publishCourse] Bloqueado por errores:', check.hardErrors)
+    return {
+      success: false,
+      error: 'El curso no cumple los requisitos mínimos para ser publicado.',
+      check
+    }
+  }
+
+  // 4. Si hay warnings y no se fuerza, advertir
+  if (check.warnings.length > 0 && !forcePublish) {
+    console.log('⚠️ [publishCourse] Hay advertencias, requiere confirmación')
+    return {
+      success: false,
+      error: 'WARNINGS_REQUIRE_CONFIRMATION',
+      check
+    }
+  }
+
+  // 5. Publicar el curso
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('courses')
+    .update({
+      status: 'published',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', courseId)
+    .select('id, title, slug, status')
+    .single()
+
+  if (error) {
+    console.error('❌ [publishCourse] Error al publicar:', error)
+    return {
+      success: false,
+      error: 'Error al publicar el curso: ' + error.message,
+      check
+    }
+  }
+
+  console.log('✅ [publishCourse] Curso publicado:', data.title)
+  revalidatePath('/admin/cursos')
+  revalidatePath(`/admin/cursos/${courseId}`)
+  revalidatePath('/cursos')
+
+  return {
+    success: true,
+    check
+  }
+}
+
+/**
+ * Despublica un curso (vuelve a borrador)
+ */
+export async function unpublishCourse(courseId: string): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
+
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('courses')
+    .update({
+      status: 'draft',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', courseId)
+
+  if (error) {
+    console.error('❌ [unpublishCourse] Error:', error)
+    return { success: false, error: error.message }
+  }
+
+  console.log('✅ [unpublishCourse] Curso despublicado:', courseId)
+  revalidatePath('/admin/cursos')
+  revalidatePath(`/admin/cursos/${courseId}`)
+  revalidatePath('/cursos')
+
+  return { success: true }
+}
+
+/**
+ * Obtiene el estado de publicabilidad de un curso (para mostrar en UI)
+ */
+export async function getCoursePublishStatus(courseId: string): Promise<PublishCheckResult> {
+  await requireAdmin()
+  return checkCoursePublishability(courseId)
+}
+
+

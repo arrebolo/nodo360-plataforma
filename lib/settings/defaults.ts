@@ -27,3 +27,5 @@ export type LevelRules = {
   xp_multiplier: number
   max_level: number
 }
+
+

@@ -63,10 +63,10 @@ export function LessonResourcesPanel({ lesson }: LessonResourcesPanelProps) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#ff6b35]/30 rounded-lg transition group"
+                className="flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-light/30 rounded-lg transition group"
               >
-                <div className="w-10 h-10 rounded-lg bg-[#ff6b35]/20 flex items-center justify-center group-hover:bg-[#ff6b35]/30 transition">
-                  <Icon className="w-5 h-5 text-[#ff6b35]" />
+                <div className="w-10 h-10 rounded-lg bg-brand-light/20 flex items-center justify-center group-hover:bg-brand-light/30 transition">
+                  <Icon className="w-5 h-5 text-brand-light" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-white truncate">{link.label}</div>
@@ -92,7 +92,7 @@ export function LessonResourcesPanel({ lesson }: LessonResourcesPanelProps) {
                 href={attachment.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border border-white/10 hover:border-[#ff6b35]/40 hover:bg-white/10 transition group"
+                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border border-white/10 hover:border-brand-light/40 hover:bg-white/10 transition group"
               >
                 <span className="w-9 h-9 rounded-md bg-white/10 text-white flex items-center justify-center group-hover:bg-white/15 transition">
                   {renderAttachmentIcon(attachment.type)}
@@ -124,3 +124,5 @@ function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
+
+

@@ -36,7 +36,7 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
         avatar_url
       )
     `)
-    .eq('status', 'published')
+    .in('status', ['published', 'coming_soon'])
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -221,3 +221,5 @@ export async function getAllLessonsForCourse(
     }
   })
 }
+
+

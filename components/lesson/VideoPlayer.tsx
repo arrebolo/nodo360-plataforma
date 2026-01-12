@@ -1,103 +1,143 @@
-"use client";
+'use client'
 
-import Image from "next/image";
-import { useEffect, useRef } from "react";
+import * as React from 'react'
+import { useEffect, useRef } from 'react'
+import { Card } from '@/components/ui/Card'
+import { PlayCircle } from 'lucide-react'
 
-type Props = {
-  videoUrl?: string | null;
-  posterUrl?: string | null; // opcional por lección
-  defaultPosterUrl?: string; // por defecto para toda Nodo360
-  onWatchTime?: (seconds: number) => void; // acumular
-  onActivity?: () => void; // last_activity ping
-};
+type VideoPlayerProps = {
+  videoUrl?: string | null
+  thumbnailUrl?: string | null
+  title: string
+  onTimeUpdate?: (seconds: number) => void
+  onActivity?: () => void
+}
 
-export default function VideoPlayer({
+export function VideoPlayer({
   videoUrl,
-  posterUrl,
-  defaultPosterUrl = "/images/lesson-cover-default.jpg",
-  onWatchTime,
+  thumbnailUrl,
+  title,
+  onTimeUpdate,
   onActivity,
-}: Props) {
-  const watchSecondsRef = useRef(0);
+}: VideoPlayerProps) {
+  const watchSecondsRef = useRef(0)
 
-  // Ping de actividad mínimo (cada 30s si el usuario está en la lección)
+  // Ping de actividad (cada 30s si el usuario está en la lección)
   useEffect(() => {
-    if (!onActivity) return;
-    onActivity();
-    const id = setInterval(() => onActivity(), 30_000);
-    return () => clearInterval(id);
-  }, [onActivity]);
+    if (!onActivity) return
+    onActivity()
+    const id = setInterval(() => onActivity(), 30_000)
+    return () => clearInterval(id)
+  }, [onActivity])
 
-  // Tracking simple para HTML5 video (si usas YouTube/Vimeo, lo integramos después)
-  const onTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
-    const v = e.currentTarget;
-    // aproximación: acumulamos segundos enteros
-    const current = Math.floor(v.currentTime);
+  // Tracking para HTML5 video
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const v = e.currentTarget
+    const current = Math.floor(v.currentTime)
     if (current > watchSecondsRef.current) {
-      watchSecondsRef.current = current;
-      onWatchTime?.(current);
+      watchSecondsRef.current = current
+      onTimeUpdate?.(current)
     }
-  };
+  }
 
+  // Si no hay video, mostrar placeholder
   if (!videoUrl) {
     return (
-      <div className="w-full">
-        <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] aspect-video">
-          <Image
-            src={posterUrl || defaultPosterUrl}
-            alt="Portada de la lección"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-          <div className="absolute bottom-3 left-3 right-3">
-            <div className="inline-flex items-center gap-2 rounded-xl bg-black/50 px-3 py-2 text-xs text-white/80 border border-white/10">
-              Sin vídeo en esta lección · Continúa con los recursos y el contenido
-            </div>
-          </div>
+      <Card className="aspect-video flex items-center justify-center bg-neutral-100 p-0">
+        <div className="text-center space-y-2">
+          <PlayCircle className="h-12 w-12 text-neutral-300 mx-auto" />
+          <p className="text-sm text-neutral-500">Video no disponible</p>
         </div>
-      </div>
-    );
+      </Card>
+    )
   }
 
-  // Caso base HTML5 (si videoUrl es mp4/webm). YouTube/Vimeo lo resolvemos en el siguiente paso.
+  // Detectar tipo de video
+  const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
+  const isVimeo = videoUrl.includes('vimeo.com')
   const isHtml5 =
-    videoUrl.endsWith(".mp4") ||
-    videoUrl.endsWith(".webm") ||
-    videoUrl.endsWith(".ogg");
+    videoUrl.endsWith('.mp4') ||
+    videoUrl.endsWith('.webm') ||
+    videoUrl.endsWith('.ogg')
 
-  if (isHtml5) {
+  // YouTube embed
+  if (isYouTube) {
+    let videoId: string | null = null
+    if (videoUrl.includes('youtu.be')) {
+      videoId = videoUrl.split('/').pop() || null
+    } else {
+      try {
+        videoId = new URL(videoUrl).searchParams.get('v')
+      } catch {
+        videoId = null
+      }
+    }
+
     return (
-      <div className="w-full">
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black aspect-video">
-          <video
-            className="h-full w-full"
-            controls
-            playsInline
-            preload="metadata"
-            onTimeUpdate={onTimeUpdate}
-            onPlay={() => onActivity?.()}
-            onPause={() => onActivity?.()}
-          >
-            <source src={videoUrl} />
-          </video>
-        </div>
-      </div>
-    );
-  }
-
-  // Placeholder para YouTube/Vimeo/externos (mantiene estética y no rompe)
-  return (
-    <div className="w-full">
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-black aspect-video">
+      <Card className="aspect-video overflow-hidden p-0">
         <iframe
-          src={videoUrl}
-          className="h-full w-full"
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title={title}
+          className="w-full h-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
-      </div>
-    </div>
-  );
+      </Card>
+    )
+  }
+
+  // Vimeo embed
+  if (isVimeo) {
+    const vimeoId = videoUrl.split('/').pop()
+    return (
+      <Card className="aspect-video overflow-hidden p-0">
+        <iframe
+          src={`https://player.vimeo.com/video/${vimeoId}`}
+          title={title}
+          className="w-full h-full"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
+      </Card>
+    )
+  }
+
+  // HTML5 Video
+  if (isHtml5) {
+    return (
+      <Card className="aspect-video overflow-hidden p-0 bg-black">
+        <video
+          src={videoUrl}
+          controls
+          playsInline
+          preload="metadata"
+          className="w-full h-full"
+          poster={thumbnailUrl || undefined}
+          onTimeUpdate={handleTimeUpdate}
+          onPlay={() => onActivity?.()}
+          onPause={() => onActivity?.()}
+        >
+          Tu navegador no soporta video HTML5.
+        </video>
+      </Card>
+    )
+  }
+
+  // Fallback: iframe genérico para URLs externas
+  return (
+    <Card className="aspect-video overflow-hidden p-0 bg-black">
+      <iframe
+        src={videoUrl}
+        title={title}
+        className="w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </Card>
+  )
 }
+
+// Export default for backward compatibility
+export default VideoPlayer
+
+

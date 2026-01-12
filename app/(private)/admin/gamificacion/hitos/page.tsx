@@ -33,7 +33,7 @@ export default async function HitosPage() {
   const badges = await getBadges()
 
   const rarityColors = {
-    common: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+    common: 'bg-white/50/20 text-white/60 border-white/30/30',
     rare: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     epic: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
     legendary: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
@@ -45,13 +45,13 @@ export default async function HitosPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Gestión de Hitos</h1>
-          <p className="text-gray-400 mt-1">
+          <p className="text-white/60 mt-1">
             {badges.length} hitos creados - {badges.filter((b) => b.is_active).length} activos
           </p>
         </div>
         <Link
           href="/admin/gamificacion/hitos/nuevo"
-          className="flex items-center gap-2 px-4 py-2 bg-[#ff6b35] hover:bg-[#ff8c5a] rounded-lg transition-colors text-white font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-light hover:bg-brand-light/80 rounded-lg transition-colors text-white font-medium"
         >
           <Plus size={20} />
           Nuevo Hito
@@ -79,28 +79,28 @@ export default async function HitosPage() {
           <table className="w-full">
             <thead className="bg-white/5">
               <tr className="border-b border-white/10">
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                <th className="px-6 py-4 text-left text-sm font-medium text-white/60">
                   Icono
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                <th className="px-6 py-4 text-left text-sm font-medium text-white/60">
                   Título
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                <th className="px-6 py-4 text-left text-sm font-medium text-white/60">
                   Categoría
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                <th className="px-6 py-4 text-left text-sm font-medium text-white/60">
                   Rareza
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                <th className="px-6 py-4 text-left text-sm font-medium text-white/60">
                   Requisito
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                <th className="px-6 py-4 text-left text-sm font-medium text-white/60">
                   Usuarios
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                <th className="px-6 py-4 text-left text-sm font-medium text-white/60">
                   Estado
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                <th className="px-6 py-4 text-left text-sm font-medium text-white/60">
                   Acciones
                 </th>
               </tr>
@@ -114,10 +114,10 @@ export default async function HitosPage() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-medium text-white">{badge.title}</p>
-                      <p className="text-xs text-gray-400">{badge.slug}</p>
+                      <p className="text-xs text-white/60">{badge.slug}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-400 capitalize">
+                      <span className="text-sm text-white/60 capitalize">
                         {badge.category || 'Sin categoría'}
                       </span>
                     </td>
@@ -130,13 +130,13 @@ export default async function HitosPage() {
                         {badge.rarity}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">
+                    <td className="px-6 py-4 text-sm text-white/60">
                       {badge.requirement_type ? (
                         <>
                           {badge.requirement_type}: {badge.requirement_value}
                         </>
                       ) : (
-                        <span className="text-gray-500">Sin requisito</span>
+                        <span className="text-white/50">Sin requisito</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -153,8 +153,8 @@ export default async function HitosPage() {
                           </>
                         ) : (
                           <>
-                            <EyeOff size={16} className="text-gray-500" />
-                            <span className="text-xs text-gray-500">Inactivo</span>
+                            <EyeOff size={16} className="text-white/50" />
+                            <span className="text-xs text-white/50">Inactivo</span>
                           </>
                         )}
                       </div>
@@ -163,7 +163,7 @@ export default async function HitosPage() {
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/admin/gamificacion/hitos/${badge.id}`}
-                          className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                          className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60 hover:text-white"
                           title="Editar hito"
                         >
                           <Edit size={16} />
@@ -175,10 +175,10 @@ export default async function HitosPage() {
               ) : (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center">
-                    <p className="text-gray-400 mb-4">No hay hitos creados</p>
+                    <p className="text-white/60 mb-4">No hay hitos creados</p>
                     <Link
                       href="/admin/gamificacion/hitos/nuevo"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff6b35] hover:bg-[#ff8c5a] rounded-lg transition-colors text-white font-medium"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-brand-light hover:bg-brand-light/80 rounded-lg transition-colors text-white font-medium"
                     >
                       <Plus size={20} />
                       Crear primer hito
@@ -203,3 +203,5 @@ export default async function HitosPage() {
     </div>
   )
 }
+
+

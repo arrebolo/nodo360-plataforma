@@ -61,7 +61,7 @@ export default function AdjustXPForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="text-sm text-gray-400 mb-2 block">
+        <label className="text-sm text-white/60 mb-2 block">
           XP Actual: <span className="text-white font-medium">{currentXP}</span>
         </label>
         <input
@@ -69,9 +69,9 @@ export default function AdjustXPForm({
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="Cantidad (+/-)"
-          className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#ff6b35]/50"
+          className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-brand-light/50"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-white/50 mt-1">
           Usa números negativos para restar XP
         </p>
         {amount && (
@@ -86,7 +86,7 @@ export default function AdjustXPForm({
         value={reason}
         onChange={(e) => setReason(e.target.value)}
         placeholder="Razón del ajuste (ej: Corrección manual)"
-        className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#ff6b35]/50"
+        className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-brand-light/50"
       />
 
       {error && (

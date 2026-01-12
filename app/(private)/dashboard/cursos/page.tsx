@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { PageHeader } from '@/components/ui/PageHeader'
-import { Card } from '@/components/ui/Card'
+import PageHeader from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { ArrowLeft, BookOpen, CheckCircle2, PlayCircle } from 'lucide-react'
 
@@ -70,32 +69,32 @@ export default async function MisCursosPage() {
         <PageHeader
           icon={BookOpen}
           title="Mis Cursos"
-          description={`${courses.length} curso${courses.length !== 1 ? 's' : ''} inscrito${
+          subtitle={`${courses.length} curso${courses.length !== 1 ? 's' : ''} inscrito${
             courses.length !== 1 ? 's' : ''
           }`}
         />
 
         {courses.length === 0 ? (
-          <Card className="text-center py-12">
-            <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="w-8 h-8 text-blue-400" />
+          <div className="bg-dark-surface border border-white/10 rounded-2xl p-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-brand-light/20 flex items-center justify-center mx-auto mb-4">
+              <BookOpen className="w-8 h-8 text-brand-light" />
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">
               No tienes cursos inscritos
             </h2>
-            <p className="text-white/60 mb-6">
-              Explora nuestro catálogo y empieza a aprender hoy.
+            <p className="text-white/60 mb-6 max-w-md mx-auto">
+              Explora nuestro catálogo y comienza tu viaje de aprendizaje.
             </p>
             <Button href="/cursos">Ver cursos</Button>
-          </Card>
+          </div>
         ) : (
           <div className="space-y-10">
             {/* En progreso */}
             {inProgressCourses.length > 0 && (
               <section>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-[#f7931a]/20 flex items-center justify-center">
-                    <PlayCircle className="w-5 h-5 text-[#f7931a]" />
+                  <div className="w-10 h-10 rounded-xl bg-brand/20 flex items-center justify-center">
+                    <PlayCircle className="w-5 h-5 text-brand" />
                   </div>
                   <h2 className="text-lg font-semibold text-white">
                     En progreso ({inProgressCourses.length})
@@ -120,7 +119,7 @@ export default async function MisCursosPage() {
                       )}
 
                       <div className="p-5 flex flex-col h-full">
-                        <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-[#f7931a] transition-colors">
+                        <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-brand transition-colors">
                           {course.title}
                         </h3>
 
@@ -138,7 +137,7 @@ export default async function MisCursosPage() {
                           </div>
                           <div className="h-2 w-full rounded-full bg-white/10">
                             <div
-                              className="h-2 rounded-full bg-gradient-to-r from-[#ff6b35] to-[#f7931a] transition-all"
+                              className="h-2 rounded-full bg-gradient-to-r from-brand-light to-brand transition-all"
                               style={{ width: `${course.progress}%` }}
                             />
                           </div>
@@ -202,3 +201,5 @@ export default async function MisCursosPage() {
     </div>
   )
 }
+
+

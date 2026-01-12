@@ -123,3 +123,5 @@ async function verifyRLSPolicies() {
 }
 
 verifyRLSPolicies()
+
+

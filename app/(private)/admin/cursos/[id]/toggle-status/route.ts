@@ -1,19 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/admin/auth'
 
-export async function POST(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
-  await requireAdmin(`/admin/cursos/${params.id}`)
+export async function POST(_req: NextRequest, { params }: { params: any }) {
+  const id = params?.id as string
+
+  await requireAdmin(`/admin/cursos/${id}`)
 
   const supabase = await createClient()
 
   const { data: course, error: getErr } = await supabase
     .from('courses')
     .select('id,status')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (getErr || !course) {
@@ -25,7 +24,7 @@ export async function POST(
   const { error: updErr } = await supabase
     .from('courses')
     .update({ status: nextStatus })
-    .eq('id', params.id)
+    .eq('id', id)
 
   if (updErr) {
     return NextResponse.json({ error: updErr.message }, { status: 500 })

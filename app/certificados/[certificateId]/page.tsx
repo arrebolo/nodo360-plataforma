@@ -58,19 +58,19 @@ export default async function CertificatePage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
+    <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
       {/* Header */}
-      <header className="border-b border-white/10 bg-[#1a1f2e]/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-white/10 bg-dark-surface/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
                 <span className="text-white font-bold text-xl">N</span>
               </div>
               <span className="text-white font-bold text-xl">NODO360</span>
             </Link>
             <Link
-              href="/perfil/certificados"
+              href="/dashboard/certificados"
               className="text-white/70 hover:text-white transition flex items-center gap-2"
             >
               <svg
@@ -95,9 +95,9 @@ export default async function CertificatePage({
       <div className="max-w-4xl mx-auto px-4 py-16">
         {/* Success Message */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#4caf50]/20 mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/20 mb-6">
             <svg
-              className="w-10 h-10 text-[#4caf50]"
+              className="w-10 h-10 text-success"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -144,8 +144,8 @@ export default async function CertificatePage({
             Ver curso
           </Link>
           <Link
-            href="/perfil/certificados"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-medium rounded-lg hover:shadow-lg hover:shadow-[#ff6b35]/20 transition-all"
+            href="/dashboard/certificados"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-medium rounded-lg hover:shadow-lg hover:shadow-brand-light/20 transition-all"
           >
             Ver todos mis certificados
           </Link>

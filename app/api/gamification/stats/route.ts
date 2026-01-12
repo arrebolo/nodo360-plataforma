@@ -15,7 +15,7 @@ export async function GET() {
       )
     }
 
-    console.log('📊 [Gamification API] Usuario:', user.email)
+    console.log('[Gamification API] Usuario:', user.id.substring(0, 8) + '...')
 
     // 1. Obtener stats de gamificación
     const { data: stats, error: statsError } = await supabase
@@ -144,3 +144,4 @@ export async function GET() {
     )
   }
 }
+

@@ -94,3 +94,5 @@ export function getHighestRole(roles: UserRole[]): UserRole {
     ROLE_HIERARCHY[current] > ROLE_HIERARCHY[highest] ? current : highest
   , 'user' as UserRole)
 }
+
+

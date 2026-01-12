@@ -163,3 +163,5 @@ export function useSearch(
     hasResults: results.courses.length > 0 || results.lessons.length > 0
   }
 }
+
+

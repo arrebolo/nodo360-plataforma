@@ -1,16 +1,10 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import {
-  ArrowRight,
-  BookOpen,
-  GraduationCap,
-  Compass,
-  CheckCircle2,
-  Sparkles,
-} from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getLearningPaths, getCoursesByLearningPathSlug } from '@/lib/db/learning-paths'
-import { SelectPathButton } from '@/components/routes/SelectPathButton'
+import { RouteCardWrapper } from '@/components/learning-path/RouteCardWrapper'
+import PageHeader from '@/components/ui/PageHeader'
+import { Button } from '@/components/ui/Button'
 
 export const metadata: Metadata = {
   title: 'Rutas de Aprendizaje',
@@ -24,12 +18,10 @@ export const revalidate = 0
 export default async function RutasPage() {
   const supabase = await createClient()
 
-  // Auth
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Active path
   let activePathId: string | null = null
   if (user) {
     const { data: activePath } = await supabase
@@ -42,7 +34,6 @@ export default async function RutasPage() {
     activePathId = activePath?.path_id ?? null
   }
 
-  // Paths + counts
   const paths = await getLearningPaths()
 
   const pathsWithCounts = await Promise.all(
@@ -67,184 +58,103 @@ export default async function RutasPage() {
     return 'Ruta guiada paso a paso'
   }
 
+  const hasActiveRoute = pathsWithCounts.some((p) => p.isActive)
+  const isLoggedIn = !!user
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-10">
-      {/* HERO (gradiente sutil solo aquí) */}
-      <section className="mb-10">
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8">
-          <div className="pointer-events-none absolute inset-0">
-            {/* Radial MUY sutil (educativo, no cripto-loud) */}
-            <div className="absolute -top-24 left-1/2 h-72 w-[720px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,107,53,0.12),transparent_60%)]" />
-          </div>
+    <div className="min-h-screen bg-dark">
+      <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
+        {/* HERO COMPACTO - DARK THEME */}
+        <div className="bg-dark-surface border border-white/10 rounded-2xl p-6 sm:p-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-4 max-w-2xl">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                Elige tu <span className="text-brand-light">Ruta de Aprendizaje</span>
+              </h1>
+              <p className="text-white/70 leading-relaxed">
+                Te guiamos paso a paso. Puedes cambiar de ruta cuando quieras.
+              </p>
 
-          <div className="relative max-w-3xl">
-            <div className="mb-5 inline-flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 p-4">
-              <Compass className="h-7 w-7 text-white/80" />
-            </div>
-
-            <h1 className="text-3xl md:text-4xl font-semibold text-white leading-tight">
-              Elige tu{' '}
-              <span className="bg-gradient-to-r from-[#ff6b35] to-[#f7931a] bg-clip-text text-transparent">
-                Ruta de Aprendizaje
-              </span>
-            </h1>
-
-            <p className="mt-3 text-white/70 max-w-2xl">
-              Te guiamos paso a paso. Cambia de ruta cuando quieras.
-            </p>
-
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/60">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
-                <Sparkles className="h-4 w-4 text-white/70" />
-                Rutas pensadas para usuarios españoles
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
-                <BookOpen className="h-4 w-4 text-white/70" />
-                Cursos cortos, prácticos y claros
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* GRID SECTION (fondo neutro, sin pelear con el layout global) */}
-      <section className="rounded-3xl border border-white/10 bg-[#0b0f17]/60 p-6 md:p-7">
-        {pathsWithCounts.length === 0 ? (
-          <div className="n360-panel p-8 text-center">
-            <p className="text-white/60">No hay rutas disponibles en este momento.</p>
-          </div>
-        ) : (
-          <>
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Rutas disponibles</h2>
-                <p className="text-sm text-white/55">
-                  Elige una ruta. Puedes cambiarla cuando quieras.
-                </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <span className="px-3 py-1 bg-white/5 text-white/70 text-sm rounded-full border border-white/10">
+                  Cursos cortos y prácticos
+                </span>
+                <span className="px-3 py-1 bg-white/5 text-white/70 text-sm rounded-full border border-white/10">
+                  Pensado para público hispano
+                </span>
               </div>
-
-              {!user ? (
-                <Link
-                  href="/login?redirect=/dashboard/rutas"
-                  className="n360-btn-secondary px-4 py-2.5"
-                >
-                  Iniciar sesión
-                </Link>
-              ) : null}
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pathsWithCounts.map((path) => (
-                <div
-                  key={path.id}
-                  className={[
-                    'relative h-full',
-                    'rounded-3xl border border-white/10 bg-white/[0.04]',
-                    'hover:border-white/20 hover:bg-white/[0.06] transition-all',
-                    path.isActive ? 'border-[#ff6b35]/35 bg-[#ff6b35]/[0.06]' : '',
-                  ].join(' ')}
-                >
-                  {/* Active badge */}
-                  {path.isActive && (
-                    <div className="absolute -top-3 left-5 px-3 py-1 rounded-full bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-xs font-semibold text-white flex items-center gap-1 border border-white/10">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Tu ruta actual
-                    </div>
-                  )}
-
-                  <div className="p-7 flex flex-col h-full">
-                    {/* Header */}
-                    <div className="mb-5 flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl">
-                        {path.emoji || '📚'}
-                      </div>
-
-                      <div className="min-w-0">
-                        <h3 className="text-xl font-semibold text-white truncate">
-                          {path.name}
-                        </h3>
-                        <p className="text-sm text-white/50">
-                          {path.courseCount} cursos
-                          {path.totalLessons > 0 ? ` · ${path.totalLessons} lecciones` : ''}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Educational hint (señal educativa) */}
-                    <div className="mb-4">
-                      <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-[#f7931a]/90">
-                        {getEducationalHint(path.slug)}
-                      </span>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-white/70 text-sm leading-relaxed mb-6 line-clamp-3">
-                      {path.short_description || 'Ruta de aprendizaje personalizada'}
-                    </p>
-
-                    {/* Stats */}
-                    <div className="flex flex-wrap gap-4 text-sm text-white/55 mb-6">
-                      <span className="flex items-center gap-1.5">
-                        <BookOpen className="w-4 h-4" />
-                        {path.courseCount} cursos
-                      </span>
-                      {path.totalLessons > 0 && (
-                        <span className="flex items-center gap-1.5">
-                          <GraduationCap className="w-4 h-4" />
-                          {path.totalLessons} lecciones
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Actions (más aire, CTA menos agresivo) */}
-                    <div className="mt-auto flex gap-3">
-                      <Link
-                        href={`/dashboard/rutas/${path.slug}`}
-                        className="flex-1 text-center rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-white/85 hover:text-white hover:bg-white/[0.06] transition-all"
-                      >
-                        Ver detalles
-                      </Link>
-
-                      {user && !path.isActive && (
-                        <div className="shrink-0">
-                          {/* Deja tu componente, pero visualmente “soft”: el naranja entra por hover dentro del botón */}
-                          <SelectPathButton pathSlug={path.slug} variant="small" label="Elegir" />
-                        </div>
-                      )}
-
-                      {path.isActive && (
-                        <Link
-                          href="/dashboard"
-                          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-all"
-                        >
-                          Continuar
-                          <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      )}
-                    </div>
-                  </div>
+            {/* Status box */}
+            {!hasActiveRoute ? (
+              <div className="bg-dark-soft border border-white/10 rounded-xl p-4 text-sm lg:w-[300px] flex-shrink-0">
+                <div className="font-medium text-white">Siguiente paso</div>
+                <div className="mt-1 text-white/60">
+                  Selecciona una ruta para ver los cursos recomendados y comenzar.
                 </div>
-              ))}
-            </div>
-
-            {/* Login prompt (solo si no hay user) */}
-            {!user && pathsWithCounts.length > 0 && (
-              <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-7 text-center">
-                <p className="text-white/70 mb-4">
-                  Inicia sesión para seleccionar tu ruta y guardar tu progreso.
-                </p>
-                <Link
-                  href="/login?redirect=/dashboard/rutas"
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] px-6 py-3 font-semibold text-white hover:opacity-90 transition-all"
-                >
-                  Iniciar sesión
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                {!isLoggedIn && (
+                  <Button variant="secondary" href="/login?redirect=/dashboard/rutas" className="mt-3 w-full">
+                    Iniciar sesión
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="bg-success/10 border border-success/30 rounded-xl p-4 text-sm lg:w-[300px] flex-shrink-0">
+                <div className="font-medium text-success">Ruta activa</div>
+                <div className="mt-1 text-white/70">
+                  Ya tienes una ruta seleccionada. Puedes continuar o cambiarla.
+                </div>
+                <Button variant="primary" href="/dashboard" className="mt-3 w-full">
+                  Ir a mi dashboard
+                </Button>
               </div>
             )}
-          </>
+          </div>
+        </div>
+
+        {/* SECCIÓN RUTAS */}
+        <div>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-white">Rutas disponibles</h2>
+            <p className="text-sm text-white/60 mt-1">
+              Explora las rutas y elige la que mejor se adapte a ti.
+            </p>
+          </div>
+
+          {pathsWithCounts.length === 0 ? (
+            <div className="bg-dark-surface border border-white/10 rounded-xl p-8 text-center">
+              <p className="text-white/60">
+                No hay rutas disponibles en este momento.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {pathsWithCounts.map((path, index) => (
+                <RouteCardWrapper
+                  key={path.id}
+                  path={path}
+                  educationalHint={getEducationalHint(path.slug)}
+                  isLoggedIn={isLoggedIn}
+                  isRecommended={index === 0 && !hasActiveRoute}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Login prompt (solo si no hay user y hay rutas) */}
+        {!isLoggedIn && pathsWithCounts.length > 0 && (
+          <div className="bg-gradient-to-br from-brand/10 to-brand-light/5 border border-brand/20 rounded-2xl p-6 sm:p-8 text-center">
+            <p className="text-white/80 mb-4">
+              Inicia sesión para seleccionar tu ruta y guardar tu progreso.
+            </p>
+            <Button variant="primary" href="/login?redirect=/dashboard/rutas">
+              Iniciar sesión
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         )}
-      </section>
+      </div>
     </div>
   )
 }

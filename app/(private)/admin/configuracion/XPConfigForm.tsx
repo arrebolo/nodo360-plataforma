@@ -29,7 +29,7 @@ const XP_ITEMS: Array<{
     key: 'lesson_complete',
     label: 'Lección completada',
     description: 'XP al completar una lección',
-    icon: <BookOpen className="w-4 h-4 text-[#ff6b35]" />,
+    icon: <BookOpen className="w-4 h-4 text-brand-light" />,
   },
   {
     key: 'module_complete',
@@ -156,16 +156,16 @@ export default function XPConfigForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {message && (
-        <div className="p-4 rounded-lg bg-white/5 border border-white/10 text-sm text-gray-200">
+        <div className="p-4 rounded-lg bg-white/5 border border-white/10 text-sm text-white/90">
           {message}
         </div>
       )}
 
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-        <p className="text-sm text-gray-300">
+        <p className="text-sm text-white/80">
           Ajusta las recompensas de XP por evento. Valores recomendados: enteros positivos.
         </p>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-white/50 mt-1">
           Preview (suma total de valores configurados):{' '}
           <span className="text-white">{totalPreview}</span>
         </p>
@@ -181,7 +181,7 @@ export default function XPConfigForm({
               <label className="text-sm font-medium text-white flex items-center gap-2">
                 {item.icon} {item.label}
               </label>
-              <p className="text-xs text-gray-400">{item.description}</p>
+              <p className="text-xs text-white/60">{item.description}</p>
             </div>
 
             <div className="md:w-56">
@@ -190,7 +190,7 @@ export default function XPConfigForm({
                 inputMode="numeric"
                 value={config[item.key] ?? 0}
                 onChange={(e) => handleChange(item.key, e.target.value)}
-                className="w-full bg-black/30 p-3 rounded-lg text-white border border-white/10 focus:outline-none focus:border-[#ff6b35]/50"
+                className="w-full bg-black/30 p-3 rounded-lg text-white border border-white/10 focus:outline-none focus:border-brand-light/50"
                 placeholder="0"
                 min={0}
                 step={1}
@@ -204,7 +204,7 @@ export default function XPConfigForm({
         <button
           type="submit"
           disabled={isPending}
-          className="flex items-center gap-2 px-6 py-3 bg-[#ff6b35] hover:bg-[#ff6b35]/80 disabled:opacity-60 rounded-lg text-white"
+          className="flex items-center gap-2 px-6 py-3 bg-brand-light hover:bg-brand-light/80 disabled:opacity-60 rounded-lg text-white"
         >
           <Save size={18} />
           {isPending ? 'Guardando…' : 'Guardar Configuración'}
@@ -213,3 +213,5 @@ export default function XPConfigForm({
     </form>
   )
 }
+
+

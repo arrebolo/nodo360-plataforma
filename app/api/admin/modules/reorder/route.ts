@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin/auth'
 
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     console.log('🔄 [Reorder API] Datos:', { moduleId, courseId, direction })
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // Obtener módulo actual
     const { data: currentModule, error: currentError } = await supabase
@@ -43,14 +43,51 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se puede mover más' }, { status: 400 })
     }
 
-    // Intercambiar order_index
-    await supabase.from('modules').update({ order_index: newIndex }).eq('id', moduleId)
-    await supabase.from('modules').update({ order_index: currentIndex }).eq('id', targetModule.id)
+    // Intercambiar order_index usando índice temporal para evitar unique constraint
+    // PASO 1: Mover módulo actual a índice temporal (-1)
+    console.log('🔄 [Reorder API] Paso 1: Moviendo a índice temporal:', { id: moduleId, tempIndex: -1 })
+    const { error: tempError } = await supabase
+      .from('modules')
+      .update({ order_index: -1 })
+      .eq('id', moduleId)
 
-    console.log('✅ [Reorder API] Reordenamiento completado')
+    if (tempError) {
+      console.error('❌ [Reorder API] Error en paso 1:', tempError)
+      return NextResponse.json({ error: 'Error moviendo a temporal: ' + tempError.message }, { status: 500 })
+    }
+
+    // PASO 2: Mover módulo target al índice que dejó libre el primero
+    console.log('🔄 [Reorder API] Paso 2: Moviendo target:', { id: targetModule.id, index: currentIndex })
+    const { error: updateError2 } = await supabase
+      .from('modules')
+      .update({ order_index: currentIndex })
+      .eq('id', targetModule.id)
+
+    if (updateError2) {
+      console.error('❌ [Reorder API] Error en paso 2:', updateError2)
+      // Intentar revertir paso 1
+      await supabase.from('modules').update({ order_index: currentIndex }).eq('id', moduleId)
+      return NextResponse.json({ error: 'Error actualizando target: ' + updateError2.message }, { status: 500 })
+    }
+
+    // PASO 3: Mover primer módulo a su posición final
+    console.log('🔄 [Reorder API] Paso 3: Moviendo a posición final:', { id: moduleId, index: newIndex })
+    const { error: updateError3 } = await supabase
+      .from('modules')
+      .update({ order_index: newIndex })
+      .eq('id', moduleId)
+
+    if (updateError3) {
+      console.error('❌ [Reorder API] Error en paso 3:', updateError3)
+      return NextResponse.json({ error: 'Error moviendo a posición final: ' + updateError3.message }, { status: 500 })
+    }
+
+    console.log('✅ [Reorder API] Reordenamiento completado exitosamente')
     return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('❌ [Reorder API] Error inesperado:', error)
     return NextResponse.json({ error: 'Error del servidor: ' + error.message }, { status: 500 })
   }
 }
+
+

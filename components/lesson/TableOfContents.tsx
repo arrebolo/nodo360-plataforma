@@ -62,7 +62,7 @@ export function TableOfContents({ items, resources }: TableOfContentsProps) {
     <aside className="sticky top-24 h-[calc(100vh-7rem)] overflow-y-auto">
       <div className="space-y-6">
         {/* Table of Contents */}
-        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+        <div className="bg-dark-secondary/50 rounded-lg p-4 border border-dark-border">
           <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
             <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
@@ -77,7 +77,7 @@ export function TableOfContents({ items, resources }: TableOfContentsProps) {
                 className={`w-full text-left py-2 px-3 rounded text-sm transition-colors flex items-center gap-2 group ${
                   activeId === item.anchor
                     ? 'bg-orange-500/20 text-orange-400'
-                    : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50'
+                    : 'text-white/60 hover:text-white/80 hover:bg-dark-tertiary/50'
                 }`}
                 style={{ paddingLeft: `${item.level * 0.75}rem` }}
               >
@@ -86,7 +86,7 @@ export function TableOfContents({ items, resources }: TableOfContentsProps) {
                     e.stopPropagation()
                     toggleCompleted(item.id)
                   }}
-                  className="flex-shrink-0 w-4 h-4 rounded border-2 border-gray-600 group-hover:border-orange-500 transition-colors flex items-center justify-center"
+                  className="flex-shrink-0 w-4 h-4 rounded border-2 border-dark-border group-hover:border-orange-500 transition-colors flex items-center justify-center"
                 >
                   {completed[item.id] && (
                     <svg className="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
@@ -102,7 +102,7 @@ export function TableOfContents({ items, resources }: TableOfContentsProps) {
 
         {/* Resources */}
         {resources && resources.length > 0 && (
-          <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+          <div className="bg-dark-secondary/50 rounded-lg p-4 border border-dark-border">
             <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
               <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -116,11 +116,11 @@ export function TableOfContents({ items, resources }: TableOfContentsProps) {
                   href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-700/50 transition-colors text-sm text-gray-300 hover:text-white"
+                  className="flex items-center gap-2 p-2 rounded hover:bg-dark-tertiary/50 transition-colors text-sm text-white/80 hover:text-white"
                 >
                   <span className="text-lg">{resourceIcons[resource.type]}</span>
                   <span className="flex-1">{resource.title}</span>
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                 </a>
@@ -132,3 +132,5 @@ export function TableOfContents({ items, resources }: TableOfContentsProps) {
     </aside>
   )
 }
+
+

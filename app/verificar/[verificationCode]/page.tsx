@@ -1,385 +1,307 @@
-import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
-import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import type { Metadata } from "next";
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { CertificateQR } from '@/components/certificates/CertificateQR'
+import { ShareButtons } from '@/components/certificates/ShareButtons'
+import type { Metadata } from 'next'
 
-// Configuración de Next.js para rutas dinámicas
-export const dynamic = "force-dynamic";
-export const dynamicParams = true;
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
 
-interface VerificationPageProps {
-  params: { verificationCode: string };
+function formatLongEs(dateStr: string) {
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-export async function generateMetadata({
-  params,
-}: VerificationPageProps): Promise<Metadata> {
-  const resolvedParams = await params;
+type PageProps = {
+  params: Promise<{ verificationCode: string }>
+}
 
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   return {
-    title: `Verificar Certificado | Nodo360`,
-    description: "Verifica la autenticidad de un certificado de Nodo360",
-  };
+    title: 'Verificar Certificado | Nodo360',
+    description: 'Verifica la autenticidad de un certificado de Nodo360',
+  }
 }
 
-export default async function VerificationPage({
-  params,
-}: VerificationPageProps) {
-  const resolvedParams = await params;
-  const supabase = await createClient();
+export default async function VerifyCertificatePage({ params }: PageProps) {
+  const { verificationCode } = await params
+  const supabase = await createClient()
 
-  // Get current user for header
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Get certificate by verification URL
-  const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/verificar/${resolvedParams.verificationCode}`;
-
+  // Buscar certificado por certificate_number directamente
   const { data: certificate, error } = await supabase
-    .from("certificates")
-    .select(
-      `
-      *,
-      user:users!inner(full_name, email),
-      course:courses!inner(title, description),
-      module:modules(title)
-    `
-    )
-    .eq("verification_url", verificationUrl)
-    .single();
+    .from('certificates')
+    .select('*')
+    .eq('certificate_number', verificationCode)
+    .single()
 
+  // Si no encontramos por certificate_number, intentar por verification_url
+  let cert = certificate
   if (error || !certificate) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
-        {/* Not Found Content */}
-        <div className="max-w-2xl mx-auto px-4 py-16">
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/20 mb-6">
-              <XCircle className="w-10 h-10 text-red-400" />
-            </div>
-            <h1 className="text-3xl font-bold text-white mb-4">
-              Certificado No Encontrado
-            </h1>
-            <p className="text-white/70 mb-8">
-              No se pudo encontrar un certificado con este código de
-              verificación. Verifica que el código sea correcto o que el enlace
-              esté completo.
-            </p>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all"
-            >
-              Volver al inicio
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    const { data: certByUrl } = await supabase
+      .from('certificates')
+      .select('*')
+      .ilike('verification_url', `%${verificationCode}%`)
+      .single()
+
+    if (!certByUrl) {
+      return <CertificateNotFound verificationCode={verificationCode} />
+    }
+    cert = certByUrl
   }
 
-  const isExpired = certificate.expires_at
-    ? new Date(certificate.expires_at) < new Date()
-    : false;
+  // Obtener datos del curso
+  const { data: course } = await supabase
+    .from('courses')
+    .select('title, slug, description')
+    .eq('id', cert.course_id)
+    .single()
 
-  const isRevoked = false; // TODO: Add revoked field to database if needed
+  // Obtener datos del usuario
+  const { data: userData } = await supabase
+    .from('users')
+    .select('full_name, email')
+    .eq('id', cert.user_id)
+    .single()
 
-  const statusColor = isRevoked
-    ? "red"
-    : isExpired
-      ? "yellow"
-      : "green";
+  // Obtener datos del modulo si aplica
+  let moduleTitle: string | null = null
+  if (cert.module_id) {
+    const { data: mod } = await supabase
+      .from('modules')
+      .select('title')
+      .eq('id', cert.module_id)
+      .single()
+    moduleTitle = mod?.title || null
+  }
 
-  const StatusIcon = isRevoked
-    ? XCircle
-    : isExpired
-      ? AlertTriangle
-      : CheckCircle;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://nodo360.com'
+  const verificationUrl = `${siteUrl}/verificar/${cert.certificate_number}`
+
+  const userName = userData?.full_name || userData?.email?.split('@')[0] || 'Estudiante'
+  const courseTitle = course?.title || cert.title || 'Curso'
+  const courseDescription = course?.description || ''
+  const displayTitle = cert.type === 'module' && moduleTitle ? moduleTitle : courseTitle
+
+  const issuedAt = cert.issued_at ? formatLongEs(cert.issued_at) : null
+  const expiresAt = cert.expires_at ? formatLongEs(cert.expires_at) : null
+  const isExpired = !!cert.expires_at && new Date(cert.expires_at).getTime() < Date.now()
+
+  const status: 'valid' | 'expired' = isExpired ? 'expired' : 'valid'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        {/* Status Banner */}
-        <div
-          className={`mb-8 rounded-xl border-2 p-6 ${
-            statusColor === "green"
-              ? "bg-green-500/10 border-green-500/30"
-              : statusColor === "yellow"
-                ? "bg-yellow-500/10 border-yellow-500/30"
-                : "bg-red-500/10 border-red-500/30"
-          }`}
-        >
-          <div className="flex items-center gap-4">
-            <div
-              className={`w-16 h-16 rounded-xl flex items-center justify-center ${
-                statusColor === "green"
-                  ? "bg-gradient-to-r from-green-500 to-emerald-500"
-                  : statusColor === "yellow"
-                    ? "bg-gradient-to-r from-yellow-500 to-orange-500"
-                    : "bg-gradient-to-r from-red-500 to-rose-500"
-              }`}
-            >
-              <StatusIcon className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-dark">
+      {/* Header */}
+      <div className="border-b border-white/10 bg-dark-surface">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
+              <span className="text-white font-bold text-sm">N</span>
             </div>
-            <div className="flex-1">
-              <h1
-                className={`text-2xl font-bold mb-1 ${
-                  statusColor === "green"
-                    ? "text-green-400"
-                    : statusColor === "yellow"
-                      ? "text-yellow-400"
-                      : "text-red-400"
-                }`}
-              >
-                {isRevoked
-                  ? "Certificado Revocado"
-                  : isExpired
-                    ? "Certificado Expirado"
-                    : "✓ Certificado Válido"}
-              </h1>
-              <p
-                className={`text-sm ${
-                  statusColor === "green"
-                    ? "text-green-200/80"
-                    : statusColor === "yellow"
-                      ? "text-yellow-200/80"
-                      : "text-red-200/80"
-                }`}
-              >
-                {isRevoked
-                  ? "Este certificado ha sido revocado y ya no es válido"
-                  : isExpired
-                    ? `Expiró el ${new Date(certificate.expires_at!).toLocaleDateString("es-ES")}`
-                    : "Este certificado es auténtico y está verificado"}
-              </p>
-            </div>
+            <span className="font-bold text-white">Nodo360</span>
+          </Link>
+          <span className="text-sm text-white/50">Verificacion de Certificado</span>
+        </div>
+      </div>
+
+      {/* Contenido principal */}
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* Badge de verificacion */}
+        <div className="text-center mb-8">
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+            status === 'valid'
+              ? 'bg-success/20 border border-success/30'
+              : 'bg-warning/20 border border-warning/30'
+          }`}>
+            <svg className={`w-5 h-5 ${status === 'valid' ? 'text-success' : 'text-warning'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span className={`font-medium ${status === 'valid' ? 'text-success' : 'text-warning'}`}>
+              {status === 'valid' ? 'Certificado Verificado' : 'Certificado Expirado'}
+            </span>
           </div>
         </div>
 
-        {/* Certificate Details */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">
-            Detalles del Certificado
-          </h2>
-
-          <div className="space-y-6">
-            {/* Certificate Number */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
-              <span className="text-white/70">Número de Certificado</span>
-              <code className="text-[#ff6b35] font-mono font-bold text-lg">
-                {certificate.certificate_number}
-              </code>
-            </div>
-
-            {/* Recipient */}
-            <div>
-              <label className="text-sm text-white/50 block mb-2">
-                Otorgado a
-              </label>
-              <div className="p-4 bg-white/5 rounded-lg border border-white/10">
-                <p className="text-white font-semibold text-lg">
-                  {certificate.user.full_name || "Estudiante de Nodo360"}
-                </p>
-              </div>
-            </div>
-
-            {/* Course */}
-            <div>
-              <label className="text-sm text-white/50 block mb-2">Curso</label>
-              <div className="p-4 bg-white/5 rounded-lg border border-white/10">
-                <p className="text-white font-semibold">
-                  {certificate.course.title}
-                </p>
-                {certificate.course.description && (
-                  <p className="text-white/60 text-sm mt-1">
-                    {certificate.course.description}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Module (if applicable) */}
-            {certificate.type === "module" && certificate.module && (
-              <div>
-                <label className="text-sm text-white/50 block mb-2">
-                  Módulo
-                </label>
-                <div className="p-4 bg-white/5 rounded-lg border border-white/10">
-                  <p className="text-white font-semibold">
-                    {certificate.module.title}
-                  </p>
+        {/* Card principal */}
+        <div className="bg-dark-surface border border-white/10 rounded-2xl overflow-hidden">
+          {/* Header del card */}
+          <div className="bg-gradient-to-r from-brand-light/10 to-brand/10 border-b border-white/10 p-6">
+            <div className="flex items-start justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
                 </div>
-              </div>
-            )}
-
-            {/* Type */}
-            <div>
-              <label className="text-sm text-white/50 block mb-2">Tipo</label>
-              <div className="flex gap-2">
-                <span
-                  className={`inline-block px-4 py-2 rounded-lg text-sm font-semibold ${
-                    certificate.type === "module"
-                      ? "bg-blue-500/20 text-blue-400"
-                      : "bg-green-500/20 text-green-400"
-                  }`}
-                >
-                  {certificate.type === "module"
-                    ? "Certificado de Módulo"
-                    : "Certificado de Curso Completo"}
-                </span>
-              </div>
-            </div>
-
-            {/* Issue Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-white/50 block mb-2">
-                  Fecha de Emisión
-                </label>
-                <div className="p-4 bg-white/5 rounded-lg border border-white/10">
-                  <p className="text-white font-medium">
-                    {new Date(certificate.issued_at).toLocaleDateString(
-                      "es-ES",
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      }
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              {certificate.expires_at && (
                 <div>
-                  <label className="text-sm text-white/50 block mb-2">
-                    Fecha de Expiración
-                  </label>
-                  <div className="p-4 bg-white/5 rounded-lg border border-white/10">
-                    <p className="text-white font-medium">
-                      {new Date(certificate.expires_at).toLocaleDateString(
-                        "es-ES",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
-                      )}
-                    </p>
+                  <p className="text-xs text-white/50 uppercase tracking-wider mb-1">
+                    Certificado de {cert.type === 'module' ? 'Modulo' : 'Finalizacion'}
+                  </p>
+                  <h1 className="text-xl font-bold text-white">{displayTitle}</h1>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-white/50 mb-1">No de certificado</p>
+                <p className="text-brand-light font-mono text-sm">{cert.certificate_number}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Contenido */}
+          <div className="p-6">
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Info del certificado */}
+              <div className="md:col-span-2 space-y-6">
+                {/* Emitido para */}
+                <div>
+                  <p className="text-xs text-white/40 uppercase tracking-wider mb-2">Emitido para</p>
+                  <p className="text-2xl font-semibold text-white">{userName}</p>
+                </div>
+
+                {/* Curso */}
+                <div>
+                  <p className="text-xs text-white/40 uppercase tracking-wider mb-2">
+                    {cert.type === 'module' ? 'Modulo del curso' : 'Curso completado'}
+                  </p>
+                  <p className="text-lg text-white font-medium">{courseTitle}</p>
+                  {courseDescription && (
+                    <p className="text-white/60 text-sm mt-1 line-clamp-2">{courseDescription}</p>
+                  )}
+                </div>
+
+                {/* Detalles */}
+                <div className="flex flex-wrap gap-6">
+                  {issuedAt && (
+                    <div>
+                      <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Fecha de emision</p>
+                      <p className="text-white/80">{issuedAt}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Validez</p>
+                    <p className="text-white/80">{expiresAt || 'Permanente'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Tipo</p>
+                    <p className="text-white/80">{cert.type === 'module' ? 'Modulo' : 'Curso'}</p>
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* Hash (for verification) */}
-            {certificate.certificate_hash && (
-              <div>
-                <label className="text-sm text-white/50 block mb-2">
-                  Hash de Verificación (SHA-256)
-                </label>
-                <div className="p-3 bg-black/30 rounded-lg border border-white/10 overflow-x-auto">
-                  <code className="text-xs text-green-400 font-mono break-all">
-                    {certificate.certificate_hash}
-                  </code>
+                {/* Acciones compartir */}
+                <div className="pt-4 border-t border-white/10">
+                  <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Compartir este logro</p>
+                  <ShareButtons
+                    courseTitle={displayTitle}
+                    verificationUrl={verificationUrl}
+                  />
                 </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {certificate.certificate_url && !isRevoked && (
-            <a
-              href={certificate.certificate_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              Ver Certificado PDF
-            </a>
-          )}
-
-          <Link
-            href="/cursos"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-lg hover:bg-white/10 transition-all"
-          >
-            Explorar Cursos
-          </Link>
-        </div>
-
-        {/* About Nodo360 */}
-        <div className="mt-12 bg-white/5 border border-white/10 rounded-lg p-6">
-          <h3 className="text-white font-semibold mb-3">Sobre Nodo360</h3>
-          <p className="text-white/70 text-sm mb-4">
-            Nodo360 es una plataforma educativa especializada en Bitcoin,
-            Blockchain y tecnologías descentralizadas. Nuestros certificados
-            verificables garantizan que los estudiantes han completado
-            exitosamente los módulos y cursos, demostrando su conocimiento en
-            estas tecnologías emergentes.
-          </p>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <a
-              href="https://nodo360.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#ff6b35] hover:underline"
-            >
-              Sitio web →
-            </a>
-            <a
-              href="https://nodo360.com/cursos"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#ff6b35] hover:underline"
-            >
-              Ver cursos →
-            </a>
-          </div>
-        </div>
-
-        {/* Security Notice */}
-        <div className="mt-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-            <div className="flex-1">
-              <h4 className="text-blue-200 font-semibold mb-1 text-sm">
-                Verificación Segura
-              </h4>
-              <p className="text-xs text-blue-200/80">
-                Esta página de verificación es pública y permite a cualquier
-                persona confirmar la autenticidad de un certificado emitido por
-                Nodo360. El hash SHA-256 garantiza que el certificado no ha
-                sido alterado.
-              </p>
+              {/* QR Code */}
+              <div className="flex flex-col items-center justify-center p-6 bg-white/5 rounded-xl border border-white/10">
+                <p className="text-xs text-white/40 uppercase tracking-wider mb-4">Escanea para verificar</p>
+                <CertificateQR verificationUrl={verificationUrl} size={140} />
+                <p className="text-xs text-white/40 mt-4 text-center max-w-[160px]">
+                  Este codigo QR enlaza a la verificacion oficial
+                </p>
+              </div>
             </div>
           </div>
+
+          {/* Footer del card */}
+          <div className="bg-white/[0.02] border-t border-white/10 p-4">
+            <div className="flex items-center justify-between text-sm flex-wrap gap-3">
+              <div className="flex items-center gap-2 text-white/40">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>Verificado por Nodo360</span>
+              </div>
+              <Link
+                href="/cursos"
+                className="text-brand-light hover:text-brand transition flex items-center gap-1"
+              >
+                <span>Explorar cursos</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Info adicional */}
+        <div className="mt-8 grid md:grid-cols-2 gap-4">
+          <div className="p-5 bg-dark-surface border border-white/10 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-brand-light/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium text-white mb-1">Verificacion segura</h3>
+                <p className="text-sm text-white/50">
+                  Este certificado ha sido verificado. El codigo QR y el numero unico garantizan su autenticidad.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 bg-dark-surface border border-white/10 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-brand-light/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium text-white mb-1">Sobre Nodo360</h3>
+                <p className="text-sm text-white/50">
+                  Plataforma educativa especializada en Bitcoin, Blockchain y Web3. Formacion de calidad en espanol.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-xs text-white/30">
+          {new Date().getFullYear()} Nodo360 - Verificacion publica de certificados
         </div>
       </div>
     </div>
-  );
+  )
+}
+
+// Componente para certificado no encontrado
+function CertificateNotFound({ verificationCode }: { verificationCode: string }) {
+  return (
+    <div className="min-h-screen bg-dark flex items-center justify-center p-4">
+      <div className="max-w-md w-full text-center">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-error/20 flex items-center justify-center">
+          <svg className="w-10 h-10 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-white mb-2">Certificado no encontrado</h1>
+        <p className="text-white/60 mb-2">
+          No pudimos encontrar un certificado con el numero:
+        </p>
+        <p className="text-brand-light font-mono text-sm mb-6 break-all">{verificationCode}</p>
+        <p className="text-white/40 text-sm mb-6">
+          Verifica que el numero sea correcto o contacta con soporte si crees que es un error.
+        </p>
+        <Link
+          href="/cursos"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-medium rounded-xl hover:shadow-lg hover:shadow-brand-light/25 transition"
+        >
+          <span>Explorar cursos</span>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </Link>
+      </div>
+    </div>
+  )
 }

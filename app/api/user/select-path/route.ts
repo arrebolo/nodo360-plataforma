@@ -1,107 +1,103 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 /**
  * POST /api/user/select-path
- * Guarda la ruta de aprendizaje seleccionada por el usuario
- * Body: { pathSlug: string }
+ * Guarda la ruta de aprendizaje seleccionada en users.active_path_id
+ * Body: { slug: string, redirect?: string }
  */
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   console.log('🔍 [API POST /user/select-path] Iniciando...')
 
   try {
-    // 1. Verificar autenticación
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (authError || !user) {
-      console.error('❌ [API POST /user/select-path] No autenticado')
+    const { slug, redirect = '/dashboard/rutas' } = await req.json()
+
+    const { data: auth, error: authError } = await supabase.auth.getUser()
+    if (authError || !auth?.user) {
       return NextResponse.json(
-        { error: 'Debes iniciar sesión' },
+        { error: 'No autenticado' },
         { status: 401 }
       )
     }
 
-    console.log('✅ [API POST /user/select-path] Usuario:', user.id)
+    const userId = auth.user.id
+    console.log('✅ [API POST /user/select-path] Usuario:', userId)
+    console.log('📊 [API POST /user/select-path] Path slug:', slug)
 
-    // 2. Obtener pathSlug del body
-    const { pathSlug } = await request.json()
-
-    if (!pathSlug) {
-      console.error('❌ [API POST /user/select-path] pathSlug faltante')
+    if (!slug) {
       return NextResponse.json(
-        { error: 'pathSlug es requerido' },
+        { error: 'Falta slug' },
         { status: 400 }
       )
     }
 
-    console.log('📊 [API POST /user/select-path] Path:', pathSlug)
-
-    // 3. Verificar que la ruta existe y está activa
+    // 1) Buscar ruta por slug (usar columnas reales: name, NO title)
     const { data: path, error: pathError } = await supabase
       .from('learning_paths')
-      .select('id, title')
-      .eq('slug', pathSlug)
-      .eq('is_active', true)
-      .single()
+      .select('id, slug, name')
+      .eq('slug', slug)
+      .maybeSingle()
 
-    if (pathError || !path) {
-      console.error('❌ [API POST /user/select-path] Ruta no encontrada:', pathError)
+    if (pathError) {
+      console.error('❌ [API POST /user/select-path] Error buscando ruta:', pathError)
+      return NextResponse.json(
+        { error: pathError.message },
+        { status: 500 }
+      )
+    }
+
+    if (!path) {
+      console.error('❌ [API POST /user/select-path] Ruta no encontrada (slug):', slug)
       return NextResponse.json(
         { error: 'Ruta de aprendizaje no encontrada' },
         { status: 404 }
       )
     }
 
-    console.log('✅ [API POST /user/select-path] Ruta encontrada:', path.title)
+    console.log('✅ [API POST /user/select-path] Ruta encontrada:', path.name)
 
-    // 4. Desactivar cualquier ruta activa anterior
-    const { error: deactivateError } = await supabase
-      .from('user_selected_paths')
-      .update({ is_active: false })
-      .eq('user_id', user.id)
-      .eq('is_active', true)
+    // 2) Guardar ruta activa en users.active_path_id
+    const { data: updated, error: updError } = await supabase
+      .from('users')
+      .update({ active_path_id: path.id })
+      .eq('id', userId)
+      .select('id, active_path_id')
+      .maybeSingle()
 
-    if (deactivateError) {
-      console.error('⚠️  [API POST /user/select-path] Error al desactivar rutas anteriores:', deactivateError)
-    }
+    console.log('🧾 [API POST /user/select-path] Updated row:', updated)
 
-    // 5. Guardar nueva ruta como activa (upsert para evitar duplicados)
-    const { data: selectedPath, error: selectError } = await supabase
-      .from('user_selected_paths')
-      .upsert({
-        user_id: user.id,
-        path_id: path.id,
-        is_active: true,
-        selected_at: new Date().toISOString()
-      }, {
-        onConflict: 'user_id,path_id'
-      })
-      .select()
-      .single()
-
-    if (selectError) {
-      console.error('❌ [API POST /user/select-path] Error al guardar:', selectError)
+    if (updError) {
+      console.error('❌ [API POST /user/select-path] Error guardando active_path_id:', updError)
       return NextResponse.json(
-        { error: 'Error al guardar ruta' },
+        { error: updError.message },
         { status: 500 }
       )
     }
 
-    console.log('✅ [API POST /user/select-path] Ruta guardada exitosamente')
+    if (!updated) {
+      console.error('⚠️ [API POST /user/select-path] UPDATE no afectó ninguna fila - posible RLS o WHERE incorrecto')
+      return NextResponse.json(
+        { error: 'No se pudo actualizar el usuario - verifica permisos' },
+        { status: 403 }
+      )
+    }
 
+    console.log('✅ [API POST /user/select-path] Ruta guardada para usuario:', userId)
+
+    // 3) Respuesta consistente
     return NextResponse.json({
-      success: true,
-      message: `Ruta "${path.title}" seleccionada exitosamente`,
-      path: {
-        id: path.id,
-        title: path.title
-      }
-    }, { status: 201 })
-  } catch (error) {
-    console.error('❌ [API POST /user/select-path] Exception:', error)
+      ok: true,
+      success: true, // Para compatibilidad con RouteCardWrapper
+      activePath: path,
+      redirect,
+    })
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : 'Error inesperado'
+    console.error('❌ [API POST /user/select-path] Exception:', e)
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
@@ -109,84 +105,70 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/user/select-path
- * Obtiene la ruta activa del usuario
- *
- * IMPORTANTE: Este endpoint NUNCA debe devolver 500.
- * Si hay error, devuelve 200 con activePath: null para no romper la navegacion.
- *
- * Respuestas:
- * - 401: { authenticated: false } - No autenticado
- * - 200: { authenticated: true, activePath: null | {...} }
+ * Obtiene la ruta activa del usuario desde users.active_path_id
  */
 export async function GET() {
+  console.log('🔍 [API GET /user/select-path] Iniciando...')
+
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: auth, error: authError } = await supabase.auth.getUser()
 
-    // No autenticado
-    if (authError || !user) {
+    if (authError || !auth?.user) {
       return NextResponse.json(
         { authenticated: false, activePath: null },
         { status: 401 }
       )
     }
 
-    // Query simple para obtener ruta activa (sin JOIN problematico)
-    const { data: selectedPath, error: pathError } = await supabase
-      .from('user_selected_paths')
-      .select('id, path_id, selected_at')
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .maybeSingle()
+    const userId = auth.user.id
 
-    // Error de BD - NO devolver 500, devolver fallback seguro
-    if (pathError) {
-      console.error('[API GET /user/select-path] Error BD:', pathError.message)
+    // 1) Obtener active_path_id del usuario
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('active_path_id')
+      .eq('id', userId)
+      .single()
+
+    if (userError) {
+      console.error('[API GET /user/select-path] Error obteniendo usuario:', userError)
       return NextResponse.json({
         authenticated: true,
         activePath: null,
-        _debug: { error: pathError.message, code: pathError.code }
+        _debug: { error: userError.message }
       })
     }
 
-    // Sin ruta activa
-    if (!selectedPath || !selectedPath.path_id) {
+    if (!userData?.active_path_id) {
       return NextResponse.json({
         authenticated: true,
         activePath: null
       })
     }
 
-    // Obtener info de la ruta (query separada para evitar problemas de JOIN)
-    const { data: pathInfo, error: infoError } = await supabase
+    // 2) Obtener info de la ruta
+    const { data: pathInfo, error: pathError } = await supabase
       .from('learning_paths')
       .select('id, slug, name, emoji, short_description')
-      .eq('id', selectedPath.path_id)
+      .eq('id', userData.active_path_id)
       .single()
 
-    if (infoError || !pathInfo) {
-      console.error('[API GET /user/select-path] Error pathInfo:', infoError?.message)
-      // Devolver al menos que tiene ruta activa aunque no tengamos los detalles
+    if (pathError || !pathInfo) {
+      console.error('[API GET /user/select-path] Error obteniendo ruta:', pathError)
       return NextResponse.json({
         authenticated: true,
-        activePath: { id: selectedPath.path_id, selectedAt: selectedPath.selected_at }
+        activePath: { id: userData.active_path_id }
       })
     }
 
-    // Exito completo
     return NextResponse.json({
       authenticated: true,
-      activePath: {
-        ...pathInfo,
-        selectedAt: selectedPath.selected_at
-      }
+      activePath: pathInfo
     })
 
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : 'Error desconocido'
     console.error('[API GET /user/select-path] Exception:', errorMessage)
-
-    // NUNCA devolver 500 - devolver fallback seguro
     return NextResponse.json({
       authenticated: false,
       activePath: null,
@@ -194,3 +176,5 @@ export async function GET() {
     })
   }
 }
+
+

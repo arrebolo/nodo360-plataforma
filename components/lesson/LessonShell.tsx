@@ -2,7 +2,12 @@
 
 import React from 'react'
 
-interface LessonShellProps {
+type LessonShellProps = {
+  course?: {
+    id: string
+    slug: string
+    title?: string | null
+  }
   lesson: {
     title: string
     description?: string | null
@@ -33,3 +38,5 @@ export default function LessonShell({ lesson, children }: LessonShellProps) {
     </div>
   )
 }
+
+

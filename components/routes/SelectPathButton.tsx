@@ -1,85 +1,67 @@
 'use client'
 
-import * as React from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Loader2 } from 'lucide-react'
-
-type Variant = 'default' | 'small'
+import { Button } from '@/components/ui/Button'
 
 export function SelectPathButton({
   pathSlug,
-  variant = 'default',
-  label = 'Elegir',
+  isActive = false,
 }: {
   pathSlug: string
-  variant?: Variant
-  label?: string
+  isActive?: boolean
 }) {
   const router = useRouter()
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  async function handleSelect() {
+  async function select() {
+    if (loading) return
+
+    setLoading(true)
     try {
-      setLoading(true)
-      setError(null)
-
-      // Endpoint esperado: /api/paths/select (ajusta si el tuyo se llama distinto)
-      const res = await fetch('/api/paths/select', {
+      const res = await fetch('/api/user/select-path', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pathSlug }),
+        body: JSON.stringify({ slug: pathSlug }),
       })
 
+      const data = await res.json().catch(() => ({}))
+
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data?.error || 'No se pudo seleccionar la ruta')
+        console.error('Error selecting path:', data?.error ?? 'Unknown error')
+        return
       }
 
       router.refresh()
-    } catch (e: any) {
-      setError(e?.message || 'Error inesperado')
     } finally {
       setLoading(false)
     }
   }
 
-  const sizeClass =
-    variant === 'small'
-      ? 'px-4 py-2.5 text-sm rounded-xl'
-      : 'px-5 py-3 text-sm rounded-xl'
+  const continuePath = () => router.push('/dashboard/rutas')
+
+  if (isActive) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700 border border-emerald-200">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          Ruta activa
+        </span>
+
+        <Button variant="primary" onClick={continuePath}>
+          Continuar ruta
+          <span aria-hidden className="text-white/80">→</span>
+        </Button>
+      </div>
+    )
+  }
 
   return (
-    <div className="inline-flex flex-col items-end gap-2">
-      <button
-        type="button"
-        onClick={handleSelect}
-        disabled={loading}
-        className={[
-          'inline-flex items-center justify-center gap-2 font-semibold transition-all',
-          'border',
-          'bg-white/[0.03] text-white/85 border-white/10',
-          'hover:bg-[#ff6b35] hover:text-white hover:border-[#ff6b35]/40',
-          'active:scale-[0.99]',
-          'focus:outline-none focus:ring-2 focus:ring-[#ff6b35]/30',
-          'disabled:opacity-60 disabled:cursor-not-allowed',
-          sizeClass,
-        ].join(' ')}
-      >
-        {loading ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Guardando
-          </>
-        ) : (
-          <>
-            {label}
-            <ArrowRight className="h-4 w-4" />
-          </>
-        )}
-      </button>
-
-      {error ? <p className="text-xs text-red-400/90">{error}</p> : null}
-    </div>
+    <Button variant="primary" onClick={select} disabled={loading}>
+      {loading ? 'Seleccionando...' : 'Elegir esta ruta'}
+      {!loading && <span aria-hidden className="text-white/80">→</span>}
+    </Button>
   )
 }
+
+

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, ArrowRight, Trophy, RotateCcw } from 'lucide-react'
 import type { QuizQuestion } from '@/types/database'
+import { useBadgeNotification } from '@/hooks/useBadgeNotification'
 
 interface CourseFinalQuizProps {
   courseId: string
@@ -23,6 +24,7 @@ export function CourseFinalQuiz({
   fallbackUrl,
 }: CourseFinalQuizProps) {
   const router = useRouter()
+  const { notifyBadges } = useBadgeNotification()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [showResults, setShowResults] = useState(false)
@@ -42,7 +44,7 @@ export function CourseFinalQuiz({
         </p>
         <button
           onClick={() => router.push(redirectTo)}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold hover:opacity-90 transition"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-brand-light to-brand text-white font-semibold hover:opacity-90 transition"
         >
           Ver certificados
         </button>
@@ -115,12 +117,23 @@ export function CourseFinalQuiz({
         throw new Error('Error al guardar resultado')
       }
 
-      // Redirigir según resultado
-      if (score.percentage >= 70) {
-        router.push(redirectTo)
-      } else {
-        router.push(fallbackUrl)
+      // Parsear respuesta para obtener badges
+      const data = await response.json().catch(() => ({}))
+
+      // Mostrar badges ganados (si hay)
+      if (data.awarded_badges && data.awarded_badges.length > 0) {
+        notifyBadges(data.awarded_badges)
       }
+
+      // Redirigir según resultado (con pequeño delay para ver el badge)
+      const redirectDelay = data.awarded_badges?.length > 0 ? 500 : 0
+      setTimeout(() => {
+        if (score.percentage >= 70) {
+          router.push(redirectTo)
+        } else {
+          router.push(fallbackUrl)
+        }
+      }, redirectDelay)
     } catch (error) {
       console.error('Error submitting quiz:', error)
       // Permitir navegación aunque falle el guardado
@@ -213,7 +226,7 @@ export function CourseFinalQuiz({
           <button
             onClick={handleSubmitQuiz}
             disabled={isSubmitting}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-light to-brand text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
           >
             {isSubmitting ? 'Guardando...' : passed ? 'Obtener certificado' : 'Volver al curso'}
             <ArrowRight className="w-5 h-5" />
@@ -243,7 +256,7 @@ export function CourseFinalQuiz({
         </span>
         <div className="flex-1 mx-4 h-2 bg-white/10 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#ff6b35] to-[#f7931a] transition-all duration-300"
+            className="h-full bg-gradient-to-r from-brand-light to-brand transition-all duration-300"
             style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }}
           />
         </div>
@@ -255,7 +268,7 @@ export function CourseFinalQuiz({
       {/* Question */}
       <div className="mb-8">
         <div className="flex items-start gap-3 mb-4">
-          <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#ff6b35]/20 text-[#ff6b35] flex items-center justify-center text-sm font-semibold">
+          <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-brand-light/20 text-brand-light flex items-center justify-center text-sm font-semibold">
             {currentIndex + 1}
           </span>
           <h3 className="text-lg font-semibold text-white pt-1">{currentQuestion.question}</h3>
@@ -282,14 +295,14 @@ export function CourseFinalQuiz({
             onClick={() => handleAnswer(index)}
             className={`w-full text-left p-4 rounded-xl border transition-all ${
               selectedAnswer === index
-                ? 'bg-[#ff6b35]/20 border-[#ff6b35]/50 text-white'
+                ? 'bg-brand-light/20 border-brand-light/50 text-white'
                 : 'bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:border-white/20'
             }`}
           >
             <div className="flex items-center gap-3">
               <span className={`flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center text-xs font-medium ${
                 selectedAnswer === index
-                  ? 'border-[#ff6b35] bg-[#ff6b35] text-white'
+                  ? 'border-brand-light bg-brand-light text-white'
                   : 'border-white/30 text-white/50'
               }`}>
                 {String.fromCharCode(65 + index)}
@@ -317,7 +330,7 @@ export function CourseFinalQuiz({
               onClick={() => setCurrentIndex(index)}
               className={`w-2 h-2 rounded-full transition ${
                 index === currentIndex
-                  ? 'bg-[#ff6b35]'
+                  ? 'bg-brand-light'
                   : answers[questions[index].id] !== undefined
                   ? 'bg-white/40'
                   : 'bg-white/20'
@@ -329,7 +342,7 @@ export function CourseFinalQuiz({
         <button
           onClick={handleNext}
           disabled={selectedAnswer === undefined}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-light to-brand text-white font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {currentIndex < totalQuestions - 1 ? 'Siguiente' : 'Ver resultados'}
           <ArrowRight className="w-5 h-5" />
@@ -338,3 +351,5 @@ export function CourseFinalQuiz({
     </div>
   )
 }
+
+

@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronDown, ChevronRight, Lock, CheckCircle, Circle, PlayCircle } from 'lucide-react'
+import { ChevronDown, ChevronUp, Lock, CheckCircle, PlayCircle } from 'lucide-react'
 import { useState } from 'react'
+import { cx } from '@/lib/design/tokens'
 import type { ModuleWithState } from '@/lib/progress/getCourseProgress'
 
 interface Props {
@@ -27,88 +28,81 @@ export default function ModuleList({ courseSlug, modules }: Props) {
 
   if (modules.length === 0) {
     return (
-      <div className="text-center text-gray-400 py-12">
-        No hay módulos disponibles
+      <div className="bg-dark-surface border border-white/10 rounded-2xl p-8 text-center">
+        <p className="text-white/50">No hay modulos disponibles</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {modules.map((module, moduleIndex) => {
         const isExpanded = expandedModules.has(module.id)
+        const isModuleCompleted = module.isCompleted
 
         return (
           <div
             key={module.id}
-            className={`
-              bg-white/5 backdrop-blur-lg border rounded-xl overflow-hidden
-              transition-all duration-300
-              ${module.isUnlocked
-                ? 'border-white/10 hover:border-[#ff6b35]/50'
-                : 'border-white/5 opacity-60'
-              }
-            `}
+            className={cx(
+              'bg-dark-surface border border-white/10 rounded-2xl overflow-hidden transition-all duration-200',
+              !module.isUnlocked && 'opacity-60'
+            )}
           >
-            {/* Header del módulo */}
+            {/* Header del módulo - clickeable */}
             <button
               onClick={() => toggleModule(module.id)}
-              className="w-full p-6 flex items-center justify-between hover:bg-white/5 transition"
+              className="w-full p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-white/5 transition-colors text-left"
             >
-              <div className="flex items-center gap-4 flex-1 text-left">
-                {/* Número */}
-                <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#ff6b35]/20 text-[#ff6b35] font-bold">
-                  {moduleIndex + 1}
-                </span>
+              <div className="flex items-center gap-3 flex-1">
+                {/* Número del módulo */}
+                <div
+                  className={cx(
+                    'flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium flex-shrink-0',
+                    isModuleCompleted
+                      ? 'bg-success/20 text-success'
+                      : 'bg-white/10 text-white'
+                  )}
+                >
+                  {isModuleCompleted ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    moduleIndex + 1
+                  )}
+                </div>
 
                 {/* Info */}
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-1">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-semibold text-white">
                     {module.title}
                   </h3>
-                  {module.description && (
-                    <p className="text-gray-400 text-sm mb-2">
-                      {module.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-4 text-sm text-gray-400">
-                    <span>
-                      {module.progress.total} lecciones
-                    </span>
-                    <span>•</span>
-                    <span>
-                      {module.progress.percentage}% completado
-                    </span>
+                  <div className="flex items-center gap-3 text-xs text-white/50 mt-0.5">
+                    <span>{module.progress.total} lecciones</span>
+                    <span>·</span>
+                    <span>{module.progress.completed}/{module.progress.total} completadas</span>
                   </div>
                 </div>
 
-                {/* Estado */}
-                <div className="flex items-center gap-3">
-                  {module.isCompleted && (
-                    <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-green-500 text-sm flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
+                {/* Estado badges */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {isModuleCompleted && (
+                    <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-success/20 px-2 py-1 text-[11px] text-success border border-success/30">
+                      <span className="h-1.5 w-1.5 rounded-full bg-success" />
                       Completado
                     </span>
                   )}
 
                   {!module.isUnlocked && (
-                    <span className="px-3 py-1 bg-gray-700/50 border border-gray-600 rounded-full text-gray-400 text-sm flex items-center gap-2">
-                      <Lock className="w-4 h-4" />
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[11px] text-white/60 border border-white/20">
+                      <Lock className="h-3 w-3" />
                       Bloqueado
-                    </span>
-                  )}
-
-                  {module.isUnlocked && !module.isCompleted && (
-                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/50 rounded-full text-blue-400 text-sm">
-                      Desbloqueado
                     </span>
                   )}
 
                   {/* Icono expand/collapse */}
                   {isExpanded ? (
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                    <ChevronUp className="h-5 w-5 text-white/40" />
                   ) : (
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronDown className="h-5 h-5 text-white/40" />
                   )}
                 </div>
               </div>
@@ -116,10 +110,10 @@ export default function ModuleList({ courseSlug, modules }: Props) {
 
             {/* Barra de progreso */}
             {module.progress.percentage > 0 && (
-              <div className="px-6 pb-4">
-                <div className="w-full bg-white/10 rounded-full h-2">
+              <div className="px-4 sm:px-5 pb-3">
+                <div className="w-full bg-white/10 rounded-full h-1.5">
                   <div
-                    className="bg-gradient-to-r from-[#ff6b35] to-[#f7931a] h-2 rounded-full transition-all duration-500"
+                    className="bg-success h-1.5 rounded-full transition-all duration-500"
                     style={{ width: `${module.progress.percentage}%` }}
                   />
                 </div>
@@ -128,77 +122,75 @@ export default function ModuleList({ courseSlug, modules }: Props) {
 
             {/* Mensaje de bloqueo */}
             {!module.isUnlocked && (
-              <div className="px-6 pb-6">
-                <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-sm text-gray-400">
+              <div className="px-4 sm:px-5 pb-4">
+                <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-sm text-white/60">
                   <Lock className="w-4 h-4 inline mr-2" />
-                  Completa el módulo anterior para desbloquear este contenido
+                  Completa el modulo anterior para desbloquear este contenido
                 </div>
               </div>
             )}
 
             {/* Lista de lecciones */}
-            {isExpanded && (
-              <div className="px-6 pb-6">
-                <ul className="space-y-2">
-                  {module.lessons.map((lesson, lessonIndex) => {
-                    const LessonIcon = lesson.isCompleted
-                      ? CheckCircle
-                      : lesson.isUnlocked
-                      ? PlayCircle
-                      : Lock
+            {isExpanded && module.isUnlocked && (
+              <div className="border-t border-white/10 divide-y divide-white/5">
+                {module.lessons.map((lesson, lessonIndex) => {
+                  const LessonIcon = lesson.isCompleted
+                    ? CheckCircle
+                    : lesson.isUnlocked
+                    ? PlayCircle
+                    : Lock
 
-                    const iconColor = lesson.isCompleted
-                      ? 'text-green-500'
-                      : lesson.isUnlocked
-                      ? 'text-blue-400'
-                      : 'text-gray-500'
+                  const iconColor = lesson.isCompleted
+                    ? 'text-success'
+                    : lesson.isUnlocked
+                    ? 'text-brand-light'
+                    : 'text-white/30'
 
-                    if (lesson.isUnlocked) {
-                      return (
-                        <li key={lesson.id}>
-                          <Link
-                            href={`/cursos/${courseSlug}/${lesson.slug}`}
-                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group"
-                          >
-                            <LessonIcon className={`w-5 h-5 ${iconColor}`} />
-                            <span className="text-gray-300 group-hover:text-white flex-1">
-                              {lessonIndex + 1}. {lesson.title}
-                            </span>
-                            {lesson.video_duration_minutes && (
-                              <span className="text-xs text-gray-500">
-                                {lesson.video_duration_minutes} min
-                              </span>
-                            )}
-                            {lesson.isCompleted && (
-                              <span className="px-2 py-1 bg-green-500/20 text-green-500 text-xs rounded">
-                                Completada
-                              </span>
-                            )}
-                            {lesson.is_free_preview && (
-                              <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded">
-                                Vista previa
-                              </span>
-                            )}
-                          </Link>
-                        </li>
-                      )
-                    } else {
-                      return (
-                        <li key={lesson.id}>
-                          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 opacity-50 cursor-not-allowed">
-                            <LessonIcon className={`w-5 h-5 ${iconColor}`} />
-                            <span className="text-gray-500 flex-1">
-                              {lessonIndex + 1}. {lesson.title}
-                            </span>
-                            <span className="text-xs text-gray-600">
-                              Bloqueada
-                            </span>
-                          </div>
-                        </li>
-                      )
-                    }
-                  })}
-                </ul>
+                  if (lesson.isUnlocked) {
+                    return (
+                      <Link
+                        key={lesson.id}
+                        href={`/cursos/${courseSlug}/${lesson.slug}`}
+                        className="flex items-center gap-3 px-4 sm:px-5 py-3 hover:bg-white/5 transition-colors"
+                      >
+                        <LessonIcon className={cx('h-5 w-5 flex-shrink-0', iconColor)} />
+                        <span className="flex-1 text-sm text-white/80">
+                          {lessonIndex + 1}. {lesson.title}
+                        </span>
+                        {lesson.video_duration_minutes && (
+                          <span className="text-xs text-white/40 flex-shrink-0">
+                            {lesson.video_duration_minutes} min
+                          </span>
+                        )}
+                        {lesson.isCompleted && (
+                          <span className="hidden sm:inline px-2 py-0.5 bg-success/20 text-success text-[10px] rounded border border-success/30">
+                            Completada
+                          </span>
+                        )}
+                        {lesson.is_free_preview && !lesson.isCompleted && (
+                          <span className="px-2 py-0.5 bg-brand-light/20 text-brand-light text-[10px] rounded border border-brand-light/30">
+                            Vista previa
+                          </span>
+                        )}
+                      </Link>
+                    )
+                  } else {
+                    return (
+                      <div
+                        key={lesson.id}
+                        className="flex items-center gap-3 px-4 sm:px-5 py-3 opacity-50 cursor-not-allowed"
+                      >
+                        <LessonIcon className={cx('h-5 w-5 flex-shrink-0', iconColor)} />
+                        <span className="flex-1 text-sm text-white/50">
+                          {lessonIndex + 1}. {lesson.title}
+                        </span>
+                        <span className="text-[10px] text-white/40">
+                          Bloqueada
+                        </span>
+                      </div>
+                    )
+                  }
+                })}
               </div>
             )}
           </div>

@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { PageHeader } from '@/components/ui/PageHeader'
-import { StatCard } from '@/components/ui/StatCard'
+import PageHeader from '@/components/ui/PageHeader'
+import StatCard from '@/components/ui/StatCard'
 import { Card } from '@/components/ui/Card'
 import { ArrowLeft, TrendingUp, BookOpen, Flame, Trophy, Target, Zap } from 'lucide-react'
 
@@ -68,7 +68,7 @@ export default async function MiProgresoPage() {
     .gte('completed_at', weekAgo.toISOString())
 
   return (
-    <div className="min-h-screen bg-[#070a10]">
+    <div className="min-h-screen bg-dark">
       <div className="mx-auto w-full max-w-6xl px-4 py-8">
         {/* Back link */}
         <Link
@@ -83,54 +83,48 @@ export default async function MiProgresoPage() {
         <PageHeader
           icon={TrendingUp}
           title="Mi Progreso"
-          description="Estadisticas detalladas de tu aprendizaje"
+          subtitle="Estadisticas detalladas de tu aprendizaje"
         />
 
         {/* Stats Grid */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 mb-8">
           <StatCard
-            icon={Zap}
+            icon={<Zap className="w-5 h-5" />}
             title="XP Total"
             value={stats?.total_xp?.toLocaleString() || '0'}
-            color="orange"
           />
           <StatCard
-            icon={Trophy}
+            icon={<Trophy className="w-5 h-5" />}
             title="Nivel"
             value={stats?.current_level || 1}
-            color="purple"
           />
           <StatCard
-            icon={Flame}
+            icon={<Flame className="w-5 h-5" />}
             title="Racha"
             value={`${stats?.current_streak || 0} dias`}
-            color="orange"
           />
           <StatCard
-            icon={BookOpen}
+            icon={<BookOpen className="w-5 h-5" />}
             title="Lecciones"
             value={lessonsCompleted || 0}
-            color="blue"
           />
           <StatCard
-            icon={Target}
+            icon={<Target className="w-5 h-5" />}
             title="Cursos Completados"
             value={`${completedCourses}/${totalCourses}`}
-            color="green"
           />
           <StatCard
-            icon={Trophy}
+            icon={<Trophy className="w-5 h-5" />}
             title="Certificados"
             value={totalCertificates || 0}
-            color="yellow"
           />
         </div>
 
         {/* Actividad Semanal */}
         <Card className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[#f7931a]/20 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-[#f7931a]" />
+            <div className="w-10 h-10 rounded-xl bg-brand/20 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-brand" />
             </div>
             <h2 className="text-lg font-semibold text-white">Actividad Semanal</h2>
           </div>
@@ -187,3 +181,5 @@ export default async function MiProgresoPage() {
     </div>
   )
 }
+
+

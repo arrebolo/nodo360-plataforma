@@ -1,7 +1,7 @@
 'use client'
 
 import { Toaster } from 'sonner'
-import { AppShell } from '@/components/navigation/AppShell'
+import { BadgeProvider } from '@/components/gamification/BadgeProvider'
 
 interface ProvidersProps {
   children: React.ReactNode
@@ -9,11 +9,11 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <>
-      {/* AppShell - Sidebar + Topbar + Main */}
-      <AppShell>
+    <BadgeProvider>
+      {/* Main content - SiteHeader is in root layout */}
+      <main className="min-h-screen">
         {children}
-      </AppShell>
+      </main>
 
       {/* Toast notifications */}
       <Toaster
@@ -29,6 +29,8 @@ export function Providers({ children }: ProvidersProps) {
           className: 'sonner-toast',
         }}
       />
-    </>
+    </BadgeProvider>
   )
 }
+
+

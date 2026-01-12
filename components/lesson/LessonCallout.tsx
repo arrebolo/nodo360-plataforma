@@ -52,7 +52,7 @@ export function LessonCallout({ block }: LessonCalloutProps) {
               {block.title}
             </h4>
           )}
-          <div className="text-gray-300 prose prose-invert max-w-none">
+          <div className="text-white/80 prose prose-invert max-w-none">
             {block.content}
           </div>
         </div>
@@ -60,3 +60,5 @@ export function LessonCallout({ block }: LessonCalloutProps) {
     </div>
   )
 }
+
+

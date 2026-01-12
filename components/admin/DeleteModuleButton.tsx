@@ -49,3 +49,5 @@ export function DeleteModuleButton({ moduleId, moduleTitle, courseId }: DeleteMo
     </button>
   )
 }
+
+

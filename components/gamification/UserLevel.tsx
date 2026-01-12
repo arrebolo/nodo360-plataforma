@@ -21,36 +21,49 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    let cancelled = false
 
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('/api/gamification/stats')
-      const data = await response.json()
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/gamification/stats')
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        const data = await response.json()
 
-      if (data.stats) {
-        setStats(data.stats)
+        if (!cancelled && data.stats) {
+          setStats(data.stats)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[UserLevel] Error fetching stats:', error)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
-    } catch (error) {
-      console.error('[UserLevel] Error fetching stats:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchStats()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   if (loading) {
     return (
       <div className="animate-pulse">
         {variant === 'compact' ? (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full" />
-            <div className="w-20 h-4 bg-gray-200 rounded" />
+            <div className="w-8 h-8 bg-white/15 rounded-full" />
+            <div className="w-20 h-4 bg-white/15 rounded" />
           </div>
         ) : (
-          <div className="p-4 bg-gray-100 rounded-xl">
-            <div className="w-32 h-6 bg-gray-200 rounded mb-2" />
-            <div className="w-full h-3 bg-gray-200 rounded" />
+          <div className="p-4 bg-white/10 rounded-xl">
+            <div className="w-32 h-6 bg-white/15 rounded mb-2" />
+            <div className="w-full h-3 bg-white/15 rounded" />
           </div>
         )}
       </div>
@@ -77,14 +90,14 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
         </div>
 
         {/* XP */}
-        <div className="hidden sm:flex items-center gap-1.5 text-sm text-gray-600">
+        <div className="hidden sm:flex items-center gap-1.5 text-sm text-white/40">
           <Zap className="w-4 h-4 text-yellow-500" />
           <span className="font-medium">{stats.total_xp.toLocaleString()} XP</span>
         </div>
 
         {/* Racha */}
         {stats.current_streak > 0 && (
-          <div className="hidden md:flex items-center gap-1.5 text-sm text-gray-600">
+          <div className="hidden md:flex items-center gap-1.5 text-sm text-white/40">
             <Flame className="w-4 h-4 text-orange-500" />
             <span className="font-medium">{stats.current_streak} días</span>
           </div>
@@ -169,49 +182,49 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
 
   // Variante default
   return (
-    <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+    <div className="bg-white rounded-xl p-5 border border-white/15 shadow-sm">
       {/* Level Badge */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">
           {stats.current_level}
         </div>
         <div className="flex-1">
-          <h4 className="font-semibold text-gray-900">Nivel {stats.current_level}</h4>
-          <p className="text-sm text-gray-600">{stats.total_xp.toLocaleString()} XP total</p>
+          <h4 className="font-semibold text-white">Nivel {stats.current_level}</h4>
+          <p className="text-sm text-white/40">{stats.total_xp.toLocaleString()} XP total</p>
         </div>
         <Trophy className="w-6 h-6 text-yellow-500" />
       </div>
 
       {/* Progress Bar */}
       <div className="mb-4">
-        <div className="flex justify-between text-sm text-gray-600 mb-1">
+        <div className="flex justify-between text-sm text-white/40 mb-1">
           <span>{xpInCurrentLevel.toLocaleString()} XP</span>
           <span>{xpForCurrentLevel.toLocaleString()} XP</span>
         </div>
-        <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full h-2.5 bg-white/15 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-white/50 mt-1">
           {stats.xp_to_next_level.toLocaleString()} XP para nivel {stats.current_level + 1}
         </p>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-100">
+      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/10">
         <div className="text-center">
-          <p className="text-xs text-gray-500">Badges</p>
-          <p className="text-lg font-bold text-gray-900">{stats.total_badges}</p>
+          <p className="text-xs text-white/50">Badges</p>
+          <p className="text-lg font-bold text-white">{stats.total_badges}</p>
         </div>
         <div className="text-center">
-          <p className="text-xs text-gray-500">Racha</p>
-          <p className="text-lg font-bold text-gray-900">{stats.current_streak}🔥</p>
+          <p className="text-xs text-white/50">Racha</p>
+          <p className="text-lg font-bold text-white">{stats.current_streak}🔥</p>
         </div>
         <div className="text-center">
-          <p className="text-xs text-gray-500">Récord</p>
-          <p className="text-lg font-bold text-gray-900">{stats.longest_streak}</p>
+          <p className="text-xs text-white/50">Récord</p>
+          <p className="text-lg font-bold text-white">{stats.longest_streak}</p>
         </div>
       </div>
     </div>
@@ -231,3 +244,5 @@ function calculateTotalXpForLevel(level: number): number {
   }
   return total
 }
+
+

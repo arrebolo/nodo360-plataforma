@@ -99,12 +99,12 @@ export default function OnboardingPage() {
   if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-block mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#ff6b35] to-[#f7931a] rounded-2xl flex items-center justify-center text-4xl animate-bounce-slow">
+            <div className="w-20 h-20 bg-gradient-to-br from-brand-light to-brand rounded-2xl flex items-center justify-center text-4xl animate-bounce-slow">
               🎓
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function OnboardingPage() {
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
             ¡Bienvenido a Nodo360! 🎉
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-white/80 max-w-2xl mx-auto">
             Elige tu ruta de aprendizaje y comienza tu viaje en el mundo crypto
           </p>
         </div>
@@ -157,7 +157,7 @@ export default function OnboardingPage() {
                   {path.title}
                 </h3>
 
-                <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                <p className="text-white/80 text-sm mb-4 leading-relaxed">
                   {path.description}
                 </p>
 
@@ -167,12 +167,12 @@ export default function OnboardingPage() {
                     px-3 py-1 rounded-full font-medium transition
                     ${isSelected
                       ? 'bg-white/20 text-white'
-                      : 'bg-white/10 text-gray-400 group-hover:bg-white/15 group-hover:text-gray-300'
+                      : 'bg-white/10 text-white/60 group-hover:bg-white/15 group-hover:text-white/80'
                     }
                   `}>
                     {path.level}
                   </span>
-                  <span className="text-gray-400 group-hover:text-gray-300 transition">
+                  <span className="text-white/60 group-hover:text-white/80 transition">
                     {path.duration}
                   </span>
                 </div>
@@ -196,7 +196,7 @@ export default function OnboardingPage() {
             onClick={handleStart}
             disabled={!selected || loading}
             className="
-              px-10 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a]
+              px-10 py-4 bg-gradient-to-r from-brand-light to-brand
               text-white font-bold text-lg rounded-xl
               hover:shadow-2xl hover:shadow-orange-500/50 hover:scale-105
               transition-all duration-300
@@ -221,7 +221,7 @@ export default function OnboardingPage() {
           <button
             onClick={() => router.push('/dashboard')}
             disabled={loading}
-            className="text-gray-400 hover:text-white text-sm transition-colors disabled:opacity-50"
+            className="text-white/60 hover:text-white text-sm transition-colors disabled:opacity-50"
           >
             Explorar sin elegir ruta
           </button>
@@ -229,8 +229,8 @@ export default function OnboardingPage() {
 
         {/* Benefits */}
         <div className="mt-16 text-center">
-          <p className="text-gray-400 text-sm mb-4">¿Por qué elegir una ruta?</p>
-          <div className="flex flex-wrap justify-center gap-6 text-gray-300 text-sm">
+          <p className="text-white/60 text-sm mb-4">¿Por qué elegir una ruta?</p>
+          <div className="flex flex-wrap justify-center gap-6 text-white/80 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full" />
               <span>Aprendizaje estructurado</span>
@@ -250,3 +250,5 @@ export default function OnboardingPage() {
     </div>
   )
 }
+
+

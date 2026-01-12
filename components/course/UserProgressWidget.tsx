@@ -44,7 +44,7 @@ export function UserProgressWidget({
           {/* Percentage text */}
           <div className="relative z-10">
             <div className="text-4xl font-bold text-white">{percent}%</div>
-            <div className="text-sm text-gray-400">Completo</div>
+            <div className="text-sm text-white/60">Completo</div>
           </div>
         </div>
 
@@ -58,24 +58,26 @@ export function UserProgressWidget({
       {/* Next Lesson */}
       {nextLesson && percent < 100 && (
         <div className="pt-6 border-t border-nodo-icon">
-          <h3 className="text-sm font-medium text-gray-400 mb-3">
+          <h3 className="text-sm font-medium text-white/60 mb-3">
             Siguiente pendiente:
           </h3>
 
           <Link
             href={`/cursos/${courseSlug}/${nextLesson.lessonSlug}`}
-            className="flex items-center gap-3 p-3 rounded-lg border border-nodo-icon hover:border-[#F7931A] hover:bg-nodo-bg transition-all group"
+            className="flex items-center gap-3 p-3 rounded-lg border border-nodo-icon hover:border-brand hover:bg-nodo-bg transition-all group"
           >
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-white line-clamp-2 group-hover:text-[#F7931A] transition-colors">
+              <div className="text-sm font-medium text-white line-clamp-2 group-hover:text-brand transition-colors">
                 {nextLesson.title}
               </div>
             </div>
 
-            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-[#F7931A] flex-shrink-0" />
+            <ChevronRight className="w-5 h-5 text-white/60 group-hover:text-brand flex-shrink-0" />
           </Link>
         </div>
       )}
     </div>
   )
 }
+
+

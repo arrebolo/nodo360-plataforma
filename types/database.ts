@@ -689,3 +689,5 @@ export type InsertQuizAttempt = Omit<QuizAttempt, 'id' | 'created_at'>
  *   return Response.json({ data: note } as ApiResponse)
  * }
  */
+
+

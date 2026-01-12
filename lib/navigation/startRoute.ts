@@ -83,3 +83,5 @@ export async function getStartRouteServer(
     return '/dashboard/rutas' // Fallback seguro para usuarios logueados
   }
 }
+
+

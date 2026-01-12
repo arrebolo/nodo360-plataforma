@@ -1,179 +1,167 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { cx } from '@/lib/design/tokens'
+import { FileText, Download, StickyNote, ExternalLink } from 'lucide-react'
+import { LessonNotes } from './LessonNotes'
 
-type LessonContentProps = {
-  title: string
+type LessonLike = {
+  id: string
+  title?: string | null
   description?: string | null
-  videoUrl?: string | null
-  slidesUrl?: string | null
-  pdfUrl?: string | null
-  fallbackImageUrl?: string
+  slides_url?: string | null
+  slides_type?: 'google_slides' | 'canva' | 'pdf' | 'other' | null
+  pdf_url?: string | null
+  resources_url?: string | null
 }
 
-function isYouTube(url: string) {
-  return /youtube\.com|youtu\.be/i.test(url)
+type Props = {
+  lesson: LessonLike
+  userId: string | null
+  courseSlug: string
 }
 
-function isVimeo(url: string) {
-  return /vimeo\.com/i.test(url)
-}
+type TabKey = 'description' | 'resources' | 'notes'
 
-function getYouTubeEmbed(url: string) {
-  // soporta youtu.be/<id>, youtube.com/watch?v=<id>, youtube.com/embed/<id>
-  try {
-    const u = new URL(url)
-    if (u.hostname.includes('youtu.be')) {
-      const id = u.pathname.replace('/', '')
-      return id ? `https://www.youtube.com/embed/${id}` : null
+export function LessonContent({ lesson, userId, courseSlug }: Props) {
+  // Detectar si hay recursos
+  const hasResources = useMemo(() => {
+    return !!lesson.slides_url || !!lesson.pdf_url || !!lesson.resources_url
+  }, [lesson.slides_url, lesson.pdf_url, lesson.resources_url])
+
+  // Construir tabs dinamicamente
+  const tabs = useMemo(() => {
+    const base: Array<{ key: TabKey; label: string; icon: typeof FileText }> = [
+      { key: 'description', label: 'Descripcion', icon: FileText },
+    ]
+    if (hasResources) {
+      base.push({ key: 'resources', label: 'Recursos', icon: Download })
     }
-    if (u.searchParams.get('v')) {
-      return `https://www.youtube.com/embed/${u.searchParams.get('v')}`
+    base.push({ key: 'notes', label: 'Mis notas', icon: StickyNote })
+    return base
+  }, [hasResources])
+
+  const [activeTab, setActiveTab] = useState<TabKey>('description')
+
+  // Robustez: si cambias de leccion y ya no existe el tab "resources", vuelve a description
+  useEffect(() => {
+    if (activeTab === 'resources' && !hasResources) {
+      setActiveTab('description')
     }
-    if (u.pathname.includes('/embed/')) {
-      return `https://www.youtube.com${u.pathname}`
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-
-function getVimeoEmbed(url: string) {
-  // vimeo.com/<id>
-  const match = url.match(/vimeo\.com\/(\d+)/i)
-  if (!match?.[1]) return null
-  return `https://player.vimeo.com/video/${match[1]}`
-}
-
-function isHtml5Video(url: string) {
-  return /\.(mp4|webm|ogg)(\?.*)?$/i.test(url)
-}
-
-export default function LessonContent({
-  title,
-  description,
-  videoUrl,
-  slidesUrl,
-  pdfUrl,
-  fallbackImageUrl = '/images/lesson-fallback.jpg',
-}: LessonContentProps) {
-  const videoEmbed = useMemo(() => {
-    if (!videoUrl) return null
-    if (isYouTube(videoUrl)) return getYouTubeEmbed(videoUrl)
-    if (isVimeo(videoUrl)) return getVimeoEmbed(videoUrl)
-    return null
-  }, [videoUrl])
-
-  const hasVideo = Boolean(videoUrl)
-  const hasSlides = Boolean(slidesUrl)
-  const hasPdf = Boolean(pdfUrl)
+  }, [lesson.id, hasResources, activeTab])
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-      {/* Header interno del bloque de contenido */}
-      <div className="mb-4">
-        <div className="text-xs uppercase tracking-wide opacity-70">Contenido</div>
-        <h2 className="text-lg font-semibold mt-1">{title}</h2>
-        {description ? <p className="text-sm opacity-80 mt-2">{description}</p> : null}
+    <div id="lesson-content" className="bg-dark-secondary border border-dark-border rounded-2xl overflow-hidden">
+      {/* Tab headers */}
+      <div className="flex border-b border-dark-border">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.key
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cx(
+                "flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2",
+                isActive
+                  ? "text-brand border-b-2 border-brand bg-brand/10"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
+              )}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
 
-      {/* Video */}
-      {hasVideo ? (
-        <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/30">
-          {videoEmbed ? (
-            <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
-              <iframe
-                src={videoEmbed}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Video de la lección"
-              />
-            </div>
-          ) : isHtml5Video(videoUrl!) ? (
-            <video controls className="w-full">
-              <source src={videoUrl!} />
-              Tu navegador no soporta vídeo HTML5.
-            </video>
-          ) : (
-            <div className="p-4">
-              <p className="text-sm opacity-80">
-                No pude embeber este vídeo automáticamente. Abre el enlace:
-              </p>
-              <a
-                href={videoUrl!}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm underline underline-offset-4 opacity-90 hover:opacity-100"
-              >
-                Ver vídeo
-              </a>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {/* Slides (si no hay video) */}
-      {!hasVideo && hasSlides ? (
-        <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/20">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-            <div className="text-sm font-medium">Slides</div>
-            <a
-              href={slidesUrl!}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs underline underline-offset-4 opacity-80 hover:opacity-100"
-            >
-              Abrir en otra pestaña
-            </a>
-          </div>
-
-          <div className="relative w-full" style={{ height: 520 }}>
-            <iframe
-              src={slidesUrl!}
-              className="absolute inset-0 w-full h-full"
-              title="Slides de la lección"
-            />
-          </div>
-        </div>
-      ) : null}
-
-      {/* Fallback (si no hay video ni slides) */}
-      {!hasVideo && !hasSlides ? (
-        <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/20">
-          <div className="p-4">
-            <p className="text-sm opacity-80">
-              Esta lección todavía no tiene vídeo ni slides. Mientras tanto, aquí tienes una portada y el resumen.
-            </p>
-          </div>
-
-          <div className="px-4 pb-4">
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/30">
-              {/* Si no tienes esa imagen aún, crea un placeholder en /public/images/lesson-fallback.jpg */}
-              <img
-                src={fallbackImageUrl}
-                alt="Portada de lección"
-                className="w-full h-[260px] object-cover"
-                loading="lazy"
-              />
-            </div>
-
-            {hasPdf ? (
-              <div className="mt-3">
-                <a
-                  href={pdfUrl!}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm underline underline-offset-4 opacity-90 hover:opacity-100"
-                >
-                  Abrir PDF de la lección
-                </a>
+      {/* Tab content */}
+      <div className="p-4 sm:p-5">
+        {/* DESCRIPCION */}
+        {activeTab === 'description' && (
+          <div className="prose prose-sm prose-invert max-w-none">
+            {lesson.description ? (
+              <p className="whitespace-pre-wrap leading-relaxed text-white/80">{lesson.description}</p>
+            ) : (
+              <div className="text-center py-8">
+                <FileText className="h-8 w-8 text-white/20 mx-auto mb-3" />
+                <p className="text-white/40">Esta leccion no tiene descripcion adicional.</p>
+                <p className="text-sm text-white/30 mt-1">
+                  Revisa el contenido o toma notas mientras estudias.
+                </p>
               </div>
-            ) : null}
+            )}
           </div>
-        </div>
-      ) : null}
+        )}
+
+        {/* RECURSOS */}
+        {activeTab === 'resources' && hasResources && (
+          <div className="space-y-3">
+            {lesson.slides_url && (
+              <a
+                href={lesson.slides_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 rounded-xl border border-dark-border bg-dark-tertiary hover:bg-white/10 transition-colors group"
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-brand/20 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-brand" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-white">Slides</p>
+                  <p className="text-xs text-white/50 truncate">{lesson.slides_url}</p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-white/30 group-hover:text-white/60 transition-colors" />
+              </a>
+            )}
+
+            {lesson.pdf_url && (
+              <a
+                href={lesson.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 rounded-xl border border-dark-border bg-dark-tertiary hover:bg-white/10 transition-colors group"
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-brand/20 flex items-center justify-center">
+                  <Download className="h-5 w-5 text-brand" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-white">PDF</p>
+                  <p className="text-xs text-white/50 truncate">{lesson.pdf_url}</p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-white/30 group-hover:text-white/60 transition-colors" />
+              </a>
+            )}
+
+            {lesson.resources_url && (
+              <a
+                href={lesson.resources_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 rounded-xl border border-dark-border bg-dark-tertiary hover:bg-white/10 transition-colors group"
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-brand/20 flex items-center justify-center">
+                  <Download className="h-5 w-5 text-brand" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-white">Recursos externos</p>
+                  <p className="text-xs text-white/50 truncate">{lesson.resources_url}</p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-white/30 group-hover:text-white/60 transition-colors" />
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* NOTAS */}
+        {activeTab === 'notes' && (
+          <LessonNotes lessonId={lesson.id} userId={userId} />
+        )}
+      </div>
     </div>
   )
 }
+
+export default LessonContent
+
+

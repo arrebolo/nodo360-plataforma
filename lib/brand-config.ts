@@ -30,3 +30,5 @@ export const brandConfig = {
 
 export type BrandConfig = typeof brandConfig
 export type LogoSize = keyof typeof brandConfig.logo.sizes
+
+

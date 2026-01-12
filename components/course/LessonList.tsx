@@ -99,7 +99,7 @@ export function LessonList({ courseSlug, modules, completedLessonSlugs = [] }: L
                         className={`w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-sm font-medium transition-colors ${
                           isCompleted
                             ? 'border-green-500 text-green-500'
-                            : 'text-white/50 group-hover:border-[#ff6b35] group-hover:text-[#ff6b35]'
+                            : 'text-white/50 group-hover:border-brand-light group-hover:text-brand-light'
                         }`}
                       >
                         {moduleIndex + 1}.{lessonIndex + 1}
@@ -109,7 +109,7 @@ export function LessonList({ courseSlug, modules, completedLessonSlugs = [] }: L
                       <div className="flex-1">
                         <h4
                           className={`font-medium transition-colors ${
-                            isCompleted ? 'text-white/90' : 'text-white group-hover:text-[#ff6b35]'
+                            isCompleted ? 'text-white/90' : 'text-white group-hover:text-brand-light'
                           }`}
                         >
                           {lesson.title}
@@ -124,7 +124,7 @@ export function LessonList({ courseSlug, modules, completedLessonSlugs = [] }: L
                           )}
 
                           {lesson.is_free_preview && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#4caf50]/20 text-[#4caf50]">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-success/20 text-success">
                               Vista previa
                             </span>
                           )}
@@ -138,7 +138,7 @@ export function LessonList({ courseSlug, modules, completedLessonSlugs = [] }: L
                           <span className="text-sm text-green-500 font-medium">Completada</span>
                         </div>
                       ) : (
-                        <Circle className="w-5 h-5 text-white/30 group-hover:text-[#ff6b35] transition-colors" />
+                        <Circle className="w-5 h-5 text-white/30 group-hover:text-brand-light transition-colors" />
                       )}
                     </div>
                   </Link>
@@ -150,3 +150,5 @@ export function LessonList({ courseSlug, modules, completedLessonSlugs = [] }: L
     </div>
   )
 }
+
+

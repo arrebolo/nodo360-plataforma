@@ -38,49 +38,49 @@ export default async function AdminDashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <p className="text-gray-400 mt-1">Vista general del sistema</p>
+        <p className="text-white/60 mt-1">Vista general del sistema</p>
       </div>
 
       {/* Stats Grid - Contenido */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-[#ff6b35]/50 transition-all">
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-brand-light/50 transition-all">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#ff6b35]/10 rounded-lg">
-              <BookOpen className="w-6 h-6 text-[#ff6b35]" />
+            <div className="p-3 bg-brand-light/10 rounded-lg">
+              <BookOpen className="w-6 h-6 text-brand-light" />
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.courses}</div>
-          <div className="text-sm text-gray-400">Total Cursos</div>
+          <div className="text-sm text-white/60">Total Cursos</div>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-[#24D4FF]/50 transition-all">
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-accent-blue/50 transition-all">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#24D4FF]/10 rounded-lg">
-              <Users className="w-6 h-6 text-[#24D4FF]" />
+            <div className="p-3 bg-accent-blue/10 rounded-lg">
+              <Users className="w-6 h-6 text-accent-blue" />
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.users}</div>
-          <div className="text-sm text-gray-400">Total Usuarios</div>
+          <div className="text-sm text-white/60">Total Usuarios</div>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-[#00C98D]/50 transition-all">
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-success/50 transition-all">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#00C98D]/10 rounded-lg">
-              <GraduationCap className="w-6 h-6 text-[#00C98D]" />
+            <div className="p-3 bg-success/10 rounded-lg">
+              <GraduationCap className="w-6 h-6 text-success" />
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.lessons}</div>
-          <div className="text-sm text-gray-400">Total Lecciones</div>
+          <div className="text-sm text-white/60">Total Lecciones</div>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-[#f7931a]/50 transition-all">
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-brand/50 transition-all">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#f7931a]/10 rounded-lg">
-              <Trophy className="w-6 h-6 text-[#f7931a]" />
+            <div className="p-3 bg-brand/10 rounded-lg">
+              <Trophy className="w-6 h-6 text-brand" />
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.badges}</div>
-          <div className="text-sm text-gray-400">Hitos Disponibles</div>
+          <div className="text-sm text-white/60">Hitos Disponibles</div>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.activeUsers}</div>
-          <div className="text-sm text-gray-400">Usuarios Activos (7d)</div>
+          <div className="text-sm text-white/60">Usuarios Activos (7d)</div>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
@@ -105,7 +105,7 @@ export default async function AdminDashboardPage() {
           <div className="text-3xl font-bold text-white mb-1">
             {stats.totalXpThisWeek.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-400">XP Otorgado (7d)</div>
+          <div className="text-sm text-white/60">XP Otorgado (7d)</div>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
@@ -115,7 +115,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.badgesUnlockedToday}</div>
-          <div className="text-sm text-gray-400">Hitos Desbloqueados Hoy</div>
+          <div className="text-sm text-white/60">Hitos Desbloqueados Hoy</div>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
@@ -125,7 +125,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.lessonsCompletedToday}</div>
-          <div className="text-sm text-gray-400">Lecciones Completadas Hoy</div>
+          <div className="text-sm text-white/60">Lecciones Completadas Hoy</div>
         </div>
       </div>
 
@@ -133,13 +133,13 @@ export default async function AdminDashboardPage() {
       <div className="grid md:grid-cols-4 gap-6 mb-8">
         <Link
           href="/admin/cursos/nuevo"
-          className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 hover:border-[#ff6b35]/50 transition-all"
+          className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 hover:border-brand-light/50 transition-all"
         >
           <div className="flex items-center justify-between mb-3">
-            <Plus className="w-6 h-6 text-[#ff6b35]" />
+            <Plus className="w-6 h-6 text-brand-light" />
           </div>
           <h3 className="text-lg font-bold text-white mb-1">Crear Nuevo Curso</h3>
-          <p className="text-sm text-gray-400">Comienza a crear contenido</p>
+          <p className="text-sm text-white/60">Comienza a crear contenido</p>
         </Link>
 
         <Link
@@ -150,7 +150,7 @@ export default async function AdminDashboardPage() {
             <BookOpen className="w-6 h-6 text-yellow-400" />
           </div>
           <h3 className="text-lg font-bold text-white mb-1">Borradores</h3>
-          <p className="text-sm text-gray-400">Revisar cursos pendientes</p>
+          <p className="text-sm text-white/60">Revisar cursos pendientes</p>
         </Link>
 
         <Link
@@ -161,18 +161,18 @@ export default async function AdminDashboardPage() {
             <BookOpen className="w-6 h-6 text-green-500" />
           </div>
           <h3 className="text-lg font-bold text-white mb-1">Publicados</h3>
-          <p className="text-sm text-gray-400">Ver lo que está online</p>
+          <p className="text-sm text-white/60">Ver lo que está online</p>
         </Link>
 
         <Link
           href="/admin/usuarios"
-          className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 hover:border-[#24D4FF]/50 transition-all"
+          className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 hover:border-accent-blue/50 transition-all"
         >
           <div className="flex items-center justify-between mb-3">
-            <Users className="w-6 h-6 text-[#24D4FF]" />
+            <Users className="w-6 h-6 text-accent-blue" />
           </div>
           <h3 className="text-lg font-bold text-white mb-1">Gestionar Usuarios</h3>
-          <p className="text-sm text-gray-400">Ver y editar usuarios</p>
+          <p className="text-sm text-white/60">Ver y editar usuarios</p>
         </Link>
       </div>
 
@@ -183,7 +183,7 @@ export default async function AdminDashboardPage() {
             <h2 className="text-xl font-bold text-white">Últimos Cursos Creados</h2>
             <Link
               href="/admin/cursos"
-              className="text-sm text-[#ff6b35] hover:text-[#ff8c5a] transition flex items-center gap-1"
+              className="text-sm text-brand-light hover:text-brand-light/80 transition flex items-center gap-1"
             >
               Ver todos <ArrowRight className="w-4 h-4" />
             </Link>
@@ -194,11 +194,11 @@ export default async function AdminDashboardPage() {
               <Link
                 key={course.id}
                 href={`/admin/cursos/${course.id}`}
-                className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#ff6b35]/50 transition"
+                className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-brand-light/50 transition"
               >
                 <div>
                   <h3 className="text-white font-medium mb-1">{course.title}</h3>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-white/60">
                     {new Date(course.created_at).toLocaleDateString('es-ES', {
                       year: 'numeric',
                       month: 'long',
@@ -217,7 +217,7 @@ export default async function AdminDashboardPage() {
                   >
                     {course.status === 'published' ? 'Publicado' : 'Borrador'}
                   </span>
-                  <ArrowRight className="w-5 h-5 text-gray-400" />
+                  <ArrowRight className="w-5 h-5 text-white/60" />
                 </div>
               </Link>
             ))}
@@ -227,3 +227,4 @@ export default async function AdminDashboardPage() {
     </div>
   )
 }
+

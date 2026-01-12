@@ -19,20 +19,20 @@ export function CodeBlock({ block }: CodeBlockProps) {
   return (
     <div className="my-6">
       {block.filename && (
-        <div className="bg-gray-800 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center justify-between">
-          <span className="text-sm text-gray-400 font-mono">{block.filename}</span>
-          <span className="text-xs text-gray-500 uppercase">{block.language}</span>
+        <div className="bg-dark-secondary px-4 py-2 rounded-t-lg border-b border-dark-border flex items-center justify-between">
+          <span className="text-sm text-white/60 font-mono">{block.filename}</span>
+          <span className="text-xs text-white/50 uppercase">{block.language}</span>
         </div>
       )}
 
       <div className="relative group">
-        <pre className={`bg-gray-900 p-4 overflow-x-auto ${block.filename ? 'rounded-b-lg' : 'rounded-lg'}`}>
-          <code className={`language-${block.language} text-sm text-gray-300 font-mono`}>
+        <pre className={`bg-dark p-4 overflow-x-auto ${block.filename ? 'rounded-b-lg' : 'rounded-lg'}`}>
+          <code className={`language-${block.language} text-sm text-white/80 font-mono`}>
             {block.showLineNumbers ? (
               <div className="table">
                 {block.code.split('\n').map((line, i) => (
                   <div key={i} className="table-row">
-                    <span className="table-cell pr-4 text-gray-600 select-none text-right">
+                    <span className="table-cell pr-4 text-white/40 select-none text-right">
                       {i + 1}
                     </span>
                     <span className="table-cell">{line}</span>
@@ -47,7 +47,7 @@ export function CodeBlock({ block }: CodeBlockProps) {
 
         <button
           onClick={copyToClipboard}
-          className="absolute top-3 right-3 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-3 right-3 px-3 py-1.5 bg-dark-secondary hover:bg-dark-tertiary text-white/80 text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
         >
           {copied ? (
             <>
@@ -69,3 +69,5 @@ export function CodeBlock({ block }: CodeBlockProps) {
     </div>
   )
 }
+
+

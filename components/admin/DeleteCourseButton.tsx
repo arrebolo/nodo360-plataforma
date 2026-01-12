@@ -55,3 +55,5 @@ export function DeleteCourseButton({ courseId, courseTitle }: DeleteCourseButton
     </button>
   )
 }
+
+

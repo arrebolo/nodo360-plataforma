@@ -52,3 +52,5 @@ import { ManifestManager } from './ManifestManager';
 
 // Versión de la biblioteca
 export const VERSION = '1.0.0';
+
+

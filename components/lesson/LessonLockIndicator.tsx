@@ -41,8 +41,8 @@ export function LessonLockIndicator({
   if (isInProgress) {
     return (
       <div className="inline-flex items-center gap-1.5">
-        <PlayCircle className={`${iconSizes[size]} text-[#ff6b35]`} />
-        {size !== 'sm' && <span className="text-sm text-[#ff6b35] font-medium">En progreso</span>}
+        <PlayCircle className={`${iconSizes[size]} text-brand-light`} />
+        {size !== 'sm' && <span className="text-sm text-brand-light font-medium">En progreso</span>}
       </div>
     )
   }
@@ -79,8 +79,8 @@ export function LessonLockMessage({
 }) {
   return (
     <div className="max-w-2xl mx-auto mt-8 p-8 bg-white/5 border-2 border-white/10 rounded-xl text-center">
-      <div className="inline-block p-4 bg-[#ff6b35]/20 rounded-2xl mb-4">
-        <Lock className="w-12 h-12 text-[#ff6b35]" />
+      <div className="inline-block p-4 bg-brand-light/20 rounded-2xl mb-4">
+        <Lock className="w-12 h-12 text-brand-light" />
       </div>
 
       <h3 className="text-2xl font-bold text-white mb-2">Lección Bloqueada</h3>
@@ -98,7 +98,7 @@ export function LessonLockMessage({
       {onGoToPrevious && (
         <button
           onClick={onGoToPrevious}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-brand-light to-brand text-white font-semibold hover:shadow-lg hover:shadow-brand-light/50 transition-all"
         >
           Ir a Lección Anterior
         </button>
@@ -106,3 +106,5 @@ export function LessonLockMessage({
     </div>
   )
 }
+
+

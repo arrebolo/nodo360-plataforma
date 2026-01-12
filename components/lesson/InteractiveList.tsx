@@ -25,12 +25,12 @@ export function InteractiveList({ block }: InteractiveListProps) {
         {block.items.map((item, index) => (
           <li
             key={index}
-            className="flex items-start gap-3 text-gray-300 leading-relaxed group"
+            className="flex items-start gap-3 text-white/80 leading-relaxed group"
           >
             {!block.ordered && (
               <button
                 onClick={() => toggleCheck(index)}
-                className="flex-shrink-0 w-5 h-5 mt-0.5 rounded border-2 border-gray-600 hover:border-orange-500 transition-colors flex items-center justify-center"
+                className="flex-shrink-0 w-5 h-5 mt-0.5 rounded border-2 border-dark-border hover:border-orange-500 transition-colors flex items-center justify-center"
               >
                 {checked[index] && (
                   <svg className="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
@@ -39,7 +39,7 @@ export function InteractiveList({ block }: InteractiveListProps) {
                 )}
               </button>
             )}
-            <span className={checked[index] ? 'line-through text-gray-500' : ''}>
+            <span className={checked[index] ? 'line-through text-white/50' : ''}>
               {item}
             </span>
           </li>
@@ -48,3 +48,5 @@ export function InteractiveList({ block }: InteractiveListProps) {
     </div>
   )
 }
+
+

@@ -12,7 +12,7 @@ const emojis = [
 ]
 
 const rarityColors = {
-  common: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+  common: 'bg-white/50/20 text-white/60 border-white/30/30',
   rare: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   epic: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   legendary: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
@@ -98,13 +98,13 @@ export default function NuevoHitoPage() {
       <div className="flex items-center gap-4">
         <Link
           href="/admin/gamificacion/hitos"
-          className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+          className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60 hover:text-white"
         >
           <ArrowLeft size={20} />
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-white">Crear Nuevo Hito</h1>
-          <p className="text-gray-400 mt-1">
+          <p className="text-white/60 mt-1">
             Define un nuevo logro para los usuarios
           </p>
         </div>
@@ -133,12 +133,12 @@ export default function NuevoHitoPage() {
           <h3 className="text-xl font-bold text-white">
             {formData.title || 'Título del Hito'}
           </h3>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-white/60">
             {formData.description || 'Descripción del hito...'}
           </p>
           <div className="pt-4 border-t border-white/10 space-y-2">
             <div>
-              <p className="text-xs text-gray-500 uppercase font-medium">
+              <p className="text-xs text-white/50 uppercase font-medium">
                 Requisito
               </p>
               <p className="text-sm text-white">
@@ -147,7 +147,7 @@ export default function NuevoHitoPage() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase font-medium">
+              <p className="text-xs text-white/50 uppercase font-medium">
                 Recompensa
               </p>
               <p className="text-sm text-white">
@@ -167,7 +167,7 @@ export default function NuevoHitoPage() {
           </h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Título
             </label>
             <input
@@ -176,13 +176,13 @@ export default function NuevoHitoPage() {
               value={formData.title}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
               placeholder="Ej: Primer Paso"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Slug (auto-generado)
             </label>
             <input
@@ -191,13 +191,13 @@ export default function NuevoHitoPage() {
               value={formData.slug}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
               placeholder="primer-paso"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Descripción
             </label>
             <textarea
@@ -205,13 +205,13 @@ export default function NuevoHitoPage() {
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35] resize-none"
+              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light resize-none"
               placeholder="Describe qué significa este hito..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Icono
             </label>
             <div className="grid grid-cols-8 gap-2">
@@ -224,7 +224,7 @@ export default function NuevoHitoPage() {
                   }
                   className={`p-3 text-2xl rounded-lg transition-all ${
                     formData.icon === emoji
-                      ? 'bg-[#ff6b35] scale-110'
+                      ? 'bg-brand-light scale-110'
                       : 'bg-white/5 hover:bg-white/10'
                   }`}
                 >
@@ -242,14 +242,14 @@ export default function NuevoHitoPage() {
           </h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Categoría
             </label>
             <select
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full px-4 py-2 bg-[#1a1f2e] border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+              className="w-full px-4 py-2 bg-dark-surface border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
             >
               <option value="logro" style={{backgroundColor: '#1a1f2e', color: 'white'}}>Logro</option>
               <option value="hito" style={{backgroundColor: '#1a1f2e', color: 'white'}}>Hito</option>
@@ -259,7 +259,7 @@ export default function NuevoHitoPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Rareza
             </label>
             <div className="grid grid-cols-4 gap-3">
@@ -273,7 +273,7 @@ export default function NuevoHitoPage() {
                   className={`px-4 py-2 rounded-lg border transition-all capitalize ${
                     formData.rarity === rarity
                       ? classes + ' ring-2 ring-white/30'
-                      : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                      : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
                   }`}
                 >
                   {rarity}
@@ -290,14 +290,14 @@ export default function NuevoHitoPage() {
           </h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Tipo de Requisito
             </label>
             <select
               name="requirement_type"
               value={formData.requirement_type}
               onChange={handleChange}
-              className="w-full px-4 py-2 bg-[#1a1f2e] border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+              className="w-full px-4 py-2 bg-dark-surface border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
             >
               <option value="lessons_completed" style={{backgroundColor: '#1a1f2e', color: 'white'}}>Lecciones Completadas</option>
               <option value="courses_completed" style={{backgroundColor: '#1a1f2e', color: 'white'}}>Cursos Completados</option>
@@ -309,7 +309,7 @@ export default function NuevoHitoPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Valor Requerido
             </label>
             <input
@@ -319,12 +319,12 @@ export default function NuevoHitoPage() {
               onChange={handleChange}
               min="1"
               required
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-white/60 mb-2">
               Recompensa XP
             </label>
             <input
@@ -335,9 +335,9 @@ export default function NuevoHitoPage() {
               min="0"
               step="10"
               required
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-white/50 mt-1">
               XP otorgado al desbloquear este hito
             </p>
           </div>
@@ -356,11 +356,11 @@ export default function NuevoHitoPage() {
                   is_active: e.target.checked
                 }))
               }
-              className="w-5 h-5 rounded bg-white/5 border-white/10 text-[#ff6b35] focus:ring-2 focus:ring-[#ff6b35]"
+              className="w-5 h-5 rounded bg-white/5 border-white/10 text-brand-light focus:ring-2 focus:ring-brand-light"
             />
             <div>
               <p className="text-white font-medium">Hito Activo</p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-white/60">
                 Los usuarios pueden desbloquear este hito
               </p>
             </div>
@@ -372,7 +372,7 @@ export default function NuevoHitoPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-3 bg-[#ff6b35] hover:bg-[#ff8c5a] disabled:bg-gray-500 disabled:cursor-not-allowed rounded-lg transition-colors text-white font-medium"
+            className="flex items-center gap-2 px-6 py-3 bg-brand-light hover:bg-brand-light/80 disabled:bg-white/50 disabled:cursor-not-allowed rounded-lg transition-colors text-white font-medium"
           >
             <Save size={20} />
             {loading ? 'Creando...' : 'Crear Hito'}
@@ -388,3 +388,5 @@ export default function NuevoHitoPage() {
     </div>
   )
 }
+
+

@@ -88,7 +88,7 @@ export default async function NuevoModuloPage({ params }: NuevoModuloPageProps) 
       <div className="max-w-3xl mx-auto">
         <Link
           href={`/admin/cursos/${course.id}/modulos`}
-          className="flex items-center gap-2 text-[#C5C7D3] hover:text-white transition mb-6"
+          className="flex items-center gap-2 text-white/70 hover:text-white transition mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver a módulos
@@ -97,7 +97,7 @@ export default async function NuevoModuloPage({ params }: NuevoModuloPageProps) 
         <h1 className="text-4xl font-bold text-white mb-2">
           Crear Nuevo Módulo
         </h1>
-        <p className="text-[#C5C7D3] mb-8">
+        <p className="text-white/70 mb-8">
           {course.title}
         </p>
 
@@ -111,7 +111,7 @@ export default async function NuevoModuloPage({ params }: NuevoModuloPageProps) 
                 type="text"
                 name="title"
                 required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
                 placeholder="ej. Introducción a Bitcoin"
               />
             </div>
@@ -123,7 +123,7 @@ export default async function NuevoModuloPage({ params }: NuevoModuloPageProps) 
               <textarea
                 name="description"
                 rows={4}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition resize-none"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition resize-none"
                 placeholder="Descripción del módulo (opcional)"
               />
             </div>
@@ -139,7 +139,7 @@ export default async function NuevoModuloPage({ params }: NuevoModuloPageProps) 
 
             <button
               type="submit"
-              className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition"
+              className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-brand-light/50 transition"
             >
               <Save className="w-5 h-5" />
               Crear Módulo

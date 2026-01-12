@@ -4,10 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 import { getCourseProgressForUser } from '@/lib/progress/getCourseProgress'
 import ModuleList from '@/components/course/ModuleList'
 import EnrollButton from '@/components/course/EnrollButton'
+import CourseHero from '@/components/course/CourseHero'
 import { Footer } from '@/components/navigation/Footer'
+import Button from '@/components/ui/Button'
+import PageHeader from '@/components/ui/PageHeader'
+import { tokens, cx } from '@/lib/design/tokens'
+import { ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
 
-// Configuración de Next.js para rutas dinámicas
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -38,14 +42,13 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
   }
 }
 
+
 export default async function CoursePage({ params }: CoursePageProps) {
   const { slug } = await params
 
-  console.log('🚀 [CoursePage] Renderizando curso:', slug)
-
   const supabase = await createClient()
 
-  // 1. Obtener información del curso + OWNER (mentor/instructor)
+  // 1. Obtener información del curso CON modulos y lecciones para conteo preciso
   const { data: course, error: courseError } = await supabase
     .from('courses')
     .select(`
@@ -54,15 +57,25 @@ export default async function CoursePage({ params }: CoursePageProps) {
       title,
       description,
       level,
+      status,
       thumbnail_url,
       banner_url,
       is_free,
       is_premium,
+      price,
+      total_modules,
+      total_lessons,
+      total_duration_minutes,
+      enrolled_count,
       owner:users!courses_owner_id_fkey (
         id,
         full_name,
         avatar_url,
         role
+      ),
+      modules (
+        id,
+        lessons (id)
       )
     `)
     .eq('slug', slug)
@@ -70,36 +83,50 @@ export default async function CoursePage({ params }: CoursePageProps) {
     .single()
 
   if (courseError || !course) {
-    console.error('❌ [CoursePage] Curso no encontrado:', courseError)
     notFound()
   }
 
-  console.log('✅ [CoursePage] Curso encontrado:', course.title)
+  // Calcular conteos reales desde los datos (no depender de campos stored)
+  const actualModulesCount = course.modules?.length || 0
+  const actualLessonsCount = course.modules?.reduce(
+    (acc, m) => acc + (m.lessons?.length || 0),
+    0
+  ) || 0
 
   // 2. Verificar autenticación
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // 3. Si no hay usuario, mostrar vista de login
   if (!user) {
-    console.log('ℹ️  [CoursePage] Usuario no autenticado')
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
-        <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-          <h1 className="text-4xl font-bold text-white mb-6">{course.title}</h1>
-          <p className="text-gray-300 text-lg mb-8">{course.description}</p>
-          <Link
-            href={`/login?redirect=/cursos/${slug}`}
-            className="inline-block px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl transition"
-          >
-            Iniciar Sesión para ver el curso
-          </Link>
+      <div className="min-h-screen bg-dark">
+        <div className={cx(tokens.layout.container, tokens.layout.sectionGap)}>
+          {/* Hero compacto para no autenticado */}
+          <div className="bg-dark-surface border border-white/10 rounded-2xl p-6 sm:p-8">
+            <div className="space-y-4">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
+                {course.title}
+              </h1>
+              <p className="text-white/60 text-sm max-w-2xl">
+                {course.description}
+              </p>
+              <div className="pt-4">
+                <Button variant="primary" href={`/login?redirect=/cursos/${slug}`}>
+                  Iniciar sesion para ver el curso
+                  <span aria-hidden className="text-white/80">→</span>
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
+        <Footer />
       </div>
     )
   }
 
-  // 3. Verificar inscripción
+  // 4. Verificar inscripción
   const { data: enrollment } = await supabase
     .from('course_enrollments')
     .select('id')
@@ -109,9 +136,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const isEnrolled = !!enrollment
 
-  console.log('📊 [CoursePage] Usuario inscrito:', isEnrolled)
-
-  // 4. Obtener progreso completo
+  // 5. Obtener progreso completo
   const courseProgress = isEnrolled
     ? await getCourseProgressForUser(course.id, user.id)
     : {
@@ -119,156 +144,112 @@ export default async function CoursePage({ params }: CoursePageProps) {
         globalProgress: { totalLessons: 0, completedLessons: 0, percentage: 0 },
       }
 
-  // 5. Obtener primera lección del curso (para botón de inscripción)
+  // 6. Obtener primera lección del curso
   let firstLessonSlug: string | undefined
-  if (!isEnrolled) {
-    const { data: firstModule } = await supabase
-      .from('modules')
-      .select('id')
-      .eq('course_id', course.id)
+  const { data: firstModule } = await supabase
+    .from('modules')
+    .select('id')
+    .eq('course_id', course.id)
+    .order('order_index', { ascending: true })
+    .limit(1)
+    .single()
+
+  if (firstModule) {
+    const { data: firstLesson } = await supabase
+      .from('lessons')
+      .select('slug')
+      .eq('module_id', firstModule.id)
       .order('order_index', { ascending: true })
       .limit(1)
       .single()
 
-    if (firstModule) {
-      const { data: firstLesson } = await supabase
-        .from('lessons')
-        .select('slug')
-        .eq('module_id', firstModule.id)
-        .order('order_index', { ascending: true })
-        .limit(1)
-        .single()
-
-      firstLessonSlug = firstLesson?.slug
-    }
+    firstLessonSlug = firstLesson?.slug
   }
 
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-[#1a1f2e] to-[#252b3d] border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Course Info */}
-            <div>
-              <nav className="flex items-center gap-2 text-sm text-white/50 mb-6">
-                <Link href="/cursos" className="hover:text-white transition">
-                  Cursos
-                </Link>
-                <span>/</span>
-                <span className="text-white/70">{course.title}</span>
-              </nav>
+    <div className="min-h-screen bg-dark">
+      <div className={cx(tokens.layout.container, tokens.layout.sectionGap)}>
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-sm text-white/50">
+          <Link href="/cursos" className="hover:text-white transition">
+            Cursos
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-white/70">{course.title}</span>
+        </nav>
 
-              <div className="flex items-center gap-3 mb-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    course.level === 'beginner'
-                      ? 'bg-[#4caf50]/20 text-[#4caf50]'
-                      : course.level === 'intermediate'
-                      ? 'bg-[#ff6b35]/20 text-[#ff6b35]'
-                      : 'bg-red-500/20 text-red-400'
-                  }`}
-                >
-                  {course.level === 'beginner' && '🟢 Principiante'}
-                  {course.level === 'intermediate' && '🟡 Intermedio'}
-                  {course.level === 'advanced' && '🔴 Avanzado'}
-                </span>
+        {/* HERO DEL CURSO */}
+        <CourseHero
+          course={{
+            id: course.id,
+            slug: course.slug,
+            title: course.title,
+            description: course.description ?? null,
+            level: (course.level || 'beginner') as 'beginner' | 'intermediate' | 'advanced',
+            status: (course.status || 'published') as 'draft' | 'published' | 'archived' | 'coming_soon',
+            is_free: course.is_free ?? false,
+            price: course.price ?? null,
+            total_modules: actualModulesCount > 0 ? actualModulesCount : null,
+            total_lessons: actualLessonsCount > 0 ? actualLessonsCount : null,
+            total_duration_minutes: course.total_duration_minutes ?? null,
+            enrolled_count: course.enrolled_count ?? null,
+            banner_url: course.banner_url ?? null,
+            thumbnail_url: course.thumbnail_url ?? null,
+          }}
+          isEnrolled={isEnrolled}
+          progressPct={courseProgress?.globalProgress?.percentage ?? null}
+          hrefCourse={`/cursos/${course.slug}`}
+          hrefContinue={`/api/continue?courseSlug=${course.slug}`}
+          hrefEnroll={`/api/enroll?courseId=${course.id}`}
+          hrefDashboard="/dashboard"
+        />
 
-                {course.is_free && (
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#4caf50]/20 text-[#4caf50]">
-                    100% GRATIS
-                  </span>
-                )}
-              </div>
+        {/* CONTENIDO DEL CURSO */}
+        <div className="mt-6">
+          <PageHeader
+            title="Contenido del curso"
+            subtitle={`${actualModulesCount} módulos · ${actualLessonsCount} lecciones`}
+          />
 
-              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-                {course.title}
-              </h1>
+          <div className="mt-4">
+            {isEnrolled ? (
+              <ModuleList courseSlug={course.slug} modules={courseProgress.modules} />
+            ) : (
+              <div className="relative overflow-hidden bg-dark-surface border border-white/10 rounded-2xl p-8 text-center">
+                {/* Efecto de fondo sutil */}
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-light/5 to-transparent pointer-events-none" />
 
-              <p className="text-xl text-white/70 mb-8">
-                {course.description}
-              </p>
-
-              {isEnrolled ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <span className="px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg text-green-500">
-                      ✓ Inscrito en este curso
-                    </span>
-                    <span className="text-gray-400">
-                      {courseProgress.globalProgress.percentage}% completado
-                    </span>
+                <div className="relative">
+                  {/* Icono */}
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-light/10 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
                   </div>
 
-                  <div className="w-full bg-white/10 rounded-full h-3">
-                    <div
-                      className="bg-gradient-to-r from-[#ff6b35] to-[#f7931a] h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${courseProgress.globalProgress.percentage}%` }}
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    Contenido del curso
+                  </h3>
+                  <p className="text-white/60 mb-6 max-w-sm mx-auto">
+                    Inscribete en el curso para acceder a todo el contenido
+                  </p>
+
+                  <div className="max-w-xs mx-auto">
+                    <EnrollButton
+                      courseId={course.id}
+                      courseSlug={course.slug}
+                      isEnrolled={false}
+                      isAuthenticated={true}
+                      firstLessonSlug={firstLessonSlug}
                     />
                   </div>
-
-                  <p className="text-sm text-gray-400">
-                    {courseProgress.globalProgress.completedLessons} de{' '}
-                    {courseProgress.globalProgress.totalLessons} lecciones completadas
-                  </p>
                 </div>
-              ) : (
-                <EnrollButton
-                  courseId={course.id}
-                  courseSlug={course.slug}
-                  isEnrolled={false}
-                  isAuthenticated={true}
-                  firstLessonSlug={firstLessonSlug}
-                  className="w-full"
-                />
-              )}
-            </div>
-
-            {/* Right: Thumbnail */}
-            <div>
-              <div className="aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-[#ff6b35]/20 to-[#f7931a]/20 border border-white/10">
-                {course.banner_url || course.thumbnail_url ? (
-                  <img
-                    src={course.banner_url || course.thumbnail_url!}
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center" />
-                )}
               </div>
-            </div>
+            )}
           </div>
         </div>
-      </section>
-
-      {/* Course Content */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-8">
-            Contenido del curso
-          </h2>
-
-          {isEnrolled ? (
-            <ModuleList courseSlug={course.slug} modules={courseProgress.modules} />
-          ) : (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 text-center">
-              <p className="text-gray-400 mb-6">
-                Inscríbete en el curso para acceder a todo el contenido
-              </p>
-              <div className="max-w-md mx-auto">
-                <EnrollButton
-                  courseId={course.id}
-                  courseSlug={course.slug}
-                  isEnrolled={false}
-                  isAuthenticated={true}
-                  firstLessonSlug={firstLessonSlug}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+      </div>
 
       <Footer />
     </div>

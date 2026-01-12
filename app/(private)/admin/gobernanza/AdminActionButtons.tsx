@@ -167,23 +167,23 @@ export function AdminActionButtons({ proposalId, actions }: AdminActionButtonsPr
       {/* Modal para razón */}
       {showModal && currentAction && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1d24] rounded-xl p-6 max-w-md w-full border border-white/10">
+          <div className="bg-dark-secondary rounded-xl p-6 max-w-md w-full border border-white/10">
             <h3 className="text-lg font-semibold text-white mb-2">
               {ACTION_CONFIG[currentAction].label} Propuesta
             </h3>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-white/60 text-sm mb-4">
               {ACTION_CONFIG[currentAction].confirmMessage}
             </p>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-white/80 mb-2">
                 Razón {ACTION_CONFIG[currentAction].requiresReason ? '(requerida)' : '(opcional)'}
               </label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Explica la razón de esta acción..."
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] resize-none"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light resize-none"
                 rows={3}
               />
             </div>
@@ -225,3 +225,4 @@ export function AdminActionButtons({ proposalId, actions }: AdminActionButtonsPr
     </>
   )
 }
+

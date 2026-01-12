@@ -1,7 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { rateLimit, getClientIP, rateLimitExceeded } from '@/lib/ratelimit'
 
 export async function POST(request: Request) {
+  // Rate limiting estricto para formulario público
+  const ip = getClientIP(request)
+  const { success } = await rateLimit(ip, 'strict')
+
+  if (!success) {
+    console.log('[Newsletter] Rate limit excedido para IP:', ip.substring(0, 8) + '***')
+    return rateLimitExceeded()
+  }
+
   try {
     const body = await request.json()
     const { email, name } = body
@@ -61,3 +71,5 @@ export async function POST(request: Request) {
     )
   }
 }
+
+

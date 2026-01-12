@@ -12,7 +12,7 @@ export async function getSetting<T>(
 ): Promise<T> {
   const admin = createAdminClient()
 
-  const { data, error } = await admin
+  const { data, error } = await (admin as any)
     .from('system_settings')
     .select('value')
     .eq('key', key)
@@ -22,3 +22,5 @@ export async function getSetting<T>(
 
   return data.value as T
 }
+
+

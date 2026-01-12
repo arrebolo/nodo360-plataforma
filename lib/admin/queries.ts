@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
  * Obtiene todas las estadísticas del dashboard admin
@@ -124,12 +125,13 @@ export async function getUsersByLevel() {
 
 /**
  * Obtiene lista de usuarios con paginación
+ * Usa admin client para bypass RLS y obtener stats de gamificación
  */
 export async function getUsers(page: number = 1, limit: number = 20) {
-  const supabase = await createClient()
+  const admin = createAdminClient()
   const offset = (page - 1) * limit
 
-  const { data: users, error, count } = await supabase
+  const { data: users, error, count } = await admin
     .from('users')
     .select(`
       id,
@@ -175,3 +177,5 @@ export async function getPopularCourses(limit: number = 5) {
 
   return courses || []
 }
+
+

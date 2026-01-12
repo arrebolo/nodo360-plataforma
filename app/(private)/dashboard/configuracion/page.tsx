@@ -51,7 +51,7 @@ export default function ConfiguracionPage() {
     return (
       <div className="mx-auto w-full max-w-2xl px-4 py-8">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+          <Loader2 className="w-8 h-8 animate-spin text-white/40" />
         </div>
       </div>
     )
@@ -63,7 +63,7 @@ export default function ConfiguracionPage() {
       <div className="mb-8">
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition mb-4"
+          className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver al dashboard
@@ -72,7 +72,7 @@ export default function ConfiguracionPage() {
           <Settings className="w-6 h-6" />
           Configuracion
         </h1>
-        <p className="text-sm text-neutral-400 mt-1">
+        <p className="text-sm text-white/60 mt-1">
           Administra tus preferencias y cuenta
         </p>
       </div>
@@ -88,12 +88,12 @@ export default function ConfiguracionPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-white">Notificaciones por email</div>
-                <div className="text-sm text-neutral-400">Recibe actualizaciones sobre tu progreso</div>
+                <div className="text-sm text-white/60">Recibe actualizaciones sobre tu progreso</div>
               </div>
               <button
                 onClick={() => setEmailNotifications(!emailNotifications)}
                 className={`relative w-12 h-6 rounded-full transition ${
-                  emailNotifications ? 'bg-[#ff6b35]' : 'bg-white/20'
+                  emailNotifications ? 'bg-brand-light' : 'bg-white/20'
                 }`}
               >
                 <div
@@ -116,12 +116,12 @@ export default function ConfiguracionPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-white">Modo oscuro</div>
-                <div className="text-sm text-neutral-400">Activo por defecto en Nodo360</div>
+                <div className="text-sm text-white/60">Activo por defecto en Nodo360</div>
               </div>
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className={`relative w-12 h-6 rounded-full transition ${
-                  darkMode ? 'bg-[#ff6b35]' : 'bg-white/20'
+                  darkMode ? 'bg-brand-light' : 'bg-white/20'
                 }`}
               >
                 <div
@@ -143,10 +143,10 @@ export default function ConfiguracionPage() {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#ff6b35]/50 transition"
+            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-brand-light/50 transition"
           >
-            <option value="es" className="bg-[#1a1f2e]">Espanol</option>
-            <option value="en" className="bg-[#1a1f2e]">English (coming soon)</option>
+            <option value="es" className="bg-dark-surface">Espanol</option>
+            <option value="en" className="bg-dark-surface">English (coming soon)</option>
           </select>
         </div>
 
@@ -158,13 +158,13 @@ export default function ConfiguracionPage() {
           </h2>
           <div className="space-y-4">
             <div>
-              <div className="text-sm text-neutral-400 mb-1">Email de la cuenta</div>
+              <div className="text-sm text-white/60 mb-1">Email de la cuenta</div>
               <div className="text-white">{email}</div>
             </div>
             <div className="pt-2">
               <Link
                 href="/auth/reset-password"
-                className="text-sm text-[#ff6b35] hover:underline"
+                className="text-sm text-brand-light hover:underline"
               >
                 Cambiar contrasena
               </Link>
@@ -178,7 +178,7 @@ export default function ConfiguracionPage() {
             <LogOut className="w-5 h-5 text-red-400" />
             Sesion
           </h2>
-          <p className="text-sm text-neutral-400 mb-4">
+          <p className="text-sm text-white/60 mb-4">
             Cierra tu sesion en este dispositivo.
           </p>
           <button
@@ -192,3 +192,5 @@ export default function ConfiguracionPage() {
     </div>
   )
 }
+
+

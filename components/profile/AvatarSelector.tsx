@@ -118,7 +118,7 @@ export function AvatarSelector({ currentAvatar, userName, userId }: AvatarSelect
     <div className="space-y-8">
       {/* Avatar Actual */}
       <div className="flex flex-col items-center gap-4">
-        <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-[#ff6b35]/30 shadow-xl">
+        <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-brand-light/30 shadow-xl">
           {selectedAvatar ? (
             <Image
               src={selectedAvatar}
@@ -128,7 +128,7 @@ export function AvatarSelector({ currentAvatar, userName, userId }: AvatarSelect
               unoptimized={selectedAvatar.startsWith('/avatars/')}
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-[#ff6b35] to-[#f7931a] flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-r from-brand-light to-brand flex items-center justify-center">
               <span className="text-white font-bold text-5xl">{defaultAvatar}</span>
             </div>
           )}
@@ -142,7 +142,7 @@ export function AvatarSelector({ currentAvatar, userName, userId }: AvatarSelect
       {/* Subir Foto */}
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
         <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-          <Upload className="w-5 h-5 text-[#24D4FF]" />
+          <Upload className="w-5 h-5 text-accent-blue" />
           Subir Foto Personalizada
         </h3>
 
@@ -157,16 +157,16 @@ export function AvatarSelector({ currentAvatar, userName, userId }: AvatarSelect
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white/5 border-2 border-dashed border-white/20 rounded-lg hover:bg-white/10 hover:border-[#24D4FF]/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white/5 border-2 border-dashed border-white/20 rounded-lg hover:bg-white/10 hover:border-accent-blue/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isUploading ? (
             <>
-              <Loader2 className="w-6 h-6 text-[#24D4FF] animate-spin" />
+              <Loader2 className="w-6 h-6 text-accent-blue animate-spin" />
               <div className="flex flex-col items-start">
                 <span className="text-white font-medium">Subiendo...</span>
                 <div className="w-full bg-white/10 rounded-full h-2 mt-2 overflow-hidden">
                   <div
-                    className="bg-[#24D4FF] h-full transition-all duration-300"
+                    className="bg-accent-blue h-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -174,7 +174,7 @@ export function AvatarSelector({ currentAvatar, userName, userId }: AvatarSelect
             </>
           ) : (
             <>
-              <Upload className="w-6 h-6 text-[#24D4FF]" />
+              <Upload className="w-6 h-6 text-accent-blue" />
               <div className="flex flex-col items-start">
                 <span className="text-white font-medium">Click para subir</span>
                 <span className="text-xs text-white/60">JPG, PNG o WebP (máx. 2MB)</span>
@@ -195,8 +195,8 @@ export function AvatarSelector({ currentAvatar, userName, userId }: AvatarSelect
               onClick={() => handlePresetSelect(preset.url)}
               className={`group relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${
                 selectedAvatar === preset.url
-                  ? 'border-[#ff6b35] ring-2 ring-[#ff6b35]/50 scale-105'
-                  : 'border-white/10 hover:border-[#24D4FF]/50 hover:scale-105'
+                  ? 'border-brand-light ring-2 ring-brand-light/50 scale-105'
+                  : 'border-white/10 hover:border-accent-blue/50 hover:scale-105'
               }`}
               title={preset.name}
             >
@@ -208,8 +208,8 @@ export function AvatarSelector({ currentAvatar, userName, userId }: AvatarSelect
                 unoptimized
               />
               {selectedAvatar === preset.url && (
-                <div className="absolute inset-0 bg-[#ff6b35]/30 flex items-center justify-center">
-                  <div className="bg-[#ff6b35] rounded-full p-1">
+                <div className="absolute inset-0 bg-brand-light/30 flex items-center justify-center">
+                  <div className="bg-brand-light rounded-full p-1">
                     <Check className="w-5 h-5 text-white" />
                   </div>
                 </div>
@@ -221,3 +221,5 @@ export function AvatarSelector({ currentAvatar, userName, userId }: AvatarSelect
     </div>
   )
 }
+
+

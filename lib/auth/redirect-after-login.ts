@@ -23,9 +23,7 @@ export async function redirectAfterLogin(next?: string) {
     redirect('/login')
   }
 
-  console.log('✅ [redirectAfterLogin] Usuario autenticado:')
-  console.log('   - ID:', user.id)
-  console.log('   - Email:', user.email)
+  console.log('[redirectAfterLogin] Usuario autenticado:', user.id.substring(0, 8) + '...')
 
   // INTENTAR LEER DE TABLA 'users' PRIMERO
   console.log('🔍 [redirectAfterLogin] Intentando leer de tabla "users"...')
@@ -97,3 +95,5 @@ export async function redirectAfterLogin(next?: string) {
   console.log('👤 [redirectAfterLogin] Redirigiendo a /dashboard')
   redirect('/dashboard')
 }
+
+

@@ -9,13 +9,13 @@ export const metadata = {
 
 export default function TestQuizPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e]">
+    <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
       {/* Header */}
-      <header className="border-b border-white/10 bg-[#1a1f2e]/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-white/10 bg-dark-surface/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
                 <span className="text-white font-bold text-xl">N</span>
               </div>
               <span className="text-white font-bold text-xl">NODO360</span>
@@ -239,7 +239,7 @@ export default function TestQuizPage() {
 
           <Link
             href="/"
-            className="px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[#ff6b35]/30 transition"
+            className="px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-brand-light/30 transition"
           >
             Ir al Inicio
           </Link>
@@ -248,3 +248,5 @@ export default function TestQuizPage() {
     </div>
   )
 }
+
+

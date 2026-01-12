@@ -440,3 +440,5 @@ export class Nodo360ResourceManager {
 
 // Exportar instancia singleton
 export const nodo360Resources = Nodo360ResourceManager.getInstance();
+
+

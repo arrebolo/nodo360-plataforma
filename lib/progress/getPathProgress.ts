@@ -216,3 +216,5 @@ export async function getActivePathProgress(userId: string): Promise<PathProgres
     return null
   }
 }
+
+

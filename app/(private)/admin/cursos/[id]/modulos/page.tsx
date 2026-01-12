@@ -59,7 +59,7 @@ export default async function ModulosPage({ params }: ModulosPageProps) {
         <div className="mb-8">
           <Link
             href={`/admin/cursos/${course.id}`}
-            className="flex items-center gap-2 text-[#C5C7D3] hover:text-white transition mb-4"
+            className="flex items-center gap-2 text-white/70 hover:text-white transition mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver al curso
@@ -69,11 +69,11 @@ export default async function ModulosPage({ params }: ModulosPageProps) {
               <h1 className="text-4xl font-bold text-white mb-2">
                 Gestión de Módulos
               </h1>
-              <p className="text-[#C5C7D3]">{course.title}</p>
+              <p className="text-white/70">{course.title}</p>
             </div>
             <Link
               href={`/admin/cursos/${course.id}/modulos/nuevo`}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-brand-light/50 transition"
             >
               <Plus className="w-5 h-5" />
               Crear Módulo
@@ -92,8 +92,8 @@ export default async function ModulosPage({ params }: ModulosPageProps) {
                 <div className="flex items-start gap-4">
                   {/* Número de orden */}
                   <div className="flex flex-col gap-2">
-                    <div className="w-12 h-12 rounded-lg bg-[#24D4FF]/10 border border-[#24D4FF]/30 flex items-center justify-center">
-                      <span className="text-[#24D4FF] font-bold text-lg">
+                    <div className="w-12 h-12 rounded-lg bg-accent-blue/10 border border-accent-blue/30 flex items-center justify-center">
+                      <span className="text-accent-blue font-bold text-lg">
                         {module.order_index + 1}
                       </span>
                     </div>
@@ -113,12 +113,12 @@ export default async function ModulosPage({ params }: ModulosPageProps) {
                       {module.title}
                     </h3>
                     {module.description && (
-                      <p className="text-[#C5C7D3] mb-4">{module.description}</p>
+                      <p className="text-white/70 mb-4">{module.description}</p>
                     )}
 
                     <div className="flex items-center gap-6 text-sm text-white/50">
                       <div className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-[#00C98D]" />
+                        <BookOpen className="w-4 h-4 text-success" />
                         <span>{module.lessons_count} lecciones</span>
                       </div>
                     </div>
@@ -128,7 +128,7 @@ export default async function ModulosPage({ params }: ModulosPageProps) {
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/admin/cursos/${course.id}/modulos/${module.id}/lecciones`}
-                      className="px-4 py-2 bg-[#24D4FF]/10 border border-[#24D4FF]/30 text-[#24D4FF] rounded-lg hover:bg-[#24D4FF]/20 transition text-sm font-medium"
+                      className="px-4 py-2 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-lg hover:bg-accent-blue/20 transition text-sm font-medium"
                     >
                       Lecciones
                     </Link>
@@ -151,18 +151,18 @@ export default async function ModulosPage({ params }: ModulosPageProps) {
         ) : (
           /* Empty State */
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-16 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#24D4FF]/10 border border-[#24D4FF]/30 mb-6">
-              <BookOpen className="w-10 h-10 text-[#24D4FF]" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent-blue/10 border border-accent-blue/30 mb-6">
+              <BookOpen className="w-10 h-10 text-accent-blue" />
             </div>
             <h3 className="text-2xl font-bold text-white mb-2">
               No hay módulos todavía
             </h3>
-            <p className="text-[#C5C7D3] mb-6">
+            <p className="text-white/70 mb-6">
               Comienza creando el primer módulo del curso
             </p>
             <Link
               href={`/admin/cursos/${course.id}/modulos/nuevo`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl transition"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-xl transition"
             >
               <Plus className="w-5 h-5" />
               Crear Primer Módulo

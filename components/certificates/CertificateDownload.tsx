@@ -58,11 +58,11 @@ export function CertificateDownload({
   // Variant styles
   const variantClasses = {
     primary:
-      'bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white hover:shadow-lg hover:shadow-[#ff6b35]/50',
+      'bg-gradient-to-r from-brand-light to-brand text-white hover:shadow-lg hover:shadow-brand-light/50',
     secondary:
-      'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black hover:shadow-lg hover:shadow-[#FFD700]/50',
+      'bg-gradient-to-r from-gold to-gold-light text-black hover:shadow-lg hover:shadow-gold/50',
     outline:
-      'bg-transparent border-2 border-[#ff6b35] text-[#ff6b35] hover:bg-[#ff6b35]/10',
+      'bg-transparent border-2 border-brand-light text-brand-light hover:bg-brand-light/10',
   }
 
   // Size styles
@@ -123,8 +123,8 @@ export function CertificateCard({
     <div className="bg-white/5 border border-white/10 rounded-xl p-6">
       <div className="flex items-start gap-4">
         {/* Icon */}
-        <div className="w-16 h-16 rounded-xl bg-gradient-to-r from-[#FFD700]/20 to-[#FFA500]/20 flex items-center justify-center flex-shrink-0">
-          <FileText className="w-8 h-8 text-[#FFD700]" />
+        <div className="w-16 h-16 rounded-xl bg-gradient-to-r from-gold/20 to-gold-light/20 flex items-center justify-center flex-shrink-0">
+          <FileText className="w-8 h-8 text-gold" />
         </div>
 
         {/* Info */}
@@ -166,3 +166,4 @@ export function CertificateCard({
     </div>
   )
 }
+

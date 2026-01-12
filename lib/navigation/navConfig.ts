@@ -211,7 +211,7 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   {
     key: 'certificates',
     label: 'Certificados',
-    href: '/certificados',
+    href: '/dashboard/certificados',
     icon: Award,
     type: 'link',
     requiresAuth: true,
@@ -341,3 +341,5 @@ export function isNavItemActive(href: string | undefined, pathname: string): boo
 
   return pathname === href
 }
+
+

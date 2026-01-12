@@ -47,18 +47,18 @@ export default async function LessonListPage({ params }: PageProps) {
   const totalLessons = lessons?.length || 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f1419] via-[#1a1f2e] to-[#0f1419] text-white p-6">
+    <div className="min-h-screen bg-gradient-to-br from-dark-secondary via-dark-surface to-dark-secondary text-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-sm">
-          <Link href="/admin/cursos" className="text-[#C5C7D3] hover:text-white transition">
+          <Link href="/admin/cursos" className="text-white/70 hover:text-white transition">
             Cursos
           </Link>
-          <span className="text-[#C5C7D3]">/</span>
-          <Link href={`/admin/cursos/${courseId}/modulos`} className="text-[#C5C7D3] hover:text-white transition">
+          <span className="text-white/70">/</span>
+          <Link href={`/admin/cursos/${courseId}/modulos`} className="text-white/70 hover:text-white transition">
             {course.title}
           </Link>
-          <span className="text-[#C5C7D3]">/</span>
+          <span className="text-white/70">/</span>
           <span className="text-white font-medium">Módulo {module.order_index + 1}: {module.title}</span>
         </div>
 
@@ -72,18 +72,18 @@ export default async function LessonListPage({ params }: PageProps) {
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-[#ff6b35] to-[#f7931a] bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-brand-light to-brand bg-clip-text text-transparent">
                 Lecciones
               </h1>
             </div>
-            <p className="text-[#C5C7D3] ml-14">
+            <p className="text-white/70 ml-14">
               Gestiona las lecciones del módulo "{module.title}"
             </p>
           </div>
 
           <Link
             href={`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones/nueva`}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-brand-light/50 transition"
           >
             <Plus className="w-5 h-5" />
             Nueva Lección
@@ -93,14 +93,14 @@ export default async function LessonListPage({ params }: PageProps) {
         {/* Lecciones List */}
         {totalLessons === 0 ? (
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-12 text-center">
-            <BookOpen className="w-16 h-16 text-[#C5C7D3] mx-auto mb-4" />
+            <BookOpen className="w-16 h-16 text-white/70 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No hay lecciones</h3>
-            <p className="text-[#C5C7D3] mb-6">
+            <p className="text-white/70 mb-6">
               Crea la primera lección para este módulo
             </p>
             <Link
               href={`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones/nueva`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-brand-light/50 transition"
             >
               <Plus className="w-5 h-5" />
               Crear Primera Lección
@@ -111,11 +111,11 @@ export default async function LessonListPage({ params }: PageProps) {
             {lessons?.map((lesson, index) => (
               <div
                 key={lesson.id}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-[#24D4FF]/50 transition group"
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-accent-blue/50 transition group"
               >
                 <div className="flex items-start gap-4">
                   {/* Orden Visual */}
-                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center text-white font-bold text-lg">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center text-white font-bold text-lg">
                     {lesson.order_index + 1}
                   </div>
 
@@ -127,7 +127,7 @@ export default async function LessonListPage({ params }: PageProps) {
                           {lesson.title}
                         </h3>
                         {lesson.description && (
-                          <p className="text-[#C5C7D3] text-sm">
+                          <p className="text-white/70 text-sm">
                             {lesson.description}
                           </p>
                         )}
@@ -136,12 +136,12 @@ export default async function LessonListPage({ params }: PageProps) {
                       {/* Badges */}
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {lesson.is_free_preview && (
-                          <span className="px-3 py-1 bg-[#00C98D]/20 text-[#00C98D] border border-[#00C98D]/30 rounded-full text-xs font-medium">
+                          <span className="px-3 py-1 bg-success/20 text-success border border-success/30 rounded-full text-xs font-medium">
                             Vista Previa
                           </span>
                         )}
                         {lesson.video_url && (
-                          <span className="px-3 py-1 bg-[#24D4FF]/20 text-[#24D4FF] border border-[#24D4FF]/30 rounded-full text-xs font-medium flex items-center gap-1">
+                          <span className="px-3 py-1 bg-accent-blue/20 text-accent-blue border border-accent-blue/30 rounded-full text-xs font-medium flex items-center gap-1">
                             <Video className="w-3 h-3" />
                             Video
                           </span>
@@ -150,7 +150,7 @@ export default async function LessonListPage({ params }: PageProps) {
                     </div>
 
                     {/* Metadata */}
-                    <div className="flex items-center gap-4 text-sm text-[#C5C7D3] mb-4">
+                    <div className="flex items-center gap-4 text-sm text-white/70 mb-4">
                       <span className="flex items-center gap-1">
                         <BookOpen className="w-4 h-4" />
                         {lesson.slug}
@@ -174,7 +174,7 @@ export default async function LessonListPage({ params }: PageProps) {
 
                       <Link
                         href={`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones/${lesson.id}`}
-                        className="px-4 py-2 bg-[#24D4FF]/10 border border-[#24D4FF]/30 text-[#24D4FF] rounded-lg hover:bg-[#24D4FF]/20 transition font-medium"
+                        className="px-4 py-2 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-lg hover:bg-accent-blue/20 transition font-medium"
                       >
                         Editar
                       </Link>

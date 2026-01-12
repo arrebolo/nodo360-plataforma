@@ -1,162 +1,262 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { StickyNote } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { StickyNote, Check, Loader2, AlertCircle, Cloud } from 'lucide-react'
 
-export function LessonNotes({ lessonId }: { lessonId: string }) {
-  const isUuid = (v?: string | null) =>
-    typeof v === 'string' &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)
+const DEBOUNCE_MS = 900
+const SAVED_BADGE_MS = 2000
 
-  const idsReady = isUuid(lessonId)
+type LessonNotesProps = {
+  lessonId: string
+  userId: string | null
+  initialContent?: string
+}
+
+const isUuid = (v?: string | null) =>
+  typeof v === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)
+
+export function LessonNotes({ lessonId, userId, initialContent = '' }: LessonNotesProps) {
+  const idsReady = isUuid(lessonId) && isUuid(userId)
   const draftKey = useMemo(() => `nodo360_note_draft_${lessonId}`, [lessonId])
 
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState(initialContent)
   const [status, setStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  const lastCloudValueRef = useRef<string>('')
+  const lastCloudValueRef = useRef<string>('') // ultimo valor confirmado en servidor
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef<boolean>(false)
 
+  // Mount/unmount guards
   useEffect(() => {
-    const draft = window.localStorage.getItem(draftKey)
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
+  }, [])
+
+  // Load initial note: local draft first (optimiza UX), luego server decide
+  useEffect(() => {
+    const draft = typeof window !== 'undefined' ? window.localStorage.getItem(draftKey) : null
+
+    // Pintamos draft primero para UX instantanea
     if (draft != null) setValue(draft)
 
-    if (!idsReady) return
+    if (!idsReady) {
+      // si no hay sesion, seguimos en modo local
+      lastCloudValueRef.current = draft ?? ''
+      return
+    }
 
-    let cancelled = false
+    const controller = new AbortController()
+
     ;(async () => {
       try {
+        if (!mountedRef.current) return
         setStatus('loading')
         setErrorMsg(null)
 
-        const res = await fetch(`/api/notes?lessonId=${lessonId}`)
-        const json = await res.json()
+        const res = await fetch(`/api/notes?lessonId=${lessonId}`, {
+          signal: controller.signal,
+        })
+        const json = await res.json().catch(() => ({}))
 
-        if (cancelled) return
-
+        if (!mountedRef.current) return
         if (!res.ok) {
           setStatus('idle')
           return
         }
 
-        if (json?.note?.content != null) {
-          setValue(json.note.content)
-          lastCloudValueRef.current = json.note.content
-          window.localStorage.removeItem(draftKey)
+        const serverContent: string | null =
+          json?.note?.content != null ? String(json.note.content) : null
+
+        // Regla Beta: SERVER MANDA
+        if (serverContent != null) {
+          setValue(serverContent)
+          lastCloudValueRef.current = serverContent
+          if (typeof window !== 'undefined') {
+            window.localStorage.removeItem(draftKey)
+          }
         } else {
+          // No hay nota en server: si habia draft, lo mantenemos
           lastCloudValueRef.current = draft ?? ''
         }
 
         setStatus('idle')
-      } catch (e: any) {
-        if (cancelled) return
+      } catch (e: unknown) {
+        if (!mountedRef.current) return
+        if ((e as Error)?.name === 'AbortError') return
         setStatus('error')
-        setErrorMsg(e?.message ?? 'Error cargando nota')
+        setErrorMsg(e instanceof Error ? e.message : 'Error cargando nota')
       }
     })()
 
-    return () => {
-      cancelled = true
-    }
+    return () => controller.abort()
   }, [lessonId, draftKey, idsReady])
 
+  // Save draft local on every change (modo offline/backup)
   useEffect(() => {
-    window.localStorage.setItem(draftKey, value)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(draftKey, value)
+    }
   }, [value, draftKey])
 
-  const dirty = value !== lastCloudValueRef.current
-  const hasText = value.trim().length > 0
+  const saveNote = useCallback(
+    async (content: string) => {
+      if (!idsReady) return
+      if (content === lastCloudValueRef.current) return
 
-  const canSave = idsReady && dirty && hasText && status !== 'saving' && status !== 'loading'
+      try {
+        if (!mountedRef.current) return
+        setStatus('saving')
+        setErrorMsg(null)
 
-  const disabledReason = !idsReady
-    ? 'lessonId inválido'
-    : status === 'loading'
-    ? 'cargando'
-    : status === 'saving'
-    ? 'guardando'
-    : !hasText
-    ? 'vacío'
-    : !dirty
-    ? 'sin cambios'
-    : null
+        const res = await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lessonId,
+            // Permitimos guardar vacio para "borrar" nota
+            content,
+          }),
+        })
 
-  const handleSave = async () => {
-    console.log('[LessonNotes] click guardar', { idsReady, dirty, status, len: value.length })
+        const json = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(json?.error ?? 'Error al guardar nota')
 
-    if (!canSave) return
+        lastCloudValueRef.current = content
+        if (typeof window !== 'undefined') {
+          window.localStorage.removeItem(draftKey)
+        }
 
-    try {
-      setStatus('saving')
-      setErrorMsg(null)
+        if (!mountedRef.current) return
+        setStatus('saved')
 
-      const res = await fetch('/api/notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId, content: value }),
-      })
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+        savedTimerRef.current = setTimeout(() => {
+          if (!mountedRef.current) return
+          setStatus('idle')
+        }, SAVED_BADGE_MS)
+      } catch (e: unknown) {
+        if (!mountedRef.current) return
+        setStatus('error')
+        setErrorMsg(e instanceof Error ? e.message : 'Error al guardar nota')
+      }
+    },
+    [idsReady, lessonId, draftKey]
+  )
 
-      const json = await res.json()
+  // Debounced auto-save on change
+  useEffect(() => {
+    if (!idsReady) return
+    if (value === lastCloudValueRef.current) return
 
-      if (!res.ok) throw new Error(json?.error ?? 'Error al guardar nota')
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
 
-      lastCloudValueRef.current = value
-      window.localStorage.removeItem(draftKey)
+    debounceTimerRef.current = setTimeout(() => {
+      // Guardamos incluso vacio (permite borrar)
+      saveNote(value)
+    }, DEBOUNCE_MS)
 
-      setStatus('saved')
-      setTimeout(() => setStatus('idle'), 800)
-    } catch (e: any) {
-      setStatus('error')
-      setErrorMsg(e?.message ?? 'Error al guardar nota')
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
     }
+  }, [value, idsReady, saveNote])
+
+  const dirty = value !== lastCloudValueRef.current
+
+  const renderStatus = () => {
+    if (status === 'loading') {
+      return (
+        <span className="flex items-center gap-1.5 text-white/40">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Cargando...
+        </span>
+      )
+    }
+    if (status === 'saving') {
+      return (
+        <span className="flex items-center gap-1.5 text-white/40">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Guardando...
+        </span>
+      )
+    }
+    if (status === 'saved') {
+      return (
+        <span className="flex items-center gap-1.5 text-success">
+          <Check className="h-3.5 w-3.5" />
+          Guardado
+        </span>
+      )
+    }
+    if (status === 'error') {
+      return (
+        <span className="flex items-center gap-1.5 text-error">
+          <AlertCircle className="h-3.5 w-3.5" />
+          Error
+        </span>
+      )
+    }
+    if (!idsReady) {
+      return (
+        <span className="flex items-center gap-1.5 text-warning">
+          <Cloud className="h-3.5 w-3.5" />
+          Solo local
+        </span>
+      )
+    }
+    if (dirty) {
+      return (
+        <span className="flex items-center gap-1.5 text-white/40">
+          <Cloud className="h-3.5 w-3.5" />
+          Sin guardar
+        </span>
+      )
+    }
+    return (
+      <span className="flex items-center gap-1.5 text-white/40">
+        <Cloud className="h-3.5 w-3.5" />
+        Sincronizado
+      </span>
+    )
   }
 
   return (
-    <div className="bg-[#1a1a1a] rounded-xl border border-white/10 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-          <StickyNote className="w-5 h-5" />
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-medium text-white flex items-center gap-2">
+          <StickyNote className="w-4 h-4 text-white/50" />
           Mis notas
-        </h3>
-
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!canSave}
-          className="text-xs rounded-full px-3 py-1 border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed text-white"
-          title={disabledReason ? `No se puede guardar: ${disabledReason}` : 'Guardar'}
-        >
-          {status === 'loading'
-            ? 'Cargando...'
-            : status === 'saving'
-            ? 'Guardando...'
-            : status === 'saved'
-            ? 'Guardado'
-            : !idsReady
-            ? 'Guardar (local)'
-            : 'Guardar'}
-        </button>
+        </h4>
+        <div className="text-xs">{renderStatus()}</div>
       </div>
 
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={idsReady ? 'Escribe aquí tus ideas clave...' : 'Modo local (lessonId inválido).'}
-        className="w-full min-h-[220px] rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-white outline-none focus:ring-2 focus:ring-white/10 placeholder:text-white/30"
+        placeholder={idsReady ? 'Escribe aqui tus ideas clave...' : 'Inicia sesion para guardar tus notas en la nube.'}
+        className="w-full min-h-[180px] rounded-xl border border-dark-border bg-dark-tertiary p-3 text-sm text-white outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand placeholder:text-white/40 resize-none"
       />
 
-      <div className="mt-2 flex items-center justify-between text-xs text-white/40">
+      <div className="flex items-center justify-between text-xs text-white/40">
         <span>{value.length} caracteres</span>
-        <span>
-          {!idsReady ? 'Modo local.' : !hasText ? 'Vacío.' : dirty ? 'Cambios sin guardar.' : 'Sin cambios.'}
-        </span>
+        <span>Auto-guardado activo</span>
       </div>
 
       {status === 'error' && errorMsg ? (
-        <div className="mt-3 text-xs rounded-xl border border-red-500/20 bg-red-500/10 p-2 text-red-200">
+        <div className="text-xs rounded-xl border border-error/30 bg-error/10 p-3 text-error">
           Error: {errorMsg}
         </div>
       ) : null}
     </div>
   )
 }
+
+export default LessonNotes
+
+

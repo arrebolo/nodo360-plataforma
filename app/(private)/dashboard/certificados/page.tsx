@@ -1,195 +1,214 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { PageHeader } from '@/components/ui/PageHeader'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Award, Download, ExternalLink, Calendar, ArrowLeft } from 'lucide-react'
+import { CertificateCard } from '@/components/certificates/CertificateCard'
+import { Award, BookOpen, ArrowRight } from 'lucide-react'
 
 export const metadata = {
   title: 'Mis Certificados | Nodo360',
-  description: 'Todos tus certificados obtenidos'
+  description: 'Todos tus certificados obtenidos',
 }
 
-export default async function MisCertificadosPage() {
-  const supabase = await createClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
+function formatShortEs(dateStr: string) {
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+}
 
-  if (error || !user) {
-    redirect('/login')
+type PageProps = {
+  searchParams: Promise<{ courseSlug?: string; curso?: string }>
+}
+
+export default async function DashboardCertificatesPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const supabase = await createClient()
+
+  const { data: userData } = await supabase.auth.getUser()
+  const user = userData?.user
+
+  if (!user) {
+    redirect('/login?redirect=/dashboard/certificados')
   }
 
-  // Obtener certificados del usuario
-  const { data: certificates } = await supabase
+  const courseSlug = params.courseSlug || params.curso
+
+  // Obtener certificados con datos del curso y usuario
+  // NOTA: user_name y score no existen en la tabla certificates
+  // Obtenemos el nombre del usuario por separado y score desde quiz_attempts si aplica
+  const { data: certificates, error } = await supabase
     .from('certificates')
     .select(`
       id,
-      certificate_number,
       type,
+      certificate_number,
+      title,
       issued_at,
       expires_at,
       certificate_url,
       verification_url,
-      course:courses(title, slug),
-      module:modules(title)
+      course_id,
+      module_id,
+      course:courses(id, slug, title, description),
+      module:modules(id, title)
     `)
     .eq('user_id', user.id)
     .order('issued_at', { ascending: false })
 
-  const certs = certificates || []
-  const courseCerts = certs.filter((c: any) => c.type === 'course')
-  const moduleCerts = certs.filter((c: any) => c.type === 'module')
+  // Obtener stats
+  const { count: totalCertificates } = await supabase
+    .from('certificates')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Error cargando certificados:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    })
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-8">
+        <h1 className="text-xl font-semibold text-white">Mis certificados</h1>
+        <p className="mt-2 text-sm text-white/60">
+          Error cargando certificados: {error.message || error.code || 'Error desconocido'}
+        </p>
+        {error.hint && (
+          <p className="mt-1 text-xs text-white/40">Hint: {error.hint}</p>
+        )}
+      </div>
+    )
+  }
+
+  // Obtener nombre del usuario para mostrar en certificados
+  const { data: userData2 } = await supabase
+    .from('users')
+    .select('full_name')
+    .eq('id', user.id)
+    .single()
+
+  const userName = userData2?.full_name || user.email?.split('@')[0] || 'Usuario'
+
+  let list = certificates ?? []
+  if (courseSlug) {
+    list = list.filter((c: any) => c.course?.slug === courseSlug)
+  }
 
   return (
-    <div className="min-h-screen bg-[#070a10]">
-      <div className="mx-auto w-full max-w-6xl px-4 py-8">
-        {/* Back link */}
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white transition mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Volver al dashboard
-        </Link>
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
+            <Award className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Mis Certificados</h1>
+            <p className="text-white/50 text-sm">
+              {totalCertificates === 0
+                ? 'Completa cursos para obtener certificados verificables'
+                : `Has obtenido ${totalCertificates} certificado${totalCertificates !== 1 ? 's' : ''}`
+              }
+            </p>
+          </div>
+        </div>
 
-        {/* Header */}
-        <PageHeader
-          icon={Award}
-          title="Mis Certificados"
-          description={`${certs.length} certificado${certs.length !== 1 ? 's' : ''} obtenido${certs.length !== 1 ? 's' : ''}`}
-        />
-
-        {certs.length === 0 ? (
-          <Card className="text-center py-12">
-            <div className="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-              <Award className="w-8 h-8 text-purple-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Aun no tienes certificados</h2>
-            <p className="text-white/60 mb-6">Completa cursos o modulos para obtener certificados.</p>
-            <Button href="/cursos">
-              Explorar cursos
-            </Button>
-          </Card>
-        ) : (
-          <div className="space-y-8">
-            {/* Certificados de curso */}
-            {courseCerts.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-[#f7931a]/20 flex items-center justify-center">
-                    <Award className="w-5 h-5 text-[#f7931a]" />
-                  </div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Certificados de Curso ({courseCerts.length})
-                  </h2>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {courseCerts.map((cert: any) => (
-                    <div
-                      key={cert.id}
-                      className="rounded-2xl border border-[#f7931a]/30 bg-gradient-to-br from-[#f7931a]/10 to-transparent p-6"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center">
-                          <Award className="w-6 h-6 text-white" />
-                        </div>
-                        <span className="px-3 py-1 rounded-full bg-[#f7931a]/20 text-[#f7931a] text-xs font-semibold">
-                          Curso Completo
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-white text-lg mb-2">
-                        {cert.course?.title || 'Curso'}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-white/50 mb-4">
-                        <Calendar className="w-4 h-4" />
-                        <span>
-                          Emitido el {new Date(cert.issued_at).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                      <code className="block text-xs text-white/40 bg-black/20 rounded-lg px-3 py-2 mb-4 font-mono">
-                        {cert.certificate_number}
-                      </code>
-                      <div className="flex gap-3">
-                        <Button
-                          href={`/certificados/${cert.id}`}
-                          variant="secondary"
-                          size="sm"
-                          className="flex-1"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                          Ver
-                        </Button>
-                        {cert.certificate_url && (
-                          <a
-                            href={cert.certificate_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white text-sm font-semibold hover:opacity-90 transition"
-                          >
-                            <Download className="w-4 h-4" />
-                            Descargar
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Certificados de modulo */}
-            {moduleCerts.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                    <Award className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Certificados de Modulo ({moduleCerts.length})
-                  </h2>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {moduleCerts.map((cert: any) => (
-                    <div
-                      key={cert.id}
-                      className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-5"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                          <Award className="w-5 h-5 text-blue-400" />
-                        </div>
-                        <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 text-xs font-medium">
-                          Modulo
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-white mb-1">
-                        {cert.module?.title || 'Modulo'}
-                      </h3>
-                      <p className="text-sm text-white/50 mb-3">
-                        {cert.course?.title}
-                      </p>
-                      <div className="text-xs text-white/40 mb-3">
-                        {new Date(cert.issued_at).toLocaleDateString('es-ES')}
-                      </div>
-                      <Link
-                        href={`/certificados/${cert.id}`}
-                        className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition"
-                      >
-                        Ver certificado
-                        <ExternalLink className="w-3 h-3" />
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+        {/* Filtro activo */}
+        {courseSlug && (
+          <div className="mt-4 flex items-center gap-2">
+            <span className="text-sm text-white/50">Filtrando por curso:</span>
+            <Link
+              href="/dashboard/certificados"
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-light/20 text-brand-light text-sm rounded-full hover:bg-brand-light/30 transition"
+            >
+              <span>{courseSlug}</span>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </Link>
           </div>
         )}
       </div>
+
+      {/* Lista de certificados */}
+      {list.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+            <Award className="w-10 h-10 text-white/20" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">
+            {courseSlug ? 'No tienes certificados para este curso' : 'Aun no tienes certificados'}
+          </h3>
+          <p className="text-white/50 mb-6 max-w-md mx-auto">
+            Completa cursos y aprueba los quizzes finales para obtener certificados verificables que puedes compartir en tu perfil profesional.
+          </p>
+          <Link
+            href="/cursos"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-medium rounded-xl hover:shadow-lg hover:shadow-brand-light/25 transition"
+          >
+            <BookOpen className="w-5 h-5" />
+            <span>Explorar cursos</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {list.map((c: any) => {
+            const title =
+              c.type === 'module' ? (c.module?.title ?? 'Modulo') : (c.course?.title ?? 'Curso')
+
+            const subtitle = c.type === 'course' ? (c.course?.description ?? null) : null
+
+            const verificationPath = (() => {
+              if (typeof c.verification_url !== 'string') return `/verificar/${c.certificate_number}`
+              try {
+                const u = new URL(c.verification_url)
+                return u.pathname
+              } catch {
+                if (c.verification_url.startsWith('/')) return c.verification_url
+                return `/verificar/${c.certificate_number}`
+              }
+            })()
+
+            return (
+              <CertificateCard
+                key={c.id}
+                certificateNumber={c.certificate_number}
+                title={title}
+                subtitle={subtitle}
+                issuedAt={c.issued_at ? formatShortEs(c.issued_at) : undefined}
+                issuedAtISO={c.issued_at}
+                type={c.type}
+                verificationPath={verificationPath}
+                pdfUrl={c.certificate_url}
+                userName={userName}
+              />
+            )
+          })}
+        </div>
+      )}
+
+      {/* CTA para seguir aprendiendo */}
+      {list.length > 0 && (
+        <div className="mt-12 p-6 bg-gradient-to-br from-white/[0.05] to-transparent border border-white/10 rounded-2xl">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Sigue aprendiendo
+              </h3>
+              <p className="text-white/60 text-sm">
+                Explora mas cursos y consigue nuevos certificados para tu perfil profesional.
+              </p>
+            </div>
+            <Link
+              href="/cursos"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 text-white rounded-xl hover:bg-white/15 transition whitespace-nowrap"
+            >
+              <span>Ver cursos</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

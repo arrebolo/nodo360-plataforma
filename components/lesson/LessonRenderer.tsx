@@ -2,14 +2,14 @@
 
 import React, { useMemo } from 'react'
 import type { ContentBlock, LessonContent, TableOfContentsItem } from '@/types/lesson-content'
-import { VideoPlayer } from './VideoPlayer'
+import VideoPlayer from './VideoPlayer'
 import { LessonCallout } from './LessonCallout'
 import { CodeBlock } from './CodeBlock'
 import { InteractiveList } from './InteractiveList'
 import { QuizBlock } from './QuizBlock'
 import { TableOfContents } from './TableOfContents'
 import { CommunityButton } from './CommunityButton'
-import { ProgressBar } from '@/components/ui/ProgressBar'
+import ProgressBar from '@/components/ui/ProgressBar'
 
 interface LessonRendererProps {
   content: LessonContent
@@ -35,7 +35,7 @@ export function LessonRenderer({ content, progress = 0 }: LessonRendererProps) {
   const renderBlock = (block: ContentBlock) => {
     switch (block.type) {
       case 'video':
-        return <VideoPlayer key={block.id} block={block} />
+        return <VideoPlayer key={block.id} videoUrl={block.url} thumbnailUrl={block.thumbnail} title="Video" />
 
       case 'heading': {
         const HeadingTag = `h${block.level}` as any
@@ -61,7 +61,7 @@ export function LessonRenderer({ content, progress = 0 }: LessonRendererProps) {
 
       case 'paragraph':
         return (
-          <p key={block.id} className="text-gray-300 leading-relaxed mb-4">
+          <p key={block.id} className="text-white/80 leading-relaxed mb-4">
             {block.text}
           </p>
         )
@@ -89,7 +89,7 @@ export function LessonRenderer({ content, progress = 0 }: LessonRendererProps) {
               height={block.height}
             />
             {block.caption && (
-              <figcaption className="text-sm text-gray-500 text-center mt-2">
+              <figcaption className="text-sm text-white/50 text-center mt-2">
                 {block.caption}
               </figcaption>
             )}
@@ -97,7 +97,7 @@ export function LessonRenderer({ content, progress = 0 }: LessonRendererProps) {
         )
 
       case 'divider':
-        return <hr key={block.id} className="my-8 border-gray-800" />
+        return <hr key={block.id} className="my-8 border-dark-border" />
 
       default:
         return null
@@ -105,8 +105,8 @@ export function LessonRenderer({ content, progress = 0 }: LessonRendererProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      <ProgressBar percentage={progress} size="sm" showLabel={false} className="sticky top-0 z-10" />
+    <div className="min-h-screen bg-dark-deep">
+      <ProgressBar value={progress} className="sticky top-0 z-10" />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
@@ -136,3 +136,5 @@ export function LessonRenderer({ content, progress = 0 }: LessonRendererProps) {
     </div>
   )
 }
+
+

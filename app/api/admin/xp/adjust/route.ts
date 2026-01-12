@@ -67,3 +67,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Error al ajustar XP' }, { status: 500 })
   }
 }
+
+

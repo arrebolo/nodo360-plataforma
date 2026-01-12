@@ -13,24 +13,24 @@ export const metadata: Metadata = {
 
 export default function SobreNosotrosPage() {
   return (
-    <main className="min-h-screen bg-[#1a1f2e]">
+    <main className="min-h-screen bg-dark-surface">
       {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden bg-gradient-to-b from-[#1a1f2e] to-[#252b3d]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b35]/10 to-[#FFD700]/10" />
-        <div className="absolute top-20 right-20 w-96 h-96 bg-[#ff6b35] rounded-full blur-3xl opacity-20 animate-pulse" />
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-[#FFD700] rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
+      <section className="relative py-24 overflow-hidden bg-gradient-to-b from-dark-surface to-dark-soft">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-light/10 to-gold/10" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-brand-light rounded-full blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-gold rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-full mb-8">
-            <Heart className="w-4 h-4 text-[#ff6b35]" />
-            <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b35] to-[#FFD700]">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-full mb-8">
+            <Heart className="w-4 h-4 text-brand-light" />
+            <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-gold">
               NUESTRA HISTORIA
             </span>
           </div>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
             Construyendo el{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b35] to-[#FFD700]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-gold">
               Futuro
             </span>
             {' '}de la Educación
@@ -43,7 +43,7 @@ export default function SobreNosotrosPage() {
       </section>
 
       {/* Story Section */}
-      <section className="py-24 bg-[#252b3d]">
+      <section className="py-24 bg-dark-soft">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-8 md:p-12 border border-white/20">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Nuestra Historia</h2>
@@ -55,7 +55,7 @@ export default function SobreNosotrosPage() {
                 En 2023, un grupo de desarrolladores, educadores y entusiastas de Bitcoin decidimos cambiar esto. Creamos Nodo360 con una misión simple pero ambiciosa: <span className="text-white font-semibold">hacer que la educación en blockchain sea accesible para todos los hispanohablantes</span>, sin importar su nivel de experiencia o ubicación.
               </p>
               <p>
-                Lo que comenzó como cursos básicos ha evolucionado en una plataforma completa con <span className="text-[#ff6b35] font-semibold">cursos gratuitos y premium, comunidad activa, mentoría personalizada y proyectos innovadores</span>. Hoy, más de 2,300 estudiantes de 50+ países confían en Nodo360 para su educación en crypto.
+                Lo que comenzó como cursos básicos ha evolucionado en una plataforma completa con <span className="text-brand-light font-semibold">cursos gratuitos y premium, comunidad activa, mentoría personalizada y proyectos innovadores</span>. Hoy, más de 2,300 estudiantes de 50+ países confían en Nodo360 para su educación en crypto.
               </p>
               <p>
                 Pero esto es solo el comienzo. Nuestro objetivo es convertirnos en <span className="text-white font-semibold">la plataforma educativa de referencia en español para todo lo relacionado con Bitcoin, Blockchain y Web3</span>.
@@ -66,13 +66,13 @@ export default function SobreNosotrosPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-24 bg-gradient-to-b from-[#252b3d] to-[#1a1f2e]">
+      <section className="py-24 bg-gradient-to-b from-dark-soft to-dark-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8">
             {/* Mission */}
             <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/20">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-2xl flex items-center justify-center mb-6">
-                <Target className="w-8 h-8 text-[#ff6b35]" />
+              <div className="w-16 h-16 bg-gradient-to-br from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-2xl flex items-center justify-center mb-6">
+                <Target className="w-8 h-8 text-brand-light" />
               </div>
               <h2 className="text-3xl font-bold text-white mb-4">Nuestra Misión</h2>
               <p className="text-white/80 text-lg leading-relaxed">
@@ -82,8 +82,8 @@ export default function SobreNosotrosPage() {
 
             {/* Vision */}
             <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/20">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-2xl flex items-center justify-center mb-6">
-                <Eye className="w-8 h-8 text-[#ff6b35]" />
+              <div className="w-16 h-16 bg-gradient-to-br from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-2xl flex items-center justify-center mb-6">
+                <Eye className="w-8 h-8 text-brand-light" />
               </div>
               <h2 className="text-3xl font-bold text-white mb-4">Nuestra Visión</h2>
               <p className="text-white/80 text-lg leading-relaxed">
@@ -95,7 +95,7 @@ export default function SobreNosotrosPage() {
       </section>
 
       {/* Values Section */}
-      <section className="py-24 bg-[#1a1f2e]">
+      <section className="py-24 bg-dark-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -139,9 +139,9 @@ export default function SobreNosotrosPage() {
                 desc: 'Celebramos la diversidad y creamos un espacio acogedor para todos.'
               },
             ].map((value, i) => (
-              <div key={i} className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 hover:border-[#ff6b35]/50 transition-all duration-300">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-xl flex items-center justify-center mb-4">
-                  <value.icon className="w-7 h-7 text-[#ff6b35]" />
+              <div key={i} className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 hover:border-brand-light/50 transition-all duration-300">
+                <div className="w-14 h-14 bg-gradient-to-br from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-xl flex items-center justify-center mb-4">
+                  <value.icon className="w-7 h-7 text-brand-light" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">{value.title}</h3>
                 <p className="text-white/70">{value.desc}</p>
@@ -152,7 +152,7 @@ export default function SobreNosotrosPage() {
       </section>
 
       {/* Timeline */}
-      <section className="py-24 bg-gradient-to-b from-[#1a1f2e] to-[#252b3d]">
+      <section className="py-24 bg-gradient-to-b from-dark-surface to-dark-soft">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -214,11 +214,11 @@ export default function SobreNosotrosPage() {
                 desc: 'Superamos los 2300 miembros activos. Presencia en 50+ países.'
               },
             ].map((milestone, i) => (
-              <div key={i} className="relative pl-8 pb-8 border-l-2 border-[#ff6b35]/30 last:border-l-0 last:pb-0">
-                <div className="absolute left-0 top-0 w-4 h-4 bg-gradient-to-br from-[#ff6b35] to-[#FFD700] rounded-full -translate-x-[9px] ring-4 ring-[#252b3d]" />
-                <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10 hover:border-[#ff6b35]/50 transition-all duration-300">
+              <div key={i} className="relative pl-8 pb-8 border-l-2 border-brand-light/30 last:border-l-0 last:pb-0">
+                <div className="absolute left-0 top-0 w-4 h-4 bg-gradient-to-br from-brand-light to-gold rounded-full -translate-x-[9px] ring-4 ring-dark-soft" />
+                <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10 hover:border-brand-light/50 transition-all duration-300">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="px-3 py-1 bg-gradient-to-r from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-full text-sm font-bold text-[#ff6b35]">
+                    <span className="px-3 py-1 bg-gradient-to-r from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-full text-sm font-bold text-brand-light">
                       {milestone.year} {milestone.quarter}
                     </span>
                   </div>
@@ -232,7 +232,7 @@ export default function SobreNosotrosPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-24 bg-[#252b3d]">
+      <section className="py-24 bg-dark-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -255,8 +255,8 @@ export default function SobreNosotrosPage() {
               { icon: Zap, value: '24/7', label: 'Soporte Comunitario' },
             ].map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-2xl mb-4">
-                  <stat.icon className="w-8 h-8 text-[#ff6b35]" />
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-2xl mb-4">
+                  <stat.icon className="w-8 h-8 text-brand-light" />
                 </div>
                 <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.value}</div>
                 <div className="text-white/60 text-sm">{stat.label}</div>
@@ -267,7 +267,7 @@ export default function SobreNosotrosPage() {
       </section>
 
       {/* Team Section */}
-      <section className="py-24 bg-gradient-to-b from-[#252b3d] to-[#1a1f2e]">
+      <section className="py-24 bg-gradient-to-b from-dark-soft to-dark-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -297,11 +297,11 @@ export default function SobreNosotrosPage() {
               },
             ].map((team, i) => (
               <div key={i} className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/20 text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-[#ff6b35] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-24 h-24 bg-gradient-to-br from-brand-light to-gold rounded-full flex items-center justify-center mx-auto mb-6">
                   <Users className="w-12 h-12 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">{team.name}</h3>
-                <p className="text-[#ff6b35] font-semibold mb-3">{team.role}</p>
+                <p className="text-brand-light font-semibold mb-3">{team.role}</p>
                 <p className="text-white/70 text-sm">{team.desc}</p>
               </div>
             ))}
@@ -313,7 +313,7 @@ export default function SobreNosotrosPage() {
             </p>
             <a
               href="mailto:team@nodo360.com"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-105"
             >
               <MessageCircle className="w-5 h-5" />
               Contáctanos
@@ -323,7 +323,7 @@ export default function SobreNosotrosPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-[#1a1f2e]">
+      <section className="py-24 bg-dark-surface">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-12 border border-white/20">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -335,14 +335,14 @@ export default function SobreNosotrosPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/cursos"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-105"
               >
                 <BookOpen className="w-5 h-5" />
                 Explorar Cursos
               </a>
               <a
                 href="/comunidad"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-lg rounded-xl hover:border-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-lg rounded-xl hover:border-brand-light/50 transition-all duration-300 hover:scale-105"
               >
                 <Users className="w-5 h-5" />
                 Unirse a la Comunidad
@@ -356,3 +356,4 @@ export default function SobreNosotrosPage() {
     </main>
   )
 }
+

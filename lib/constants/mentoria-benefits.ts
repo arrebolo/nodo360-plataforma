@@ -43,3 +43,5 @@ export const MENTORIA_BENEFITS: Array<{
     description: 'Chat directo con tu mentor entre sesiones'
   }
 ]
+
+

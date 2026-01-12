@@ -49,13 +49,13 @@ export default async function EditBadgePage({
         <div className="flex items-center gap-4">
           <Link
             href="/admin/gamificacion/hitos"
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60 hover:text-white"
           >
             <ArrowLeft size={20} />
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-white">Editar Hito</h1>
-            <p className="text-gray-400 mt-1">
+            <p className="text-white/60 mt-1">
               {badge.userCount} usuarios han desbloqueado este hito
             </p>
           </div>
@@ -63,18 +63,18 @@ export default async function EditBadgePage({
       </div>
 
       {/* Badge Info Card */}
-      <div className="bg-gradient-to-br from-[#ff6b35]/10 to-[#f7931a]/10 border border-[#ff6b35]/30 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-brand-light/10 to-brand/10 border border-brand-light/30 rounded-xl p-6">
         <div className="flex items-start gap-4">
           <div className="text-5xl">{badge.icon}</div>
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-white">{badge.title}</h2>
-            <p className="text-gray-300 mt-2">{badge.description}</p>
+            <p className="text-white/80 mt-2">{badge.description}</p>
             <div className="flex items-center gap-4 mt-4 text-sm">
-              <span className="text-gray-400">
+              <span className="text-white/60">
                 Creado: {new Date(badge.created_at).toLocaleDateString()}
               </span>
               {badge.updated_at && (
-                <span className="text-gray-400">
+                <span className="text-white/60">
                   Actualizado: {new Date(badge.updated_at).toLocaleDateString()}
                 </span>
               )}

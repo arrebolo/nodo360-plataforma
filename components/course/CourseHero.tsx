@@ -1,144 +1,296 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
+import * as React from 'react'
 
-interface CourseHeroProps {
-  course: {
-    id: string
-    slug: string
-    title: string
-    description: string | null
-    level: string
-    is_free: boolean
-    banner_url?: string | null
-    thumbnail_url?: string | null
-    total_duration_minutes?: number | null
-  }
-  stats: {
-    modules: number
-    lessons: number
-    duration: number
-  }
-  isEnrolled?: boolean
-  firstLessonUrl?: string
+import { cn } from '@/lib/utils'
+import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
+
+type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
+type CourseStatus = 'draft' | 'published' | 'archived' | 'coming_soon'
+
+export type CourseHeroCourse = {
+  id: string
+  slug: string
+  title: string
+  description?: string | null
+  long_description?: string | null
+  banner_url?: string | null
+  thumbnail_url?: string | null
+  level: CourseLevel
+  status: CourseStatus
+  is_free: boolean
+  price?: number | null
+
+  total_modules?: number | null
+  total_lessons?: number | null
+  total_duration_minutes?: number | null
+  enrolled_count?: number | null
 }
 
-export default function CourseHero({ course, stats, isEnrolled, firstLessonUrl }: CourseHeroProps) {
-  const levelConfig = {
-    beginner: { emoji: '🟢', label: 'Principiante', color: 'bg-[#4caf50]/20 text-[#4caf50]' },
-    intermediate: { emoji: '🟡', label: 'Intermedio', color: 'bg-[#ff6b35]/20 text-[#ff6b35]' },
-    advanced: { emoji: '🔴', label: 'Avanzado', color: 'bg-red-500/20 text-red-400' },
-  }
+export type CourseHeroProps = {
+  course: CourseHeroCourse
+  isEnrolled?: boolean
+  progressPct?: number | null
+  hasFreePreview?: boolean
+  hrefCourse?: string
+  hrefContinue?: string
+  hrefEnroll?: string
+  hrefPreview?: string
+  hrefDashboard?: string
+  onEnrollClick?: () => void
+  enrolling?: boolean
+}
 
-  const level = levelConfig[course.level as keyof typeof levelConfig] || levelConfig.beginner
+function formatDuration(minutes?: number | null) {
+  if (!minutes || minutes <= 0) return null
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h <= 0) return `${m} min`
+  if (m === 0) return `${h} h`
+  return `${h} h ${m} min`
+}
+
+function levelLabel(level: CourseLevel) {
+  switch (level) {
+    case 'beginner':
+      return 'Principiante'
+    case 'intermediate':
+      return 'Intermedio'
+    case 'advanced':
+      return 'Avanzado'
+  }
+}
+
+function statusLabel(status: CourseStatus) {
+  switch (status) {
+    case 'published':
+      return 'Publicado'
+    case 'draft':
+      return 'Borrador'
+    case 'archived':
+      return 'Archivado'
+    case 'coming_soon':
+      return 'Próximamente'
+  }
+}
+
+function clampPct(pct?: number | null) {
+  if (pct == null || Number.isNaN(pct)) return null
+  return Math.max(0, Math.min(100, Math.round(pct)))
+}
+
+function statusBadgeVariant(status: CourseStatus) {
+  switch (status) {
+    case 'published':
+      return 'success'
+    case 'coming_soon':
+      return 'info'
+    case 'draft':
+      return 'warning'
+    case 'archived':
+      return 'default'
+  }
+}
+
+function accessBadgeVariant(isFree: boolean) {
+  return isFree ? 'success' : 'premium'
+}
+
+export default function CourseHero({
+  course,
+  isEnrolled = false,
+  progressPct,
+  hasFreePreview = false,
+  hrefCourse,
+  hrefContinue,
+  hrefEnroll,
+  hrefPreview,
+  hrefDashboard = '/dashboard',
+  onEnrollClick,
+  enrolling = false,
+}: CourseHeroProps) {
+  const pct = clampPct(progressPct)
+  const published = course.status === 'published'
+
+  const courseUrl = hrefCourse ?? `/cursos/${course.slug}`
+  const canContinue = isEnrolled && (pct ?? 0) > 0 && !!hrefContinue
+
+  const duration = formatDuration(course.total_duration_minutes)
+
+  const metrics: Array<{ label: string; value: string }> = []
+  if (course.total_modules != null) metrics.push({ label: 'Módulos', value: String(course.total_modules) })
+  if (course.total_lessons != null) metrics.push({ label: 'Lecciones', value: String(course.total_lessons) })
+  if (duration) metrics.push({ label: 'Duración', value: duration })
+  if (course.enrolled_count != null) metrics.push({ label: 'Alumnos', value: String(course.enrolled_count) })
 
   return (
-    <section className="bg-gradient-to-r from-[#1a1f2e] to-[#252b3d] border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left: Course Info */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-sm text-white/50 mb-6">
-              <Link href="/cursos" className="hover:text-white transition">
-                Cursos
-              </Link>
-              <span>/</span>
-              <span className="text-white/70">{course.title}</span>
-            </nav>
+    <section className="relative overflow-hidden rounded-2xl border border-dark-border bg-white/5">
+      {/* Fondo neutro + halos cálidos */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent" />
+        <div className="absolute -top-24 left-10 h-64 w-64 rounded-full bg-brand/15 blur-3xl" />
+        <div className="absolute top-10 right-10 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
+      </div>
 
-            {/* Level & Free Badge */}
-            <div className="flex items-center gap-3 mb-4">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${level.color}`}>
-                {level.emoji} {level.label}
-              </span>
-              {course.is_free && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#4caf50]/20 text-[#4caf50]">
-                  100% GRATIS
-                </span>
+      <div className="relative px-6 py-8 sm:px-10 sm:py-10">
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+          {/* Columna izquierda */}
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="default" size="md">
+                {levelLabel(course.level)}
+              </Badge>
+
+              <Badge variant={accessBadgeVariant(course.is_free)} size="md">
+                {course.is_free ? 'Gratis' : 'Premium'}
+              </Badge>
+
+              <Badge variant={statusBadgeVariant(course.status)} size="md">
+                {statusLabel(course.status)}
+              </Badge>
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                {course.title}
+              </h1>
+              {course.description && (
+                <p className="max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
+                  {course.description}
+                </p>
               )}
             </div>
 
-            {/* Title */}
-            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-              {course.title}
-            </h1>
-
-            {/* Description */}
-            {course.description && (
-              <p className="text-xl text-white/70 mb-8">
-                {course.description}
-              </p>
+            {/* Progreso */}
+            {pct != null && isEnrolled && (
+              <div className="max-w-xl space-y-2">
+                <div className="flex items-center justify-between text-sm text-muted">
+                  <span>Progreso</span>
+                  <span>{pct}%</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-white/10">
+                  <div
+                    className="h-2 rounded-full bg-brand transition-all duration-300"
+                    style={{ width: `${pct}%` }}
+                    role="progressbar"
+                    aria-valuenow={pct}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Progreso del curso: ${pct}%`}
+                  />
+                </div>
+              </div>
             )}
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 mb-8">
-              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                <div className="text-2xl font-bold text-white mb-1">
-                  {stats.modules}
-                </div>
-                <div className="text-sm text-white/50">Módulos</div>
+            {/* Métricas */}
+            {metrics.length > 0 && (
+              <div className="flex flex-wrap gap-3 pt-1">
+                {metrics.map((m) => (
+                  <div
+                    key={m.label}
+                    className="rounded-xl border border-dark-border bg-white/5 px-4 py-2"
+                  >
+                    <div className="text-xs text-muted">{m.label}</div>
+                    <div className="text-base font-semibold text-white">{m.value}</div>
+                  </div>
+                ))}
               </div>
-              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                <div className="text-2xl font-bold text-white mb-1">
-                  {stats.lessons}
-                </div>
-                <div className="text-sm text-white/50">Lecciones</div>
-              </div>
-              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                <div className="text-2xl font-bold text-white mb-1">
-                  {stats.duration > 0 ? `${stats.duration}h` : '--'}
-                </div>
-                <div className="text-sm text-white/50">Duración</div>
-              </div>
-            </div>
+            )}
 
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-4">
-              <Link
-                href={firstLessonUrl || '#'}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-medium rounded-lg hover:shadow-lg hover:shadow-[#ff6b35]/20 transition-all"
+            {/* CTAs */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {published ? (
+                canContinue ? (
+                  <Button href={hrefContinue!} size="lg" variant="primary">
+                    Continuar
+                  </Button>
+                ) : isEnrolled ? (
+                  <Button href={courseUrl} size="lg" variant="primary">
+                    Entrar al curso
+                  </Button>
+                ) : hrefEnroll ? (
+                  <Button href={hrefEnroll} size="lg" variant="primary">
+                    {course.is_free ? 'Empezar gratis' : 'Inscribirme'}
+                  </Button>
+                ) : onEnrollClick ? (
+                  <Button
+                    size="lg"
+                    variant="primary"
+                    onClick={onEnrollClick}
+                    loading={enrolling}
+                  >
+                    {course.is_free ? 'Empezar gratis' : 'Inscribirme'}
+                  </Button>
+                ) : (
+                  <Button href={courseUrl} size="lg" variant="primary">
+                    {course.is_free ? 'Empezar gratis' : 'Ver detalles'}
+                  </Button>
+                )
+              ) : (
+                <Button size="lg" variant="secondary" disabled>
+                  {course.status === 'coming_soon' ? 'Próximamente' : 'No disponible'}
+                </Button>
+              )}
+
+              {published && !isEnrolled && !course.is_free && hasFreePreview && hrefPreview && (
+                <Button href={hrefPreview} size="lg" variant="outline">
+                  Ver lección gratuita
+                </Button>
+              )}
+
+{/* Link discreto al dashboard - no compite con CTA principal */}
+              <a
+                href={hrefDashboard}
+                className="text-sm text-muted hover:text-white transition-colors sm:ml-auto"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {isEnrolled ? 'Continuar curso' : 'Comenzar curso'}
-              </Link>
+                ← Volver al dashboard
+              </a>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Right: Thumbnail */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <div className="aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-[#ff6b35]/20 to-[#f7931a]/20 border border-white/10">
-              {course.banner_url || course.thumbnail_url ? (
+          {/* Columna derecha */}
+          <div className="rounded-2xl border border-dark-border bg-white/5 p-4">
+            <div className="aspect-[16/10] w-full overflow-hidden rounded-xl border border-dark-border bg-white/5">
+              {course.banner_url ? (
                 <img
-                  src={course.banner_url || course.thumbnail_url!}
-                  alt={course.title}
-                  className="w-full h-full object-cover"
+                  src={course.banner_url}
+                  alt={`Banner del curso ${course.title}`}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              ) : course.thumbnail_url ? (
+                <img
+                  src={course.thumbnail_url}
+                  alt={`Imagen del curso ${course.title}`}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center p-12">
-                    <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center mb-6">
-                      <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
-                    </div>
-                  </div>
+                <div className="flex h-full w-full items-center justify-center px-6 text-center">
+                  <p className="text-sm text-muted">
+                    Añade un banner o thumbnail para reforzar la identidad visual del curso.
+                  </p>
                 </div>
               )}
             </div>
-          </motion.div>
+
+            {!course.is_free && published && (
+              <div className="mt-4 rounded-xl border border-dark-border bg-white/5 p-4">
+                <div className="text-xs text-muted">Acceso premium</div>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <div className="text-2xl font-semibold text-white">
+                    {course.price != null ? `${course.price} €` : 'Precio no definido'}
+                  </div>
+                  <div className="text-sm text-muted">pago único</div>
+                </div>
+                <p className="mt-2 text-sm text-muted">
+                  Acceso completo al curso, recursos y progreso sincronizado.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>

@@ -108,7 +108,7 @@ export default async function AdminCoursesPage({
   return (
     <div className="min-h-screen">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-gradient-to-br from-[#1a1f2e]/95 via-[#252b3d]/95 to-[#1a1f2e]/95 backdrop-blur-lg border-b border-white/10 px-8 py-6 mb-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+      <div className="sticky top-0 z-10 bg-gradient-to-br from-dark-surface/95 via-dark-soft/95 to-dark-surface/95 backdrop-blur-lg border-b border-white/10 px-8 py-6 mb-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-1 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
@@ -121,7 +121,7 @@ export default async function AdminCoursesPage({
 
           <Link
             href="/admin/cursos/nuevo"
-            className="group px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] hover:from-[#ff7a45] hover:to-[#ffa52a] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,107,53,0.4)] flex items-center gap-2"
+            className="group px-6 py-3 bg-gradient-to-r from-brand-light to-brand hover:from-brand-light hover:to-brand text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,107,53,0.4)] flex items-center gap-2"
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             Crear Curso
@@ -182,39 +182,39 @@ export default async function AdminCoursesPage({
 
         {/* KPIs globales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <div className="group relative bg-gradient-to-br from-[#ff6b35]/10 via-white/5 to-white/5 backdrop-blur-sm border border-[#ff6b35]/20 rounded-2xl p-6 hover:border-[#ff6b35]/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,107,53,0.15)]">
+          <div className="group relative bg-gradient-to-br from-brand-light/10 via-white/5 to-white/5 backdrop-blur-sm border border-brand-light/20 rounded-2xl p-6 hover:border-brand-light/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,107,53,0.15)]">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center shadow-[0_4px_20px_rgba(255,107,53,0.3)]">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-light to-brand flex items-center justify-center shadow-[0_4px_20px_rgba(255,107,53,0.3)]">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
             </div>
-            <h3 className="text-4xl font-bold text-white mb-1 group-hover:text-[#ff6b35] transition-colors">
+            <h3 className="text-4xl font-bold text-white mb-1 group-hover:text-brand-light transition-colors">
               {totalCoursesGlobal}
             </h3>
             <p className="text-sm text-white/60">Total Cursos</p>
             <p className="text-xs text-white/40 mt-1">En la plataforma</p>
           </div>
 
-          <div className="group relative bg-gradient-to-br from-[#24D4FF]/10 via-white/5 to-white/5 backdrop-blur-sm border border-[#24D4FF]/20 rounded-2xl p-6 hover:border-[#24D4FF]/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(36,212,255,0.15)]">
+          <div className="group relative bg-gradient-to-br from-accent-blue/10 via-white/5 to-white/5 backdrop-blur-sm border border-accent-blue/20 rounded-2xl p-6 hover:border-accent-blue/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(36,212,255,0.15)]">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#24D4FF] to-[#1ab8e0] flex items-center justify-center shadow-[0_4px_20px_rgba(36,212,255,0.3)]">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue to-accent-blue-dark flex items-center justify-center shadow-[0_4px_20px_rgba(36,212,255,0.3)]">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
             </div>
-            <h3 className="text-4xl font-bold text-white mb-1 group-hover:text-[#24D4FF] transition-colors">
+            <h3 className="text-4xl font-bold text-white mb-1 group-hover:text-accent-blue transition-colors">
               {totalModulesGlobal}
             </h3>
             <p className="text-sm text-white/60">Total Módulos</p>
             <p className="text-xs text-white/40 mt-1">Contenido estructurado</p>
           </div>
 
-          <div className="group relative bg-gradient-to-br from-[#00C98D]/10 via-white/5 to-white/5 backdrop-blur-sm border border-[#00C98D]/20 rounded-2xl p-6 hover:border-[#00C98D]/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,201,141,0.15)]">
+          <div className="group relative bg-gradient-to-br from-success/10 via-white/5 to-white/5 backdrop-blur-sm border border-success/20 rounded-2xl p-6 hover:border-success/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,201,141,0.15)]">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00C98D] to-[#00a877] flex items-center justify-center shadow-[0_4px_20px_rgba(0,201,141,0.3)]">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-success to-success-dark flex items-center justify-center shadow-[0_4px_20px_rgba(0,201,141,0.3)]">
                 <Clock className="w-6 h-6 text-white" />
               </div>
             </div>
-            <h3 className="text-4xl font-bold text-white mb-1 group-hover:text-[#00C98D] transition-colors">
+            <h3 className="text-4xl font-bold text-white mb-1 group-hover:text-success transition-colors">
               {totalLessonsGlobal}
             </h3>
             <p className="text-sm text-white/60">Total Lecciones</p>
@@ -260,12 +260,12 @@ export default async function AdminCoursesPage({
           </div>
         ) : (
           <div className="relative bg-gradient-to-br from-white/5 via-white/[0.02] to-transparent backdrop-blur-sm border border-white/10 rounded-3xl p-16 text-center overflow-hidden">
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff6b35]/5 rounded-full blur-[100px] animate-pulse" />
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#24D4FF]/5 rounded-full blur-[100px] animate-pulse delay-1000" />
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-light/5 rounded-full blur-[100px] animate-pulse" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent-blue/5 rounded-full blur-[100px] animate-pulse delay-1000" />
 
             <div className="relative z-10">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#ff6b35]/20 to-[#f7931a]/20 border border-[#ff6b35]/30 flex items-center justify-center backdrop-blur-sm">
-                <BookOpen className="w-10 h-10 text-[#ff6b35]" />
+              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-brand-light/20 to-brand/20 border border-brand-light/30 flex items-center justify-center backdrop-blur-sm">
+                <BookOpen className="w-10 h-10 text-brand-light" />
               </div>
 
               <h3 className="text-2xl font-bold text-white mb-3">
@@ -279,7 +279,7 @@ export default async function AdminCoursesPage({
 
               <Link
                 href="/admin/cursos/nuevo"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] hover:from-[#ff7a45] hover:to-[#ffa52a] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(255,107,53,0.4)] hover:scale-105"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand hover:from-brand-light hover:to-brand text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(255,107,53,0.4)] hover:scale-105"
               >
                 <Plus className="w-5 h-5" />
                 {label ? 'Crear Curso' : 'Crear Primer Curso'}

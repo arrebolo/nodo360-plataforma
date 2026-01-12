@@ -6,6 +6,19 @@ import { createClient } from '@/lib/supabase/server'
 import { redirectAfterLogin } from '@/lib/auth/redirect-after-login'
 
 /**
+ * Helper para detectar errores de redirect de Next.js
+ * En Next.js 14+, redirect() lanza un error especial que debe ser re-lanzado
+ */
+function isRedirectError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    'digest' in error &&
+    typeof (error as any).digest === 'string' &&
+    (error as any).digest.startsWith('NEXT_REDIRECT')
+  )
+}
+
+/**
  * Tipos de proveedor OAuth soportados
  */
 export type OAuthProvider = 'google' | 'github'
@@ -25,8 +38,10 @@ export interface AuthResult {
  */
 export async function signInWithEmail(formData: FormData): Promise<AuthResult> {
   const email = formData.get('email') as string
+  const redirectTo = formData.get('redirect') as string | null
 
-  console.log('🔍 [Auth Actions] Iniciando Magic Link para:', email)
+  console.log('[Auth] Iniciando Magic Link')
+  console.log('🔍 [Auth Actions] Redirect después de login:', redirectTo)
 
   if (!email) {
     console.error('❌ [Auth Actions] Email no proporcionado')
@@ -34,6 +49,18 @@ export async function signInWithEmail(formData: FormData): Promise<AuthResult> {
   }
 
   try {
+    // Guardar redirect en cookie (igual que OAuth)
+    if (redirectTo && redirectTo.startsWith('/')) {
+      const cookieStore = await cookies()
+      cookieStore.set('auth_redirect', redirectTo, {
+        path: '/',
+        maxAge: 60 * 5, // 5 minutos
+        httpOnly: true,
+        sameSite: 'lax',
+      })
+      console.log('✅ [Auth Actions] Cookie auth_redirect guardada:', redirectTo)
+    }
+
     const supabase = await createClient()
     const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
 
@@ -76,7 +103,7 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
   const password = formData.get('password') as string
   const redirectTo = formData.get('redirect') as string | null
 
-  console.log('🔍 [Auth Actions] Iniciando sesión con password:', email)
+  console.log('[Auth] Iniciando sesión con password')
   console.log('🔍 [Auth Actions] Redirect después de login:', redirectTo)
 
   if (!email || !password) {
@@ -106,6 +133,10 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
       await redirectAfterLogin()
     }
   } catch (error) {
+    // Re-lanzar si es un redirect (NO es un error real)
+    if (isRedirectError(error)) {
+      throw error
+    }
     console.error('❌ [Auth Actions] Error inesperado:', error)
     redirect('/login?error=Error+inesperado')
   }
@@ -119,7 +150,7 @@ export async function signUp(formData: FormData): Promise<void> {
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
 
-  console.log('🔍 [Auth Actions] Registrando usuario:', email)
+  console.log('[Auth] Registrando nuevo usuario')
 
   if (!email || !password) {
     console.error('❌ [Auth Actions] Datos incompletos')
@@ -149,6 +180,9 @@ export async function signUp(formData: FormData): Promise<void> {
     console.log('✅ [Auth Actions] Registro exitoso')
     redirect('/login?success=Cuenta+creada.+Revisa+tu+email')
   } catch (error) {
+    if (isRedirectError(error)) {
+      throw error
+    }
     console.error('❌ [Auth Actions] Error inesperado:', error)
     redirect('/login?error=Error+inesperado')
   }
@@ -201,6 +235,9 @@ export async function signInWithOAuth(provider: OAuthProvider, redirectTo?: stri
       redirect('/login?error=No+se+recibió+URL+de+autorización')
     }
   } catch (error) {
+    if (isRedirectError(error)) {
+      throw error
+    }
     console.error('❌ [Auth Actions] Error inesperado en OAuth:', error)
     redirect('/login?error=Error+con+OAuth')
   }
@@ -224,7 +261,12 @@ export async function signOut(): Promise<void> {
     console.log('✅ [Auth Actions] Sesión cerrada')
     redirect('/login')
   } catch (error) {
+    if (isRedirectError(error)) {
+      throw error
+    }
     console.error('❌ [Auth Actions] Error inesperado:', error)
     redirect('/login?error=Error+al+cerrar+sesión')
   }
 }
+
+

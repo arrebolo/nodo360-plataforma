@@ -45,7 +45,7 @@ export function LessonResources({ resources }: LessonResourcesProps) {
   const displayResources = resources || defaultResources
 
   return (
-    <div className="bg-[#1a1a1a] rounded-xl border border-white/10 p-6">
+    <div className="bg-dark-tertiary rounded-xl border border-white/10 p-6">
       <h3 className="text-lg font-bold text-white mb-4">📚 Recursos</h3>
 
       <div className="space-y-3">
@@ -58,17 +58,17 @@ export function LessonResources({ resources }: LessonResourcesProps) {
               href={resource.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-start gap-3 p-3 bg-black/30 rounded-lg border border-white/10 hover:border-[#dc2626]/50 hover:bg-white/5 transition-all group"
+              className="flex items-start gap-3 p-3 bg-black/30 rounded-lg border border-white/10 hover:border-error-dark/50 hover:bg-white/5 transition-all group"
             >
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#dc2626]/20 flex items-center justify-center group-hover:bg-[#dc2626]/30 transition-colors">
-                <Icon className="w-4 h-4 text-[#dc2626]" />
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-error-dark/20 flex items-center justify-center group-hover:bg-error-dark/30 transition-colors">
+                <Icon className="w-4 h-4 text-error-dark" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white group-hover:text-[#dc2626] transition-colors line-clamp-2">
+                <p className="text-sm font-medium text-white group-hover:text-error-dark transition-colors line-clamp-2">
                   {resource.title}
                 </p>
               </div>
-              <ExternalLink className="w-4 h-4 text-white/30 group-hover:text-[#dc2626] transition-colors flex-shrink-0" />
+              <ExternalLink className="w-4 h-4 text-white/30 group-hover:text-error-dark transition-colors flex-shrink-0" />
             </a>
           )
         })}
@@ -76,14 +76,14 @@ export function LessonResources({ resources }: LessonResourcesProps) {
 
       {/* Community Banner */}
       <div className="mt-6 pt-6 border-t border-white/10">
-        <div className="p-4 bg-gradient-to-r from-[#dc2626]/20 to-transparent rounded-lg border border-[#dc2626]/30">
+        <div className="p-4 bg-gradient-to-r from-error-dark/20 to-transparent rounded-lg border border-error-dark/30">
           <h4 className="text-sm font-medium text-white mb-2">💬 ¿Tienes dudas?</h4>
           <p className="text-xs text-white/60 mb-3">
             Únete a nuestra comunidad y pregunta lo que necesites
           </p>
           <a
             href="/comunidad"
-            className="inline-block px-4 py-2 bg-[#dc2626] text-white text-sm font-medium rounded-lg hover:bg-[#b91c1c] transition-colors"
+            className="inline-block px-4 py-2 bg-error-dark text-white text-sm font-medium rounded-lg hover:bg-error-dark/90 transition-colors"
           >
             Ir a la comunidad
           </a>
@@ -92,3 +92,4 @@ export function LessonResources({ resources }: LessonResourcesProps) {
     </div>
   )
 }
+

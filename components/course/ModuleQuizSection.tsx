@@ -48,15 +48,15 @@ export function ModuleQuizSection({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-4 p-4 bg-gray-500/10 border border-gray-500/30 rounded-lg"
+        className="mt-4 p-4 bg-white/50/10 border border-white/30/30 rounded-lg"
       >
         <div className="flex items-start gap-3">
-          <Lock className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+          <Lock className="w-5 h-5 text-white/60 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-gray-300 mb-1">
+            <h4 className="text-sm font-semibold text-white/80 mb-1">
               Quiz Bloqueado
             </h4>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-white/60">
               Completa el quiz del módulo anterior para desbloquear este módulo
             </p>
           </div>
@@ -115,10 +115,10 @@ export function ModuleQuizSection({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-4 p-5 bg-gradient-to-br from-[#ff6b35]/20 via-[#f7931a]/20 to-[#ff6b35]/20 border-2 border-[#ff6b35]/40 rounded-xl"
+        className="mt-4 p-5 bg-gradient-to-br from-brand-light/20 via-brand/20 to-brand-light/20 border-2 border-brand-light/40 rounded-xl"
       >
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f7931a] flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-light to-brand flex items-center justify-center flex-shrink-0">
             <Award className="w-6 h-6 text-white" />
           </div>
 
@@ -143,7 +143,7 @@ export function ModuleQuizSection({
 
             <Link
               href={`/cursos/${courseSlug}/modulos/${moduleSlug}/quiz`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white text-sm font-bold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/30 transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-light to-brand text-white text-sm font-bold rounded-lg hover:shadow-xl hover:shadow-brand-light/30 transition-all hover:scale-105"
             >
               <Award className="w-4 h-4" />
               Tomar Quiz Ahora
@@ -272,3 +272,4 @@ export function ModuleQuizSection({
 
   return null
 }
+

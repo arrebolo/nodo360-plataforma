@@ -115,15 +115,15 @@ export default function SimpleLessonSidebar({
                             key={lesson.id}
                             href={lessonUrl}
                             className={`flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors ${
-                              isCurrentLesson ? 'bg-[#ff6b35]/10 border-l-2 border-[#ff6b35]' : ''
+                              isCurrentLesson ? 'bg-brand-light/10 border-l-2 border-brand-light' : ''
                             }`}
                           >
                             {/* Status Icon */}
                             <div className="flex-shrink-0">
                               {lesson.isCompleted ? (
-                                <CheckCircle className="w-4 h-4 text-[#4caf50]" />
+                                <CheckCircle className="w-4 h-4 text-success" />
                               ) : isCurrentLesson ? (
-                                <Play className="w-4 h-4 text-[#ff6b35]" />
+                                <Play className="w-4 h-4 text-brand-light" />
                               ) : (
                                 <Circle className="w-4 h-4 text-white/30" />
                               )}
@@ -134,7 +134,7 @@ export default function SimpleLessonSidebar({
                               <p
                                 className={`text-sm truncate ${
                                   isCurrentLesson
-                                    ? 'text-[#ff6b35] font-medium'
+                                    ? 'text-brand-light font-medium'
                                     : lesson.isCompleted
                                     ? 'text-white/70'
                                     : 'text-white/60'
@@ -157,3 +157,5 @@ export default function SimpleLessonSidebar({
     </div>
   )
 }
+
+

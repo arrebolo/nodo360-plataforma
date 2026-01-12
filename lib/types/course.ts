@@ -14,3 +14,5 @@ export type CourseWithOwner = CourseRow & {
 export type CourseWithInstructor = CourseRow & {
   instructor: CourseOwner | null;
 };
+
+
