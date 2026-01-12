@@ -43,3 +43,5 @@ export const platformNames: Record<CommunityPlatform, string> = {
   slack: 'Slack',
   forum: 'Foro',
 }
+
+

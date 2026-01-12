@@ -2,18 +2,18 @@
 
 export default function DebugEnv() {
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <div className="min-h-screen bg-dark text-white p-8">
       <h1 className="text-3xl font-bold mb-8">🔍 Environment Variables Debug</h1>
 
       <div className="space-y-6">
-        <div className="bg-gray-800 p-4 rounded">
+        <div className="bg-dark-secondary p-4 rounded">
           <h2 className="font-bold mb-2">NEXT_PUBLIC_SUPABASE_URL:</h2>
           <code className="text-green-400">
             {process.env.NEXT_PUBLIC_SUPABASE_URL || '❌ UNDEFINED'}
           </code>
         </div>
 
-        <div className="bg-gray-800 p-4 rounded">
+        <div className="bg-dark-secondary p-4 rounded">
           <h2 className="font-bold mb-2">NEXT_PUBLIC_SUPABASE_ANON_KEY:</h2>
           <code className="text-green-400">
             {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -22,7 +22,7 @@ export default function DebugEnv() {
           </code>
         </div>
 
-        <div className="bg-gray-800 p-4 rounded">
+        <div className="bg-dark-secondary p-4 rounded">
           <h2 className="font-bold mb-2">NODE_ENV:</h2>
           <code className="text-green-400">
             {process.env.NODE_ENV || '❌ UNDEFINED'}
@@ -68,3 +68,5 @@ export default function DebugEnv() {
     </div>
   )
 }
+
+

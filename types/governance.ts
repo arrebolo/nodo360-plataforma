@@ -219,3 +219,5 @@ export function isPassing(proposal: GovernanceProposal): boolean {
   if (total === 0) return false
   return (proposal.total_gpower_for / total) >= proposal.approval_threshold
 }
+
+

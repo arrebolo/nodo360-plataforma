@@ -12,20 +12,20 @@ export function BenefitCard({ icon: Icon, title, description }: BenefitCardProps
   return (
     <div className="
       group
-      bg-nodo-card
-      border border-nodo-icon
+      bg-dark-surface
+      border border-white/10
       rounded-xl
       p-8
       transition-all duration-300
       hover:scale-105
       hover:shadow-2xl
-      hover:shadow-bitcoin-orange/20
-      hover:border-bitcoin-orange/50
+      hover:shadow-brand-light/20
+      hover:border-brand-light/50
     ">
       {/* Icon container with gradient */}
       <div className="
         w-14 h-14
-        bg-gradient-to-br from-bitcoin-orange to-bitcoin-gold
+        bg-gradient-to-br from-brand-light to-brand
         rounded-xl
         flex items-center justify-center
         mb-4
@@ -41,9 +41,11 @@ export function BenefitCard({ icon: Icon, title, description }: BenefitCardProps
       </h3>
 
       {/* Description */}
-      <p className="text-base text-slate-400 leading-relaxed">
+      <p className="text-base text-white/60 leading-relaxed">
         {description}
       </p>
     </div>
   )
 }
+
+

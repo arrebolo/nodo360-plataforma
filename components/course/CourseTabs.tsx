@@ -29,8 +29,8 @@ export function CourseTabs({ active, onChange }: CourseTabsProps) {
                 flex items-center gap-2 px-6 py-4 font-medium transition-colors whitespace-nowrap
                 ${
                   isActive
-                    ? 'text-[#F7931A] border-b-2 border-[#F7931A]'
-                    : 'text-gray-400 hover:text-white border-b-2 border-transparent'
+                    ? 'text-brand border-b-2 border-brand'
+                    : 'text-white/60 hover:text-white border-b-2 border-transparent'
                 }
               `}
             >
@@ -43,3 +43,5 @@ export function CourseTabs({ active, onChange }: CourseTabsProps) {
     </div>
   )
 }
+
+

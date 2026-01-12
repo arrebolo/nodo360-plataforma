@@ -89,10 +89,12 @@ export function ModuleQuiz({
     const timeSpent = Math.floor((Date.now() - startTime) / 1000)
 
     const submission = {
+      userId: userId!,
       moduleId,
       answers: Object.entries(answers).map(([questionId, selectedAnswer]) => ({
-        questionId,
-        selectedAnswer,
+        question_id: questionId,
+        selected_answer: selectedAnswer,
+        correct: false, // Se calcula en el servidor
       })),
       timeSpentSeconds: timeSpent,
     }
@@ -100,7 +102,7 @@ export function ModuleQuiz({
     try {
       if (userId) {
         // Save to database
-        const result = await submitQuizAttempt(userId, submission, questions)
+        const result = await submitQuizAttempt(submission, questions)
 
         if ('error' in result) {
           setError(result.error)
@@ -193,7 +195,7 @@ export function ModuleQuiz({
         </div>
         <div className="h-2 bg-white/10 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#ff6b35] to-[#f7931a] transition-all duration-300"
+            className="h-full bg-gradient-to-r from-brand-light to-brand transition-all duration-300"
             style={{ width: `${(answeredCount / totalQuestions) * 100}%` }}
           />
         </div>
@@ -211,7 +213,7 @@ export function ModuleQuiz({
               onClick={() => goToQuestion(index)}
               className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold transition-all ${
                 isCurrent
-                  ? 'bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white scale-110'
+                  ? 'bg-gradient-to-r from-brand-light to-brand text-white scale-110'
                   : isAnswered
                   ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                   : 'bg-white/5 text-white/50 border border-white/10 hover:border-white/30'
@@ -229,7 +231,7 @@ export function ModuleQuiz({
         {/* Question */}
         <div className="mb-6">
           <div className="flex items-start gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#ff6b35] to-[#f7931a] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-brand-light to-brand flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
               {currentQuestionIndex + 1}
             </div>
             <h2 className="text-xl font-semibold text-white flex-1">
@@ -268,7 +270,7 @@ export function ModuleQuiz({
                 onClick={() => selectAnswer(currentQuestion.id, index)}
                 className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                   isSelected
-                    ? 'border-[#ff6b35] bg-[#ff6b35]/10'
+                    ? 'border-brand-light bg-brand-light/10'
                     : 'border-white/10 bg-white/5 hover:border-white/30'
                 }`}
               >
@@ -276,7 +278,7 @@ export function ModuleQuiz({
                   <div
                     className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                       isSelected
-                        ? 'border-[#ff6b35] bg-[#ff6b35]'
+                        ? 'border-brand-light bg-brand-light'
                         : 'border-white/30'
                     }`}
                   >
@@ -347,7 +349,7 @@ export function ModuleQuiz({
           <button
             onClick={handleSubmit}
             disabled={!allAnswered || isSubmitting}
-            className="px-8 py-3 rounded-lg bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+            className="px-8 py-3 rounded-lg bg-gradient-to-r from-brand-light to-brand text-white font-semibold hover:shadow-lg hover:shadow-brand-light/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
             {isSubmitting ? 'Enviando...' : 'Enviar Quiz'}
           </button>
@@ -356,3 +358,5 @@ export function ModuleQuiz({
     </div>
   )
 }
+
+

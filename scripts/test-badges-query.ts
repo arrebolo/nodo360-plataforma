@@ -128,3 +128,4 @@ async function testBadgesQuery() {
 }
 
 testBadgesQuery()
+

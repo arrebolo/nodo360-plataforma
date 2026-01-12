@@ -95,7 +95,7 @@ export function QuizResults({
   // Get score color
   const getScoreColor = () => {
     if (score >= 90) return 'from-green-400 to-emerald-500'
-    if (score >= 70) return 'from-[#FFD700] to-[#FFA500]'
+    if (score >= 70) return 'from-gold to-gold-light'
     return 'from-red-400 to-rose-500'
   }
 
@@ -112,7 +112,7 @@ export function QuizResults({
         <div className="mb-6 flex justify-center">
           {passed ? (
             <motion.div
-              className="w-24 h-24 rounded-full bg-gradient-to-r from-[#FFD700] to-[#FFA500] flex items-center justify-center"
+              className="w-24 h-24 rounded-full bg-gradient-to-r from-gold to-gold-light flex items-center justify-center"
               animate={{
                 scale: [1, 1.1, 1],
                 rotate: [0, 5, -5, 0]
@@ -167,8 +167,8 @@ export function QuizResults({
             />
             <defs>
               <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" className="text-[#ff6b35]" stopColor="currentColor" />
-                <stop offset="100%" className="text-[#f7931a]" stopColor="currentColor" />
+                <stop offset="0%" className="text-brand-light" stopColor="currentColor" />
+                <stop offset="100%" className="text-brand" stopColor="currentColor" />
               </linearGradient>
             </defs>
           </svg>
@@ -213,7 +213,7 @@ export function QuizResults({
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-12">
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
-          <Star className="w-8 h-8 text-[#FFD700] mx-auto mb-2" />
+          <Star className="w-8 h-8 text-gold mx-auto mb-2" />
           <div className="text-2xl font-bold text-white mb-1">{score}%</div>
           <div className="text-sm text-white/60">Calificación</div>
         </div>
@@ -351,7 +351,7 @@ export function QuizResults({
         {passed && (
           <button
             onClick={onComplete}
-            className="px-8 py-4 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all flex items-center gap-2"
+            className="px-8 py-4 rounded-xl bg-gradient-to-r from-brand-light to-brand text-white font-semibold hover:shadow-lg hover:shadow-brand-light/50 transition-all flex items-center gap-2"
           >
             Continuar al Siguiente Módulo
             <ArrowRight className="w-5 h-5" />
@@ -362,13 +362,13 @@ export function QuizResults({
       {/* Certificate Generation Note */}
       {passed && (
         <motion.div
-          className="mt-8 bg-gradient-to-r from-[#ff6b35]/10 to-[#f7931a]/10 border border-[#ff6b35]/30 rounded-xl p-6"
+          className="mt-8 bg-gradient-to-r from-brand/10 to-brand/10 border border-brand-light/30 rounded-xl p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
         >
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#ff6b35] to-[#f7931a] flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-brand-light to-brand flex items-center justify-center flex-shrink-0">
               <Award className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
@@ -381,7 +381,7 @@ export function QuizResults({
               </p>
               <button
                 onClick={onComplete}
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white text-sm font-semibold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all"
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-light to-brand text-white text-sm font-semibold hover:shadow-lg hover:shadow-brand-light/50 transition-all"
               >
                 Ver Certificado
               </button>
@@ -392,3 +392,5 @@ export function QuizResults({
     </div>
   )
 }
+
+

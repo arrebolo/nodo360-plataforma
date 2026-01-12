@@ -40,8 +40,8 @@ export function QuizStartCard({
     <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-block p-4 bg-gradient-to-r from-[#ff6b35]/20 to-[#f7931a]/20 rounded-2xl mb-4">
-          <HelpCircle className="w-12 h-12 text-[#ff6b35]" />
+        <div className="inline-block p-4 bg-gradient-to-r from-brand-light/20 to-brand/20 rounded-2xl mb-4">
+          <HelpCircle className="w-12 h-12 text-brand-light" />
         </div>
         <h2 className="text-3xl font-bold text-white mb-2">Quiz del Módulo</h2>
         <p className="text-lg text-white/70">{moduleTitle}</p>
@@ -146,40 +146,40 @@ export function QuizStartCard({
         <div className="space-y-3">
           <h4 className="font-semibold text-white mb-3">Instrucciones:</h4>
           <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-[#ff6b35]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-[#ff6b35] text-sm font-bold">1</span>
+            <div className="w-6 h-6 rounded-full bg-brand-light/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-brand-light text-sm font-bold">1</span>
             </div>
             <p className="text-white/70 text-sm">
               Lee cada pregunta cuidadosamente antes de seleccionar tu respuesta.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-[#ff6b35]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-[#ff6b35] text-sm font-bold">2</span>
+            <div className="w-6 h-6 rounded-full bg-brand-light/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-brand-light text-sm font-bold">2</span>
             </div>
             <p className="text-white/70 text-sm">
               Puedes navegar entre preguntas y cambiar tus respuestas antes de enviar.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-[#ff6b35]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-[#ff6b35] text-sm font-bold">3</span>
+            <div className="w-6 h-6 rounded-full bg-brand-light/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-brand-light text-sm font-bold">3</span>
             </div>
             <p className="text-white/70 text-sm">
               Necesitas responder correctamente al menos {passingScore}% de las preguntas para aprobar.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-[#ff6b35]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-[#ff6b35] text-sm font-bold">4</span>
+            <div className="w-6 h-6 rounded-full bg-brand-light/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-brand-light text-sm font-bold">4</span>
             </div>
             <p className="text-white/70 text-sm">
               Puedes reintentar el quiz las veces que necesites. Se guardará tu mejor calificación.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-[#ff6b35]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-[#ff6b35] text-sm font-bold">5</span>
+            <div className="w-6 h-6 rounded-full bg-brand-light/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-brand-light text-sm font-bold">5</span>
             </div>
             <p className="text-white/70 text-sm">
               Al aprobar, desbloquearás el siguiente módulo del curso.
@@ -193,7 +193,7 @@ export function QuizStartCard({
         <button
           onClick={onStart}
           disabled={disabled}
-          className="px-12 py-4 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white text-lg font-bold hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+          className="px-12 py-4 rounded-xl bg-gradient-to-r from-brand-light to-brand text-white text-lg font-bold hover:shadow-lg hover:shadow-brand-light/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
         >
           {hasPreviousAttempts ? 'Reintentar Quiz' : 'Comenzar Quiz'}
         </button>
@@ -207,3 +207,5 @@ export function QuizStartCard({
     </div>
   )
 }
+
+

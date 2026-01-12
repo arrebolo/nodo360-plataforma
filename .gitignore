@@ -45,3 +45,21 @@ next-env.d.ts
 Nodo360-Optimization/ 
 nul 
 Nodo360-Optimization/ 
+# local / tooling
+.env.local
+.env.*.local
+.claude/
+*.local.json
+
+# builds
+.next/
+node_modules/
+.vercel/
+
+# backups & misc
+_backup*/
+URL
+mkdir
+rmdir
+
+tmpclaude-*

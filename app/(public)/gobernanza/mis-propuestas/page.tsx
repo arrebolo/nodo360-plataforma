@@ -29,26 +29,26 @@ export default async function MisPropuestasPage() {
   const completed = proposals.filter(p => ['passed', 'rejected', 'implemented', 'cancelled'].includes(p.status))
 
   return (
-    <div className="min-h-screen bg-[#0a0d14]">
+    <div className="min-h-screen bg-dark-deep">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <Link
               href="/gobernanza"
-              className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors"
+              className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-4 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver a Gobernanza
             </Link>
             <h1 className="text-3xl font-bold text-white">Mis Propuestas</h1>
-            <p className="text-gray-400 mt-1">
+            <p className="text-white/60 mt-1">
               {proposals.length} propuesta{proposals.length !== 1 ? 's' : ''} en total
             </p>
           </div>
           <Link
             href="/gobernanza/nueva"
-            className="flex items-center gap-2 px-4 py-2 bg-[#ff6b35] hover:bg-[#ff6b35]/80 rounded-lg font-medium transition-colors text-white"
+            className="flex items-center gap-2 px-4 py-2 bg-brand-light hover:bg-brand-light/80 rounded-lg font-medium transition-colors text-white"
           >
             <Plus className="w-4 h-4" />
             Nueva Propuesta
@@ -85,14 +85,14 @@ export default async function MisPropuestasPage() {
 
         {proposals.length === 0 ? (
           <div className="bg-white/5 rounded-xl p-12 text-center border border-white/10">
-            <FileText className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+            <FileText className="w-16 h-16 mx-auto text-white/40 mb-4" />
             <h2 className="text-xl font-semibold mb-2 text-white">No tienes propuestas</h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-white/60 mb-6">
               ¡Crea tu primera propuesta y contribuye a la comunidad!
             </p>
             <Link
               href="/gobernanza/nueva"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#ff6b35] hover:bg-[#ff6b35]/80 rounded-lg font-medium transition-colors text-white"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-light hover:bg-brand-light/80 rounded-lg font-medium transition-colors text-white"
             >
               <Plus className="w-4 h-4" />
               Crear Propuesta
@@ -153,7 +153,7 @@ function StatCard({
   color: 'gray' | 'yellow' | 'blue' | 'green'
 }) {
   const colors = {
-    gray: 'bg-gray-500/20 text-gray-400',
+    gray: 'bg-white/50/20 text-white/60',
     yellow: 'bg-yellow-500/20 text-yellow-400',
     blue: 'bg-blue-500/20 text-blue-400',
     green: 'bg-green-500/20 text-green-400',
@@ -201,7 +201,7 @@ function ProposalSection({
                       {statusInfo.icon} {statusInfo.label}
                     </span>
                     {proposal.category_icon && (
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-white/60">
                         {proposal.category_icon} {proposal.category_name}
                       </span>
                     )}
@@ -209,12 +209,12 @@ function ProposalSection({
 
                   <Link
                     href={`/gobernanza/${proposal.slug}`}
-                    className="text-lg font-semibold hover:text-[#ff6b35] transition-colors text-white"
+                    className="text-lg font-semibold hover:text-brand-light transition-colors text-white"
                   >
                     {proposal.title}
                   </Link>
 
-                  <p className="text-gray-400 text-sm mt-1 line-clamp-2">
+                  <p className="text-white/60 text-sm mt-1 line-clamp-2">
                     {proposal.description}
                   </p>
 
@@ -230,13 +230,13 @@ function ProposalSection({
                           style={{ width: `${percentages.against}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-white/50">
                         {proposal.total_votes} votos - {percentages.for}% a favor
                       </p>
                     </div>
                   )}
 
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-white/50 mt-2">
                     Creada el {new Date(proposal.created_at).toLocaleDateString('es-ES')}
                   </p>
                 </div>
@@ -253,7 +253,7 @@ function ProposalSection({
                   )}
                   <Link
                     href={`/gobernanza/${proposal.slug}`}
-                    className="p-2 bg-[#ff6b35]/20 hover:bg-[#ff6b35]/30 text-[#ff6b35] rounded-lg transition-colors"
+                    className="p-2 bg-brand-light/20 hover:bg-brand-light/30 text-brand-light rounded-lg transition-colors"
                     title="Ver"
                   >
                     <Eye className="w-4 h-4" />
@@ -267,3 +267,5 @@ function ProposalSection({
     </section>
   )
 }
+
+

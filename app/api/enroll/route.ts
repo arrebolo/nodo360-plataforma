@@ -1,14 +1,161 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { enrollUserInCourse, unenrollUser } from '@/lib/db/enrollments'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit, getClientIP, rateLimitExceeded } from '@/lib/ratelimit'
+
+/**
+ * GET /api/enroll
+ *
+ * Inscripción via redirect (para uso con href en botones/links).
+ *
+ * Parámetros:
+ * - courseId: ID del curso (requerido)
+ * - redirect: URL de redirección post-inscripción (opcional)
+ * - format=json: devuelve JSON en lugar de redirect (debug)
+ *
+ * Comportamiento:
+ * - No autenticado → /login?redirect=/api/enroll?courseId=...
+ * - Ya inscrito → redirect destino (no duplica)
+ * - No inscrito → crea enrollment → redirect destino
+ * - Default destino: /api/continue?courseSlug=...
+ */
+export async function GET(request: NextRequest) {
+  // Rate limiting moderado
+  const ip = getClientIP(request)
+  const { success } = await rateLimit(ip, 'api')
+  if (!success) return rateLimitExceeded()
+
+  const url = new URL(request.url)
+  const courseId = url.searchParams.get('courseId')?.trim() || null
+  const redirectParam = url.searchParams.get('redirect')?.trim() || null
+  const format = url.searchParams.get('format')?.trim() || null
+  const isJsonDebug = format === 'json'
+
+  // 1) Validar courseId
+  if (!courseId) {
+    console.error('❌ [API GET /enroll] courseId requerido')
+    if (isJsonDebug) {
+      return NextResponse.json({ ok: false, error: 'courseId requerido' }, { status: 400 })
+    }
+    return NextResponse.redirect(new URL('/cursos', url.origin), 302)
+  }
+
+  const supabase = await createClient()
+
+  // 2) Verificar autenticación
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    // Preservar la URL completa de enroll para después del login
+    const currentUrl = url.pathname + url.search
+    const loginUrl = `/login?redirect=${encodeURIComponent(currentUrl)}`
+    console.log('🔍 [API GET /enroll] No autenticado, redirigiendo a login')
+    if (isJsonDebug) {
+      return NextResponse.json({ ok: false, redirect: loginUrl, reason: 'no_auth' })
+    }
+    return NextResponse.redirect(new URL(loginUrl, url.origin), 302)
+  }
+
+  // 3) Obtener datos del curso
+  const { data: course, error: courseError } = await supabase
+    .from('courses')
+    .select('id, slug, title, status, is_free')
+    .eq('id', courseId)
+    .maybeSingle()
+
+  if (courseError || !course) {
+    console.error('❌ [API GET /enroll] Curso no encontrado:', courseId)
+    if (isJsonDebug) {
+      return NextResponse.json({ ok: false, redirect: '/cursos', reason: 'course_not_found' })
+    }
+    return NextResponse.redirect(new URL('/cursos', url.origin), 302)
+  }
+
+  if (course.status !== 'published') {
+    console.error('❌ [API GET /enroll] Curso no publicado:', courseId)
+    if (isJsonDebug) {
+      return NextResponse.json({ ok: false, redirect: '/cursos', reason: 'course_not_published' })
+    }
+    return NextResponse.redirect(new URL('/cursos', url.origin), 302)
+  }
+
+  // 4) Verificar si ya está inscrito
+  const { data: existingEnrollment } = await supabase
+    .from('course_enrollments')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('course_id', courseId)
+    .maybeSingle()
+
+  let enrolled = false
+
+  // 5) Si no está inscrito, crear enrollment
+  if (!existingEnrollment) {
+    const { error: insertError } = await supabase
+      .from('course_enrollments')
+      .insert({
+        user_id: user.id,
+        course_id: courseId,
+        enrolled_at: new Date().toISOString(),
+        progress_percentage: 0,
+      })
+
+    if (insertError) {
+      console.error('❌ [API GET /enroll] Error creando enrollment:', insertError)
+    } else {
+      console.log('✅ [API GET /enroll] Enrollment creado:', { userId: user.id, courseId })
+      enrolled = true
+    }
+  } else {
+    console.log('ℹ️ [API GET /enroll] Usuario ya inscrito:', { userId: user.id, courseId })
+  }
+
+  // 6) Determinar destino de redirección
+  let destination: string
+
+  if (redirectParam && redirectParam.startsWith('/')) {
+    destination = redirectParam
+  } else {
+    // Default: ir a /api/continue para que resuelva la lección correcta
+    destination = `/api/continue?courseSlug=${course.slug}`
+  }
+
+  console.log('✅ [API GET /enroll] Redirect:', { courseSlug: course.slug, destination })
+
+  // 7) Modo JSON opcional (debug)
+  if (isJsonDebug) {
+    return NextResponse.json({
+      ok: true,
+      data: {
+        enrolled,
+        alreadyEnrolled: !!existingEnrollment,
+        courseId: course.id,
+        courseSlug: course.slug,
+        courseTitle: course.title,
+        redirectTo: destination,
+      },
+    })
+  }
+
+  // 8) Redirect final
+  return NextResponse.redirect(new URL(destination, url.origin), 302)
+}
 
 /**
  * POST /api/enroll
- * Inscribe al usuario autenticado en un curso
+ * Inscribe al usuario autenticado en un curso (JSON API)
  * Body: { courseId: string }
  */
 export async function POST(request: NextRequest) {
-  console.log('🔍 [API POST /enroll] Iniciando...')
+  // Rate limiting moderado
+  const ip = getClientIP(request)
+  const { success } = await rateLimit(ip, 'api')
+  if (!success) return rateLimitExceeded()
+
+  console.log('[API POST /enroll] Iniciando...')
 
   try {
     // 1. Verificar autenticación
@@ -97,7 +244,12 @@ export async function POST(request: NextRequest) {
  * Body: { courseId: string }
  */
 export async function DELETE(request: NextRequest) {
-  console.log('🔍 [API DELETE /enroll] Iniciando...')
+  // Rate limiting moderado
+  const ip = getClientIP(request)
+  const { success } = await rateLimit(ip, 'api')
+  if (!success) return rateLimitExceeded()
+
+  console.log('[API DELETE /enroll] Iniciando...')
 
   try {
     // 1. Verificar autenticación
@@ -151,3 +303,5 @@ export async function DELETE(request: NextRequest) {
     )
   }
 }
+
+

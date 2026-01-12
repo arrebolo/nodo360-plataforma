@@ -43,7 +43,7 @@ export default function TestSupabase() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <div className="min-h-screen bg-dark text-white p-8">
       <h1 className="text-3xl font-bold mb-4">Test Supabase Connection</h1>
 
       <div className="mb-8">
@@ -71,11 +71,11 @@ export default function TestSupabase() {
           <h2 className="text-xl mb-2">Cursos encontrados:</h2>
           <div className="space-y-4">
             {courses.map((course) => (
-              <div key={course.id} className="p-4 bg-gray-800 rounded">
+              <div key={course.id} className="p-4 bg-dark-secondary rounded">
                 <h3 className="font-bold">{course.title}</h3>
-                <p className="text-sm text-gray-400">Slug: {course.slug}</p>
-                <p className="text-sm text-gray-400">Level: {course.level}</p>
-                <p className="text-sm text-gray-400">Free: {course.is_free ? 'Yes' : 'No'}</p>
+                <p className="text-sm text-white/60">Slug: {course.slug}</p>
+                <p className="text-sm text-white/60">Level: {course.level}</p>
+                <p className="text-sm text-white/60">Free: {course.is_free ? 'Yes' : 'No'}</p>
               </div>
             ))}
           </div>
@@ -84,3 +84,5 @@ export default function TestSupabase() {
     </div>
   )
 }
+
+

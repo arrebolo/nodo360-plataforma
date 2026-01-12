@@ -1,97 +1,63 @@
-'use client'
-
-import { MessageCircle, Send, Users, Zap } from 'lucide-react'
-import { communityConfig } from '@/lib/community-config'
+import Link from 'next/link'
 
 export function CommunitySection() {
   return (
-    <section id="comunidad" className="py-24 bg-gradient-to-b from-[#1a1f2e] to-[#252b3d]">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16 space-y-4">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
-            Únete a Nuestra <span className="text-[#ff6b35]">Comunidad</span>
-          </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto">
-            Conecta con 2,300+ estudiantes y profesionales de Bitcoin y Blockchain
-          </p>
-        </div>
+    <section className="py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-white/[0.05] to-white/[0.02] border border-white/10 px-6 py-5">
+          {/* Contenido en una linea (desktop) */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-        {/* Community Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
-          {/* Discord Card */}
-          <a
-            href={communityConfig.urls.discord}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group block"
-          >
-            <div className="h-full bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-2xl p-8 backdrop-blur-sm hover:border-[#5865F2]/50 transition-all duration-300 hover:shadow-xl hover:shadow-[#5865F2]/20 hover:-translate-y-1">
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-16 h-16 bg-[#5865F2]/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <MessageCircle className="w-8 h-8 text-[#5865F2]" />
-                </div>
-                <div className="px-3 py-1 bg-[#5865F2]/20 rounded-full text-[#5865F2] text-sm font-bold">
-                  2.3k miembros
-                </div>
+            {/* Texto izquierda */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-light/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-lg">👥</span>
               </div>
-
-              <h3 className="text-2xl font-bold text-white mb-3">Comunidad Discord</h3>
-              <p className="text-white/70 mb-6">
-                Chat en tiempo real, canales especializados por tema, eventos semanales y networking directo con expertos.
-              </p>
-
-              <div className="inline-flex items-center gap-2 text-[#5865F2] font-semibold group-hover:gap-3 transition-all">
-                Unirse a Discord
-                <Send className="w-4 h-4" />
+              <div>
+                <h3 className="font-semibold text-white text-sm md:text-base">
+                  Únete a la comunidad
+                </h3>
+                <p className="text-white/50 text-xs md:text-sm">
+                  Aprende acompañado, resuelve dudas y conecta con otros estudiantes
+                </p>
               </div>
             </div>
-          </a>
 
-          {/* Telegram Card */}
-          <a
-            href={communityConfig.urls.telegram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group block"
-          >
-            <div className="h-full bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-2xl p-8 backdrop-blur-sm hover:border-[#0088cc]/50 transition-all duration-300 hover:shadow-xl hover:shadow-[#0088cc]/20 hover:-translate-y-1">
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-16 h-16 bg-[#0088cc]/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Send className="w-8 h-8 text-[#0088cc]" />
-                </div>
-                <div className="px-3 py-1 bg-[#0088cc]/20 rounded-full text-[#0088cc] text-sm font-bold">
-                  1.8k miembros
-                </div>
-              </div>
+            {/* Botones + contador derecha */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {/* Telegram */}
+              <Link
+                href="https://t.me/nodo360"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#229ED9]/10 border border-[#229ED9]/20 hover:bg-[#229ED9]/20 hover:border-[#229ED9]/40 transition-all group"
+              >
+                <svg className="w-5 h-5 text-[#229ED9]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                </svg>
+                <span className="text-[#229ED9] font-medium text-sm hidden sm:inline">Telegram</span>
+              </Link>
 
-              <h3 className="text-2xl font-bold text-white mb-3">Grupo Telegram</h3>
-              <p className="text-white/70 mb-6">
-                Noticias en tiempo real, recursos compartidos, networking profesional y actualizaciones diarias del ecosistema.
-              </p>
+              {/* Discord */}
+              <Link
+                href="https://discord.gg/qjQUC7e4"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/20 hover:bg-[#5865F2]/20 hover:border-[#5865F2]/40 transition-all group"
+              >
+                <svg className="w-5 h-5 text-[#5865F2]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" />
+                </svg>
+                <span className="text-[#5865F2] font-medium text-sm hidden sm:inline">Discord</span>
+              </Link>
 
-              <div className="inline-flex items-center gap-2 text-[#0088cc] font-semibold group-hover:gap-3 transition-all">
-                Unirse a Telegram
-                <Send className="w-4 h-4" />
+              {/* Contador */}
+              <div className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-white/5 rounded-lg">
+                <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                <span className="text-white/50 text-sm">+500 activos</span>
               </div>
             </div>
-          </a>
-        </div>
-
-        {/* Benefits */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          {[
-            { icon: Zap, title: 'Soporte 24/7', desc: 'Ayuda de la comunidad en cualquier momento' },
-            { icon: Users, title: 'Networking', desc: 'Conecta con profesionales del sector' },
-            { icon: Send, title: 'Recursos Exclusivos', desc: 'Acceso a materiales y herramientas' },
-            { icon: MessageCircle, title: 'Eventos en Vivo', desc: 'Webinars y sesiones Q&A semanales' }
-          ].map((benefit, i) => (
-            <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
-              <benefit.icon className="w-8 h-8 text-[#ff6b35] mx-auto mb-3" />
-              <h4 className="font-semibold text-white mb-2">{benefit.title}</h4>
-              <p className="text-sm text-white/60">{benefit.desc}</p>
-            </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>

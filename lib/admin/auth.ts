@@ -19,7 +19,7 @@ export async function requireAdmin(returnUrl?: string) {
     redirect(loginUrl)
   }
 
-  console.log('✅ [requireAdmin] Usuario autenticado:', user.email)
+  console.log('[requireAdmin] Usuario autenticado:', user.id.substring(0, 8) + '...')
 
   // Obtener rol
   const { data: profile, error: profileError } = await supabase
@@ -62,3 +62,5 @@ export async function requireSuperAdmin(redirectTo: string = '/admin') {
 
   return { user, profile }
 }
+
+

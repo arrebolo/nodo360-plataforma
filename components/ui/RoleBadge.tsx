@@ -25,3 +25,5 @@ export function RoleBadge({ role, size = 'md', showIcon = true }: RoleBadgeProps
     </span>
   )
 }
+
+export default RoleBadge

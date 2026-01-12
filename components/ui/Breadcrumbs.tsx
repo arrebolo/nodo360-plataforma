@@ -1,29 +1,34 @@
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import type { BreadcrumbsProps } from '@/types/course-system'
+import { cx } from '@/lib/design/tokens'
 
-export function Breadcrumbs({ items }: BreadcrumbsProps) {
+function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-    <nav aria-label="Breadcrumb" className="py-4">
-      <ol className="flex items-center gap-2 text-sm">
+    <nav aria-label="Breadcrumb">
+      <ol className="flex items-center gap-2 text-sm text-muted">
         {items.map((item, index) => {
           const isLast = index === items.length - 1
 
           return (
             <li key={index} className="flex items-center gap-2">
               {index > 0 && (
-                <ChevronRight className="w-4 h-4 text-gray-600" aria-hidden="true" />
+                <ChevronRight
+                  className="w-4 h-4 text-muted"
+                  aria-hidden="true"
+                />
               )}
+
               {item.href && !isLast ? (
                 <Link
                   href={item.href}
-                  className="text-gray-400 hover:text-[#F7931A] transition-colors"
+                  className="transition-colors hover:text-brand"
                 >
                   {item.label}
                 </Link>
               ) : (
                 <span
-                  className={isLast ? 'text-white font-medium' : 'text-gray-400'}
+                  className={cx(isLast && 'text-white font-medium')}
                   aria-current={isLast ? 'page' : undefined}
                 >
                   {item.label}
@@ -36,3 +41,5 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
     </nav>
   )
 }
+
+export default Breadcrumbs

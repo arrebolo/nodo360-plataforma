@@ -72,19 +72,19 @@ export function ModuleStatusBadge({
           label: "Bloqueado",
           subtitle: "Completa el quiz del módulo anterior",
           bgColor: "from-gray-500/20 to-slate-500/20",
-          borderColor: "border-gray-500/30",
-          textColor: "text-gray-400",
-          iconColor: "text-gray-400",
+          borderColor: "border-white/30/30",
+          textColor: "text-white/60",
+          iconColor: "text-white/60",
         };
       case "in_progress":
         return {
           icon: BookOpen,
           label: `${completedLessons}/${totalLessons} lecciones`,
           subtitle: "En progreso",
-          bgColor: "from-[#ff6b35]/20 to-[#f7931a]/20",
-          borderColor: "border-[#ff6b35]/30",
-          textColor: "text-[#ff6b35]",
-          iconColor: "text-[#ff6b35]",
+          bgColor: "from-brand-light/20 to-brand/20",
+          borderColor: "border-brand-light/30",
+          textColor: "text-brand-light",
+          iconColor: "text-brand-light",
         };
       case "premium":
         return {
@@ -177,15 +177,15 @@ export function ModuleStatusIndicator({
         return {
           icon: Lock,
           label: "●",
-          color: "text-gray-400",
-          bgColor: "bg-gray-500/20",
+          color: "text-white/60",
+          bgColor: "bg-white/50/20",
         };
       case "in_progress":
         return {
           icon: BookOpen,
           label: "◐",
-          color: "text-[#ff6b35]",
-          bgColor: "bg-[#ff6b35]/20",
+          color: "text-brand-light",
+          bgColor: "bg-brand-light/20",
         };
       case "premium":
         return {
@@ -209,3 +209,5 @@ export function ModuleStatusIndicator({
     </div>
   );
 }
+
+

@@ -20,7 +20,7 @@ export function QuizBlock({ block }: QuizBlockProps) {
   const isCorrect = selectedAnswer?.correct || false
 
   return (
-    <div className="my-8 bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+    <div className="my-8 bg-dark-secondary/50 rounded-lg p-6 border border-dark-border">
       <div className="flex items-start gap-3 mb-4">
         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center">
           <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,7 +29,7 @@ export function QuizBlock({ block }: QuizBlockProps) {
         </div>
         <div>
           <h4 className="text-lg font-semibold text-white mb-1">Pregunta de autoevaluación</h4>
-          <p className="text-gray-300">{block.question}</p>
+          <p className="text-white/80">{block.question}</p>
         </div>
       </div>
 
@@ -51,7 +51,7 @@ export function QuizBlock({ block }: QuizBlockProps) {
                   ? 'bg-red-500/10 border-red-500 cursor-default'
                   : isSelected
                   ? 'bg-orange-500/10 border-orange-500'
-                  : 'bg-gray-800 border-gray-700 hover:border-gray-600'
+                  : 'bg-dark-secondary border-dark-border hover:border-dark-border'
               } ${showExplanation ? 'cursor-default' : 'cursor-pointer'}`}
             >
               <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export function QuizBlock({ block }: QuizBlockProps) {
                     ? 'border-red-500 bg-red-500'
                     : isSelected
                     ? 'border-orange-500'
-                    : 'border-gray-600'
+                    : 'border-dark-border'
                 }`}>
                   {showCorrect && (
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -75,7 +75,7 @@ export function QuizBlock({ block }: QuizBlockProps) {
                     </svg>
                   )}
                 </div>
-                <span className="text-gray-300">{option.text}</span>
+                <span className="text-white/80">{option.text}</span>
               </div>
             </button>
           )
@@ -101,7 +101,7 @@ export function QuizBlock({ block }: QuizBlockProps) {
                 {isCorrect ? '¡Correcto!' : 'Incorrecto'}
               </p>
               {block.explanation && (
-                <p className="text-gray-300 text-sm">{block.explanation}</p>
+                <p className="text-white/80 text-sm">{block.explanation}</p>
               )}
             </div>
           </div>
@@ -110,3 +110,5 @@ export function QuizBlock({ block }: QuizBlockProps) {
     </div>
   )
 }
+
+

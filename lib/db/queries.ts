@@ -24,7 +24,7 @@ import type {
 // =====================================================
 
 /**
- * Get all published courses
+ * Get all published and coming_soon courses
  */
 export async function getAllCourses(): Promise<CourseWithInstructor[]> {
   const supabase = await createClient()
@@ -39,7 +39,7 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
         avatar_url
       )
     `)
-    .eq('status', 'published')
+    .in('status', ['published', 'coming_soon'])
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -605,3 +605,5 @@ export async function getAllLessonsForCourse(courseSlug: string) {
   logger.debug('getAllLessonsForCourse', { courseSlug, count: data?.length || 0 })
   return data || []
 }
+
+

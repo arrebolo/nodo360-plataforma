@@ -144,29 +144,29 @@ export default function ProyectosPage() {
       case 'En Planificación': return 'bg-blue-500/20 border-blue-500/30 text-blue-400'
       case 'Próximamente': return 'bg-purple-500/20 border-purple-500/30 text-purple-400'
       case 'En Investigación': return 'bg-orange-500/20 border-orange-500/30 text-orange-400'
-      default: return 'bg-gray-500/20 border-gray-500/30 text-gray-400'
+      default: return 'bg-white/50/20 border-white/30/30 text-white/60'
     }
   }
 
   return (
-    <main className="min-h-screen bg-[#1a1f2e]">
+    <main className="min-h-screen bg-dark-surface">
       {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden bg-gradient-to-b from-[#1a1f2e] to-[#252b3d]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b35]/10 to-[#FFD700]/10" />
-        <div className="absolute top-20 right-20 w-96 h-96 bg-[#ff6b35] rounded-full blur-3xl opacity-20 animate-pulse" />
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-[#FFD700] rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
+      <section className="relative py-24 overflow-hidden bg-gradient-to-b from-dark-surface to-dark-soft">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-light/10 to-gold/10" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-brand-light rounded-full blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-gold rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-full mb-8">
-            <Rocket className="w-4 h-4 text-[#ff6b35]" />
-            <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b35] to-[#FFD700]">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-full mb-8">
+            <Rocket className="w-4 h-4 text-brand-light" />
+            <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-gold">
               IMPULSADO POR LA COMUNIDAD
             </span>
           </div>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
             Construyendo el{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b35] to-[#FFD700]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-gold">
               Futuro Juntos
             </span>
           </h1>
@@ -178,14 +178,14 @@ export default function ProyectosPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="#proyectos"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-105"
             >
               <GitBranch className="w-5 h-5" />
               Ver Proyectos
             </a>
             <a
               href="#contribuir"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-lg rounded-xl hover:border-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-lg rounded-xl hover:border-brand-light/50 transition-all duration-300 hover:scale-105"
             >
               <Users className="w-5 h-5" />
               Cómo Contribuir
@@ -195,7 +195,7 @@ export default function ProyectosPage() {
       </section>
 
       {/* Roadmap Section */}
-      <section id="proyectos" className="py-24 bg-gradient-to-b from-[#252b3d] to-[#1a1f2e]">
+      <section id="proyectos" className="py-24 bg-gradient-to-b from-dark-soft to-dark-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -284,7 +284,7 @@ export default function ProyectosPage() {
       </section>
 
       {/* How to Contribute Section */}
-      <section id="contribuir" className="py-24 bg-[#252b3d]">
+      <section id="contribuir" className="py-24 bg-dark-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -303,8 +303,8 @@ export default function ProyectosPage() {
               { icon: CheckCircle2, title: 'Testing', desc: 'Pruebas, reportes de bugs, QA' },
             ].map((type, i) => (
               <div key={i} className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 text-center">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <type.icon className="w-7 h-7 text-[#ff6b35]" />
+                <div className="w-14 h-14 bg-gradient-to-br from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <type.icon className="w-7 h-7 text-brand-light" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">{type.title}</h3>
                 <p className="text-white/70 text-sm">{type.desc}</p>
@@ -322,7 +322,7 @@ export default function ProyectosPage() {
                 { step: 4, title: 'Empieza a Contribuir', desc: 'Haz tu primer PR o comparte tus ideas' },
               ].map((step) => (
                 <div key={step.step} className="flex items-start gap-4 p-4 bg-white/5 rounded-xl">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#ff6b35] to-[#FFD700] rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-gradient-to-br from-brand-light to-gold rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-bold">{step.step}</span>
                   </div>
                   <div>
@@ -337,10 +337,10 @@ export default function ProyectosPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-gradient-to-b from-[#252b3d] to-[#1a1f2e]">
+      <section className="py-24 bg-gradient-to-b from-dark-soft to-dark-surface">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-12 border border-white/20">
-            <Lightbulb className="w-16 h-16 text-[#ff6b35] mx-auto mb-6" />
+            <Lightbulb className="w-16 h-16 text-brand-light mx-auto mb-6" />
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
               ¿Tienes una Idea de Proyecto?
             </h2>
@@ -352,7 +352,7 @@ export default function ProyectosPage() {
                 href="https://discord.gg/nodo360"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-[#ff6b35]/50 transition-all duration-300 hover:scale-105"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-105"
               >
                 <MessageCircle className="w-5 h-5" />
                 Unirse a Discord
@@ -375,13 +375,13 @@ function ProjectCard({
   getStatusBg: (status: string) => string
 }) {
   return (
-    <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 hover:border-[#ff6b35]/50 transition-all duration-300 group">
+    <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 hover:border-brand-light/50 transition-all duration-300 group">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="text-4xl">{project.icon}</div>
           <div>
-            <h3 className="text-xl font-bold text-white group-hover:text-[#ff6b35] transition-colors">
+            <h3 className="text-xl font-bold text-white group-hover:text-brand-light transition-colors">
               {project.title}
             </h3>
             <div className="flex items-center gap-2 mt-1">
@@ -426,9 +426,9 @@ function ProjectCard({
       </div>
 
       {/* Community Badge */}
-      <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-[#ff6b35]/20 to-[#FFD700]/20 border border-[#ff6b35]/30 rounded-full mb-4">
-        <Users className="w-3 h-3 text-[#ff6b35]" />
-        <span className="text-xs font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b35] to-[#FFD700]">
+      <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-full mb-4">
+        <Users className="w-3 h-3 text-brand-light" />
+        <span className="text-xs font-semibold text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-gold">
           Impulsado por la comunidad
         </span>
       </div>
@@ -450,7 +450,7 @@ function ProjectCard({
           href={project.discord}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#ff6b35]/10 hover:bg-[#ff6b35]/20 border border-[#ff6b35]/30 rounded-lg text-[#ff6b35] text-sm font-medium transition-all"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-light/10 hover:bg-brand-light/20 border border-brand-light/30 rounded-lg text-brand-light text-sm font-medium transition-all"
         >
           <MessageCircle className="w-4 h-4" />
           Contribuir
@@ -459,3 +459,5 @@ function ProjectCard({
     </div>
   )
 }
+
+

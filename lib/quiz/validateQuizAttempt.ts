@@ -1,148 +1,157 @@
 /**
  * Quiz Validation and Attempt Management
  *
- * Handles quiz answer validation, scoring, and attempt recording
+ * - Valida respuestas
+ * - Calcula score
+ * - Guarda intentos
+ * - Otorga XP usando awardXP()
  */
 
+import { createClient } from '@/lib/supabase/server'
+import { awardXP } from '@/lib/gamification/awardXP'
 import type {
   QuizQuestion,
   QuizAttempt,
   QuizAnswer,
-  InsertQuizAttempt,
+  InsertQuizAttempt
 } from '@/types/database'
-import { createClient } from '@/lib/supabase/client'
 
 export interface QuizSubmission {
+  userId: string
   moduleId: string
-  answers: {
-    questionId: string
-    selectedAnswer: number
-  }[]
+  answers: QuizAnswer[]
   timeSpentSeconds?: number
 }
 
 export interface QuizResult {
   score: number
-  totalQuestions: number
-  correctAnswers: number
   passed: boolean
   answers: QuizAnswer[]
   attemptId?: string
 }
 
-const PASSING_SCORE = 70 // 70% to pass
+const PASSING_SCORE = 70 // 70% para aprobar
 
-/**
- * Validate quiz answers and calculate score
- *
- * @param questions - Array of quiz questions
- * @param userAnswers - User's selected answers
- * @returns QuizResult with score and detailed results
- */
+/* ======================================================
+   VALIDAR RESPUESTAS Y CALCULAR SCORE
+====================================================== */
 export function validateQuizAnswers(
   questions: QuizQuestion[],
-  userAnswers: { questionId: string; selectedAnswer: number }[]
+  userAnswers: QuizAnswer[]
 ): QuizResult {
-  const totalQuestions = questions.length
-  let correctAnswers = 0
-
   const detailedAnswers: QuizAnswer[] = userAnswers.map((userAnswer) => {
-    const question = questions.find((q) => q.id === userAnswer.questionId)
-
-    if (!question) {
-      return {
-        question_id: userAnswer.questionId,
-        selected_answer: userAnswer.selectedAnswer,
-        correct: false,
-      }
-    }
-
-    const isCorrect = userAnswer.selectedAnswer === question.correct_answer
-
-    if (isCorrect) {
-      correctAnswers++
-    }
+    const question = questions.find((q) => q.id === userAnswer.question_id)
 
     return {
-      question_id: userAnswer.questionId,
-      selected_answer: userAnswer.selectedAnswer,
-      correct: isCorrect,
+      ...userAnswer,
+      correct: question?.correct_answer === userAnswer.selected_answer
     }
   })
+
+  const totalQuestions = questions.length
+  const correctAnswers = detailedAnswers.filter((a) => a.correct).length
 
   const score = Math.round((correctAnswers / totalQuestions) * 100)
   const passed = score >= PASSING_SCORE
 
   return {
     score,
-    totalQuestions,
-    correctAnswers,
     passed,
-    answers: detailedAnswers,
+    answers: detailedAnswers
   }
 }
 
-/**
- * Submit quiz attempt and save to database
- *
- * @param userId - User ID
- * @param submission - Quiz submission data
- * @param questions - Quiz questions
- * @returns QuizResult with attempt ID
- */
+/* ======================================================
+   GUARDAR INTENTO + OTORGAR XP (CENTRALIZADO)
+====================================================== */
 export async function submitQuizAttempt(
-  userId: string,
   submission: QuizSubmission,
   questions: QuizQuestion[]
 ): Promise<QuizResult | { error: string }> {
-  const supabase = createClient()
+  const supabase = await createClient()
 
-  // Validate answers
-  const result = validateQuizAnswers(questions, submission.answers)
+  const { userId, moduleId, answers, timeSpentSeconds } = submission
 
-  // Prepare attempt data
+  // 1️⃣ Validar respuestas
+  const result = validateQuizAnswers(questions, answers)
+
+  // 2️⃣ Comprobar si el usuario YA había aprobado antes
+  const { data: previousAttempts, error: previousError } = await supabase
+    .from('quiz_attempts')
+    .select('id, passed')
+    .eq('user_id', userId)
+    .eq('module_id', moduleId)
+    .eq('passed', true)
+
+  if (previousError) {
+    console.error('Error comprobando intentos previos:', previousError)
+    return { error: 'Error interno comprobando intentos previos' }
+  }
+
+  const alreadyPassedBefore = (previousAttempts?.length || 0) > 0
+
+  // 3️⃣ Guardar intento
+  const correctCount = result.answers.filter((a) => a.correct).length
   const attemptData: InsertQuizAttempt = {
     user_id: userId,
-    module_id: submission.moduleId,
+    module_id: moduleId,
     score: result.score,
-    total_questions: result.totalQuestions,
-    correct_answers: result.correctAnswers,
     passed: result.passed,
-    answers: result.answers as any, // Will be stored as JSONB
-    time_spent_seconds: submission.timeSpentSeconds || null,
+    total_questions: questions.length,
+    correct_answers: correctCount,
+    answers: result.answers,
+    time_spent_seconds: timeSpentSeconds ?? null,
     completed_at: new Date().toISOString(),
   }
 
-  // Save attempt to database
   const { data: attempt, error } = await supabase
     .from('quiz_attempts')
     .insert(attemptData as any)
     .select()
     .single()
 
-  if (error) {
-    console.error('Error saving quiz attempt:', error)
-    return { error: 'Failed to save quiz attempt' }
+  if (error || !attempt) {
+    console.error('Error guardando intento de quiz:', error)
+    return { error: 'Error guardando intento de quiz' }
+  }
+
+  // 4️⃣ Otorgar XP SOLO si:
+  // - Ha aprobado
+  // - No había aprobado antes (anti farming)
+  if (result.passed && !alreadyPassedBefore) {
+    // XP por aprobar quiz
+    await awardXP({
+      userId,
+      eventType: 'quiz_passed',
+      context: { quizId: attempt.id, moduleId },
+      description: `Quiz aprobado (módulo ${moduleId})`
+    })
+
+    // XP extra por puntuación perfecta
+    if (result.score === 100) {
+      await awardXP({
+        userId,
+        eventType: 'perfect_score',
+        context: { quizId: attempt.id, moduleId },
+        description: `Puntuación perfecta en quiz (módulo ${moduleId})`
+      })
+    }
   }
 
   return {
     ...result,
-    attemptId: (attempt as any).id,
+    attemptId: attempt.id
   }
 }
 
-/**
- * Get user's best attempt for a module
- *
- * @param userId - User ID
- * @param moduleId - Module ID
- * @returns Best quiz attempt or null
- */
+/* ======================================================
+   HELPERS (SIN CAMBIOS)
+====================================================== */
 export async function getBestQuizAttempt(
   userId: string,
   moduleId: string
 ): Promise<QuizAttempt | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: attempt } = await supabase
     .from('quiz_attempts')
@@ -150,48 +159,32 @@ export async function getBestQuizAttempt(
     .eq('user_id', userId)
     .eq('module_id', moduleId)
     .order('score', { ascending: false })
-    .order('completed_at', { ascending: false })
     .limit(1)
     .single()
 
-  return attempt || null
+  return (attempt as QuizAttempt | null) || null
 }
 
-/**
- * Get all attempts for a module
- *
- * @param userId - User ID
- * @param moduleId - Module ID
- * @returns Array of quiz attempts
- */
 export async function getQuizAttempts(
   userId: string,
   moduleId: string
 ): Promise<QuizAttempt[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: attempts } = await supabase
     .from('quiz_attempts')
     .select('*')
     .eq('user_id', userId)
     .eq('module_id', moduleId)
-    .order('completed_at', { ascending: false })
 
-  return attempts || []
+  return (attempts as QuizAttempt[]) || []
 }
 
-/**
- * Check if user has passed module quiz
- *
- * @param userId - User ID
- * @param moduleId - Module ID
- * @returns true if user has at least one passing attempt
- */
 export async function hasPassedModuleQuiz(
   userId: string,
   moduleId: string
 ): Promise<boolean> {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: attempts } = await supabase
     .from('quiz_attempts')
@@ -204,134 +197,4 @@ export async function hasPassedModuleQuiz(
   return (attempts?.length || 0) > 0
 }
 
-/**
- * Get quiz questions for a module
- *
- * @param moduleId - Module ID
- * @returns Array of quiz questions (without correct answers for client)
- */
-export async function getQuizQuestions(
-  moduleId: string,
-  includeAnswers: boolean = false
-): Promise<QuizQuestion[]> {
-  const supabase = createClient()
 
-  const { data: questions } = await supabase
-    .from('quiz_questions')
-    .select('*')
-    .eq('module_id', moduleId)
-    .order('order_index', { ascending: true })
-
-  if (!questions) {
-    return []
-  }
-
-  const questionsData = questions as any[]
-
-  // For client-side, hide correct answers
-  if (!includeAnswers) {
-    return questionsData.map((q) => ({
-      ...q,
-      correct_answer: -1, // Hide correct answer
-      explanation: null, // Hide explanation until after submission
-    }))
-  }
-
-  return questionsData
-}
-
-/**
- * Get quiz statistics for a module
- *
- * @param userId - User ID
- * @param moduleId - Module ID
- * @returns Quiz statistics
- */
-export async function getQuizStats(
-  userId: string,
-  moduleId: string
-): Promise<{
-  totalAttempts: number
-  bestScore: number
-  averageScore: number
-  passed: boolean
-  lastAttemptDate: string | null
-}> {
-  const attempts = await getQuizAttempts(userId, moduleId)
-
-  if (attempts.length === 0) {
-    return {
-      totalAttempts: 0,
-      bestScore: 0,
-      averageScore: 0,
-      passed: false,
-      lastAttemptDate: null,
-    }
-  }
-
-  const scores = attempts.map((a) => a.score)
-  const bestScore = Math.max(...scores)
-  const averageScore = Math.round(
-    scores.reduce((a, b) => a + b, 0) / scores.length
-  )
-  const passed = attempts.some((a) => a.passed)
-  const lastAttemptDate = attempts[0].completed_at
-
-  return {
-    totalAttempts: attempts.length,
-    bestScore,
-    averageScore,
-    passed,
-    lastAttemptDate,
-  }
-}
-
-/**
- * Shuffle quiz questions (for randomization)
- *
- * @param questions - Array of questions
- * @returns Shuffled array
- */
-export function shuffleQuestions<T>(questions: T[]): T[] {
-  const shuffled = [...questions]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-  return shuffled
-}
-
-/**
- * Shuffle quiz options (for randomization)
- *
- * @param question - Quiz question
- * @returns Question with shuffled options and updated correct_answer index
- */
-export function shuffleQuestionOptions(
-  question: QuizQuestion
-): QuizQuestion {
-  const optionsWithIndex = question.options.map((opt, idx) => ({
-    text: opt,
-    originalIndex: idx,
-  }))
-
-  // Shuffle
-  for (let i = optionsWithIndex.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[optionsWithIndex[i], optionsWithIndex[j]] = [
-      optionsWithIndex[j],
-      optionsWithIndex[i],
-    ]
-  }
-
-  // Find new index of correct answer
-  const newCorrectAnswerIndex = optionsWithIndex.findIndex(
-    (opt) => opt.originalIndex === question.correct_answer
-  )
-
-  return {
-    ...question,
-    options: optionsWithIndex.map((opt) => opt.text),
-    correct_answer: newCorrectAnswerIndex,
-  }
-}

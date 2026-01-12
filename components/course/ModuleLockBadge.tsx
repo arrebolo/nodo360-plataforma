@@ -34,18 +34,18 @@ export function ModuleLockBadge({
 
   if (reason === 'not_premium') {
     return (
-      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#FFD700]/20 border border-[#FFD700]/30 ${className}`}>
-        <Sparkles className="w-4 h-4 text-[#FFD700]" />
-        <span className="text-sm font-semibold text-[#FFD700]">Premium</span>
+      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gold/20 border border-gold/30 ${className}`}>
+        <Sparkles className="w-4 h-4 text-gold" />
+        <span className="text-sm font-semibold text-gold">Premium</span>
       </div>
     )
   }
 
   if (reason === 'quiz_not_passed') {
     return (
-      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#ff6b35]/20 border border-[#ff6b35]/30 ${className}`}>
-        <Trophy className="w-4 h-4 text-[#ff6b35]" />
-        <span className="text-sm font-semibold text-[#ff6b35]">
+      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-light/20 border border-brand-light/30 ${className}`}>
+        <Trophy className="w-4 h-4 text-brand-light" />
+        <span className="text-sm font-semibold text-brand-light">
           Requiere aprobar quiz anterior ({requiredScore}%)
         </span>
       </div>
@@ -81,8 +81,8 @@ export function ModuleLockCard({
     <div className="max-w-2xl mx-auto mt-8 p-8 bg-white/5 border-2 border-white/10 rounded-xl">
       <div className="text-center">
         {/* Icon */}
-        <div className="inline-block p-4 bg-gradient-to-r from-[#ff6b35]/20 to-[#f7931a]/20 rounded-2xl mb-4">
-          <Lock className="w-12 h-12 text-[#ff6b35]" />
+        <div className="inline-block p-4 bg-gradient-to-r from-brand-light/20 to-brand/20 rounded-2xl mb-4">
+          <Lock className="w-12 h-12 text-brand-light" />
         </div>
 
         {/* Title */}
@@ -98,7 +98,7 @@ export function ModuleLockCard({
             <div className="flex flex-col items-center gap-4">
               <button
                 onClick={onUpgrade}
-                className="px-8 py-4 rounded-xl bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-bold text-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all flex items-center gap-2"
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-gold to-gold-light text-black font-bold text-lg hover:shadow-lg hover:shadow-gold/50 transition-all flex items-center gap-2"
               >
                 <Sparkles className="w-5 h-5" />
                 Actualizar a Premium
@@ -128,3 +128,4 @@ export function ModuleLockCard({
     </div>
   )
 }
+

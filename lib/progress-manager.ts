@@ -194,3 +194,5 @@ export class ProgressManager {
     window.dispatchEvent(new CustomEvent('progressReset', { detail: { courseSlug } }))
   }
 }
+
+

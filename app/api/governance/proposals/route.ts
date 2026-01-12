@@ -120,3 +120,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error al crear propuesta' }, { status: 500 })
   }
 }
+
+

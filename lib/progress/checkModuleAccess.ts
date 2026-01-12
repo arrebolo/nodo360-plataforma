@@ -187,10 +187,10 @@ export async function getAccessibleModules(
   const accessibleModuleIds: string[] = []
 
   // Check each module
-  for (const module of modulesData) {
-    const access = await checkModuleAccess(userId, module.id, courseIsFree)
+  for (const mod of modulesData) {
+    const access = await checkModuleAccess(userId, mod.id, courseIsFree)
     if (access.canAccess) {
-      accessibleModuleIds.push(module.id)
+      accessibleModuleIds.push(mod.id)
     }
   }
 
@@ -225,8 +225,8 @@ export async function getNextLockedModule(
   const modulesData = modules as any[]
 
   // Find first locked module
-  for (const module of modulesData) {
-    const access = await checkModuleAccess(userId, module.id, courseIsFree)
+  for (const mod of modulesData) {
+    const access = await checkModuleAccess(userId, mod.id, courseIsFree)
     if (!access.canAccess) {
       let reason = 'Module is locked'
 
@@ -236,9 +236,11 @@ export async function getNextLockedModule(
         reason = 'Complete the previous module quiz to unlock'
       }
 
-      return { module, reason }
+      return { module: mod, reason }
     }
   }
 
   return { module: null, reason: 'All modules unlocked' }
 }
+
+

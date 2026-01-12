@@ -33,3 +33,5 @@ export function ForumIcon({ className = 'w-6 h-6' }: IconProps) {
     </svg>
   )
 }
+
+

@@ -1,13 +1,37 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
+
+// Rutas privadas que requieren autenticación
+const PRIVATE_PREFIXES = ['/dashboard', '/admin']
 
 export async function middleware(request: NextRequest) {
-  console.log('🔍 [Middleware] Request to:', request.nextUrl.pathname)
+  const pathname = request.nextUrl.pathname
 
+  // 1) Skip static files and assets
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/beta') ||
+    pathname.includes('.') ||
+    pathname === '/favicon.ico'
+  ) {
+    return NextResponse.next()
+  }
+
+  // 2) Anti-loop
+  if (request.nextUrl.searchParams.get('_p') === '1') {
+    return NextResponse.next()
+  }
+
+  // 3) Solo procesar rutas privadas
+  const isPrivateRoute = PRIVATE_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  if (!isPrivateRoute) {
+    return NextResponse.next()
+  }
+
+  // 4) Crear cliente Supabase para middleware
   let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request: { headers: request.headers },
   })
 
   const supabase = createServerClient(
@@ -15,107 +39,80 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
           })
           response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+            request,
           })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
           })
         },
       },
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // 5) Obtener usuario
+  const { data: { user } } = await supabase.auth.getUser()
 
-  console.log('ℹ️ [Middleware] User:', user?.email || 'No autenticado')
-
-  // Rutas protegidas que requieren autenticación
-  const protectedRoutes = ['/dashboard', '/profile', '/settings', '/cursos/.*/quiz']
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.match(new RegExp(`^${route}`))
-  )
-
-  // Rutas de auth (login, register) - redirigir a dashboard si ya está autenticado
-  const authRoutes = ['/login', '/register']
-  const isAuthRoute = authRoutes.includes(request.nextUrl.pathname)
-
-  // Si está en ruta protegida y NO está autenticado → redirigir a login
-  if (isProtectedRoute && !user) {
-    console.log('⚠️ [Middleware] Ruta protegida sin auth → Redirigiendo a /login')
+  // 6) Sin usuario → login
+  if (!user) {
+    console.log('🔒 [Middleware] No auth, redirect to login')
     const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirect', request.nextUrl.pathname)
+    loginUrl.searchParams.set('redirect', pathname)
+    loginUrl.searchParams.set('_p', '1')
     return NextResponse.redirect(loginUrl)
   }
 
-  // Si está en ruta de auth y YA está autenticado → redirigir según rol
-  if (isAuthRoute && user) {
-    console.log('🔍🔍🔍 [Middleware] Usuario autenticado en ruta de auth, verificando rol...')
+  // 7) Verificar acceso beta y ruta activa
+  const { data: userRow } = await supabase
+    .from('users')
+    .select('role, is_beta, active_path_id')
+    .eq('id', user.id)
+    .maybeSingle()
 
-    // Intentar obtener rol desde tabla users
-    const { data: userProfile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+  const isAdmin = userRow?.role === 'admin'
+  const isInstructor = userRow?.role === 'instructor'
+  const isMentor = userRow?.role === 'mentor'
+  const hasBetaAccess = userRow?.is_beta === true
 
-    console.log('📊 [Middleware] Rol obtenido:', userProfile?.role)
+  // Admins, instructores y mentores siempre tienen acceso (sin importar is_beta)
+  const isPrivileged = isAdmin || isInstructor || isMentor
 
-    // Si es admin o instructor, redirigir a admin panel
-    if (userProfile?.role === 'admin' || userProfile?.role === 'instructor') {
-      console.log('👑👑👑 [Middleware] Admin/Instructor → Redirigiendo a /admin/cursos')
-      return NextResponse.redirect(new URL('/admin/cursos', request.url))
-    }
-
-    console.log('👤 [Middleware] Usuario normal → Redirigiendo a /dashboard')
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  // Sin acceso beta y sin rol privilegiado → /beta
+  if (!hasBetaAccess && !isPrivileged) {
+    console.log('[Middleware] No beta access for user:', user.id.substring(0, 8) + '...')
+    const betaUrl = new URL('/beta', request.url)
+    betaUrl.searchParams.set('_p', '1')
+    return NextResponse.redirect(betaUrl)
   }
 
-  console.log('✅ [Middleware] Permitiendo acceso')
+  // 8) Dashboard requiere ruta activa (excepciones: rutas, instructor, admin)
+  const isDashboard = pathname.startsWith('/dashboard')
+  const isDashboardRutas = pathname.startsWith('/dashboard/rutas')
+  const isDashboardInstructor = pathname.startsWith('/dashboard/instructor')
+  const isAdminRoute = pathname.startsWith('/admin')
+
+  // Los privilegiados (admin/instructor/mentor) no necesitan active_path_id
+  const needsActivePath = isDashboard && !isDashboardRutas && !isDashboardInstructor && !isPrivileged
+
+  if (needsActivePath && !userRow?.active_path_id) {
+    console.log('🔀 [Middleware] No active path, redirect to /dashboard/rutas')
+    const rutasUrl = new URL('/dashboard/rutas', request.url)
+    rutasUrl.searchParams.set('_p', '1')
+    return NextResponse.redirect(rutasUrl)
+  }
+
   return response
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (public folder)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/dashboard/:path*', '/admin/:path*'],
 }
+
+

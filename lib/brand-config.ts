@@ -1,6 +1,6 @@
 export const brandConfig = {
   logo: {
-    url: '/imagenes/logo-nodo360.png.png',
+    url: '/imagenes/logo-nodo360.png',
     alt: 'Nodo360 - Aprende Bitcoin y Blockchain',
     sizes: {
       xs: { width: 100, height: 100 },
@@ -30,3 +30,5 @@ export const brandConfig = {
 
 export type BrandConfig = typeof brandConfig
 export type LogoSize = keyof typeof brandConfig.logo.sizes
+
+

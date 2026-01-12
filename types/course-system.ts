@@ -2,6 +2,8 @@
  * Sistema completo de tipos para cursos según especificación
  */
 
+import type React from 'react'
+
 export type CourseType = 'free' | 'premium'
 export type CourseLevel = 'basico' | 'intermedio' | 'avanzado'
 export type LessonState = 'locked' | 'available' | 'in_progress' | 'completed'
@@ -135,7 +137,7 @@ export interface MiniButtonProps {
 }
 
 export interface UserProgressWidgetProps {
-  courseId: string
+  courseSlug: string
   percent: number
   nextLesson?: {
     moduleSlug: string
@@ -225,3 +227,5 @@ export function getPrevLesson(
 
   return flat[currentIndex - 1]
 }
+
+

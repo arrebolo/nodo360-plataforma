@@ -56,3 +56,5 @@ export function getYouTubeThumbnail(urlOrId: string, quality: 'default' | 'mediu
 
   return `https://img.youtube.com/vi/${videoId}/${qualityMap[quality]}.jpg`
 }
+
+

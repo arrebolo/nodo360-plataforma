@@ -1,17 +1,25 @@
-export { VideoPlayer } from './VideoPlayer'
+// Main lesson player components
+export { default as LessonPlayer } from './LessonPlayer'
+export { default as VideoPlayer } from './VideoPlayer'
+export { VideoPlayer as VideoPlayerNamed } from './VideoPlayer'
+export { LessonVideo } from './LessonVideo'
+export { LessonHeroFallback } from './LessonHeroFallback'
+export { LessonContent } from './LessonContent'
+export { LessonHeader } from './LessonHeader'
+export { LessonTabs } from './LessonTabs'
+export { LessonSidebar } from './LessonSidebar'
+export { LessonFooter } from './LessonFooter'
+export { LessonNotes } from './LessonNotes'
+export { CourseCompletionModal } from './CourseCompletionModal'
+
+// Content block components
 export { LessonCallout } from './LessonCallout'
 export { CodeBlock } from './CodeBlock'
 export { InteractiveList } from './InteractiveList'
-export { QuizBlock } from './QuizBlock'
-export { ProgressBar } from './ProgressBar'
-export { TableOfContents } from './TableOfContents'
-export { LessonRenderer } from './LessonRenderer'
-export { CommunityButton } from './CommunityButton'
-export { OldLessonLayout } from './OldLessonLayout'
-export { OldLessonLayoutFull } from './OldLessonLayoutFull'
 
-// Progress system components
-export { LessonStatus } from './LessonStatus'
-export { CompleteButton } from './CompleteButton'
-export { AccessGuard } from './AccessGuard'
-export { LessonPageWrapper } from './LessonPageWrapper'
+// Resource components
+export { ResourceUploader } from './ResourceUploader'
+export { LessonResourcesPanel } from './LessonResourcesPanel'
+export { SlidesEmbed } from './SlidesEmbed'
+
+

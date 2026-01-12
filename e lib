@@ -1,0 +1,6 @@
+[35mlib/gamification/awardXP.ts[m[36m:[m[32m1[m[36m:[mimport { [1;31mcreateAdminClient[m } from '@/lib/supabase/admin'
+[35mlib/gamification/awardXP.ts[m[36m:[m[32m65[m[36m:[m  const admin = [1;31mcreateAdminClient[m()
+[35mlib/settings/getSetting.ts[m[36m:[m[32m1[m[36m:[mimport { [1;31mcreateAdminClient[m } from '@/lib/supabase/admin'
+[35mlib/settings/getSetting.ts[m[36m:[m[32m7[m[36m:[m * Usa service_role ([1;31mcreateAdminClient[m) para evitar dependencias de RLS.
+[35mlib/settings/getSetting.ts[m[36m:[m[32m13[m[36m:[m  const admin = [1;31mcreateAdminClient[m()
+[35mlib/supabase/admin.ts[m[36m:[m[32m8[m[36m:[mexport function [1;31mcreateAdminClient[m() {

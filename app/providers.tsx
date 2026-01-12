@@ -1,16 +1,17 @@
 'use client'
 
 import { Toaster } from 'sonner'
-import { Sidebar } from '@/components/layout/Sidebar'
+import { BadgeProvider } from '@/components/gamification/BadgeProvider'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+interface ProvidersProps {
+  children: React.ReactNode
+}
+
+export function Providers({ children }: ProvidersProps) {
   return (
-    <>
-      {/* Sidebar - Desktop (fixed left) + Mobile (bottom nav) */}
-      <Sidebar />
-
-      {/* Main content with padding for sidebar */}
-      <main className="lg:pl-16 min-h-screen pb-20 lg:pb-0">
+    <BadgeProvider>
+      {/* Main content - SiteHeader is in root layout */}
+      <main className="min-h-screen">
         {children}
       </main>
 
@@ -28,6 +29,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
           className: 'sonner-toast',
         }}
       />
-    </>
+    </BadgeProvider>
   )
 }
+
+

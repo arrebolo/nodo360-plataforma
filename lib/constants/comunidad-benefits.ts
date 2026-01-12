@@ -43,3 +43,5 @@ export const COMUNIDAD_BENEFITS: Array<{
     description: 'Conecta con profesionales del sector Bitcoin'
   }
 ]
+
+

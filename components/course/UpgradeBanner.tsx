@@ -24,10 +24,10 @@ export function UpgradeBanner({
 }: UpgradeBannerProps) {
   if (variant === 'compact') {
     return (
-      <div className="p-4 bg-gradient-to-r from-[#FFD700]/20 to-[#FFA500]/20 border border-[#FFD700]/30 rounded-xl">
+      <div className="p-4 bg-gradient-to-r from-gold/20 to-gold-light/20 border border-gold/30 rounded-xl">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-5 h-5 text-[#FFD700]" />
+            <Sparkles className="w-5 h-5 text-gold" />
             <div>
               <p className="text-sm font-semibold text-white">
                 {lockedModulesCount} módulos bloqueados
@@ -38,14 +38,14 @@ export function UpgradeBanner({
           {upgradeUrl ? (
             <Link
               href={upgradeUrl}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black text-sm font-semibold hover:shadow-lg transition-all"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-gold to-gold-light text-black text-sm font-semibold hover:shadow-lg transition-all"
             >
               Actualizar
             </Link>
           ) : (
             <button
               onClick={onUpgrade}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black text-sm font-semibold hover:shadow-lg transition-all"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-gold to-gold-light text-black text-sm font-semibold hover:shadow-lg transition-all"
             >
               Actualizar
             </button>
@@ -57,22 +57,22 @@ export function UpgradeBanner({
 
   if (variant === 'inline') {
     return (
-      <div className="flex items-center gap-3 p-3 bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-lg">
-        <Lock className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
+      <div className="flex items-center gap-3 p-3 bg-gold/10 border border-gold/30 rounded-lg">
+        <Lock className="w-4 h-4 text-gold flex-shrink-0" />
         <p className="text-sm text-white/80 flex-1">
-          Actualiza a <span className="font-semibold text-[#FFD700]">Premium</span> para desbloquear
+          Actualiza a <span className="font-semibold text-gold">Premium</span> para desbloquear
         </p>
         {upgradeUrl ? (
           <Link
             href={upgradeUrl}
-            className="px-3 py-1.5 rounded-lg bg-[#FFD700]/20 text-[#FFD700] text-xs font-semibold hover:bg-[#FFD700]/30 transition-all"
+            className="px-3 py-1.5 rounded-lg bg-gold/20 text-gold text-xs font-semibold hover:bg-gold/30 transition-all"
           >
             Ver Planes
           </Link>
         ) : (
           <button
             onClick={onUpgrade}
-            className="px-3 py-1.5 rounded-lg bg-[#FFD700]/20 text-[#FFD700] text-xs font-semibold hover:bg-[#FFD700]/30 transition-all"
+            className="px-3 py-1.5 rounded-lg bg-gold/20 text-gold text-xs font-semibold hover:bg-gold/30 transition-all"
           >
             Ver Planes
           </button>
@@ -83,15 +83,15 @@ export function UpgradeBanner({
 
   // Default variant
   return (
-    <div className="p-8 bg-gradient-to-r from-[#1a1f2e] via-[#252b3d] to-[#1a1f2e] border-2 border-[#FFD700]/30 rounded-2xl relative overflow-hidden">
+    <div className="p-8 bg-gradient-to-r from-dark-surface via-dark-soft to-dark-surface border-2 border-gold/30 rounded-2xl relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-[#FFD700]/10 rounded-full blur-3xl -mr-32 -mt-32" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FFA500]/10 rounded-full blur-3xl -ml-32 -mb-32" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gold/10 rounded-full blur-3xl -mr-32 -mt-32" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-gold-light/10 rounded-full blur-3xl -ml-32 -mb-32" />
 
       <div className="relative">
         <div className="flex items-start gap-6">
           {/* Icon */}
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-[#FFD700] to-[#FFA500] flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-gold to-gold-light flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
 
@@ -130,7 +130,7 @@ export function UpgradeBanner({
               {upgradeUrl ? (
                 <Link
                   href={upgradeUrl}
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-bold hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all flex items-center gap-2"
+                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-gold to-gold-light text-black font-bold hover:shadow-lg hover:shadow-gold/50 transition-all flex items-center gap-2"
                 >
                   Actualizar a Premium
                   <ArrowRight className="w-5 h-5" />
@@ -138,7 +138,7 @@ export function UpgradeBanner({
               ) : (
                 <button
                   onClick={onUpgrade}
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black font-bold hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all flex items-center gap-2"
+                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-gold to-gold-light text-black font-bold hover:shadow-lg hover:shadow-gold/50 transition-all flex items-center gap-2"
                 >
                   Actualizar a Premium
                   <ArrowRight className="w-5 h-5" />
@@ -152,3 +152,4 @@ export function UpgradeBanner({
     </div>
   )
 }
+

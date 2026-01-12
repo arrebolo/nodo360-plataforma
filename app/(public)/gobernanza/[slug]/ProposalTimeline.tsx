@@ -53,11 +53,11 @@ export function ProposalTimeline({ proposal }: ProposalTimelineProps) {
                 ) : isActive ? (
                   <Clock className="w-6 h-6 text-blue-400 animate-pulse" />
                 ) : (
-                  <Circle className="w-6 h-6 text-gray-600" />
+                  <Circle className="w-6 h-6 text-white/40" />
                 )}
                 {index < steps.length - 1 && (
                   <div className={`w-0.5 h-8 mt-1 ${
-                    isPast ? 'bg-green-400/50' : 'bg-gray-700'
+                    isPast ? 'bg-green-400/50' : 'bg-dark-tertiary'
                   }`} />
                 )}
               </div>
@@ -65,12 +65,12 @@ export function ProposalTimeline({ proposal }: ProposalTimelineProps) {
               {/* Contenido */}
               <div className="flex-1 pb-4">
                 <p className={`font-medium ${
-                  isPast ? 'text-white' : isActive ? 'text-blue-400' : 'text-gray-500'
+                  isPast ? 'text-white' : isActive ? 'text-blue-400' : 'text-white/50'
                 }`}>
                   {step.label}
                 </p>
                 {step.date && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-white/50">
                     {new Date(step.date).toLocaleDateString('es-ES', {
                       day: 'numeric',
                       month: 'short',

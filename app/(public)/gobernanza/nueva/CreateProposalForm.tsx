@@ -90,7 +90,7 @@ export function CreateProposalForm({
       {/* Selector de nivel (solo si puede crear nivel 2) */}
       {canCreateLevel2 && (
         <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-          <label className="block text-sm font-medium text-gray-300 mb-3">
+          <label className="block text-sm font-medium text-white/80 mb-3">
             Nivel de Propuesta
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -99,15 +99,15 @@ export function CreateProposalForm({
               onClick={() => setFormData({ ...formData, proposal_level: 1, category_id: '' })}
               className={`p-4 rounded-lg border-2 transition-all text-left ${
                 formData.proposal_level === 1
-                  ? 'border-[#ff6b35] bg-[#ff6b35]/10'
+                  ? 'border-brand-light bg-brand-light/10'
                   : 'border-white/10 bg-white/5 hover:border-white/30'
               }`}
             >
               <div className="font-semibold mb-1 text-white">Nivel 1</div>
-              <div className="text-xs text-gray-400">
+              <div className="text-xs text-white/60">
                 Sugerencias y mejoras menores
               </div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-white/50 mt-2">
                 Quorum: 10 votos - Aprobación: 60%
               </div>
             </button>
@@ -122,10 +122,10 @@ export function CreateProposalForm({
               }`}
             >
               <div className="font-semibold mb-1 text-white">Nivel 2</div>
-              <div className="text-xs text-gray-400">
+              <div className="text-xs text-white/60">
                 Cambios importantes y nuevos cursos
               </div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-white/50 mt-2">
                 Quorum: 25 votos - Aprobación: 66%
               </div>
             </button>
@@ -141,7 +141,7 @@ export function CreateProposalForm({
 
       {/* Título */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-white/80 mb-2">
           Título de la Propuesta *
         </label>
         <input
@@ -150,18 +150,18 @@ export function CreateProposalForm({
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           placeholder="Ej: Agregar modo oscuro a la plataforma"
           className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg
-                     text-white placeholder-gray-500
-                     focus:outline-none focus:border-[#ff6b35] focus:ring-1 focus:ring-[#ff6b35]"
+                     text-white placeholder-white/40
+                     focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light"
           maxLength={100}
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-white/50 mt-1">
           {formData.title.length}/100 caracteres (mínimo 10)
         </p>
       </div>
 
       {/* Categoría */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-white/80 mb-2">
           Categoría *
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -172,7 +172,7 @@ export function CreateProposalForm({
               onClick={() => setFormData({ ...formData, category_id: category.id })}
               className={`p-3 rounded-lg border-2 transition-all text-center ${
                 formData.category_id === category.id
-                  ? 'border-[#ff6b35] bg-[#ff6b35]/10'
+                  ? 'border-brand-light bg-brand-light/10'
                   : 'border-white/10 bg-white/5 hover:border-white/30'
               }`}
             >
@@ -182,7 +182,7 @@ export function CreateProposalForm({
           ))}
         </div>
         {filteredCategories.length === 0 && (
-          <p className="text-gray-500 text-sm mt-2">
+          <p className="text-white/50 text-sm mt-2">
             No hay categorías disponibles para este nivel.
           </p>
         )}
@@ -190,7 +190,7 @@ export function CreateProposalForm({
 
       {/* Descripción corta */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-white/80 mb-2">
           Descripción Breve *
         </label>
         <textarea
@@ -199,18 +199,18 @@ export function CreateProposalForm({
           placeholder="Resume tu propuesta en 2-3 oraciones. ¿Qué problema resuelve? ¿Qué beneficio trae?"
           rows={3}
           className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg
-                     text-white placeholder-gray-500 resize-none
-                     focus:outline-none focus:border-[#ff6b35] focus:ring-1 focus:ring-[#ff6b35]"
+                     text-white placeholder-white/40 resize-none
+                     focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light"
           maxLength={500}
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-white/50 mt-1">
           {formData.description.length}/500 caracteres (mínimo 50)
         </p>
       </div>
 
       {/* Contenido detallado */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-white/80 mb-2">
           <FileText className="inline w-4 h-4 mr-1" />
           Detalles (opcional)
         </label>
@@ -220,14 +220,14 @@ export function CreateProposalForm({
           placeholder="Aquí puedes expandir tu propuesta con más detalles, ejemplos, referencias, etc."
           rows={6}
           className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg
-                     text-white placeholder-gray-500 resize-none
-                     focus:outline-none focus:border-[#ff6b35] focus:ring-1 focus:ring-[#ff6b35]"
+                     text-white placeholder-white/40 resize-none
+                     focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light"
         />
       </div>
 
       {/* Tags */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-white/80 mb-2">
           <Tag className="inline w-4 h-4 mr-1" />
           Etiquetas (opcional)
         </label>
@@ -237,8 +237,8 @@ export function CreateProposalForm({
           onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           placeholder="bitcoin, educación, mejora (separadas por comas)"
           className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg
-                     text-white placeholder-gray-500
-                     focus:outline-none focus:border-[#ff6b35] focus:ring-1 focus:ring-[#ff6b35]"
+                     text-white placeholder-white/40
+                     focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light"
         />
       </div>
 
@@ -246,9 +246,9 @@ export function CreateProposalForm({
       <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
         <div className="flex gap-3">
           <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-gray-300">
+          <div className="text-sm text-white/80">
             <p className="font-medium text-blue-400 mb-1">¿Cómo funciona?</p>
-            <ol className="list-decimal list-inside space-y-1 text-gray-400">
+            <ol className="list-decimal list-inside space-y-1 text-white/60">
               <li>Creas tu propuesta (borrador o envío directo)</li>
               <li>Un {formData.proposal_level === 1 ? 'Mentor' : 'miembro del Consejo'} la revisa</li>
               <li>Si es aprobada, pasa a votación pública</li>
@@ -282,7 +282,7 @@ export function CreateProposalForm({
           type="button"
           onClick={(e) => handleSubmit(e, 'review')}
           disabled={isLoading}
-          className="flex-1 py-3 px-6 bg-[#ff6b35] hover:bg-[#ff6b35]/80 rounded-lg font-medium
+          className="flex-1 py-3 px-6 bg-brand-light hover:bg-brand-light/80 rounded-lg font-medium
                      transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-white"
         >
           <Send className="w-4 h-4" />
@@ -304,7 +304,7 @@ export function CreateProposalForm({
               <span className={`text-xs px-2 py-0.5 rounded ${
                 formData.proposal_level === 2
                   ? 'bg-amber-500/20 text-amber-400'
-                  : 'bg-gray-500/20 text-gray-400'
+                  : 'bg-white/50/20 text-white/60'
               }`}>
                 Nivel {formData.proposal_level}
               </span>
@@ -312,14 +312,14 @@ export function CreateProposalForm({
             <h4 className="text-xl font-semibold mb-2 text-white">
               {formData.title || 'Título de tu propuesta'}
             </h4>
-            <p className="text-gray-400">
+            <p className="text-white/60">
               {formData.description || 'Tu descripción aparecerá aquí...'}
             </p>
             {formData.tags && (
               <div className="flex gap-2 mt-4 flex-wrap">
                 {formData.tags.split(',').map((tag, i) => (
                   tag.trim() && (
-                    <span key={i} className="text-xs bg-white/10 px-2 py-1 rounded text-gray-300">
+                    <span key={i} className="text-xs bg-white/10 px-2 py-1 rounded text-white/80">
                       #{tag.trim()}
                     </span>
                   )
@@ -332,3 +332,5 @@ export function CreateProposalForm({
     </form>
   )
 }
+
+

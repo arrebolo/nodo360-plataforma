@@ -27,7 +27,7 @@ export default async function CoursesPage() {
             <div className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
               {/* Thumbnail del curso */}
               {course.thumbnail_url && (
-                <div className="relative h-48 bg-gray-200">
+                <div className="relative h-48 bg-white/15">
                   <Image
                     src={course.thumbnail_url}
                     alt={course.title}
@@ -58,7 +58,7 @@ export default async function CoursesPage() {
                 
                 {/* Descripción */}
                 {course.description && (
-                  <p className="text-gray-600 text-sm line-clamp-3">
+                  <p className="text-white/40 text-sm line-clamp-3">
                     {course.description}
                   </p>
                 )}
@@ -92,7 +92,7 @@ export default async function CoursePage({
     return (
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-        <p className="text-gray-600 mb-8">{course.description}</p>
+        <p className="text-white/40 mb-8">{course.description}</p>
         
         {/* Módulos *\/}
         <div className="space-y-6">
@@ -213,3 +213,5 @@ export async function POST(request: Request) {
   }
 }
 */
+
+

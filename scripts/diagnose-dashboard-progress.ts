@@ -154,3 +154,5 @@ diagnose()
     console.error('❌ Error en diagnóstico:', error)
     process.exit(1)
   })
+
+

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 
 interface ReorderModuleButtonsProps {
@@ -18,7 +17,6 @@ export function ReorderModuleButtons({
   totalModules
 }: ReorderModuleButtonsProps) {
   const [isReordering, setIsReordering] = useState(false)
-  const router = useRouter()
 
   const handleReorder = async (direction: 'up' | 'down') => {
     setIsReordering(true)
@@ -39,11 +37,12 @@ export function ReorderModuleButtons({
       if (!response.ok) throw new Error('Error al reordenar')
 
       console.log('✅ [Reorder Module] Reordenado correctamente')
-      router.refresh()
+
+      // Recargar la página para mostrar el nuevo orden
+      window.location.reload()
     } catch (error) {
       console.error('❌ [Reorder Module] Error:', error)
       alert('Error al reordenar módulo')
-    } finally {
       setIsReordering(false)
     }
   }
@@ -72,3 +71,5 @@ export function ReorderModuleButtons({
     </div>
   )
 }
+
+

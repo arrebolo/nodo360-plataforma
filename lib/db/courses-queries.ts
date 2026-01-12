@@ -26,8 +26,8 @@ export type { LessonWithRelations }
 // =====================================================
 
 /**
- * Get all published courses
- * @returns Lista de cursos publicados con información del instructor
+ * Get all published and coming_soon courses
+ * @returns Lista de cursos visibles con información del instructor
  */
 export async function getAllCourses(): Promise<CourseWithInstructor[]> {
   console.log('🔍 [getAllCourses] Obteniendo todos los cursos...')
@@ -44,7 +44,7 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
         avatar_url
       )
     `)
-    .eq('status', 'published')
+    .in('status', ['published', 'coming_soon'])
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -283,8 +283,8 @@ export async function getAllLessonsForCourse(
 
   // PASO 4: Mapear lecciones con estructura consistente
   const lessonsWithRelations: LessonWithRelations[] = (lessons || []).map((lesson) => {
-    const module = modules.find((m) => m.id === lesson.module_id)
-    if (!module) {
+    const lessonModule = modules.find((m) => m.id === lesson.module_id)
+    if (!lessonModule) {
       console.error('❌ [getAllLessonsForCourse] Módulo no encontrado para lección:', {
         lessonId: lesson.id,
         moduleId: lesson.module_id,
@@ -295,7 +295,7 @@ export async function getAllLessonsForCourse(
     return {
       ...lesson,
       module: {
-        ...module,
+        ...lessonModule,
         course: course as Course,
       },
     }
@@ -475,3 +475,5 @@ export async function getPreviousLesson(
 
   return lastLesson
 }
+
+

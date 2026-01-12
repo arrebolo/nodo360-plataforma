@@ -65,14 +65,14 @@ export function VoteSection({
     return (
       <div className="bg-white/5 rounded-xl p-6 border border-white/10">
         <div className="text-center">
-          <Lock className="w-12 h-12 mx-auto text-gray-500 mb-3" />
+          <Lock className="w-12 h-12 mx-auto text-white/50 mb-3" />
           <h3 className="font-semibold mb-2 text-white">Inicia sesión para votar</h3>
-          <p className="text-sm text-gray-400 mb-4">
+          <p className="text-sm text-white/60 mb-4">
             Necesitas una cuenta para participar en la gobernanza.
           </p>
           <Link
             href={`/login?redirect=/gobernanza/${proposal.slug}`}
-            className="inline-block px-6 py-2 bg-[#ff6b35] hover:bg-[#ff6b35]/80 rounded-lg font-medium transition-colors text-white"
+            className="inline-block px-6 py-2 bg-brand-light hover:bg-brand-light/80 rounded-lg font-medium transition-colors text-white"
           >
             Iniciar Sesión
           </Link>
@@ -88,7 +88,7 @@ export function VoteSection({
         <div className="text-center">
           <CheckCircle className="w-12 h-12 mx-auto text-green-400 mb-3" />
           <h3 className="font-semibold text-green-400 mb-2">¡Ya votaste!</h3>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-white/60">
             Tu voto de <strong>{userGPower} gP</strong> ha sido registrado.
           </p>
         </div>
@@ -109,9 +109,9 @@ export function VoteSection({
     return (
       <div className="bg-white/5 rounded-xl p-6 border border-white/10">
         <div className="text-center">
-          <Lock className="w-12 h-12 mx-auto text-gray-500 mb-3" />
+          <Lock className="w-12 h-12 mx-auto text-white/50 mb-3" />
           <h3 className="font-semibold mb-2 text-white">Votación no disponible</h3>
-          <p className="text-sm text-gray-400">{message}</p>
+          <p className="text-sm text-white/60">{message}</p>
         </div>
       </div>
     )
@@ -153,7 +153,7 @@ export function VoteSection({
 
       {/* Comentario opcional */}
       <div className="mb-4">
-        <label className="block text-sm text-gray-400 mb-2">
+        <label className="block text-sm text-white/60 mb-2">
           Comentario (opcional)
         </label>
         <textarea
@@ -162,8 +162,8 @@ export function VoteSection({
           placeholder="¿Por qué votas así?"
           rows={2}
           className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg
-                     text-white placeholder-gray-500 text-sm resize-none
-                     focus:outline-none focus:border-[#ff6b35]"
+                     text-white placeholder-white/40 text-sm resize-none
+                     focus:outline-none focus:border-brand-light"
           maxLength={280}
         />
       </div>
@@ -179,13 +179,13 @@ export function VoteSection({
       <button
         onClick={handleVote}
         disabled={!selectedVote || isLoading}
-        className="w-full py-3 bg-[#ff6b35] hover:bg-[#ff6b35]/80 rounded-lg font-medium
+        className="w-full py-3 bg-brand-light hover:bg-brand-light/80 rounded-lg font-medium
                    transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-white"
       >
         {isLoading ? 'Enviando...' : `Votar con ${userGPower} gP`}
       </button>
 
-      <p className="text-xs text-gray-500 text-center mt-3">
+      <p className="text-xs text-white/50 text-center mt-3">
         Tu voto es permanente y no puede cambiarse.
       </p>
     </div>
@@ -215,7 +215,7 @@ function VoteButton({
           : 'border-white/10 hover:border-white/30 text-white'
       }`}
     >
-      <span className={selected ? info.color : 'text-gray-400'}>{icon}</span>
+      <span className={selected ? info.color : 'text-white/60'}>{icon}</span>
       <span className="font-medium">{info.label}</span>
     </button>
   )

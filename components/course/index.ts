@@ -1,18 +1,15 @@
 // Core Components
 export { LessonList } from './LessonList'
-export { ModuleListEnhanced } from './ModuleListEnhanced'
 export { ModuleQuizSection } from './ModuleQuizSection'
 export { ModuleCard } from './ModuleCard'
-export { ModuleAccordion } from './ModuleAccordion'
 export { CourseSidebar } from './CourseSidebar'
 export { CourseCard } from './CourseCard'
 export { CourseGrid } from './CourseGrid'
 
 // New Simplified Components
 export { default as EnrollButton } from './EnrollButton'
-export { default as VideoPlayer } from './VideoPlayer'
 export { default as CourseHero } from './CourseHero'
-export { default as ModulesAccordion } from './ModulesAccordion'
+export { default as CourseModulesPreview } from './CourseModulesPreview'
 export { default as LessonNavigation } from './LessonNavigation'
 export { default as SimpleLessonSidebar } from './SimpleLessonSidebar'
 
@@ -28,3 +25,5 @@ export { UpgradeBanner } from './UpgradeBanner'
 export { RelatedCourses } from './RelatedCourses'
 export { RelatedLinks } from './RelatedLinks'
 export { UserProgressWidget } from './UserProgressWidget'
+
+

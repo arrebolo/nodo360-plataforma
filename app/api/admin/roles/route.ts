@@ -138,3 +138,5 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Error al revocar rol' }, { status: 500 })
   }
 }
+
+

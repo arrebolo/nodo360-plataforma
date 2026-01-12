@@ -1,110 +1,71 @@
-import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { awardXP } from '@/lib/gamification/awardXP'
 
+type AdjustXPBody = {
+  userId: string
+  amount: number
+  reason: string
+}
+
+/**
+ * POST /api/admin/xp/adjust
+ * Ajusta XP manualmente (admin) usando el motor central awardXP().
+ *
+ * Body: { userId: string, amount: number, reason: string }
+ * - amount puede ser positivo (dar XP) o negativo (quitar XP).
+ */
 export async function POST(request: Request) {
   try {
+    // 1) Auth + rol (cliente de sesión)
     const supabase = await createClient()
 
-    // Verificar admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    const { data: authData, error: authError } = await supabase.auth.getUser()
+    if (authError || !authData?.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const { data: currentUser } = await supabase
+    const { data: me, error: roleError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', authData.user.id)
       .single()
 
-    if (currentUser?.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Solo administradores pueden ajustar XP' },
-        { status: 403 }
-      )
+    if (roleError || me?.role !== 'admin') {
+      return NextResponse.json({ error: 'Solo admin' }, { status: 403 })
     }
 
-    const { userId, amount, reason } = await request.json()
+    // 2) Payload + validación
+    const body = (await request.json()) as Partial<AdjustXPBody>
 
-    // Validar datos
-    if (!userId || !amount || !reason) {
+    const userId = typeof body.userId === 'string' ? body.userId.trim() : ''
+    const reason = typeof body.reason === 'string' ? body.reason.trim() : ''
+    const amount = typeof body.amount === 'number' ? body.amount : NaN
+
+    if (!userId || !Number.isFinite(amount) || reason.length < 3) {
       return NextResponse.json(
-        { error: 'Faltan datos requeridos' },
+        { error: 'Payload inválido: userId (string), amount (number), reason (>=3 chars)' },
         { status: 400 }
       )
     }
 
-    // Obtener o crear stats actuales
-    let { data: stats } = await supabase
-      .from('user_gamification_stats')
-      .select('total_xp, current_level, xp_to_next_level')
-      .eq('user_id', userId)
-      .maybeSingle()
+    // 3) Aplicar XP centralizado (permite negativos en admin_adjustment)
+    const result = await awardXP({
+      userId,
+      eventType: 'admin_adjustment',
+      amount,
+      description: `Ajuste manual: ${reason}`
+    })
 
-    if (!stats) {
-      // Crear stats si no existen
-      const { data: newStats, error: createError } = await supabase
-        .from('user_gamification_stats')
-        .insert({
-          user_id: userId,
-          total_xp: 0,
-          current_level: 1,
-          xp_to_next_level: 100,
-          current_streak: 0,
-          longest_streak: 0
-        })
-        .select()
-        .single()
-
-      if (createError) throw createError
-      stats = newStats
-    }
-
-    const newXP = Math.max(0, (stats?.total_xp || 0) + amount)
-
-    // Calcular nuevo nivel (simple: cada 100 XP = 1 nivel)
-    const newLevel = Math.floor(newXP / 100) + 1
-    const xpToNextLevel = (newLevel * 100) - newXP
-
-    // Actualizar XP y nivel
-    const { error: updateError } = await supabase
-      .from('user_gamification_stats')
-      .update({
-        total_xp: newXP,
-        current_level: newLevel,
-        xp_to_next_level: xpToNextLevel,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId)
-
-    if (updateError) throw updateError
-
-    // Registrar evento
-    const { error: eventError } = await supabase
-      .from('xp_events')
-      .insert({
-        user_id: userId,
-        event_type: 'admin_adjustment',
-        xp_amount: amount,
-        description: `Ajuste manual: ${reason}`,
-        created_at: new Date().toISOString()
-      })
-
-    if (eventError) {
-      console.error('[Admin] Error al registrar evento XP:', eventError)
-      // No throw - el ajuste ya se hizo, solo falla el log
-    }
-
-    console.log(
-      `✅ [Admin] XP ajustado para usuario ${userId}: ${amount} XP (Nuevo total: ${newXP})`
-    )
-
-    return NextResponse.json({ success: true, newXP, newLevel })
+    return NextResponse.json({
+      success: true,
+      message: 'XP ajustado correctamente',
+      ...result
+    })
   } catch (error) {
-    console.error('[Admin] Error al ajustar XP:', error)
-    return NextResponse.json(
-      { error: 'Error al ajustar XP' },
-      { status: 500 }
-    )
+    console.error('[Admin][XP Adjust] Error:', error)
+    return NextResponse.json({ error: 'Error al ajustar XP' }, { status: 500 })
   }
 }
+
+

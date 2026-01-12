@@ -30,45 +30,60 @@ export default function Leaderboard({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchLeaderboard()
-  }, [limit])
+    let cancelled = false
 
-  const fetchLeaderboard = async () => {
-    try {
-      const response = await fetch('/api/gamification/leaderboard')
-      const data = await response.json()
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch('/api/gamification/leaderboard')
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        const data = await response.json()
 
-      if (data.leaderboard) {
-        const limitedLeaderboard = data.leaderboard.slice(0, limit)
-        setLeaderboard(limitedLeaderboard)
-      }
+        if (!cancelled && data.leaderboard) {
+          const limitedLeaderboard = data.leaderboard.slice(0, limit)
+          setLeaderboard(limitedLeaderboard)
+        }
 
-      // Obtener posición del usuario actual
-      if (showCurrentUser) {
-        const statsResponse = await fetch('/api/gamification/stats')
-        const statsData = await statsResponse.json()
-        if (statsData.leaderboardPosition) {
-          setCurrentUserPosition(statsData.leaderboardPosition)
+        // Obtener posición del usuario actual
+        if (showCurrentUser && !cancelled) {
+          const statsResponse = await fetch('/api/gamification/stats')
+          if (statsResponse.ok) {
+            const statsData = await statsResponse.json()
+            if (!cancelled && statsData.leaderboardPosition) {
+              setCurrentUserPosition(statsData.leaderboardPosition)
+            }
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[Leaderboard] Error fetching leaderboard:', error)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
         }
       }
-    } catch (error) {
-      console.error('[Leaderboard] Error fetching leaderboard:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchLeaderboard()
+
+    return () => {
+      cancelled = true
+    }
+  }, [limit, showCurrentUser])
 
   if (loading) {
     return (
       <div className="animate-pulse space-y-3">
         {[1, 2, 3, 4, 5].map(i => (
-          <div key={i} className="flex items-center gap-4 p-4 bg-gray-100 rounded-xl">
-            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+          <div key={i} className="flex items-center gap-4 p-4 bg-white/10 rounded-xl">
+            <div className="w-8 h-8 bg-white/15 rounded-full" />
             <div className="flex-1">
-              <div className="w-32 h-4 bg-gray-200 rounded mb-2" />
-              <div className="w-20 h-3 bg-gray-200 rounded" />
+              <div className="w-32 h-4 bg-white/15 rounded mb-2" />
+              <div className="w-20 h-3 bg-white/15 rounded" />
             </div>
-            <div className="w-16 h-4 bg-gray-200 rounded" />
+            <div className="w-16 h-4 bg-white/15 rounded" />
           </div>
         ))}
       </div>
@@ -78,13 +93,13 @@ export default function Leaderboard({
   if (leaderboard.length === 0) {
     return (
       <div className="text-center py-12 px-4">
-        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Trophy className="w-10 h-10 text-gray-400" />
+        <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Trophy className="w-10 h-10 text-white/60" />
         </div>
-        <h3 className="font-semibold text-gray-900 mb-2">
+        <h3 className="font-semibold text-white mb-2">
           Leaderboard vacío
         </h3>
-        <p className="text-gray-600 text-sm">
+        <p className="text-white/40 text-sm">
           Sé el primero en aparecer en el ranking
         </p>
       </div>
@@ -96,7 +111,7 @@ export default function Leaderboard({
       case 1:
         return <Trophy className="w-6 h-6 text-yellow-500" />
       case 2:
-        return <Medal className="w-6 h-6 text-gray-400" />
+        return <Medal className="w-6 h-6 text-white/60" />
       case 3:
         return <Medal className="w-6 h-6 text-orange-600" />
       default:
@@ -115,7 +130,7 @@ export default function Leaderboard({
       case 3:
         return `${baseClasses} bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-md`
       default:
-        return `${baseClasses} bg-gray-100 text-gray-600`
+        return `${baseClasses} bg-white/10 text-white/40`
     }
   }
 
@@ -126,22 +141,22 @@ export default function Leaderboard({
         {leaderboard.map((entry) => (
           <div
             key={entry.userId}
-            className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+            className="flex items-center gap-3 p-3 bg-white rounded-lg border border-white/15 hover:shadow-md transition-shadow"
           >
             <div className={getPositionBadge(entry.position)}>
               {entry.position <= 3 ? getPositionIcon(entry.position) : entry.position}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-gray-900 truncate">
+              <p className="font-semibold text-sm text-white truncate">
                 {entry.name}
               </p>
-              <p className="text-xs text-gray-500">Nivel {entry.level}</p>
+              <p className="text-xs text-white/50">Nivel {entry.level}</p>
             </div>
             <div className="text-right">
-              <p className="font-bold text-sm text-gray-900">
+              <p className="font-bold text-sm text-white">
                 {entry.totalXp.toLocaleString()}
               </p>
-              <p className="text-xs text-gray-500">XP</p>
+              <p className="text-xs text-white/50">XP</p>
             </div>
           </div>
         ))}
@@ -176,16 +191,16 @@ export default function Leaderboard({
       )}
 
       {/* Leaderboard List */}
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-white/10">
         {leaderboard.map((entry, index) => (
           <div
             key={entry.userId}
             className={`
               flex items-center gap-4 px-6 py-4 transition-colors
               ${index === 0 ? 'bg-yellow-50/50' : ''}
-              ${index === 1 ? 'bg-gray-50/50' : ''}
+              ${index === 1 ? 'bg-white/5/50' : ''}
               ${index === 2 ? 'bg-orange-50/50' : ''}
-              hover:bg-gray-50
+              hover:bg-white/5
             `}
           >
             {/* Position */}
@@ -201,17 +216,17 @@ export default function Leaderboard({
 
             {/* User Info */}
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-gray-900 truncate">
+              <h4 className="font-semibold text-white truncate">
                 {entry.name}
               </h4>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-white/50">
                   Nivel {entry.level}
                 </span>
                 {entry.totalBadges > 0 && (
                   <>
-                    <span className="text-gray-300">•</span>
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                    <span className="text-white/80">•</span>
+                    <span className="text-xs text-white/50 flex items-center gap-1">
                       <Award className="w-3 h-3" />
                       {entry.totalBadges} badges
                     </span>
@@ -219,8 +234,8 @@ export default function Leaderboard({
                 )}
                 {entry.currentStreak > 0 && (
                   <>
-                    <span className="text-gray-300">•</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-white/80">•</span>
+                    <span className="text-xs text-white/50">
                       🔥 {entry.currentStreak} días
                     </span>
                   </>
@@ -230,18 +245,18 @@ export default function Leaderboard({
 
             {/* XP */}
             <div className="text-right">
-              <p className="text-lg font-bold text-gray-900">
+              <p className="text-lg font-bold text-white">
                 {entry.totalXp.toLocaleString()}
               </p>
-              <p className="text-xs text-gray-500">XP</p>
+              <p className="text-xs text-white/50">XP</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-        <p className="text-xs text-gray-500 text-center">
+      <div className="px-6 py-4 bg-white/5 border-t border-white/10">
+        <p className="text-xs text-white/50 text-center">
           Actualizado en tiempo real • Completa lecciones para subir de posición
         </p>
       </div>
@@ -255,23 +270,36 @@ export function LeaderboardPodium() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchTopThree()
-  }, [])
+    let cancelled = false
 
-  const fetchTopThree = async () => {
-    try {
-      const response = await fetch('/api/gamification/leaderboard')
-      const data = await response.json()
+    const fetchTopThree = async () => {
+      try {
+        const response = await fetch('/api/gamification/leaderboard')
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        const data = await response.json()
 
-      if (data.leaderboard) {
-        setTopThree(data.leaderboard.slice(0, 3))
+        if (!cancelled && data.leaderboard) {
+          setTopThree(data.leaderboard.slice(0, 3))
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[Podium] Error fetching top 3:', error)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
-    } catch (error) {
-      console.error('[Podium] Error fetching top 3:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchTopThree()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   if (loading || topThree.length === 0) {
     return null
@@ -338,3 +366,5 @@ export function LeaderboardPodium() {
     </div>
   )
 }
+
+

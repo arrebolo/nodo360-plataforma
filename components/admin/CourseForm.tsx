@@ -41,7 +41,11 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
     try {
       const formData = new FormData(e.currentTarget)
       await action(formData)
-    } catch (error) {
+    } catch (error: any) {
+      // redirect() lanza NEXT_REDIRECT - no es un error real
+      if (error?.digest?.includes('NEXT_REDIRECT')) {
+        return // Redirect exitoso, no mostrar error
+      }
       console.error('Error al guardar:', error)
       alert('Error al guardar el curso')
       setIsSubmitting(false)
@@ -63,7 +67,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
             value={title}
             onChange={handleTitleChange}
             required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
             placeholder="ej. Bitcoin para Principiantes"
           />
         </div>
@@ -79,10 +83,10 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
             placeholder="bitcoin-para-principiantes"
           />
-          <p className="mt-2 text-sm text-[#C5C7D3]">
+          <p className="mt-2 text-sm text-white/70">
             URL: /cursos/{slug || 'slug-del-curso'}
           </p>
         </div>
@@ -98,7 +102,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
             defaultValue={initialData?.description}
             required
             maxLength={160}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
             placeholder="Descripción breve para cards y SEO (máx. 160 caracteres)"
           />
         </div>
@@ -112,7 +116,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
             name="long_description"
             defaultValue={initialData?.long_description}
             rows={5}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition resize-none"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition resize-none"
             placeholder="Descripción detallada del curso, qué aprenderán los estudiantes, requisitos, etc."
           />
         </div>
@@ -127,11 +131,12 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
               name="level"
               required
               defaultValue={initialData?.level || 'beginner'}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+              className="w-full px-4 py-3 bg-[#0d1117] border border-white/10 rounded-lg text-white focus:border-brand-light/50 focus:ring-2 focus:ring-brand-light/20 transition cursor-pointer"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="beginner" className="bg-[#1a1f2e] text-white">Principiante</option>
-              <option value="intermediate" className="bg-[#1a1f2e] text-white">Intermedio</option>
-              <option value="advanced" className="bg-[#1a1f2e] text-white">Avanzado</option>
+              <option value="beginner" className="bg-[#0d1117] text-white">Principiante</option>
+              <option value="intermediate" className="bg-[#0d1117] text-white">Intermedio</option>
+              <option value="advanced" className="bg-[#0d1117] text-white">Avanzado</option>
             </select>
           </div>
 
@@ -143,11 +148,12 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
               name="status"
               required
               defaultValue={initialData?.status || 'draft'}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+              className="w-full px-4 py-3 bg-[#0d1117] border border-white/10 rounded-lg text-white focus:border-brand-light/50 focus:ring-2 focus:ring-brand-light/20 transition cursor-pointer"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="draft" className="bg-[#1a1f2e] text-white">Borrador</option>
-              <option value="published" className="bg-[#1a1f2e] text-white">Publicado</option>
-              <option value="archived" className="bg-[#1a1f2e] text-white">Archivado</option>
+              <option value="draft" className="bg-[#0d1117] text-white">Borrador</option>
+              <option value="published" className="bg-[#0d1117] text-white">Publicado</option>
+              <option value="archived" className="bg-[#0d1117] text-white">Archivado</option>
             </select>
           </div>
         </div>
@@ -162,7 +168,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
                 value="true"
                 checked={isFree}
                 onChange={(e) => setIsFree(e.target.checked)}
-                className="w-5 h-5 rounded border-white/10 bg-white/5 text-[#ff6b35] focus:ring-2 focus:ring-[#ff6b35]/20"
+                className="w-5 h-5 rounded border-white/10 bg-white/5 text-brand-light focus:ring-2 focus:ring-brand-light/20"
               />
               <span className="text-white font-medium">Curso Gratuito</span>
             </label>
@@ -173,7 +179,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
                 name="is_premium"
                 value="true"
                 defaultChecked={initialData?.is_premium}
-                className="w-5 h-5 rounded border-white/10 bg-white/5 text-[#f7931a] focus:ring-2 focus:ring-[#f7931a]/20"
+                className="w-5 h-5 rounded border-white/10 bg-white/5 text-brand focus:ring-2 focus:ring-brand/20"
               />
               <span className="text-white font-medium">Premium</span>
             </label>
@@ -190,7 +196,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
                 defaultValue={initialData?.price}
                 min="0"
                 step="0.01"
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
                 placeholder="49.99"
               />
             </div>
@@ -207,7 +213,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
               type="url"
               name="thumbnail_url"
               defaultValue={initialData?.thumbnail_url}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
               placeholder="https://..."
             />
           </div>
@@ -220,7 +226,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
               type="url"
               name="banner_url"
               defaultValue={initialData?.banner_url}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#C5C7D3] focus:border-[#24D4FF] focus:ring-2 focus:ring-[#24D4FF]/20 transition"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
               placeholder="https://..."
             />
           </div>
@@ -240,7 +246,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-2xl hover:shadow-[#ff6b35]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-2xl hover:shadow-brand-light/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save className="w-5 h-5" />
           {isSubmitting ? 'Guardando...' : (initialData ? 'Guardar Cambios' : 'Crear Curso')}
@@ -249,3 +255,4 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
     </form>
   )
 }
+

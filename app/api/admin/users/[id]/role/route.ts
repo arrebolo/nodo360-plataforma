@@ -1,18 +1,27 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient()
-    const { id } = await params
+    const { id: targetUserId } = await params
+    const { role } = await request.json()
 
-    // Verificar que el usuario actual es admin
+    // Validar rol
+    const validRoles = ['student', 'instructor', 'mentor', 'admin']
+    if (!validRoles.includes(role)) {
+      return NextResponse.json({ error: 'Rol inválido' }, { status: 400 })
+    }
+
+    // Verificar autenticación y que el usuario actual es admin
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+
     if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
     const { data: currentUser } = await supabase
@@ -28,28 +37,55 @@ export async function PUT(
       )
     }
 
-    const { role } = await request.json()
-
-    // Validar que el rol es válido
-    if (!['student', 'instructor', 'mentor', 'admin'].includes(role)) {
-      return NextResponse.json({ error: 'Rol inválido' }, { status: 400 })
+    // Prevenir que un admin se quite su propio rol
+    if (targetUserId === user.id && role !== 'admin') {
+      return NextResponse.json(
+        { error: 'No puedes quitarte tu propio rol de administrador' },
+        { status: 400 }
+      )
     }
 
-    const { error } = await supabase
+    // Usar cliente admin (service_role) para bypass RLS
+    const supabaseAdmin = createAdminClient()
+
+    const { data, error } = await supabaseAdmin
       .from('users')
-      .update({ role, updated_at: new Date().toISOString() })
-      .eq('id', id)
+      .update({
+        role,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', targetUserId)
+      .select('id, role')
+      .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ [Admin] Error al cambiar rol:', error)
+      return NextResponse.json(
+        { error: 'Error al actualizar el rol' },
+        { status: 500 }
+      )
+    }
 
-    console.log(`✅ [Admin] Rol cambiado para usuario ${id} a ${role}`)
+    console.log(`✅ [Admin] Rol cambiado: ${targetUserId} → ${role}`)
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      data,
+      message: 'Rol actualizado correctamente'
+    })
   } catch (error) {
-    console.error('[Admin] Error al cambiar rol:', error)
+    console.error('❌ [Admin] Error en cambio de rol:', error)
     return NextResponse.json(
-      { error: 'Error al cambiar rol' },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     )
   }
+}
+
+// También soportar PATCH como alias
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  return PUT(request, context)
 }

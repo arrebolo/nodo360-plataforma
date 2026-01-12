@@ -1,11 +1,11 @@
-import { AppLayout } from '@/components/layout/AppLayout'
 import { BenefitsGrid } from '@/components/benefits/BenefitsGrid'
 import { MENTORIA_BENEFITS } from '@/lib/constants/mentoria-benefits'
 import { MentorshipForm } from '@/components/forms/MentorshipForm'
+import { Footer } from '@/components/navigation/Footer'
 
 export default function MentoriaPage() {
   return (
-    <AppLayout>
+    <div className="min-h-screen bg-dark">
       {/* Hero + Benefits Grid */}
       <BenefitsGrid
         title="Mentoría 1-on-1"
@@ -15,6 +15,8 @@ export default function MentoriaPage() {
 
       {/* Formulario de Solicitud */}
       <MentorshipForm />
-    </AppLayout>
+
+      <Footer />
+    </div>
   )
 }

@@ -251,9 +251,9 @@ export async function getNextAvailableLesson(
   const modulesData = modules as any[]
 
   // Check each module
-  for (const module of modulesData) {
+  for (const mod of modulesData) {
     // Check if module is accessible
-    const moduleAccess = await checkModuleAccess(userId, module.id, courseIsFree)
+    const moduleAccess = await checkModuleAccess(userId, mod.id, courseIsFree)
     if (!moduleAccess.canAccess) {
       continue
     }
@@ -262,7 +262,7 @@ export async function getNextAvailableLesson(
     const { data: lessons } = await supabase
       .from('lessons')
       .select('*')
-      .eq('module_id', module.id)
+      .eq('module_id', mod.id)
       .order('order_index', { ascending: true })
 
     if (!lessons || lessons.length === 0) {
@@ -345,3 +345,5 @@ export async function calculateCourseProgress(
 
   return Math.round((completedLessons / totalLessons) * 100)
 }
+
+

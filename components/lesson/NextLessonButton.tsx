@@ -161,7 +161,7 @@ export default function NextLessonButton({
         <button
           onClick={handleNext}
           disabled={loading}
-          className="w-full px-6 py-4 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#ff6b35]/50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group"
+          className="w-full px-6 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-brand-light/50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group"
         >
           <div className="flex items-center gap-3 flex-1">
             {getButtonContent()}
@@ -176,14 +176,14 @@ export default function NextLessonButton({
         <div className="flex flex-col gap-2">
           {/* Indicador de auto-completado */}
           {!isAlreadyCompleted && !loading && (
-            <p className="text-xs text-gray-400 text-center">
+            <p className="text-xs text-white/60 text-center">
               ✓ Esta lección se marcará como completada automáticamente
             </p>
           )}
 
           {/* Hint de teclado */}
           {!loading && (
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-white/50 text-center">
               Presiona{' '}
               <kbd className="px-2 py-1 bg-white/10 rounded text-[10px]">Enter</kbd>
               {' '}o{' '}
@@ -203,3 +203,5 @@ export default function NextLessonButton({
     </>
   )
 }
+
+

@@ -30,8 +30,8 @@ export function LessonStatus({ isCompleted, isLocked, isCurrentLesson }: LessonS
   if (isCurrentLesson) {
     return (
       <div className="flex items-center gap-2">
-        <Circle className="w-5 h-5 text-[#ff6b35]" />
-        <span className="text-sm text-[#ff6b35] font-medium">En progreso</span>
+        <Circle className="w-5 h-5 text-brand-light" />
+        <span className="text-sm text-brand-light font-medium">En progreso</span>
       </div>
     )
   }
@@ -43,3 +43,5 @@ export function LessonStatus({ isCompleted, isLocked, isCurrentLesson }: LessonS
     </div>
   )
 }
+
+

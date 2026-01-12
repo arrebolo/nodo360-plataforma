@@ -1,157 +1,262 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Plus, Trash2, StickyNote } from 'lucide-react'
-import {
-  getLessonNotes,
-  addLessonNote,
-  deleteLessonNote,
-  type Note,
-} from '@/lib/utils/progress'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { StickyNote, Check, Loader2, AlertCircle, Cloud } from 'lucide-react'
 
-interface LessonNotesProps {
+const DEBOUNCE_MS = 900
+const SAVED_BADGE_MS = 2000
+
+type LessonNotesProps = {
   lessonId: string
+  userId: string | null
+  initialContent?: string
 }
 
-export function LessonNotes({ lessonId }: LessonNotesProps) {
-  const [notes, setNotes] = useState<Note[]>([])
-  const [newNoteText, setNewNoteText] = useState('')
-  const [isAdding, setIsAdding] = useState(false)
+const isUuid = (v?: string | null) =>
+  typeof v === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)
 
-  // Cargar notas
+export function LessonNotes({ lessonId, userId, initialContent = '' }: LessonNotesProps) {
+  const idsReady = isUuid(lessonId) && isUuid(userId)
+  const draftKey = useMemo(() => `nodo360_note_draft_${lessonId}`, [lessonId])
+
+  const [value, setValue] = useState(initialContent)
+  const [status, setStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const lastCloudValueRef = useRef<string>('') // ultimo valor confirmado en servidor
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef<boolean>(false)
+
+  // Mount/unmount guards
   useEffect(() => {
-    loadNotes()
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
+  }, [])
 
-    // Listener para actualizaciones
-    const handleUpdate = () => loadNotes()
-    window.addEventListener('note-added', handleUpdate)
-    window.addEventListener('note-deleted', handleUpdate)
+  // Load initial note: local draft first (optimiza UX), luego server decide
+  useEffect(() => {
+    const draft = typeof window !== 'undefined' ? window.localStorage.getItem(draftKey) : null
+
+    // Pintamos draft primero para UX instantanea
+    if (draft != null) setValue(draft)
+
+    if (!idsReady) {
+      // si no hay sesion, seguimos en modo local
+      lastCloudValueRef.current = draft ?? ''
+      return
+    }
+
+    const controller = new AbortController()
+
+    ;(async () => {
+      try {
+        if (!mountedRef.current) return
+        setStatus('loading')
+        setErrorMsg(null)
+
+        const res = await fetch(`/api/notes?lessonId=${lessonId}`, {
+          signal: controller.signal,
+        })
+        const json = await res.json().catch(() => ({}))
+
+        if (!mountedRef.current) return
+        if (!res.ok) {
+          setStatus('idle')
+          return
+        }
+
+        const serverContent: string | null =
+          json?.note?.content != null ? String(json.note.content) : null
+
+        // Regla Beta: SERVER MANDA
+        if (serverContent != null) {
+          setValue(serverContent)
+          lastCloudValueRef.current = serverContent
+          if (typeof window !== 'undefined') {
+            window.localStorage.removeItem(draftKey)
+          }
+        } else {
+          // No hay nota en server: si habia draft, lo mantenemos
+          lastCloudValueRef.current = draft ?? ''
+        }
+
+        setStatus('idle')
+      } catch (e: unknown) {
+        if (!mountedRef.current) return
+        if ((e as Error)?.name === 'AbortError') return
+        setStatus('error')
+        setErrorMsg(e instanceof Error ? e.message : 'Error cargando nota')
+      }
+    })()
+
+    return () => controller.abort()
+  }, [lessonId, draftKey, idsReady])
+
+  // Save draft local on every change (modo offline/backup)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(draftKey, value)
+    }
+  }, [value, draftKey])
+
+  const saveNote = useCallback(
+    async (content: string) => {
+      if (!idsReady) return
+      if (content === lastCloudValueRef.current) return
+
+      try {
+        if (!mountedRef.current) return
+        setStatus('saving')
+        setErrorMsg(null)
+
+        const res = await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lessonId,
+            // Permitimos guardar vacio para "borrar" nota
+            content,
+          }),
+        })
+
+        const json = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(json?.error ?? 'Error al guardar nota')
+
+        lastCloudValueRef.current = content
+        if (typeof window !== 'undefined') {
+          window.localStorage.removeItem(draftKey)
+        }
+
+        if (!mountedRef.current) return
+        setStatus('saved')
+
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+        savedTimerRef.current = setTimeout(() => {
+          if (!mountedRef.current) return
+          setStatus('idle')
+        }, SAVED_BADGE_MS)
+      } catch (e: unknown) {
+        if (!mountedRef.current) return
+        setStatus('error')
+        setErrorMsg(e instanceof Error ? e.message : 'Error al guardar nota')
+      }
+    },
+    [idsReady, lessonId, draftKey]
+  )
+
+  // Debounced auto-save on change
+  useEffect(() => {
+    if (!idsReady) return
+    if (value === lastCloudValueRef.current) return
+
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+
+    debounceTimerRef.current = setTimeout(() => {
+      // Guardamos incluso vacio (permite borrar)
+      saveNote(value)
+    }, DEBOUNCE_MS)
 
     return () => {
-      window.removeEventListener('note-added', handleUpdate)
-      window.removeEventListener('note-deleted', handleUpdate)
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
     }
-  }, [lessonId])
+  }, [value, idsReady, saveNote])
 
-  const loadNotes = () => {
-    const loaded = getLessonNotes(lessonId)
-    setNotes(loaded)
-  }
+  const dirty = value !== lastCloudValueRef.current
 
-  const handleAddNote = () => {
-    if (!newNoteText.trim()) return
-
-    try {
-      addLessonNote(lessonId, newNoteText.trim())
-      setNewNoteText('')
-      setIsAdding(false)
-    } catch (error) {
-      console.error('Error adding note:', error)
-      alert('Error al agregar nota')
+  const renderStatus = () => {
+    if (status === 'loading') {
+      return (
+        <span className="flex items-center gap-1.5 text-white/40">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Cargando...
+        </span>
+      )
     }
-  }
-
-  const handleDeleteNote = (noteId: string) => {
-    if (!confirm('¿Eliminar esta nota?')) return
-
-    try {
-      deleteLessonNote(lessonId, noteId)
-    } catch (error) {
-      console.error('Error deleting note:', error)
-      alert('Error al eliminar nota')
+    if (status === 'saving') {
+      return (
+        <span className="flex items-center gap-1.5 text-white/40">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Guardando...
+        </span>
+      )
     }
-  }
-
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp)
-    return new Intl.DateTimeFormat('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date)
+    if (status === 'saved') {
+      return (
+        <span className="flex items-center gap-1.5 text-success">
+          <Check className="h-3.5 w-3.5" />
+          Guardado
+        </span>
+      )
+    }
+    if (status === 'error') {
+      return (
+        <span className="flex items-center gap-1.5 text-error">
+          <AlertCircle className="h-3.5 w-3.5" />
+          Error
+        </span>
+      )
+    }
+    if (!idsReady) {
+      return (
+        <span className="flex items-center gap-1.5 text-warning">
+          <Cloud className="h-3.5 w-3.5" />
+          Solo local
+        </span>
+      )
+    }
+    if (dirty) {
+      return (
+        <span className="flex items-center gap-1.5 text-white/40">
+          <Cloud className="h-3.5 w-3.5" />
+          Sin guardar
+        </span>
+      )
+    }
+    return (
+      <span className="flex items-center gap-1.5 text-white/40">
+        <Cloud className="h-3.5 w-3.5" />
+        Sincronizado
+      </span>
+    )
   }
 
   return (
-    <div className="bg-[#1a1a1a] rounded-xl border border-white/10 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-          <StickyNote className="w-5 h-5" />
-          Mis Notas
-        </h3>
-        {!isAdding && (
-          <button
-            onClick={() => setIsAdding(true)}
-            className="p-1.5 rounded-lg bg-[#dc2626] text-white hover:bg-[#b91c1c] transition-colors"
-            aria-label="Agregar nota"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        )}
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-medium text-white flex items-center gap-2">
+          <StickyNote className="w-4 h-4 text-white/50" />
+          Mis notas
+        </h4>
+        <div className="text-xs">{renderStatus()}</div>
       </div>
 
-      {/* Add Note Form */}
-      {isAdding && (
-        <div className="mb-4 p-3 bg-black/30 rounded-lg border border-white/10">
-          <textarea
-            value={newNoteText}
-            onChange={(e) => setNewNoteText(e.target.value)}
-            placeholder="Escribe tu nota aquí..."
-            className="w-full bg-transparent text-white text-sm placeholder:text-white/30 border-none outline-none resize-none min-h-[80px]"
-            autoFocus
-          />
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={handleAddNote}
-              className="px-3 py-1.5 bg-[#dc2626] text-white text-xs font-medium rounded hover:bg-[#b91c1c] transition-colors"
-            >
-              Guardar
-            </button>
-            <button
-              onClick={() => {
-                setIsAdding(false)
-                setNewNoteText('')
-              }}
-              className="px-3 py-1.5 bg-[#2a2a2a] text-white text-xs font-medium rounded hover:bg-[#3a3a3a] transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
+      <textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={idsReady ? 'Escribe aqui tus ideas clave...' : 'Inicia sesion para guardar tus notas en la nube.'}
+        className="w-full min-h-[180px] rounded-xl border border-dark-border bg-dark-tertiary p-3 text-sm text-white outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand placeholder:text-white/40 resize-none"
+      />
+
+      <div className="flex items-center justify-between text-xs text-white/40">
+        <span>{value.length} caracteres</span>
+        <span>Auto-guardado activo</span>
+      </div>
+
+      {status === 'error' && errorMsg ? (
+        <div className="text-xs rounded-xl border border-error/30 bg-error/10 p-3 text-error">
+          Error: {errorMsg}
         </div>
-      )}
-
-      {/* Notes List */}
-      <div className="space-y-3 max-h-[400px] overflow-y-auto">
-        {notes.length === 0 ? (
-          <div className="text-center py-8">
-            <StickyNote className="w-12 h-12 text-white/20 mx-auto mb-3" />
-            <p className="text-sm text-white/50">No tienes notas aún</p>
-            <p className="text-xs text-white/30 mt-1">
-              Haz clic en + para agregar una
-            </p>
-          </div>
-        ) : (
-          notes.map((note) => (
-            <div
-              key={note.id}
-              className="p-3 bg-black/30 rounded-lg border border-white/10 group"
-            >
-              <div className="flex justify-between items-start gap-2 mb-2">
-                <p className="text-xs text-white/50">{formatDate(note.timestamp)}</p>
-                <button
-                  onClick={() => handleDeleteNote(note.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/20 rounded"
-                  aria-label="Eliminar nota"
-                >
-                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                </button>
-              </div>
-              <p className="text-sm text-white/80 whitespace-pre-wrap">{note.text}</p>
-            </div>
-          ))
-        )}
-      </div>
+      ) : null}
     </div>
   )
 }
+
+export default LessonNotes
+
+

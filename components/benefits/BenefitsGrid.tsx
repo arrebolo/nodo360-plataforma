@@ -47,14 +47,14 @@ interface BenefitsGridProps {
 
 export function BenefitsGrid({ benefits, title, subtitle }: BenefitsGridProps) {
   return (
-    <div className="bg-nodo-bg min-h-screen py-16">
+    <div className="bg-dark min-h-screen py-16">
       <div className="max-w-7xl mx-auto px-6">
         {/* Hero */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-white mb-4">
             {title}
           </h1>
-          <p className="text-xl text-slate-400">
+          <p className="text-xl text-white/60">
             {subtitle}
           </p>
         </div>
@@ -89,3 +89,5 @@ export function BenefitsGrid({ benefits, title, subtitle }: BenefitsGridProps) {
     </div>
   )
 }
+
+
