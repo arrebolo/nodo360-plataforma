@@ -275,7 +275,20 @@ export interface BookmarkWithLesson extends Bookmark {
  * Note with Lesson details
  */
 export interface NoteWithLesson extends Note {
-  lessons: LessonWithDetails
+  lesson: {
+    id: string
+    title: string
+    slug: string
+    module: {
+      id: string
+      title: string
+      course: {
+        id: string
+        title: string
+        slug: string
+      }
+    }
+  } | null
 }
 
 /**

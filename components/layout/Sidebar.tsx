@@ -17,6 +17,7 @@ import {
   Route,
   LayoutDashboard,
   Bookmark,
+  FileText,
 } from 'lucide-react'
 
 type NavItem = {
@@ -39,6 +40,7 @@ const navItems: NavItem[] = [
 // Items inferiores (todos privados)
 const bottomItems: NavItem[] = [
   { href: '/dashboard/guardados', icon: Bookmark, label: 'Guardados', isPrivate: true },
+  { href: '/dashboard/notas', icon: FileText, label: 'Notas', isPrivate: true },
   { href: '/dashboard/configuracion', icon: Settings, label: 'Configuracion', isPrivate: true },
   { href: '/dashboard/perfil', icon: User, label: 'Perfil', isPrivate: true },
 ]

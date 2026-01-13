@@ -156,6 +156,12 @@ export default async function DashboardPage() {
                 >
                   Guardados
                 </Link>
+                <Link
+                  href="/dashboard/notas"
+                  className="text-brand-light hover:text-brand transition underline"
+                >
+                  Notas
+                </Link>
               </div>
             </div>
 
