@@ -251,7 +251,24 @@ export interface LessonWithRelations extends Lesson {
  * Bookmark with Lesson details
  */
 export interface BookmarkWithLesson extends Bookmark {
-  lessons: LessonWithDetails
+  lesson: {
+    id: string
+    title: string
+    slug: string
+    description: string | null
+    video_duration_minutes: number | null
+    module: {
+      id: string
+      title: string
+      course: {
+        id: string
+        title: string
+        slug: string
+        thumbnail_url: string | null
+        level: CourseLevel
+      }
+    }
+  }
 }
 
 /**
