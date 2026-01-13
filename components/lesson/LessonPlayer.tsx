@@ -2,16 +2,22 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { LessonHeader } from '@/components/lesson/LessonHeader'
 import { LessonVideo } from '@/components/lesson/LessonVideo'
 import { LessonHeroFallback } from '@/components/lesson/LessonHeroFallback'
 import { LessonContent } from '@/components/lesson/LessonContent'
 import { LessonSidebar } from '@/components/lesson/LessonSidebar'
 import { LessonFooter } from '@/components/lesson/LessonFooter'
-import { CourseCompletionModal } from '@/components/lesson/CourseCompletionModal'
 import { SlidesEmbed } from '@/components/lesson/SlidesEmbed'
 import { useCourseCompletion } from '@/hooks/useCourseCompletion'
 import type { LessonPlayerProps } from '@/types/lesson-player'
+
+// Dynamic import for modal (only loaded when needed)
+const CourseCompletionModal = dynamic(
+  () => import('@/components/lesson/CourseCompletionModal').then(mod => ({ default: mod.CourseCompletionModal })),
+  { ssr: false }
+)
 
 export default function LessonPlayer({
   userId,

@@ -1,4 +1,9 @@
 import type { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 // Headers de seguridad
 const securityHeaders = [
@@ -77,6 +82,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+      },
     ],
     minimumCacheTTL: 60,
   },
@@ -111,4 +124,5 @@ const nextConfig: NextConfig = {
 
 // Nota: Sentry se configura via instrumentation.ts y sentry.*.config.ts
 // No usamos withSentryConfig debido a incompatibilidad con Turbopack en Windows
-export default nextConfig;
+// Bundle analyzer: ANALYZE=true npm run build
+export default withBundleAnalyzer(nextConfig);

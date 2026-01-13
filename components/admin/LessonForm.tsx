@@ -2,8 +2,21 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Save } from 'lucide-react'
-import RichTextEditor from '@/components/ui/RichTextEditor'
+import dynamic from 'next/dynamic'
+import { ArrowLeft, Save, Loader2 } from 'lucide-react'
+
+// Dynamic import for heavy RichTextEditor component
+const RichTextEditor = dynamic(
+  () => import('@/components/ui/RichTextEditor'),
+  {
+    loading: () => (
+      <div className="h-64 bg-white/5 animate-pulse rounded-lg flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+      </div>
+    ),
+    ssr: false,
+  }
+)
 
 interface LessonFormProps {
   action: (formData: FormData) => Promise<void>
