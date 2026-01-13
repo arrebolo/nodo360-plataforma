@@ -4,6 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import type { LessonHeaderProps } from '@/types/lesson-player'
+import { LessonBookmarkButton } from './LessonBookmarkButton'
 
 /**
  * Circular progress indicator SVG
@@ -95,8 +96,9 @@ export function LessonHeader({
             </h1>
           </div>
 
-          {/* Right side: Progress indicator */}
-          <div className="flex-shrink-0">
+          {/* Right side: Bookmark + Progress indicator */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <LessonBookmarkButton lessonId={lesson.id} />
             <CircularProgress
               current={navigation.currentIndex}
               total={navigation.totalLessons}
