@@ -56,7 +56,7 @@ export default function SiteHeaderClient({
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Navegación principal">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -91,6 +91,9 @@ export default function SiteHeaderClient({
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10
                            hover:bg-white/10 transition text-white"
+                aria-expanded={dropdownOpen}
+                aria-haspopup="menu"
+                aria-label="Menú de usuario"
               >
                 {avatarUrl ? (
                   <Image
@@ -102,18 +105,22 @@ export default function SiteHeaderClient({
                   />
                 ) : (
                   <div className="h-7 w-7 rounded-full bg-brand-light/20 flex items-center justify-center">
-                    <span className="text-brand-light text-sm font-medium">{initials}</span>
+                    <span className="text-brand-light text-sm font-medium" aria-hidden="true">{initials}</span>
                   </div>
                 )}
                 <span className="max-w-[100px] truncate text-sm font-medium">{userName}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
 
               {/* Dropdown */}
               {dropdownOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-64 rounded-xl border border-white/10 bg-dark-surface shadow-xl shadow-black/20 z-50 overflow-hidden">
+                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} aria-hidden="true" />
+                  <div
+                    className="absolute right-0 mt-2 w-64 rounded-xl border border-white/10 bg-dark-surface shadow-xl shadow-black/20 z-50 overflow-hidden"
+                    role="menu"
+                    aria-label="Opciones de usuario"
+                  >
                     {/* User Info */}
                     <div className="px-4 py-3 border-b border-white/10">
                       <p className="text-sm font-semibold text-white">{userName}</p>
@@ -126,13 +133,14 @@ export default function SiteHeaderClient({
                     {/* Menu Items */}
                     <ul className="py-2">
                       {menu.map((item) => (
-                        <li key={item.href}>
+                        <li key={item.href} role="none">
                           <Link
                             href={item.href}
                             onClick={() => setDropdownOpen(false)}
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition"
+                            role="menuitem"
                           >
-                            <span className="w-5 text-center">{item.icon}</span>
+                            <span className="w-5 text-center" aria-hidden="true">{item.icon}</span>
                             {item.label}
                           </Link>
                         </li>
@@ -147,8 +155,9 @@ export default function SiteHeaderClient({
                           window.location.href = '/api/auth/logout'
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error/10 transition"
+                        role="menuitem"
                       >
-                        <LogOut className="w-4 h-4" />
+                        <LogOut className="w-4 h-4" aria-hidden="true" />
                         Cerrar sesión
                       </button>
                     </div>

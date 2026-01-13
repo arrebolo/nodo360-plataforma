@@ -32,6 +32,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       (lesson: any) => lesson.module?.course?.status === 'published'
     ) || []
 
+    // Obtener rutas de aprendizaje
+    const { data: learningPaths } = await supabase
+      .from('learning_paths')
+      .select('slug, updated_at')
+
     // URLs estáticas principales
     const staticPages: MetadataRoute.Sitemap = [
       {
@@ -70,7 +75,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'monthly',
         priority: 0.6,
       },
+      {
+        url: `${baseUrl}/gobernanza`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
     ]
+
+    // URLs de rutas de aprendizaje
+    const pathPages: MetadataRoute.Sitemap = (learningPaths || []).map((path) => ({
+      url: `${baseUrl}/dashboard/rutas/${path.slug}`,
+      lastModified: path.updated_at ? new Date(path.updated_at) : new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }))
 
     // URLs de cursos
     const coursePages: MetadataRoute.Sitemap = courses?.map((course) => ({
@@ -88,7 +107,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-    return [...staticPages, ...coursePages, ...lessonPages]
+    return [...staticPages, ...pathPages, ...coursePages, ...lessonPages]
 
   } catch (error) {
     console.error('Error generating sitemap:', error)

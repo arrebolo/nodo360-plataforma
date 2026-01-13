@@ -67,14 +67,16 @@ export function LessonBookmarkButton({ lessonId }: LessonBookmarkButtonProps) {
         }
         disabled:opacity-50 disabled:cursor-not-allowed
       `}
-      title={isBookmarked ? 'Quitar de guardados' : 'Guardar para después'}
+      aria-label={isBookmarked ? 'Quitar de guardados' : 'Guardar para después'}
+      aria-pressed={isBookmarked}
+      aria-busy={isLoading}
     >
       {isLoading ? (
-        <Loader2 size={20} className="animate-spin" />
+        <Loader2 size={20} className="animate-spin" aria-hidden="true" />
       ) : isBookmarked ? (
-        <BookmarkCheck size={20} />
+        <BookmarkCheck size={20} aria-hidden="true" />
       ) : (
-        <Bookmark size={20} />
+        <Bookmark size={20} aria-hidden="true" />
       )}
       <span className="text-sm hidden sm:inline">
         {isBookmarked ? 'Guardado' : 'Guardar'}
