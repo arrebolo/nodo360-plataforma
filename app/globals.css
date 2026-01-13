@@ -425,3 +425,90 @@ input[type="datetime-local"] {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin: 1.5rem 0;
 }
+
+/* =========================================================
+   ACCESSIBILITY - WCAG 2.1 AA Compliance
+   ========================================================= */
+
+/* Screen reader only - visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus visible for all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--color-brand-light);
+  outline-offset: 2px;
+}
+
+/* Remove outline when not focus-visible (mouse users) */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Focus for inputs and textareas */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-brand-light);
+  outline-offset: 0;
+  border-color: var(--color-brand-light);
+}
+
+/* Focus for buttons and button-like elements */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-brand-light);
+  outline-offset: 2px;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 4px;
+  z-index: 9999;
+  padding: 0.75rem 1rem;
+  background-color: var(--color-brand);
+  color: white;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 4px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode improvements */
+@media (prefers-contrast: high) {
+  :focus-visible {
+    outline-width: 3px;
+  }
+
+  .glass-card {
+    border-width: 2px;
+  }
+}

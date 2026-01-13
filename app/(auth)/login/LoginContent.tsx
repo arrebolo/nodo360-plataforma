@@ -102,7 +102,7 @@ export default function LoginContent() {
         {/* Card Principal */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
           {/* Tabs */}
-          <div className="flex gap-2 mb-6 bg-white/5 p-1 rounded-lg">
+          <div className="flex gap-2 mb-6 bg-white/5 p-1 rounded-lg" role="tablist" aria-label="Opciones de acceso">
             <button
               onClick={() => setActiveTab('login')}
               className={`flex-1 py-2 px-4 rounded-md font-medium transition ${
@@ -110,6 +110,10 @@ export default function LoginContent() {
                   ? 'bg-gradient-to-r from-brand-light to-brand text-white'
                   : 'text-white/60 hover:text-white'
               }`}
+              role="tab"
+              aria-selected={activeTab === 'login'}
+              aria-controls="login-panel"
+              id="login-tab"
             >
               Iniciar sesión
             </button>
@@ -120,6 +124,10 @@ export default function LoginContent() {
                   ? 'bg-gradient-to-r from-brand-light to-brand text-white'
                   : 'text-white/60 hover:text-white'
               }`}
+              role="tab"
+              aria-selected={activeTab === 'register'}
+              aria-controls="register-panel"
+              id="register-tab"
             >
               Registrarse
             </button>
@@ -127,13 +135,21 @@ export default function LoginContent() {
 
           {/* Mensajes - usando tokens semánticos */}
           {error && (
-            <div className="mb-4 bg-error/10 border border-error/30 rounded-lg p-4">
+            <div
+              className="mb-4 bg-error/10 border border-error/30 rounded-lg p-4"
+              role="alert"
+              aria-live="assertive"
+            >
               <p className="text-error text-sm">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="mb-4 bg-success/10 border border-success/30 rounded-lg p-4">
+            <div
+              className="mb-4 bg-success/10 border border-success/30 rounded-lg p-4"
+              role="status"
+              aria-live="polite"
+            >
               <p className="text-success text-sm">{success}</p>
             </div>
           )}
@@ -178,7 +194,7 @@ export default function LoginContent() {
 
           {/* Login Form */}
           {activeTab === 'login' && (
-            <>
+            <div id="login-panel" role="tabpanel" aria-labelledby="login-tab">
               {/* Magic Link Form */}
               <form onSubmit={handleMagicLink} className="space-y-4 mb-4">
                 {/* Hidden redirect field */}
@@ -246,11 +262,12 @@ export default function LoginContent() {
                   Iniciar sesión con contraseña
                 </button>
               </form>
-            </>
+            </div>
           )}
 
           {/* Register Form */}
           {activeTab === 'register' && (
+            <div id="register-panel" role="tabpanel" aria-labelledby="register-tab">
             <form action={signUp} className="space-y-4">
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-white/90 mb-2">
@@ -298,6 +315,7 @@ export default function LoginContent() {
                 Crear cuenta
               </button>
             </form>
+            </div>
           )}
         </div>
 

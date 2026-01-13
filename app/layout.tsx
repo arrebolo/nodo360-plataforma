@@ -60,8 +60,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WebSiteJsonLd />
       </head>
       <body className="min-h-screen antialiased bg-dark text-white">
+        {/* Skip to main content - accessibility */}
+        <a href="#main-content" className="skip-link">
+          Saltar al contenido principal
+        </a>
         <SiteHeaderServer />
-        <Providers>{children}</Providers>
+        <main id="main-content" role="main">
+          <Providers>{children}</Providers>
+        </main>
       </body>
     </html>
   );

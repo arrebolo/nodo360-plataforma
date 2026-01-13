@@ -52,6 +52,8 @@ export default function ModuleList({ courseSlug, modules }: Props) {
             <button
               onClick={() => toggleModule(module.id)}
               className="w-full p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-white/5 transition-colors text-left"
+              aria-expanded={isExpanded}
+              aria-controls={`module-content-${module.id}`}
             >
               <div className="flex items-center gap-3 flex-1">
                 {/* Número del módulo */}
@@ -64,7 +66,7 @@ export default function ModuleList({ courseSlug, modules }: Props) {
                   )}
                 >
                   {isModuleCompleted ? (
-                    <CheckCircle className="h-4 w-4" />
+                    <CheckCircle className="h-4 w-4" aria-hidden="true" />
                   ) : (
                     moduleIndex + 1
                   )}
@@ -93,16 +95,16 @@ export default function ModuleList({ courseSlug, modules }: Props) {
 
                   {!module.isUnlocked && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[11px] text-white/60 border border-white/20">
-                      <Lock className="h-3 w-3" />
+                      <Lock className="h-3 w-3" aria-hidden="true" />
                       Bloqueado
                     </span>
                   )}
 
                   {/* Icono expand/collapse */}
                   {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-white/40" />
+                    <ChevronUp className="h-5 w-5 text-white/40" aria-hidden="true" />
                   ) : (
-                    <ChevronDown className="h-5 h-5 text-white/40" />
+                    <ChevronDown className="h-5 w-5 text-white/40" aria-hidden="true" />
                   )}
                 </div>
               </div>
@@ -132,7 +134,10 @@ export default function ModuleList({ courseSlug, modules }: Props) {
 
             {/* Lista de lecciones */}
             {isExpanded && module.isUnlocked && (
-              <div className="border-t border-white/10 divide-y divide-white/5">
+              <div
+                id={`module-content-${module.id}`}
+                className="border-t border-white/10 divide-y divide-white/5"
+              >
                 {module.lessons.map((lesson, lessonIndex) => {
                   const LessonIcon = lesson.isCompleted
                     ? CheckCircle

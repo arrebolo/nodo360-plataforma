@@ -102,7 +102,11 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-16 flex-col items-center bg-dark border-r border-dark-border py-6 z-50">
+      <aside
+        className="hidden lg:flex fixed left-0 top-0 h-screen w-16 flex-col items-center bg-dark border-r border-dark-border py-6 z-50"
+        role="complementary"
+        aria-label="Barra lateral de navegación"
+      >
         {/* Logo con navegacion inteligente */}
         <div className="mb-8">
           <LogoLink className="block">
@@ -114,7 +118,7 @@ export function Sidebar() {
         <div className="w-8 h-px bg-dark-border mb-8" />
 
         {/* Navigation Items */}
-        <nav className="flex-1 flex flex-col items-center gap-6">
+        <nav className="flex-1 flex flex-col items-center gap-6" aria-label="Navegación principal">
           {navItems.map((item) => {
             const Icon = item.icon
             const href = getHref(item)
@@ -132,11 +136,12 @@ export function Sidebar() {
                 ].join(' ')}
                 title={item.label + (isLoginRedirect && item.isPrivate ? ' (requiere login)' : '')}
                 aria-label={item.label}
+                aria-current={active ? 'page' : undefined}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-5 h-5" aria-hidden="true" />
 
                 {/* Tooltip */}
-                <span className={tooltipBase}>
+                <span className={tooltipBase} aria-hidden="true">
                   {item.label}
                   {isLoginRedirect && item.isPrivate && (
                     <span className="text-brand ml-1">(login)</span>
@@ -148,10 +153,10 @@ export function Sidebar() {
         </nav>
 
         {/* Separator */}
-        <div className="w-8 h-px bg-dark-border mb-6" />
+        <div className="w-8 h-px bg-dark-border mb-6" aria-hidden="true" />
 
         {/* Bottom Items */}
-        <div className="flex flex-col items-center gap-6">
+        <nav className="flex flex-col items-center gap-6" aria-label="Acciones de usuario">
           {bottomItems.map((item) => {
             const Icon = item.icon
             const href = getHref(item)
@@ -169,11 +174,12 @@ export function Sidebar() {
                 ].join(' ')}
                 title={item.label + (isLoginRedirect && item.isPrivate ? ' (requiere login)' : '')}
                 aria-label={item.label}
+                aria-current={active ? 'page' : undefined}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-5 h-5" aria-hidden="true" />
 
                 {/* Tooltip */}
-                <span className={tooltipBase}>
+                <span className={tooltipBase} aria-hidden="true">
                   {item.label}
                   {isLoginRedirect && item.isPrivate && (
                     <span className="text-brand ml-1">(login)</span>
@@ -182,11 +188,14 @@ export function Sidebar() {
               </Link>
             )
           })}
-        </div>
+        </nav>
       </aside>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-dark border-t border-dark-border z-50">
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 bg-dark border-t border-dark-border z-50"
+        aria-label="Navegación móvil"
+      >
         <div className="flex justify-around items-center h-16 px-2">
           {navItems.slice(0, 5).map((item) => {
             const Icon = item.icon
@@ -205,8 +214,9 @@ export function Sidebar() {
                   isLoginRedirect && item.isPrivate ? 'opacity-60' : '',
                 ].join(' ')}
                 aria-label={item.label}
+                aria-current={active ? 'page' : undefined}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-5 h-5" aria-hidden="true" />
                 <span className="text-[10px] font-medium">{item.label}</span>
               </Link>
             )
