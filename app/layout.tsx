@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Providers } from "./providers";
 import SiteHeaderServer from "@/components/navigation/SiteHeader/SiteHeaderServer";
+import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,9 +12,10 @@ export const metadata: Metadata = {
   },
   description:
     "Aprende Bitcoin, Blockchain, DeFi y desarrollo Web3 desde cero. Más de 5,000 estudiantes y 25+ cursos profesionales.",
-  keywords: ["bitcoin", "blockchain", "criptomonedas", "web3", "educación", "cursos", "español", "DeFi"],
+  keywords: ["bitcoin", "blockchain", "criptomonedas", "web3", "educación", "cursos", "español", "DeFi", "crypto"],
   authors: [{ name: "Nodo360" }],
   creator: "Nodo360",
+  publisher: "Nodo360",
   icons: {
     icon: "/imagenes/logo-nodo360.png",
     apple: "/imagenes/logo-nodo360.png",
@@ -22,6 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_ES",
+    url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com",
     siteName: "Nodo360",
     title: "Nodo360 - Aprende Bitcoin y Blockchain",
     description: "La plataforma educativa más completa en español para aprender Bitcoin, Blockchain y Web3",
@@ -33,12 +36,29 @@ export const metadata: Metadata = {
     description: "La plataforma educativa más completa en español para aprender Bitcoin, Blockchain y Web3",
     images: ["/imagenes/og-nodo360.png"],
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className="font-sans">
+      <head>
+        <OrganizationJsonLd />
+        <WebSiteJsonLd />
+      </head>
       <body className="min-h-screen antialiased bg-dark text-white">
         <SiteHeaderServer />
         <Providers>{children}</Providers>

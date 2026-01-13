@@ -8,6 +8,7 @@ import CourseHero from '@/components/course/CourseHero'
 import { Footer } from '@/components/navigation/Footer'
 import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
+import { CourseJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { tokens, cx } from '@/lib/design/tokens'
 import { ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
@@ -22,23 +23,43 @@ interface CoursePageProps {
 export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
   const { slug } = await params
   const supabase = await createClient()
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com'
 
   const { data: course } = await supabase
     .from('courses')
-    .select('title, description')
+    .select('title, description, thumbnail_url, level')
     .eq('slug', slug)
     .eq('status', 'published')
     .single()
 
   if (!course) {
     return {
-      title: 'Curso no encontrado | Nodo360',
+      title: 'Curso no encontrado',
     }
   }
 
+  const title = course.title
+  const description = course.description || `Aprende ${course.title} con Nodo360`
+
   return {
-    title: `${course.title} | Nodo360`,
-    description: course.description || `Aprende ${course.title} con Nodo360`,
+    title,
+    description,
+    openGraph: {
+      title: `${title} | Nodo360`,
+      description,
+      url: `${baseUrl}/cursos/${slug}`,
+      type: 'article',
+      images: course.thumbnail_url ? [{ url: course.thumbnail_url }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | Nodo360`,
+      description,
+      images: course.thumbnail_url ? [course.thumbnail_url] : [],
+    },
+    alternates: {
+      canonical: `${baseUrl}/cursos/${slug}`,
+    },
   }
 }
 
@@ -167,8 +188,28 @@ export default async function CoursePage({ params }: CoursePageProps) {
   }
 
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com'
+
   return (
     <div className="min-h-screen bg-dark">
+      {/* Structured Data */}
+      <CourseJsonLd
+        title={course.title}
+        description={course.description}
+        thumbnailUrl={course.thumbnail_url}
+        level={course.level || 'beginner'}
+        isFree={course.is_free ?? true}
+        price={course.price ?? 0}
+        slug={course.slug}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Inicio', url: baseUrl },
+          { name: 'Cursos', url: `${baseUrl}/cursos` },
+          { name: course.title, url: `${baseUrl}/cursos/${course.slug}` },
+        ]}
+      />
+
       <div className={cx(tokens.layout.container, tokens.layout.sectionGap)}>
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-white/50">
