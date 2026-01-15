@@ -10,12 +10,14 @@ import {
   Settings,
   ChevronLeft,
   Vote,
+  Ticket,
 } from 'lucide-react'
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { href: '/admin/cursos', label: 'Cursos', icon: BookOpen },
+  { href: '/admin/invitaciones', label: 'Invitaciones', icon: Ticket },
   { href: '/admin/gobernanza', label: 'Gobernanza', icon: Vote },
   { href: '/admin/gamificacion', label: 'Gamificación', icon: Trophy },
   { href: '/admin/configuracion', label: 'Configuración', icon: Settings },

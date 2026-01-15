@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import { LessonHeader } from '@/components/lesson/LessonHeader'
 import { LessonVideo } from '@/components/lesson/LessonVideo'
 import { LessonHeroFallback } from '@/components/lesson/LessonHeroFallback'
-import { LessonContent } from '@/components/lesson/LessonContent'
+import { LessonContent, type TabKey } from '@/components/lesson/LessonContent'
 import { LessonSidebar } from '@/components/lesson/LessonSidebar'
 import { LessonFooter } from '@/components/lesson/LessonFooter'
 import { SlidesEmbed } from '@/components/lesson/SlidesEmbed'
@@ -36,6 +36,9 @@ export default function LessonPlayer({
   const [isMarkingComplete, setIsMarkingComplete] = useState(false)
   const [showCompletionModal, setShowCompletionModal] = useState(false)
   const [shouldCelebrateModal, setShouldCelebrateModal] = useState(false)
+
+  // Track active tab from LessonContent for conditional footer
+  const [activeContentTab, setActiveContentTab] = useState<TabKey>('content')
 
   const isCompleted = completedIds.includes(lesson.id)
 
@@ -248,13 +251,11 @@ export default function LessonPlayer({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main column (video + content) */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Video o Fallback */}
+            {/* Video o Fallback (barra compacta para lecturas) */}
             {hasVideo ? (
               <LessonVideo videoUrl={lesson.video_url} title={lesson.title} />
             ) : (
               <LessonHeroFallback
-                title={lesson.title}
-                description={lesson.description}
                 hasSlides={hasSlides}
                 hasPdf={hasPdf}
                 hasExternalResources={hasExternalResources}
@@ -279,11 +280,12 @@ export default function LessonPlayer({
               lesson={lesson}
               userId={userId}
               courseSlug={course.slug}
+              onTabChange={setActiveContentTab}
             />
 
-            {/* Footer with CTAs - desktop inline */}
-            <div className="hidden sm:block">
-              <LessonFooter {...footerProps} />
+            {/* Footer with CTAs - desktop sticky at bottom of content area */}
+            <div className="hidden sm:block sticky bottom-4 z-40">
+              {activeContentTab === 'content' && <LessonFooter {...footerProps} />}
             </div>
           </div>
 
@@ -301,7 +303,7 @@ export default function LessonPlayer({
 
         {/* Fixed footer on mobile */}
         <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-dark-secondary/95 backdrop-blur-sm border-t border-dark-border p-4 z-50">
-          <LessonFooter {...footerProps} />
+          {activeContentTab === 'content' && <LessonFooter {...footerProps} />}
         </div>
 
         {/* Spacer for mobile footer */}

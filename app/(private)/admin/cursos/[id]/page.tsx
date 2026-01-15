@@ -7,8 +7,9 @@ import { CourseForm } from '@/components/admin/CourseForm'
 import { DeleteCourseButton } from '@/components/admin/DeleteCourseButton'
 import { PublishCourseButton } from '@/components/admin/PublishCourseButton'
 import { CoursePathsSelector } from '@/components/admin/CoursePathsSelector'
+import { CourseQuizEditor } from '@/components/admin/CourseQuizEditor'
 import Link from 'next/link'
-import { ArrowLeft, Layers, Eye, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Layers, Eye, ExternalLink, HelpCircle } from 'lucide-react'
 
 interface EditCoursePageProps {
   params: Promise<{ id: string }>
@@ -191,6 +192,14 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
             {/* Selector de rutas de aprendizaje */}
             <CoursePathsSelector courseId={course.id} />
           </div>
+        </div>
+
+        {/* Separador */}
+        <div className="border-t border-white/10 my-8" />
+
+        {/* Quiz Final del Curso */}
+        <div className="bg-dark-surface border border-white/10 rounded-2xl p-6">
+          <CourseQuizEditor courseId={course.id} courseName={course.title} />
         </div>
       </div>
     </div>

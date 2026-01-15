@@ -61,7 +61,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen antialiased bg-dark text-white">
         {/* Skip to main content - accessibility */}
-        <a href="#main-content" className="skip-link">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-brand-orange focus:text-white focus:rounded-lg focus:outline-none"
+        >
           Saltar al contenido principal
         </a>
         <SiteHeaderServer />

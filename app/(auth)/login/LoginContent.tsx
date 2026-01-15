@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { CheckCircle, XCircle } from 'lucide-react'
 import {
   signInWithEmail,
   signInWithPassword,
@@ -21,16 +22,65 @@ export default function LoginContent() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  // Estado para código de invitación
+  const [inviteCode, setInviteCode] = useState('')
+  const [inviteValid, setInviteValid] = useState<boolean | null>(null)
+  const [inviteError, setInviteError] = useState('')
+  const [validatingInvite, setValidatingInvite] = useState(false)
+
   // Leer parámetros de URL
   const redirectTo = searchParams.get('redirect')
+
+  // Función para validar código de invitación
+  const validateInviteCode = useCallback(async (code: string) => {
+    if (!code.trim()) {
+      setInviteValid(null)
+      setInviteError('')
+      return
+    }
+
+    setValidatingInvite(true)
+    try {
+      const res = await fetch(`/api/invites/validate?code=${encodeURIComponent(code)}`)
+      const data = await res.json()
+
+      if (data.valid) {
+        setInviteValid(true)
+        setInviteError('')
+      } else {
+        setInviteValid(false)
+        const messages: Record<string, string> = {
+          not_found: 'Código de invitación no válido',
+          inactive: 'Este código ya no está activo',
+          expired: 'Este código ha expirado',
+          used_up: 'Este código ha alcanzado el límite de usos',
+        }
+        setInviteError(messages[data.reason] || 'Código no válido')
+      }
+    } catch {
+      setInviteError('Error al validar el código')
+      setInviteValid(false)
+    } finally {
+      setValidatingInvite(false)
+    }
+  }, [])
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
     const successParam = searchParams.get('success')
+    const inviteParam = searchParams.get('invite')
 
     if (errorParam) setError(decodeURIComponent(errorParam))
     if (successParam) setSuccess(decodeURIComponent(successParam))
-  }, [searchParams])
+
+    // Si viene código de invitación en URL, validarlo y cambiar a tab registro
+    if (inviteParam) {
+      const code = inviteParam.toUpperCase()
+      setInviteCode(code)
+      setActiveTab('register')
+      validateInviteCode(code)
+    }
+  }, [searchParams, validateInviteCode])
 
   const handleMagicLink = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -268,53 +318,140 @@ export default function LoginContent() {
           {/* Register Form */}
           {activeTab === 'register' && (
             <div id="register-panel" role="tabpanel" aria-labelledby="register-tab">
-            <form action={signUp} className="space-y-4">
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-white/90 mb-2">
-                  Nombre completo
+              {/* Mensaje si no hay código */}
+              {!inviteCode && (
+                <div className="p-4 bg-warning/10 border border-warning/30 rounded-lg text-center mb-4">
+                  <p className="text-warning font-medium">Registro por invitación</p>
+                  <p className="text-sm text-white/60 mt-1">
+                    Actualmente solo aceptamos registros con código de invitación.
+                  </p>
+                </div>
+              )}
+
+              <form action={signUp} className="space-y-4">
+                {/* Campo oculto para el código de invitación */}
+                <input type="hidden" name="inviteCode" value={inviteCode} />
+
+                {/* Código de invitación */}
+                <div>
+                  <label htmlFor="inviteCode" className="block text-sm font-medium text-white/90 mb-2">
+                    Código de invitación *
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="inviteCode"
+                      type="text"
+                      value={inviteCode}
+                      onChange={(e) => {
+                        const code = e.target.value.toUpperCase()
+                        setInviteCode(code)
+                        if (code.length >= 4) {
+                          validateInviteCode(code)
+                        } else {
+                          setInviteValid(null)
+                          setInviteError('')
+                        }
+                      }}
+                      placeholder="Ej: BETA2024"
+                      className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition ${
+                        inviteValid === true
+                          ? 'border-success'
+                          : inviteValid === false
+                          ? 'border-error'
+                          : 'border-white/20'
+                      }`}
+                      required
+                    />
+                    {validatingInvite && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="w-5 h-5 border-2 border-brand-light border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+                    {!validatingInvite && inviteValid === true && (
+                      <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success" />
+                    )}
+                    {!validatingInvite && inviteValid === false && (
+                      <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-error" />
+                    )}
+                  </div>
+                  {inviteValid === true && (
+                    <p className="text-sm text-success mt-1 flex items-center gap-1">
+                      Código válido
+                    </p>
+                  )}
+                  {inviteError && (
+                    <p className="text-sm text-error mt-1">{inviteError}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-white/90 mb-2">
+                    Nombre completo
+                  </label>
+                  <input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    required
+                    placeholder="Juan Pérez"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email-register" className="block text-sm font-medium text-white/90 mb-2">
+                    Email
+                  </label>
+                  <input
+                    id="email-register"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="tu@email.com"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password-register" className="block text-sm font-medium text-white/90 mb-2">
+                    Contraseña
+                  </label>
+                  <input
+                    id="password-register"
+                    name="password"
+                    type="password"
+                    required
+                    placeholder="Mínimo 6 caracteres"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition"
+                  />
+                </div>
+
+                {/* Aceptación de términos */}
+                <label className="flex items-start gap-3 text-sm text-white/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="acceptTerms"
+                    required
+                    className="mt-0.5 w-4 h-4 rounded border-white/30 bg-white/5 text-brand focus:ring-brand focus:ring-offset-0"
+                  />
+                  <span>
+                    Acepto los{' '}
+                    <Link href="/terminos" className="text-brand hover:underline" target="_blank">
+                      Términos de Servicio
+                    </Link>
+                    {' '}y la{' '}
+                    <Link href="/privacidad" className="text-brand hover:underline" target="_blank">
+                      Política de Privacidad
+                    </Link>
+                  </span>
                 </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  placeholder="Juan Pérez"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition"
-                />
-              </div>
-              <div>
-                <label htmlFor="email-register" className="block text-sm font-medium text-white/90 mb-2">
-                  Email
-                </label>
-                <input
-                  id="email-register"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="tu@email.com"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition"
-                />
-              </div>
-              <div>
-                <label htmlFor="password-register" className="block text-sm font-medium text-white/90 mb-2">
-                  Contraseña
-                </label>
-                <input
-                  id="password-register"
-                  name="password"
-                  type="password"
-                  required
-                  placeholder="Mínimo 6 caracteres"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-3 px-4 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
-              >
-                Crear cuenta
-              </button>
-            </form>
+
+                <button
+                  type="submit"
+                  disabled={inviteValid !== true || validatingInvite}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  Crear cuenta
+                </button>
+              </form>
             </div>
           )}
         </div>

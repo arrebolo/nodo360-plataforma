@@ -111,10 +111,18 @@ export function LessonSidebar({
           return (
             <div key={module.id} className="border-b border-dark-border last:border-b-0">
               {/* Module Header */}
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => toggleModule(module.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toggleModule(module.id)
+                  }
+                }}
                 className={cx(
-                  'w-full flex items-center gap-3 p-3 transition-colors text-left',
+                  'w-full flex items-center gap-3 p-3 transition-colors text-left cursor-pointer',
                   hasCurrentLesson ? 'bg-brand/10' : 'hover:bg-white/5'
                 )}
               >
@@ -157,7 +165,7 @@ export function LessonSidebar({
                     )}
                   />
                 </div>
-              </button>
+              </div>
 
               {/* Lessons List */}
               {isExpanded && (
