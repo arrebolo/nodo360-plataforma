@@ -6,6 +6,7 @@ import ChangeRoleForm from './ChangeRoleForm'
 import AdjustXPForm from './AdjustXPForm'
 import UserXPHistory from '@/components/admin/UserXPHistory'
 import { ResetCourseSection } from '@/components/admin/ResetCourseSection'
+import { UserManagementActions } from '@/components/admin/UserManagementActions'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -41,7 +42,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
   ====================================================== */
   const { data: targetUser, error: userError } = await supabase
     .from('users')
-    .select('id, email, full_name, role, created_at')
+    .select('id, email, full_name, role, created_at, is_suspended, suspended_reason, suspended_at')
     .eq('id', userId)
     .single()
 
@@ -88,7 +89,32 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
                 <span className="text-white/60">Rol:</span>{' '}
                 <span className="text-white">{targetUser.role}</span>
               </div>
+              <div>
+                <span className="text-white/60">Estado:</span>{' '}
+                {targetUser.is_suspended ? (
+                  <span className="text-yellow-400 font-medium">Suspendido</span>
+                ) : (
+                  <span className="text-green-400">Activo</span>
+                )}
+              </div>
             </div>
+            {targetUser.is_suspended && (
+              <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <p className="text-sm text-yellow-400">
+                  <strong>Cuenta suspendida</strong>
+                  {targetUser.suspended_reason && (
+                    <span className="block text-yellow-400/80 mt-1">
+                      Motivo: {targetUser.suspended_reason}
+                    </span>
+                  )}
+                  {targetUser.suspended_at && (
+                    <span className="block text-yellow-400/60 text-xs mt-1">
+                      Desde: {new Date(targetUser.suspended_at).toLocaleDateString('es-ES')}
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Stats rápidas */}
@@ -121,6 +147,17 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
             currentXP={currentXP}
           />
         </div>
+      </div>
+
+      {/* =========================================
+          GESTIÓN DE CUENTA
+      ========================================= */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+        <h2 className="text-white font-semibold mb-4">Gestión de cuenta</h2>
+        <p className="text-sm text-gray-400 mb-4">
+          Suspende temporalmente o elimina permanentemente la cuenta del usuario.
+        </p>
+        <UserManagementActions user={targetUser} />
       </div>
 
       {/* =========================================

@@ -2,6 +2,7 @@ import { requireAdmin } from '@/lib/admin/auth'
 import { getUsers } from '@/lib/admin/queries'
 import Link from 'next/link'
 import { User, Mail, Calendar, TrendingUp, Shield, Search } from 'lucide-react'
+import BetaToggle from '@/components/admin/BetaToggle'
 
 export const metadata = {
   title: 'Usuarios - Admin Panel | Nodo360',
@@ -132,6 +133,7 @@ export default async function AdminUsersPage({
                 <th className="text-left p-4 text-sm font-medium text-white/60">Usuario</th>
                 <th className="text-left p-4 text-sm font-medium text-white/60">Email</th>
                 <th className="text-left p-4 text-sm font-medium text-white/60">Rol</th>
+                <th className="text-left p-4 text-sm font-medium text-white/60">Beta</th>
                 <th className="text-left p-4 text-sm font-medium text-white/60">Nivel</th>
                 <th className="text-left p-4 text-sm font-medium text-white/60">XP</th>
                 <th className="text-left p-4 text-sm font-medium text-white/60">Registro</th>
@@ -182,6 +184,13 @@ export default async function AdminUsersPage({
                         ? 'Instructor'
                         : 'Estudiante'}
                     </span>
+                  </td>
+                  <td className="p-4">
+                    <BetaToggle
+                      userId={user.id}
+                      initialValue={user.is_beta || false}
+                      userRole={user.role}
+                    />
                   </td>
                   <td className="p-4">
                     <span className="text-white font-medium">
