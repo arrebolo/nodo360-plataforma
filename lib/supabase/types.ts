@@ -1531,6 +1531,7 @@ export type Database = {
       }
       users: {
         Row: {
+          active_path_id: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -1538,14 +1539,20 @@ export type Database = {
           full_name: string | null
           github: string | null
           id: string
+          is_beta: boolean | null
+          is_suspended: boolean | null
           last_seen_at: string | null
           linkedin: string | null
           role: Database["public"]["Enums"]["user_role"]
+          suspended_at: string | null
+          suspended_by: string | null
+          suspended_reason: string | null
           twitter: string | null
           updated_at: string
           website: string | null
         }
         Insert: {
+          active_path_id?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -1553,14 +1560,20 @@ export type Database = {
           full_name?: string | null
           github?: string | null
           id: string
+          is_beta?: boolean | null
+          is_suspended?: boolean | null
           last_seen_at?: string | null
           linkedin?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          suspended_at?: string | null
+          suspended_by?: string | null
+          suspended_reason?: string | null
           twitter?: string | null
           updated_at?: string
           website?: string | null
         }
         Update: {
+          active_path_id?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -1568,9 +1581,14 @@ export type Database = {
           full_name?: string | null
           github?: string | null
           id?: string
+          is_beta?: boolean | null
+          is_suspended?: boolean | null
           last_seen_at?: string | null
           linkedin?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          suspended_at?: string | null
+          suspended_by?: string | null
+          suspended_reason?: string | null
           twitter?: string | null
           updated_at?: string
           website?: string | null

@@ -138,6 +138,8 @@ export async function getUsers(page: number = 1, limit: number = 20) {
       email,
       full_name,
       role,
+      is_beta,
+      is_suspended,
       created_at,
       user_gamification_stats (
         total_xp,

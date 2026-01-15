@@ -149,7 +149,7 @@ async function validateAndConsumeInvite(code: string, userId: string): Promise<{
   if (!code) return { valid: false, error: 'Código de invitación requerido' }
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com'
     const res = await fetch(`${baseUrl}/api/invites/consume`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

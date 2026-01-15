@@ -69,24 +69,46 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // 7) Verificar acceso beta y ruta activa
-  const { data: userRow } = await supabase
+  // 7) Verificar acceso beta, suspensión y ruta activa
+  const { data: userRow, error: userError } = await supabase
     .from('users')
-    .select('role, is_beta, active_path_id')
+    .select('role, is_beta, active_path_id, is_suspended, suspended_reason')
     .eq('id', user.id)
     .maybeSingle()
 
-  const isAdmin = userRow?.role === 'admin'
-  const isInstructor = userRow?.role === 'instructor'
-  const isMentor = userRow?.role === 'mentor'
+  // Debug: Log query result
+  if (userError) {
+    console.log('[Middleware] Error fetching user:', userError.message)
+  }
+
+  const userRole = userRow?.role
+  const isAdmin = userRole === 'admin'
+  const isInstructor = userRole === 'instructor'
+  const isMentor = userRole === 'mentor'
   const hasBetaAccess = userRow?.is_beta === true
 
   // Admins, instructores y mentores siempre tienen acceso (sin importar is_beta)
   const isPrivileged = isAdmin || isInstructor || isMentor
 
+  // Debug log para verificar roles
+  if (isPrivileged) {
+    console.log(`[Middleware] Privileged user (${userRole}):`, user.id.substring(0, 8) + '...')
+  }
+
+  // Verificar si el usuario está suspendido (excepto admins)
+  if (userRow?.is_suspended && !isAdmin) {
+    console.log('[Middleware] User suspended:', user.id.substring(0, 8) + '...')
+    const suspendedUrl = new URL('/cuenta-suspendida', request.url)
+    if (userRow.suspended_reason) {
+      suspendedUrl.searchParams.set('reason', userRow.suspended_reason)
+    }
+    suspendedUrl.searchParams.set('_p', '1')
+    return NextResponse.redirect(suspendedUrl)
+  }
+
   // Sin acceso beta y sin rol privilegiado → /beta
   if (!hasBetaAccess && !isPrivileged) {
-    console.log('[Middleware] No beta access for user:', user.id.substring(0, 8) + '...')
+    console.log('[Middleware] No beta access for user:', user.id.substring(0, 8) + '...', 'role:', userRole)
     const betaUrl = new URL('/beta', request.url)
     betaUrl.searchParams.set('_p', '1')
     return NextResponse.redirect(betaUrl)

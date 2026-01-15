@@ -211,7 +211,7 @@ export async function generateAndIssueCertificate(
     // 4. GENERATE CERTIFICATE NUMBER AND VERIFICATION CODE
     const certificateNumber = await generateCertificateNumber();
     const verificationCode = generateVerificationCode();
-    const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/verificar/${verificationCode}`;
+    const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://nodo360.com"}/verificar/${verificationCode}`;
 
     // 5. CREATE CERTIFICATE RECORD IN DATABASE (without URL yet)
     const { data: certificate, error: createError } = await supabase
