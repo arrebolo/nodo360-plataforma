@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle, XCircle, ArrowRight, Trophy, RotateCcw } from 'lucide-react'
+import { CheckCircle, XCircle, ArrowRight, Trophy, RotateCcw, Loader2 } from 'lucide-react'
 import type { QuizQuestion } from '@/types/database'
 import { useBadgeNotification } from '@/hooks/useBadgeNotification'
 
@@ -13,6 +13,16 @@ interface CourseFinalQuizProps {
   userId: string
   redirectTo: string
   fallbackUrl: string
+}
+
+interface QuizResult {
+  score: number
+  correct: number
+  total: number
+  percentage: number
+  passed: boolean
+  submitted: boolean
+  certificate?: { id: string; certificate_number: string } | null
 }
 
 export function CourseFinalQuiz({
@@ -29,9 +39,111 @@ export function CourseFinalQuiz({
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [showResults, setShowResults] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [quizResult, setQuizResult] = useState<QuizResult | null>(null)
+  const hasSubmittedRef = useRef(false)
 
   const currentQuestion = questions[currentIndex]
   const totalQuestions = questions.length
+
+  // Calcular score
+  const calculateScore = () => {
+    let correct = 0
+    let totalPoints = 0
+    let earnedPoints = 0
+
+    questions.forEach((q) => {
+      totalPoints += q.points || 1
+      if (answers[q.id] === q.correct_answer) {
+        correct++
+        earnedPoints += q.points || 1
+      }
+    })
+
+    const percentage = Math.round((correct / totalQuestions) * 100)
+
+    return {
+      correct,
+      total: totalQuestions,
+      percentage,
+      earnedPoints,
+      totalPoints,
+      passed: percentage >= 70,
+    }
+  }
+
+  // Auto-submit cuando se muestran resultados
+  useEffect(() => {
+    if (showResults && !hasSubmittedRef.current && !quizResult?.submitted) {
+      hasSubmittedRef.current = true
+      submitQuiz()
+    }
+  }, [showResults])
+
+  const submitQuiz = async () => {
+    setIsSubmitting(true)
+    const score = calculateScore()
+
+    // Guardar resultado local inmediatamente
+    setQuizResult({
+      score: score.percentage,
+      correct: score.correct,
+      total: score.total,
+      percentage: score.percentage,
+      passed: score.passed,
+      submitted: false,
+      certificate: null,
+    })
+
+    try {
+      const response = await fetch('/api/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          course_id: courseId,
+          user_id: userId,
+          score: score.percentage,
+          passed: score.passed,
+          answers: answers,
+        }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        console.error('Error al guardar resultado:', data.error)
+      }
+
+      // Actualizar resultado con datos del servidor
+      setQuizResult({
+        score: score.percentage,
+        correct: score.correct,
+        total: score.total,
+        percentage: score.percentage,
+        passed: score.passed,
+        submitted: true,
+        certificate: data.certificate || null,
+      })
+
+      // Mostrar badges ganados
+      if (data.awarded_badges && data.awarded_badges.length > 0) {
+        notifyBadges(data.awarded_badges)
+      }
+
+      // Auto-redirect si aprobó (con delay para ver resultado)
+      if (score.passed) {
+        setTimeout(() => {
+          router.push(redirectTo)
+        }, 2500) // 2.5 segundos para ver el resultado
+      }
+
+    } catch (error) {
+      console.error('Error submitting quiz:', error)
+      // Marcar como enviado aunque falle
+      setQuizResult(prev => prev ? { ...prev, submitted: true } : null)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   // Si no hay preguntas
   if (totalQuestions === 0) {
@@ -73,95 +185,28 @@ export function CourseFinalQuiz({
     }
   }
 
-  const calculateScore = () => {
-    let correct = 0
-    let totalPoints = 0
-    let earnedPoints = 0
-
-    questions.forEach((q) => {
-      totalPoints += q.points || 1
-      if (answers[q.id] === q.correct_answer) {
-        correct++
-        earnedPoints += q.points || 1
-      }
-    })
-
-    return {
-      correct,
-      total: totalQuestions,
-      percentage: Math.round((correct / totalQuestions) * 100),
-      earnedPoints,
-      totalPoints,
-    }
-  }
-
-  const handleSubmitQuiz = async () => {
-    setIsSubmitting(true)
-    const score = calculateScore()
-
-    try {
-      // Guardar resultado del quiz
-      const response = await fetch('/api/quiz/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          course_id: courseId,
-          user_id: userId,
-          score: score.percentage,
-          passed: score.percentage >= 70,
-          answers: answers,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al guardar resultado')
-      }
-
-      // Parsear respuesta para obtener badges
-      const data = await response.json().catch(() => ({}))
-
-      // Mostrar badges ganados (si hay)
-      if (data.awarded_badges && data.awarded_badges.length > 0) {
-        notifyBadges(data.awarded_badges)
-      }
-
-      // Redirigir según resultado (con pequeño delay para ver el badge)
-      const redirectDelay = data.awarded_badges?.length > 0 ? 500 : 0
-      setTimeout(() => {
-        if (score.percentage >= 70) {
-          router.push(redirectTo)
-        } else {
-          router.push(fallbackUrl)
-        }
-      }, redirectDelay)
-    } catch (error) {
-      console.error('Error submitting quiz:', error)
-      // Permitir navegación aunque falle el guardado
-      if (score.percentage >= 70) {
-        router.push(redirectTo)
-      } else {
-        router.push(fallbackUrl)
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
   const handleRetry = () => {
     setCurrentIndex(0)
     setAnswers({})
     setShowResults(false)
+    setQuizResult(null)
+    hasSubmittedRef.current = false
   }
 
   // Mostrar resultados
   if (showResults) {
-    const score = calculateScore()
-    const passed = score.percentage >= 70
+    const score = quizResult || calculateScore()
+    const passed = score.passed ?? score.percentage >= 70
 
     return (
       <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
         <div className="text-center mb-8">
-          {passed ? (
+          {/* Icono de resultado */}
+          {isSubmitting ? (
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-brand-light/20 mb-4">
+              <Loader2 className="w-12 h-12 text-brand-light animate-spin" />
+            </div>
+          ) : passed ? (
             <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-500/20 mb-4">
               <CheckCircle className="w-12 h-12 text-green-500" />
             </div>
@@ -172,7 +217,7 @@ export function CourseFinalQuiz({
           )}
 
           <h2 className="text-2xl font-bold text-white mb-2">
-            {passed ? '¡Felicidades!' : 'Sigue practicando'}
+            {isSubmitting ? 'Procesando resultado...' : passed ? '¡Felicidades!' : 'Sigue practicando'}
           </h2>
 
           <p className="text-5xl font-bold text-white mb-2">{score.percentage}%</p>
@@ -206,14 +251,33 @@ export function CourseFinalQuiz({
           </div>
         </div>
 
-        <p className="text-center text-white/60 mb-8">
-          {passed
-            ? 'Has aprobado el quiz final. ¡Ya puedes obtener tu certificado!'
-            : 'Necesitas al menos 70% para aprobar. Revisa el contenido del curso e inténtalo de nuevo.'}
-        </p>
+        {/* Mensaje según estado */}
+        {isSubmitting ? (
+          <div className="text-center text-white/60 mb-8">
+            <p className="flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Guardando tu resultado y generando certificado...
+            </p>
+          </div>
+        ) : passed ? (
+          <div className="text-center mb-8">
+            <p className="text-green-400 font-medium mb-2">
+              ¡Has aprobado el quiz final!
+            </p>
+            <p className="text-white/60 flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Redirigiendo a tus certificados...
+            </p>
+          </div>
+        ) : (
+          <p className="text-center text-white/60 mb-8">
+            Necesitas al menos 70% para aprobar. Revisa el contenido del curso e inténtalo de nuevo.
+          </p>
+        )}
 
+        {/* Botones de acción */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {!passed && (
+          {!passed && !isSubmitting && (
             <button
               onClick={handleRetry}
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/10 border border-white/10 text-white font-semibold hover:bg-white/15 transition"
@@ -223,14 +287,24 @@ export function CourseFinalQuiz({
             </button>
           )}
 
-          <button
-            onClick={handleSubmitQuiz}
-            disabled={isSubmitting}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-light to-brand text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
-          >
-            {isSubmitting ? 'Guardando...' : passed ? 'Obtener certificado' : 'Volver al curso'}
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          {passed && !isSubmitting && (
+            <button
+              onClick={() => router.push(redirectTo)}
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-light to-brand text-white font-semibold hover:opacity-90 transition"
+            >
+              Ver certificado ahora
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          )}
+
+          {!passed && !isSubmitting && (
+            <button
+              onClick={() => router.push(fallbackUrl)}
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 text-white/70 font-medium hover:bg-white/10 transition"
+            >
+              Volver al curso
+            </button>
+          )}
         </div>
       </div>
     )

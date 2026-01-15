@@ -512,3 +512,122 @@ a:focus-visible {
     border-width: 2px;
   }
 }
+
+/* ================================
+   Lesson Player - Prose Overrides
+   Scope: .lesson-prose
+   ================================ */
+
+.lesson-prose p {
+  margin-top: 0.75rem;
+  margin-bottom: 1.1rem;
+  line-height: 1.75;
+}
+
+.lesson-prose h2 {
+  margin-top: 2.2rem;
+  margin-bottom: 1rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.lesson-prose h3 {
+  margin-top: 1.6rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.lesson-prose ul,
+.lesson-prose ol {
+  margin-top: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-left: 1.25rem;
+}
+
+.lesson-prose li {
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.lesson-prose blockquote {
+  margin-top: 1.2rem;
+  margin-bottom: 1.2rem;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid rgba(255, 107, 53, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+}
+
+.lesson-prose hr {
+  margin: 1.6rem 0;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Negritas con acento de color Bitcoin */
+.lesson-prose strong {
+  color: rgba(255, 187, 98, 0.95);
+  font-weight: 650;
+}
+
+/* Links dentro del contenido */
+.lesson-prose a {
+  color: #ff6b35;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lesson-prose a:hover {
+  color: #f7931a;
+}
+
+/* Código inline */
+.lesson-prose code:not(pre code) {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+/* Bloques de código */
+.lesson-prose pre {
+  margin-top: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+/* Imágenes dentro del contenido */
+.lesson-prose img {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.5rem;
+  max-width: 100%;
+}
+
+/* Tablas */
+.lesson-prose table {
+  margin-top: 1rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lesson-prose th,
+.lesson-prose td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.lesson-prose th {
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+}
+
+.lesson-prose tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}

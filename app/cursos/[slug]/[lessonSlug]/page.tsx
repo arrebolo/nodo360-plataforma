@@ -56,6 +56,7 @@ export default async function LessonPage({ params }: PageProps) {
       modules (
         id,
         title,
+        description,
         order_index,
         lessons (
           id,
@@ -89,6 +90,7 @@ export default async function LessonPage({ params }: PageProps) {
       slides_type,
       resources_url,
       pdf_url,
+      content,
       content_json
     `)
     .eq("slug", lessonSlug)
@@ -106,6 +108,7 @@ export default async function LessonPage({ params }: PageProps) {
     .map((mod) => ({
       id: mod.id,
       title: mod.title,
+      description: mod.description || null,
       order_index: mod.order_index || 0,
       lessons: (mod.lessons || [])
         .sort((a: { order_index: number | null }, b: { order_index: number | null }) =>
@@ -186,11 +189,14 @@ export default async function LessonPage({ params }: PageProps) {
       slides_url: lesson.slides_url,
       slides_type: lesson.slides_type,
       order_index: lesson.order_index || 0,
+      content: lesson.content,
+      content_json: lesson.content_json,
     },
     module: {
       id: currentModule?.id || '',
       title: currentModule?.title || 'Modulo',
       order_index: currentModule?.order_index || 0,
+      description: currentModule?.description || null,
     },
     modules,
     progress,

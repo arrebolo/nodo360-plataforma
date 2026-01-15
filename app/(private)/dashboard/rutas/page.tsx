@@ -24,14 +24,14 @@ export default async function RutasPage() {
 
   let activePathId: string | null = null
   if (user) {
-    const { data: activePath } = await supabase
-      .from('user_selected_paths')
-      .select('path_id')
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .maybeSingle()
+    // Leer active_path_id directamente de la tabla users
+    const { data: userData } = await supabase
+      .from('users')
+      .select('active_path_id')
+      .eq('id', user.id)
+      .single()
 
-    activePathId = activePath?.path_id ?? null
+    activePathId = userData?.active_path_id ?? null
   }
 
   const paths = await getLearningPaths()

@@ -3,6 +3,8 @@
  * Server-side data fetching with client-side optimistic UI
  */
 
+import type { LessonContent } from './lesson-content'
+
 // Base lesson info
 export type LessonInfo = {
   id: string
@@ -16,6 +18,9 @@ export type LessonInfo = {
   slides_type?: 'google_slides' | 'canva' | 'pdf' | 'other' | null
   pdf_url?: string | null
   resources_url?: string | null
+  // Content fields
+  content?: string | null  // HTML content from TipTap editor
+  content_json?: LessonContent | null  // Block-based content (legacy)
 }
 
 // Module with its lessons
@@ -23,6 +28,7 @@ export type ModuleWithLessons = {
   id: string
   title: string
   order_index: number
+  description?: string | null
   lessons: Array<{
     id: string
     slug: string
@@ -43,6 +49,7 @@ export type ModuleInfo = {
   id: string
   title: string
   order_index: number
+  description?: string | null
 }
 
 // Navigation state

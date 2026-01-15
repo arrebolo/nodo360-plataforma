@@ -143,25 +143,64 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
 }
 
 /**
+ * Validar código de invitación (server-side)
+ */
+async function validateAndConsumeInvite(code: string, userId: string): Promise<{ valid: boolean; error?: string }> {
+  if (!code) return { valid: false, error: 'Código de invitación requerido' }
+
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/invites/consume`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code.toUpperCase(), userId }),
+    })
+
+    const data = await res.json()
+
+    if (!data.ok) {
+      const messages: Record<string, string> = {
+        not_found: 'Código de invitación no válido',
+        inactive: 'Este código ya no está activo',
+        expired: 'Este código ha expirado',
+        used_up: 'Este código ha alcanzado el límite de usos',
+      }
+      return { valid: false, error: messages[data.error] || 'Error al validar código' }
+    }
+
+    return { valid: true }
+  } catch {
+    return { valid: false, error: 'Error al validar código de invitación' }
+  }
+}
+
+/**
  * Registrar nuevo usuario con email y contraseña
+ * Requiere código de invitación válido
  */
 export async function signUp(formData: FormData): Promise<void> {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
+  const inviteCode = formData.get('inviteCode') as string
 
   console.log('[Auth] Registrando nuevo usuario')
 
   if (!email || !password) {
-    console.error('❌ [Auth Actions] Datos incompletos')
+    console.error('[Auth Actions] Datos incompletos')
     redirect('/login?error=Datos+incompletos')
+  }
+
+  if (!inviteCode) {
+    console.error('[Auth Actions] Código de invitación no proporcionado')
+    redirect('/login?error=Código+de+invitación+requerido')
   }
 
   try {
     const supabase = await createClient()
     const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -173,17 +212,28 @@ export async function signUp(formData: FormData): Promise<void> {
     })
 
     if (error) {
-      console.error('❌ [Auth Actions] Error en registro:', error.message)
+      console.error('[Auth Actions] Error en registro:', error.message)
       redirect(`/login?error=${encodeURIComponent(error.message)}`)
     }
 
-    console.log('✅ [Auth Actions] Registro exitoso')
+    // Consumir código de invitación
+    if (data.user) {
+      const inviteResult = await validateAndConsumeInvite(inviteCode, data.user.id)
+      if (!inviteResult.valid) {
+        console.error('[Auth Actions] Error con código de invitación:', inviteResult.error)
+        // El usuario ya se creó, pero el código falló - logueamos pero continuamos
+      } else {
+        console.log('[Auth Actions] Código de invitación consumido exitosamente')
+      }
+    }
+
+    console.log('[Auth Actions] Registro exitoso')
     redirect('/login?success=Cuenta+creada.+Revisa+tu+email')
   } catch (error) {
     if (isRedirectError(error)) {
       throw error
     }
-    console.error('❌ [Auth Actions] Error inesperado:', error)
+    console.error('[Auth Actions] Error inesperado:', error)
     redirect('/login?error=Error+inesperado')
   }
 }
