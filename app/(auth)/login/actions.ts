@@ -228,7 +228,7 @@ export async function signUp(formData: FormData): Promise<void> {
     }
 
     console.log('[Auth Actions] Registro exitoso')
-    redirect('/login?success=Cuenta+creada.+Revisa+tu+email')
+    redirect('/auth/verificar-email')
   } catch (error) {
     if (isRedirectError(error)) {
       throw error
