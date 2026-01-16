@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendAccessGrantedEmail } from '@/lib/email/send-access-granted'
 
 // Verificar que es admin
 async function verifyAdmin() {
@@ -36,10 +37,10 @@ export async function POST(req: Request) {
 
     const supabaseAdmin = createAdminClient()
 
-    // No permitir desactivar beta de admins
+    // Obtener datos del usuario
     const { data: targetUser } = await supabaseAdmin
       .from('users')
-      .select('role, email')
+      .select('role, email, full_name, wants_beta_notification')
       .eq('id', userId)
       .single()
 
@@ -60,10 +61,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // Enviar email si se habilito beta y el usuario quiere ser notificado
+    let emailSent = false
+    if (enabled && targetUser?.wants_beta_notification && targetUser?.email) {
+      try {
+        await sendAccessGrantedEmail(targetUser.email, targetUser.full_name || 'Usuario')
+        emailSent = true
+        console.log('[Admin Beta] Email enviado a:', targetUser.email)
+      } catch (emailError) {
+        console.error('[Admin Beta] Error enviando email (no critico):', emailError)
+      }
+    }
+
     console.log(`[Admin Beta] Usuario ${userId} - beta: ${enabled} (por ${admin.id})`)
     return NextResponse.json({
       success: true,
-      message: enabled ? 'Acceso beta habilitado' : 'Acceso beta deshabilitado'
+      message: enabled ? 'Acceso beta habilitado' : 'Acceso beta deshabilitado',
+      emailSent
     })
 
   } catch (error) {

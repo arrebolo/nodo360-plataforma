@@ -1549,6 +1549,7 @@ export type Database = {
           suspended_reason: string | null
           twitter: string | null
           updated_at: string
+          wants_beta_notification: boolean | null
           website: string | null
         }
         Insert: {
@@ -1570,6 +1571,7 @@ export type Database = {
           suspended_reason?: string | null
           twitter?: string | null
           updated_at?: string
+          wants_beta_notification?: boolean | null
           website?: string | null
         }
         Update: {
@@ -1591,6 +1593,7 @@ export type Database = {
           suspended_reason?: string | null
           twitter?: string | null
           updated_at?: string
+          wants_beta_notification?: boolean | null
           website?: string | null
         }
         Relationships: []

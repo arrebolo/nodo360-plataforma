@@ -7,8 +7,8 @@ import { Menu, X } from 'lucide-react'
 import { brandConfig } from '@/lib/brand-config'
 
 const navLinks = [
-  { href: '/cursos', label: 'Cursos' },
   { href: '/dashboard/rutas', label: 'Rutas' },
+  { href: '/cursos', label: 'Cursos' },
   { href: '/comunidad', label: 'Comunidad' },
   { href: '/mentoria', label: 'Mentoría' },
 ]

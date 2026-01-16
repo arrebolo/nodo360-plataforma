@@ -114,17 +114,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(betaUrl)
   }
 
-  // 8) Dashboard requiere ruta activa (excepciones: rutas, instructor, admin)
+  // 8) Solo rutas de CONTENIDO de cursos requieren ruta activa
+  // La mayoría de rutas del dashboard NO requieren active_path_id
+  // Solo se requiere para acceder a lecciones específicas dentro de una ruta
+
+  // Rutas que SÍ requieren active_path_id (contenido de aprendizaje):
+  const routesRequiringActivePath = [
+    '/dashboard/leccion',
+    '/dashboard/modulo',
+  ]
+
   const isDashboard = pathname.startsWith('/dashboard')
-  const isDashboardRutas = pathname.startsWith('/dashboard/rutas')
-  const isDashboardInstructor = pathname.startsWith('/dashboard/instructor')
-  const isAdminRoute = pathname.startsWith('/admin')
+  const requiresActivePath = routesRequiringActivePath.some(route => pathname.startsWith(route))
 
-  // Los privilegiados (admin/instructor/mentor) no necesitan active_path_id
-  const needsActivePath = isDashboard && !isDashboardRutas && !isDashboardInstructor && !isPrivileged
-
-  if (needsActivePath && !userRow?.active_path_id) {
-    console.log('🔀 [Middleware] No active path, redirect to /dashboard/rutas')
+  // Solo redirigir si:
+  // 1. Es una ruta que requiere active_path_id
+  // 2. No es usuario privilegiado
+  // 3. No tiene active_path_id
+  if (isDashboard && requiresActivePath && !isPrivileged && !userRow?.active_path_id) {
+    console.log('[Middleware] No active path for content route:', pathname)
     const rutasUrl = new URL('/dashboard/rutas', request.url)
     rutasUrl.searchParams.set('_p', '1')
     return NextResponse.redirect(rutasUrl)
