@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // Verificar que es admin
 async function verifyAdmin() {
@@ -21,7 +22,11 @@ async function verifyAdmin() {
 }
 
 // GET - Listar invitaciones
-export async function GET() {
+export async function GET(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const user = await verifyAdmin()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -42,6 +47,10 @@ export async function GET() {
 
 // POST - Crear invitación
 export async function POST(req: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const user = await verifyAdmin()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -92,6 +101,10 @@ export async function POST(req: Request) {
 
 // PATCH - Activar/Desactivar invitación
 export async function PATCH(req: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const user = await verifyAdmin()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -121,6 +134,10 @@ export async function PATCH(req: Request) {
 
 // DELETE - Eliminar invitación
 export async function DELETE(req: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const user = await verifyAdmin()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

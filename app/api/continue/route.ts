@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 /**
  * GET /api/continue?courseSlug=xxx
@@ -15,6 +16,10 @@ import { createClient } from '@/lib/supabase/server'
  * - format=json: devuelve JSON en lugar de redirect (debug)
  */
 export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const { searchParams } = new URL(request.url)
   const courseSlug = searchParams.get('courseSlug')
   const format = searchParams.get('format')

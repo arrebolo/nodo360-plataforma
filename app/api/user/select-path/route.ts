@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 /**
  * POST /api/user/select-path
@@ -10,6 +11,9 @@ export async function POST(req: Request) {
   console.log('🔍 [API POST /user/select-path] Iniciando...')
 
   try {
+    // Rate limiting
+    const rateLimitResponse = await checkRateLimit(req, 'api')
+    if (rateLimitResponse) return rateLimitResponse
     const supabase = await createClient()
 
     const { slug, redirect = '/dashboard/rutas' } = await req.json()
@@ -107,10 +111,13 @@ export async function POST(req: Request) {
  * GET /api/user/select-path
  * Obtiene la ruta activa del usuario desde users.active_path_id
  */
-export async function GET() {
+export async function GET(request: Request) {
   console.log('🔍 [API GET /user/select-path] Iniciando...')
 
   try {
+    // Rate limiting
+    const rateLimitResponse = await checkRateLimit(request, 'api')
+    if (rateLimitResponse) return rateLimitResponse
     const supabase = await createClient()
     const { data: auth, error: authError } = await supabase.auth.getUser()
 

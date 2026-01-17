@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 const isUuid = (v?: string | null) =>
   typeof v === 'string' &&
@@ -8,6 +9,10 @@ const isUuid = (v?: string | null) =>
 type NoteDTO = { id: string; content: string; updated_at: string }
 
 export async function GET(req: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -47,6 +52,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()

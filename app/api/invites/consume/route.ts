@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 export async function POST(req: Request) {
+  // Rate limiting (strict para invites)
+  const rateLimitResponse = await checkRateLimit(req, 'strict')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { code, userId } = await req.json()
 

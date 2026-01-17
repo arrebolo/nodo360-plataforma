@@ -10,7 +10,8 @@ import {
   BookOpen,
   Clock,
   Users,
-  Calendar
+  Calendar,
+  Copy
 } from 'lucide-react'
 
 interface Course {
@@ -49,6 +50,7 @@ const levelConfig = {
 
 export default function InstructorCourseCard({ course, onStatusChange }: InstructorCourseCardProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [isDuplicating, setIsDuplicating] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(course.status)
 
   const status = statusConfig[currentStatus] || statusConfig.draft
@@ -90,6 +92,32 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
       console.error('Error cambiando estado:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleDuplicate = async () => {
+    if (isDuplicating) return
+
+    if (!confirm('¿Crear una copia de este curso como borrador?')) return
+
+    setIsDuplicating(true)
+
+    try {
+      const res = await fetch(`/api/instructor/courses/${course.id}/duplicate`, {
+        method: 'POST',
+      })
+
+      if (res.ok) {
+        // Recargar la pagina para ver el nuevo curso
+        window.location.reload()
+      } else {
+        alert('Error al duplicar el curso')
+      }
+    } catch (error) {
+      console.error('Error duplicando:', error)
+      alert('Error al duplicar el curso')
+    } finally {
+      setIsDuplicating(false)
     }
   }
 
@@ -165,6 +193,17 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
             <Eye className="w-4 h-4" />
             Preview
           </Link>
+
+          {/* Duplicar */}
+          <button
+            onClick={handleDuplicate}
+            disabled={isDuplicating}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+            title="Duplicar curso"
+          >
+            <Copy className="w-4 h-4" />
+            {isDuplicating ? '...' : 'Duplicar'}
+          </button>
 
           {/* Publicar/Despublicar */}
           <button

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { awardXP } from '@/lib/gamification/awardXP'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 type AdjustXPBody = {
   userId: string
@@ -16,6 +17,10 @@ type AdjustXPBody = {
  * - amount puede ser positivo (dar XP) o negativo (quitar XP).
  */
 export async function POST(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     // 1) Auth + rol (cliente de sesión)
     const supabase = await createClient()

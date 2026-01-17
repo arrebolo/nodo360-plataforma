@@ -1,8 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // GET - Listar propuestas
 export async function GET(request: NextRequest) {
+  // Rate limiting (governance)
+  const rateLimitResponse = await checkRateLimit(request, 'governance')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
@@ -41,6 +46,10 @@ export async function GET(request: NextRequest) {
 
 // POST - Crear propuesta
 export async function POST(request: NextRequest) {
+  // Rate limiting (governance)
+  const rateLimitResponse = await checkRateLimit(request, 'governance')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 

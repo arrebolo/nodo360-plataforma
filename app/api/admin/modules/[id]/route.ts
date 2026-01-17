@@ -1,12 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin/auth'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
 
 export async function DELETE(request: Request, { params }: RouteParams) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     console.log('🗑️ [Delete Module API] Iniciando eliminación')
 

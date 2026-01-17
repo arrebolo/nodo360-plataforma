@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireInstructorLike } from "@/lib/auth/requireInstructor";
 import InstructorCourseCard from "@/components/instructor/InstructorCourseCard";
 import CourseFilters from "@/components/instructor/CourseFilters";
+import CourseTabs from "@/components/instructor/CourseTabs";
+import LoadMoreButton from "@/components/instructor/LoadMoreButton";
 
 export const metadata = {
   title: "Mis Cursos | Instructor Nodo360",
@@ -16,6 +18,8 @@ interface SearchParams {
   level?: string;
   type?: string;
   sort?: string;
+  tab?: string;
+  limit?: string;
 }
 
 export default async function InstructorCoursesPage({
@@ -27,10 +31,24 @@ export default async function InstructorCoursesPage({
   const supabase = await createClient();
   const params = await searchParams;
 
-  const { q, status, level, type, sort } = params;
+  const { q, status, level, type, sort, limit: limitParam } = params;
   const isAdmin = role === "admin";
+  const limit = parseInt(limitParam || "10");
 
-  // Query base
+  // Query para contar por estado (sin filtros de busqueda) - para tabs
+  let countQuery = supabase.from("courses").select("status");
+  if (!isAdmin) {
+    countQuery = countQuery.eq("instructor_id", userId);
+  }
+  const { data: allCoursesForCount } = await countQuery;
+
+  const tabCounts = {
+    all: allCoursesForCount?.length || 0,
+    published: allCoursesForCount?.filter((c) => c.status === "published").length || 0,
+    draft: allCoursesForCount?.filter((c) => c.status === "draft").length || 0,
+  };
+
+  // Query base para lista
   let query = supabase
     .from("courses")
     .select(`
@@ -94,6 +112,9 @@ export default async function InstructorCoursesPage({
       query = query.order("updated_at", { ascending: false });
   }
 
+  // Aplicar limite
+  query = query.limit(limit);
+
   const { data: courses, error } = await query;
 
   if (error) {
@@ -128,7 +149,7 @@ export default async function InstructorCoursesPage({
     );
   }
 
-  // Query para total sin filtros
+  // Query para total sin filtros (para stats header)
   let totalQuery = supabase
     .from("courses")
     .select("id", { count: "exact", head: true });
@@ -140,17 +161,25 @@ export default async function InstructorCoursesPage({
   const { count: totalCount } = await totalQuery;
   const totalCourses = totalCount || 0;
 
-  // Stats generales
-  const publishedCourses = coursesWithStats.filter(
-    (c) => c.status === "published"
-  ).length;
-  const draftCourses = coursesWithStats.filter(
-    (c) => c.status === "draft"
-  ).length;
-  const totalStudents = coursesWithStats.reduce(
-    (acc, c) => acc + (c.enrolled_count || 0),
-    0
-  );
+  // Stats generales (de todos los cursos, no solo los filtrados)
+  const publishedCourses = tabCounts.published;
+  const draftCourses = tabCounts.draft;
+
+  // Total de alumnos (necesita calcular de todos los cursos)
+  let totalStudentsQuery = supabase.from("course_enrollments").select("course_id");
+  if (!isAdmin && courseIds.length > 0) {
+    // Solo contar de los cursos del instructor
+    const { data: allInstructorCourses } = await supabase
+      .from("courses")
+      .select("id")
+      .eq("instructor_id", userId);
+    const allIds = allInstructorCourses?.map((c) => c.id) || [];
+    if (allIds.length > 0) {
+      totalStudentsQuery = totalStudentsQuery.in("course_id", allIds);
+    }
+  }
+  const { data: allEnrollments } = await totalStudentsQuery;
+  const totalStudents = allEnrollments?.length || 0;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -200,6 +229,11 @@ export default async function InstructorCoursesPage({
         </div>
       </div>
 
+      {/* Pestanas */}
+      <Suspense fallback={<div className="h-12 bg-white/5 rounded-xl animate-pulse" />}>
+        <CourseTabs counts={tabCounts} />
+      </Suspense>
+
       {/* Filtros */}
       <Suspense fallback={<div className="h-32 bg-white/5 rounded-xl animate-pulse" />}>
         <CourseFilters
@@ -209,43 +243,53 @@ export default async function InstructorCoursesPage({
       </Suspense>
 
       {/* Lista de cursos */}
-      <div className="grid gap-4">
-        {coursesWithStats.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-            <BookOpen className="w-12 h-12 text-white/20 mx-auto mb-4" />
-            {totalCourses === 0 ? (
-              <>
-                <h3 className="text-lg font-medium text-white mb-2">
-                  Aun no tienes cursos
-                </h3>
-                <p className="text-sm text-white/60 mb-4">
-                  Crea tu primer curso y empieza a compartir tu conocimiento.
-                </p>
-                <Link
-                  href="/dashboard/instructor/cursos/nuevo"
-                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white hover:opacity-90 transition-opacity"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Crear mi primer curso
-                </Link>
-              </>
-            ) : (
-              <>
-                <h3 className="text-lg font-medium text-white mb-2">
-                  No hay cursos con estos filtros
-                </h3>
-                <p className="text-white/50">
-                  Prueba a cambiar los filtros de busqueda
-                </p>
-              </>
-            )}
+      {coursesWithStats.length === 0 ? (
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+          <BookOpen className="w-12 h-12 text-white/20 mx-auto mb-4" />
+          {totalCourses === 0 ? (
+            <>
+              <h3 className="text-lg font-medium text-white mb-2">
+                Aun no tienes cursos
+              </h3>
+              <p className="text-sm text-white/60 mb-4">
+                Crea tu primer curso y empieza a compartir tu conocimiento.
+              </p>
+              <Link
+                href="/dashboard/instructor/cursos/nuevo"
+                className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium bg-gradient-to-r from-[#ff6b35] to-[#f7931a] text-white hover:opacity-90 transition-opacity"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Crear mi primer curso
+              </Link>
+            </>
+          ) : (
+            <>
+              <h3 className="text-lg font-medium text-white mb-2">
+                No hay cursos con estos filtros
+              </h3>
+              <p className="text-white/50">
+                Prueba a cambiar los filtros de busqueda
+              </p>
+            </>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-4">
+            {coursesWithStats.map((course) => (
+              <InstructorCourseCard key={course.id} course={course} />
+            ))}
           </div>
-        ) : (
-          coursesWithStats.map((course) => (
-            <InstructorCourseCard key={course.id} course={course} />
-          ))
-        )}
-      </div>
+
+          {/* Paginacion */}
+          <Suspense fallback={null}>
+            <LoadMoreButton
+              currentCount={coursesWithStats.length}
+              totalCount={totalCourses}
+            />
+          </Suspense>
+        </>
+      )}
     </div>
   );
 }
