@@ -62,6 +62,41 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_feedback: {
+        Row: {
+          id: string
+          user_id: string | null
+          user_email: string
+          page_url: string | null
+          message: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          user_email: string
+          page_url?: string | null
+          message: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          user_email?: string
+          page_url?: string | null
+          message?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beta_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookmarks: {
         Row: {
           created_at: string
@@ -678,6 +713,53 @@ export type Database = {
           {
             foreignKeyName: "governance_votes_voter_id_fkey"
             columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invites: {
+        Row: {
+          id: string
+          code: string
+          role: Database["public"]["Enums"]["user_role"]
+          max_uses: number
+          used_count: number
+          is_active: boolean
+          expires_at: string | null
+          notes: string | null
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          role?: Database["public"]["Enums"]["user_role"]
+          max_uses?: number
+          used_count?: number
+          is_active?: boolean
+          expires_at?: string | null
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          max_uses?: number
+          used_count?: number
+          is_active?: boolean
+          expires_at?: string | null
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]

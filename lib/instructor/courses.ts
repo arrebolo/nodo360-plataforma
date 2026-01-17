@@ -18,12 +18,48 @@ export async function listMyCourses(userId: string) {
 
   const { data, error } = await supabase
     .from("courses")
-    .select("id, slug, title, status, level, is_free, price, created_at")
+    .select(`
+      id,
+      slug,
+      title,
+      status,
+      level,
+      is_free,
+      price,
+      total_modules,
+      total_lessons,
+      total_duration_minutes,
+      updated_at,
+      thumbnail_url
+    `)
     .eq("instructor_id", userId)
-    .order("created_at", { ascending: false });
+    .order("updated_at", { ascending: false });
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+
+  // Get enrollment counts per course
+  const courseIds = (data ?? []).map(c => c.id);
+
+  if (courseIds.length === 0) {
+    return [];
+  }
+
+  const { data: enrollments } = await supabase
+    .from("user_courses")
+    .select("course_id")
+    .in("course_id", courseIds);
+
+  // Count enrollments per course
+  const enrollmentCounts: Record<string, number> = {};
+  enrollments?.forEach(e => {
+    enrollmentCounts[e.course_id] = (enrollmentCounts[e.course_id] || 0) + 1;
+  });
+
+  // Add enrolled_count to each course
+  return (data ?? []).map(course => ({
+    ...course,
+    enrolled_count: enrollmentCounts[course.id] || 0
+  }));
 }
 
 export async function createMyCourse(userId: string, payload: InstructorCourseForm) {
