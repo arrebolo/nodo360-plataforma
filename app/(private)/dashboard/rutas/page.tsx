@@ -5,6 +5,90 @@ import { getLearningPaths, getCoursesByLearningPathSlug } from '@/lib/db/learnin
 import { RouteCardWrapper } from '@/components/learning-path/RouteCardWrapper'
 import PageHeader from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
+import { SupabaseClient } from '@supabase/supabase-js'
+
+/**
+ * Obtiene la URL de la primera leccion incompleta de una ruta
+ */
+async function getNextLessonUrl(
+  supabase: SupabaseClient,
+  userId: string,
+  pathId: string
+): Promise<string> {
+  // 1. Obtener cursos de la ruta ordenados
+  const { data: pathCourses } = await supabase
+    .from('learning_path_courses')
+    .select(`
+      position,
+      course:courses (
+        id,
+        slug,
+        modules (
+          id,
+          order_index,
+          lessons (
+            id,
+            slug,
+            order_index
+          )
+        )
+      )
+    `)
+    .eq('learning_path_id', pathId)
+    .order('position', { ascending: true })
+
+  if (!pathCourses?.length) return '/dashboard'
+
+  // 2. Aplanar todas las lecciones ordenadas
+  const allLessons: { lessonId: string; lessonSlug: string; courseSlug: string }[] = []
+
+  for (const pc of pathCourses) {
+    const course = pc.course as any
+    if (!course) continue
+
+    const sortedModules = (course.modules || []).sort(
+      (a: any, b: any) => a.order_index - b.order_index
+    )
+
+    for (const mod of sortedModules) {
+      const sortedLessons = (mod.lessons || []).sort(
+        (a: any, b: any) => a.order_index - b.order_index
+      )
+
+      for (const lesson of sortedLessons) {
+        allLessons.push({
+          lessonId: lesson.id,
+          lessonSlug: lesson.slug,
+          courseSlug: course.slug,
+        })
+      }
+    }
+  }
+
+  if (!allLessons.length) return '/dashboard'
+
+  // 3. Obtener lecciones completadas del usuario
+  const lessonIds = allLessons.map((l) => l.lessonId)
+  const { data: progress } = await supabase
+    .from('user_progress')
+    .select('lesson_id, is_completed')
+    .eq('user_id', userId)
+    .in('lesson_id', lessonIds)
+
+  const completedIds = new Set(
+    (progress || []).filter((p: any) => p.is_completed).map((p: any) => p.lesson_id)
+  )
+
+  // 4. Encontrar primera leccion incompleta
+  for (const lesson of allLessons) {
+    if (!completedIds.has(lesson.lessonId)) {
+      return `/cursos/${lesson.courseSlug}/${lesson.lessonSlug}`
+    }
+  }
+
+  // 5. Si todas estan completas, devolver la primera para "repasar"
+  return `/cursos/${allLessons[0].courseSlug}/${allLessons[0].lessonSlug}`
+}
 
 export const metadata: Metadata = {
   title: 'Rutas de Aprendizaje',
@@ -35,6 +119,12 @@ export default async function RutasPage() {
   }
 
   const paths = await getLearningPaths()
+
+  // Calcular URL de continuacion para la ruta activa
+  let continueUrl = '/dashboard'
+  if (user && activePathId) {
+    continueUrl = await getNextLessonUrl(supabase, user.id, activePathId)
+  }
 
   const pathsWithCounts = await Promise.all(
     paths.map(async (path) => {
@@ -104,8 +194,8 @@ export default async function RutasPage() {
                 <div className="mt-1 text-white/70">
                   Ya tienes una ruta seleccionada. Puedes continuar o cambiarla.
                 </div>
-                <Button variant="primary" href="/dashboard" className="mt-3 w-full">
-                  Ir a mi dashboard
+                <Button variant="primary" href={continueUrl} className="mt-3 w-full">
+                  Continuar aprendiendo
                 </Button>
               </div>
             )}
@@ -136,6 +226,7 @@ export default async function RutasPage() {
                   educationalHint={getEducationalHint(path.slug)}
                   isLoggedIn={isLoggedIn}
                   isRecommended={index === 0 && !hasActiveRoute}
+                  continueUrl={path.isActive ? continueUrl : undefined}
                 />
               ))}
             </div>
