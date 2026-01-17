@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -16,6 +17,10 @@ export async function PATCH(
   request: NextRequest,
   context: RouteContext
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { id: courseId } = await context.params
     const supabase = await createClient()

@@ -1,8 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin/auth'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 export async function POST(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     console.log('🔄 [Reorder Lesson API] Iniciando reordenamiento')
 

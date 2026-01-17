@@ -1,7 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 export async function GET(request: Request) {
+  // Rate limiting (auth)
+  const rateLimitResponse = await checkRateLimit(request, 'auth')
+  if (rateLimitResponse) return rateLimitResponse
   const supabase = await createClient()
   await supabase.auth.signOut()
 
@@ -10,8 +14,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  // Rate limiting (auth)
+  const rateLimitResponse = await checkRateLimit(request, 'auth')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
-    console.log('🚪 [Logout] Iniciando cierre de sesión')
+    console.log('[Logout] Iniciando cierre de sesion')
 
     const supabase = await createClient()
 

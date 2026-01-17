@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // GET: Listar notas (opcionalmente filtrar por lesson_id)
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -55,7 +60,11 @@ export async function GET(request: Request) {
 }
 
 // POST: Crear nota
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -90,7 +99,11 @@ export async function POST(request: Request) {
 }
 
 // PUT: Actualizar nota
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -126,7 +139,11 @@ export async function PUT(request: Request) {
 }
 
 // DELETE: Eliminar nota
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

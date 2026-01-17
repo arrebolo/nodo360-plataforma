@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendAccessGrantedEmail } from '@/lib/email/send-access-granted'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // Verificar que es admin
 async function verifyAdmin() {
@@ -23,6 +24,10 @@ async function verifyAdmin() {
 
 // POST - Cambiar estado beta de un usuario
 export async function POST(req: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const admin = await verifyAdmin()
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -88,6 +93,10 @@ export async function POST(req: Request) {
 
 // PATCH - Habilitar beta masivamente
 export async function PATCH(req: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const admin = await verifyAdmin()
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -126,7 +135,11 @@ export async function PATCH(req: Request) {
 }
 
 // GET - Obtener estadisticas de usuarios beta
-export async function GET() {
+export async function GET(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const admin = await verifyAdmin()
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

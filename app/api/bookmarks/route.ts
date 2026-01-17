@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // GET: Listar bookmarks del usuario
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -48,7 +53,11 @@ export async function GET() {
 }
 
 // POST: Crear bookmark
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -84,7 +93,11 @@ export async function POST(request: Request) {
 }
 
 // DELETE: Eliminar bookmark
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

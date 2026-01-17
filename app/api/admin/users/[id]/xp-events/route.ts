@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 function clampInt(v: string | null, def: number, min: number, max: number) {
   const n = Number.parseInt(v ?? '', 10)
@@ -12,6 +13,10 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     // FIX Next.js 16: params es Promise
     const { id: userId } = await params

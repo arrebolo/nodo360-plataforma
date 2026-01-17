@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCourseQuizStatus } from '@/lib/quiz/checkCourseQuiz'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 /**
  * GET /api/quiz/status?course_id=xxx
@@ -8,6 +9,9 @@ import { getCourseQuizStatus } from '@/lib/quiz/checkCourseQuiz'
  */
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting
+    const rateLimitResponse = await checkRateLimit(request, 'api')
+    if (rateLimitResponse) return rateLimitResponse
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 

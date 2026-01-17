@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createCertificate } from '@/lib/certificates/createCertificate'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
     const {

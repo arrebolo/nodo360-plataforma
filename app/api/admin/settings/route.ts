@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 type PutBody = {
   key: 'xp_rules' | 'level_rules'
@@ -18,6 +19,10 @@ function isValidKey(key: string): key is PutBody['key'] {
  * GET /api/admin/settings?key=xp_rules
  */
 export async function GET(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     // 1) Auth + rol (cliente normal)
     const supabase = await createClient()
@@ -79,6 +84,10 @@ export async function GET(request: Request) {
  * PUT /api/admin/settings
  */
 export async function PUT(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     // 1) Auth + rol
     const supabase = await createClient()
