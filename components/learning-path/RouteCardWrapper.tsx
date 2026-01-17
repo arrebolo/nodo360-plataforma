@@ -20,18 +20,20 @@ export function RouteCardWrapper({
   educationalHint,
   isLoggedIn,
   isRecommended = false,
+  continueUrl,
 }: {
   path: PathData
   educationalHint: string
   isLoggedIn: boolean
   isRecommended?: boolean
+  continueUrl?: string
 }) {
   const router = useRouter()
   const [isSelecting, setIsSelecting] = useState(false)
 
   const handleSelect = async () => {
     if (path.isActive) {
-      router.push('/dashboard')
+      router.push(continueUrl || '/dashboard')
       return
     }
 

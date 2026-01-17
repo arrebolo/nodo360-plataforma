@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // Verificar que es admin
 async function verifyAdmin() {
@@ -54,10 +54,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Código requerido' }, { status: 400 })
     }
 
-    const supabaseAdmin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabaseAdmin = createAdminClient()
 
     const expiresAt = expiresInHours > 0
       ? new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString()
@@ -103,10 +100,7 @@ export async function PATCH(req: Request) {
   try {
     const { id, is_active } = await req.json()
 
-    const supabaseAdmin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabaseAdmin = createAdminClient()
 
     const { error } = await supabaseAdmin
       .from('invites')
@@ -135,10 +129,7 @@ export async function DELETE(req: Request) {
   try {
     const { id } = await req.json()
 
-    const supabaseAdmin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabaseAdmin = createAdminClient()
 
     const { error } = await supabaseAdmin
       .from('invites')
