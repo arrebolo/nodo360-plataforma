@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { awardXP } from '@/lib/gamification/awardXP'
 import { checkAndAwardBadges } from '@/lib/gamification/checkAndAwardBadges'
 import { createCertificate } from '@/lib/certificates/createCertificate'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 interface SubmitQuizRequest {
   course_id: string
@@ -15,6 +16,9 @@ interface SubmitQuizRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const rateLimitResponse = await checkRateLimit(request, 'api')
+    if (rateLimitResponse) return rateLimitResponse
     const body: SubmitQuizRequest = await request.json()
     const { course_id, user_id, score, passed, answers } = body
 

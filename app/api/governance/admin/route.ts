@@ -1,9 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 type AdminAction = 'validate' | 'reject_validation' | 'veto' | 'cancel' | 'implement'
 
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'governance')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   // Verificar autenticación
@@ -145,6 +150,10 @@ export async function POST(request: NextRequest) {
 
 // Obtener historial de acciones admin de una propuesta
 export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'governance')
+  if (rateLimitResponse) return rateLimitResponse
+
   const supabase = await createClient()
 
   const { searchParams } = new URL(request.url)

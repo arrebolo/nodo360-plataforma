@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 /**
  * POST /api/admin/courses/refresh-all-counts
@@ -8,7 +9,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * Refreshes total_modules and total_lessons counters for ALL courses.
  * Admin only. Useful for fixing all existing data at once.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     // Verify user is authenticated and is admin
     const supabase = await createClient()

@@ -2,9 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserRoles } from '@/lib/roles/getUserRoles'
 import { UserRole } from '@/types/roles'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // GET - Listar roles de un usuario
 export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
     const { isAdmin } = await getUserRoles()
@@ -46,6 +51,10 @@ export async function GET(request: NextRequest) {
 
 // POST - Asignar rol a usuario
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -97,6 +106,10 @@ export async function POST(request: NextRequest) {
 
 // DELETE - Revocar rol
 export async function DELETE(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
     const { isAdmin } = await getUserRoles()

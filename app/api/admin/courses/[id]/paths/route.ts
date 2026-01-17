@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 type RouteParams = {
   params: Promise<{ id: string }>
@@ -8,6 +9,10 @@ type RouteParams = {
 
 // GET: Obtener rutas asignadas a un curso
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { id: courseId } = await params
     const supabase = await createClient()
@@ -42,6 +47,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 // POST: Asignar curso a una ruta
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { id: courseId } = await params
     const supabase = await createClient()
@@ -102,6 +111,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
 // DELETE: Quitar curso de una ruta
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { id: courseId } = await params
     const supabase = await createClient()

@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 export async function GET(req: Request) {
+  // Rate limiting (strict para validacion de invites)
+  const rateLimitResponse = await checkRateLimit(req, 'strict')
+  if (rateLimitResponse) return rateLimitResponse
   const { searchParams } = new URL(req.url)
   const code = (searchParams.get('code') ?? '').trim().toUpperCase()
 

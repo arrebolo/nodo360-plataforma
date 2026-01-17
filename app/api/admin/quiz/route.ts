@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 /**
  * Admin Quiz API
@@ -12,6 +13,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 // GET: List all questions for a course (across all modules)
 export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 
@@ -88,6 +93,10 @@ export async function GET(request: NextRequest) {
 
 // POST: Create a new question
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 
@@ -156,6 +165,10 @@ export async function POST(request: NextRequest) {
 
 // PUT: Update a question
 export async function PUT(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 
@@ -219,6 +232,10 @@ export async function PUT(request: NextRequest) {
 
 // DELETE: Delete a question
 export async function DELETE(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 

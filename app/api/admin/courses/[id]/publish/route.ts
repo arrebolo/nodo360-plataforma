@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { publishCourse, unpublishCourse, getCoursePublishStatus } from '@/lib/admin/actions'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -13,6 +14,10 @@ export async function GET(
   request: NextRequest,
   context: RouteContext
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { id } = await context.params
     const check = await getCoursePublishStatus(id)
@@ -34,6 +39,10 @@ export async function POST(
   request: NextRequest,
   context: RouteContext
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { id } = await context.params
     const body = await request.json().catch(() => ({}))
@@ -63,6 +72,10 @@ export async function DELETE(
   request: NextRequest,
   context: RouteContext
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { id } = await context.params
     const result = await unpublishCourse(id)

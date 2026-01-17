@@ -1,10 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Rate limiting (governance)
+  const rateLimitResponse = await checkRateLimit(request, 'governance')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { id: proposalId } = await params
     const supabase = await createClient()

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,8 +10,11 @@ export const dynamic = 'force-dynamic'
  * Obtiene el leaderboard global ordenado por XP total
  * Retorna top 100 usuarios con sus stats
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // Rate limiting
+    const rateLimitResponse = await checkRateLimit(request, 'api')
+    if (rateLimitResponse) return rateLimitResponse
     const supabase = await createClient()
 
     // Obtener top usuarios por XP

@@ -1,8 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // GET - Listar todos los badges
-export async function GET() {
+export async function GET(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 
@@ -25,6 +30,10 @@ export async function GET() {
 
 // POST - Crear nuevo badge
 export async function POST(request: Request) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 

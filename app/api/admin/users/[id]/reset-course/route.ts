@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calculateLevel } from '@/lib/gamification/levels'
 import { DEFAULT_LEVEL_RULES } from '@/lib/settings/defaults'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 interface ResetCourseRequest {
   courseId: string
@@ -17,6 +18,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     // 1. Verificar que es admin
     const supabase = await createClient()

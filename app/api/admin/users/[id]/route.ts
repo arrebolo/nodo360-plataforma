@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // Verificar que es admin
 async function verifyAdmin() {
@@ -25,6 +26,10 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const admin = await verifyAdmin()
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -51,6 +56,10 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const admin = await verifyAdmin()
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -118,6 +127,10 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Rate limiting
+  const rateLimitResponse = await checkRateLimit(req, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   const admin = await verifyAdmin()
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
