@@ -10,7 +10,7 @@ export async function sendAccessGrantedEmail(
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Nodo360 <onboarding@resend.dev>',
+      from: 'Nodo360 <hola@nodo360.com>',
       to: userEmail,
       subject: '¡Tu acceso a Nodo360 esta listo!',
       html: `
