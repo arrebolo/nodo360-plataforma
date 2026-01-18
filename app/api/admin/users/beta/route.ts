@@ -66,9 +66,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Enviar email si se habilito beta y el usuario quiere ser notificado
+    // Enviar email SIEMPRE que se active beta
     let emailSent = false
-    if (enabled && targetUser?.wants_beta_notification && targetUser?.email) {
+    if (enabled && targetUser?.email) {
       try {
         await sendAccessGrantedEmail(targetUser.email, targetUser.full_name || 'Usuario')
         emailSent = true
