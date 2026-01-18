@@ -35,6 +35,7 @@ export async function POST(req: Request) {
 
   try {
     const { userId, enabled } = await req.json()
+    console.log(`📋 [Admin Beta] Solicitud recibida - userId: ${userId}, enabled: ${enabled}`)
 
     if (!userId) {
       return NextResponse.json({ error: 'userId requerido' }, { status: 400 })
@@ -42,12 +43,43 @@ export async function POST(req: Request) {
 
     const supabaseAdmin = createAdminClient()
 
-    // Obtener datos del usuario
+    // Obtener datos del usuario desde public.users
     const { data: targetUser } = await supabaseAdmin
       .from('users')
       .select('role, email, full_name, wants_beta_notification')
       .eq('id', userId)
       .single()
+
+    console.log(`📋 [Admin Beta] Usuario encontrado en public.users:`, {
+      role: targetUser?.role,
+      email: targetUser?.email ? '✅ tiene email' : '❌ sin email',
+      full_name: targetUser?.full_name || 'sin nombre'
+    })
+
+    // Si no tiene email en public.users, obtenerlo de auth.users
+    let userEmail = targetUser?.email
+    let userName = targetUser?.full_name || 'Usuario'
+
+    if (!userEmail) {
+      console.log('📧 [Admin Beta] Email no encontrado en public.users, buscando en auth.users...')
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(userId)
+
+      if (authError) {
+        console.error('📧 [Admin Beta] Error obteniendo auth.users:', authError)
+      } else {
+        userEmail = authUser?.user?.email
+        // También intentar obtener nombre de user_metadata si no lo tenemos
+        if (!userName || userName === 'Usuario') {
+          userName = authUser?.user?.user_metadata?.full_name ||
+                     authUser?.user?.user_metadata?.name ||
+                     'Usuario'
+        }
+        console.log(`📧 [Admin Beta] Resultado de auth.users:`, {
+          email: userEmail ? '✅ encontrado' : '❌ no encontrado',
+          emailValue: userEmail || 'null'
+        })
+      }
+    }
 
     if (targetUser?.role === 'admin' && !enabled) {
       return NextResponse.json(
@@ -62,19 +94,26 @@ export async function POST(req: Request) {
       .eq('id', userId)
 
     if (error) {
-      console.error('[Admin Beta] Error:', error)
+      console.error('[Admin Beta] Error actualizando is_beta:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    console.log(`✅ [Admin Beta] is_beta actualizado a ${enabled} para usuario ${userId}`)
+
     // Enviar email SIEMPRE que se active beta
     let emailSent = false
-    if (enabled && targetUser?.email) {
-      try {
-        await sendAccessGrantedEmail(targetUser.email, targetUser.full_name || 'Usuario')
-        emailSent = true
-        console.log('[Admin Beta] Email enviado a:', targetUser.email)
-      } catch (emailError) {
-        console.error('[Admin Beta] Error enviando email (no critico):', emailError)
+    if (enabled) {
+      if (!userEmail) {
+        console.log('⚠️ [Admin Beta] No se puede enviar email: usuario sin email en ninguna tabla')
+      } else {
+        console.log(`📧 [Admin Beta] Intentando enviar email a: ${userEmail}`)
+        try {
+          await sendAccessGrantedEmail(userEmail, userName)
+          emailSent = true
+          console.log(`✅ [Admin Beta] Email enviado exitosamente a: ${userEmail}`)
+        } catch (emailError) {
+          console.error('❌ [Admin Beta] Error enviando email:', emailError)
+        }
       }
     }
 
