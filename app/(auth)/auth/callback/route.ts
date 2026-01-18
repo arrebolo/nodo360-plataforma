@@ -26,15 +26,6 @@ export async function GET(request: Request) {
 
     console.log('[Auth Callback] Sesion establecida')
 
-    // Detectar tipo de callback
-    // Si es confirmacion de registro (email verification)
-    if (type === 'signup' || type === 'email') {
-      console.log('[Auth Callback] Confirmacion de email detectada')
-      const response = NextResponse.redirect(`${origin}/auth/confirmado`)
-      response.cookies.delete('auth_redirect')
-      return response
-    }
-
     // Si es recovery (reset password)
     if (type === 'recovery') {
       console.log('[Auth Callback] Recovery detectado')
