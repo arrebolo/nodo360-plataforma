@@ -228,7 +228,9 @@ export async function signUp(formData: FormData): Promise<void> {
     }
 
     console.log('[Auth Actions] Registro exitoso')
-    redirect('/auth/verificar-email')
+    // Con email confirmation desactivado, el usuario ya esta logueado
+    // Redirigir a dashboard (middleware maneja /beta si is_beta=false)
+    redirect('/dashboard')
   } catch (error) {
     if (isRedirectError(error)) {
       throw error
