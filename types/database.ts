@@ -720,4 +720,45 @@ export type InsertQuizAttempt = Omit<QuizAttempt, 'id' | 'created_at'>
  * }
  */
 
+// =====================================================
+// NOTIFICATIONS TYPES
+// =====================================================
+
+export type NotificationType =
+  | 'beta_granted'
+  | 'course_published'
+  | 'proposal_active'
+  | 'course_completed'
+  | 'certificate_issued'
+  | 'badge_earned'
+  | 'level_up'
+  | 'feedback_reply'
+  | 'welcome'
+  | 'system';
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  data: Record<string, unknown>;
+  link: string | null;
+  created_at: string;
+}
+
+export interface NotificationInsert {
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link?: string | null;
+  data?: Record<string, unknown>;
+}
+
+export interface NotificationsResponse {
+  notifications: Notification[];
+  unread_count: number;
+}
 
