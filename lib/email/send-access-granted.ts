@@ -1,12 +1,30 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy initialization para evitar error durante build
+let resendInstance: Resend | null = null
+
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) {
+    console.error('❌ [Resend] RESEND_API_KEY no está configurada')
+    return null
+  }
+  if (!resendInstance) {
+    resendInstance = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendInstance
+}
 
 export async function sendAccessGrantedEmail(
   userEmail: string,
   userName: string
 ) {
   console.log('[sendAccessGrantedEmail] Enviando email a:', userEmail)
+
+  const resend = getResend()
+  if (!resend) {
+    console.error('❌ [sendAccessGrantedEmail] No se puede enviar email: Resend no configurado')
+    throw new Error('Email service not configured')
+  }
 
   try {
     const { data, error } = await resend.emails.send({
@@ -44,7 +62,7 @@ export async function sendAccessGrantedEmail(
               </p>
 
               <!-- Boton CTA -->
-              <a href="https://www.nodo360.com/dashboard"
+              <a href="https://www.nodo360.com/"
                  style="display: inline-block;
                         background: linear-gradient(to right, #ff6b35, #f7931a);
                         color: #ffffff;
@@ -53,7 +71,7 @@ export async function sendAccessGrantedEmail(
                         border-radius: 12px;
                         font-weight: bold;
                         font-size: 16px;">
-                Ir a mi Dashboard
+                Ir a Nodo360
               </a>
 
             </div>
