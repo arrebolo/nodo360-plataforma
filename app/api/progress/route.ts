@@ -4,6 +4,7 @@ import { awardXP } from '@/lib/gamification/awardXP'
 import { checkAndAwardBadges } from '@/lib/gamification/checkAndAwardBadges'
 import { updateStreak } from '@/lib/gamification/updateStreak'
 import { rateLimit, getClientIP, rateLimitExceeded } from '@/lib/ratelimit'
+import { broadcastCourseCompleted } from '@/lib/notifications'
 
 /**
  * POST /api/progress
@@ -95,6 +96,13 @@ export async function POST(request: NextRequest) {
       const courseId = lessonData?.course_id
 
       if (courseId) {
+        // Obtener info del curso para el broadcast
+        const { data: courseData } = await supabase
+          .from('courses')
+          .select('title')
+          .eq('id', courseId)
+          .single()
+
         // Contar total de lecciones del curso
         const { count: totalLessons } = await supabase
           .from('lessons')
@@ -147,6 +155,22 @@ export async function POST(request: NextRequest) {
           console.error('⚠️ [Progress] Error actualizando enrollment:', enrollmentError)
         } else {
           console.log('✅ [Progress] Enrollment actualizado:', progressPercentage + '%')
+
+          // 🎉 Broadcast cuando se completa el curso al 100%
+          if (isCompleted && courseData?.title) {
+            // Obtener nombre del usuario
+            const { data: userData } = await supabase
+              .from('users')
+              .select('full_name')
+              .eq('id', user.id)
+              .single()
+
+            const userName = userData?.full_name || user.email?.split('@')[0] || 'Usuario'
+
+            // Enviar broadcast a Discord/Telegram + notificación in-app
+            await broadcastCourseCompleted(userName, user.id, courseData.title)
+            console.log('📢 [Progress] Broadcast de curso completado enviado')
+          }
         }
       }
     } catch (enrollmentUpdateError) {

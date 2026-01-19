@@ -5,6 +5,7 @@ import { awardXP } from '@/lib/gamification/awardXP'
 import { checkAndAwardBadges } from '@/lib/gamification/checkAndAwardBadges'
 import { createCertificate } from '@/lib/certificates/createCertificate'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { broadcastCourseCompleted } from '@/lib/notifications'
 
 interface SubmitQuizRequest {
   course_id: string
@@ -171,6 +172,30 @@ export async function POST(request: NextRequest) {
           console.error('[quiz/submit] Error actualizando enrollment:', enrollmentError.message)
         } else {
           console.log('[quiz/submit] Curso marcado como completado')
+
+          // 🎉 Broadcast de curso completado
+          try {
+            // Obtener nombre del curso y usuario
+            const { data: courseData } = await admin
+              .from('courses')
+              .select('title')
+              .eq('id', course_id)
+              .single()
+
+            const { data: userData } = await admin
+              .from('users')
+              .select('full_name, email')
+              .eq('id', user_id)
+              .single()
+
+            const userName = userData?.full_name || userData?.email?.split('@')[0] || 'Usuario'
+            const courseName = courseData?.title || 'Curso'
+
+            await broadcastCourseCompleted(userName, user_id, courseName)
+            console.log('[quiz/submit] Broadcast de curso completado enviado')
+          } catch (broadcastError) {
+            console.error('[quiz/submit] Error en broadcast:', broadcastError)
+          }
         }
 
         // 2. Generar certificado (idempotente - no duplica si ya existe)
