@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendAccessGrantedEmail } from '@/lib/email/send-access-granted'
+import { broadcastNewUser } from '@/lib/notifications'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 // Verificar que es admin
@@ -111,6 +112,10 @@ export async function POST(req: Request) {
           await sendAccessGrantedEmail(userEmail, userName)
           emailSent = true
           console.log(`✅ [Admin Beta] Email enviado exitosamente a: ${userEmail}`)
+
+          // Broadcast a Discord/Telegram
+          await broadcastNewUser(userName, userId)
+          console.log(`✅ [Admin Beta] Broadcast enviado para: ${userName}`)
         } catch (emailError) {
           console.error('❌ [Admin Beta] Error enviando email:', emailError)
         }
