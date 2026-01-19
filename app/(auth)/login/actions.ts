@@ -177,8 +177,9 @@ async function validateAndConsumeInvite(code: string, userId: string): Promise<{
 /**
  * Registrar nuevo usuario con email y contraseña
  * Requiere código de invitación válido
+ * Retorna AuthResult para manejar errores en el cliente
  */
-export async function signUp(formData: FormData): Promise<void> {
+export async function signUp(formData: FormData): Promise<AuthResult> {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
@@ -188,12 +189,12 @@ export async function signUp(formData: FormData): Promise<void> {
 
   if (!email || !password) {
     console.error('[Auth Actions] Datos incompletos')
-    redirect('/login?error=Datos+incompletos')
+    return { success: false, message: 'Email y contraseña son requeridos', error: 'INCOMPLETE_DATA' }
   }
 
   if (!inviteCode) {
     console.error('[Auth Actions] Código de invitación no proporcionado')
-    redirect('/login?error=Código+de+invitación+requerido')
+    return { success: false, message: 'Código de invitación requerido', error: 'INVITE_REQUIRED' }
   }
 
   try {
@@ -212,8 +213,30 @@ export async function signUp(formData: FormData): Promise<void> {
     })
 
     if (error) {
-      console.error('[Auth Actions] Error en registro:', error.message)
-      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+      console.error('[Auth Actions] Error en registro:', error.message, error.code)
+
+      // Manejar errores específicos con mensajes en español
+      if (error.message.includes('already registered') || error.code === 'user_already_exists') {
+        return {
+          success: false,
+          message: 'Este email ya está registrado. ¿Quieres iniciar sesión?',
+          error: 'EMAIL_EXISTS',
+        }
+      }
+
+      if (error.message.includes('password') || error.code === 'weak_password') {
+        return {
+          success: false,
+          message: 'La contraseña debe tener al menos 6 caracteres',
+          error: 'WEAK_PASSWORD',
+        }
+      }
+
+      return {
+        success: false,
+        message: error.message,
+        error: error.code || 'SIGNUP_ERROR',
+      }
     }
 
     // Consumir código de invitación
@@ -228,15 +251,17 @@ export async function signUp(formData: FormData): Promise<void> {
     }
 
     console.log('[Auth Actions] Registro exitoso')
-    // Con email confirmation desactivado, el usuario ya esta logueado
-    // Redirigir a dashboard (middleware maneja /beta si is_beta=false)
-    redirect('/dashboard')
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error
+    return {
+      success: true,
+      message: 'Cuenta creada exitosamente',
     }
+  } catch (error) {
     console.error('[Auth Actions] Error inesperado:', error)
-    redirect('/login?error=Error+inesperado')
+    return {
+      success: false,
+      message: 'Error inesperado al crear la cuenta',
+      error: 'UNEXPECTED_ERROR',
+    }
   }
 }
 

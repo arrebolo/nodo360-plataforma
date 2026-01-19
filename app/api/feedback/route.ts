@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 export async function POST(request: Request) {
@@ -9,8 +10,10 @@ export async function POST(request: Request) {
 
   try {
     const { userId, userEmail, pageUrl, message } = await request.json()
+    console.log('[Feedback API] Recibido:', { userId, userEmail, pageUrl, messageLength: message?.length })
 
     if (!message || !userEmail) {
+      console.log('[Feedback API] Datos incompletos')
       return NextResponse.json(
         { error: 'Mensaje y email son requeridos' },
         { status: 400 }
@@ -20,17 +23,31 @@ export async function POST(request: Request) {
     const supabase = await createClient()
 
     // Verificar que el usuario esta autenticado
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError) {
+      console.error('[Feedback API] Error de autenticación:', authError)
+      return NextResponse.json(
+        { error: 'Error de autenticación' },
+        { status: 401 }
+      )
+    }
 
     if (!user) {
+      console.log('[Feedback API] Usuario no autenticado')
       return NextResponse.json(
         { error: 'No autenticado' },
         { status: 401 }
       )
     }
 
+    console.log('[Feedback API] Usuario autenticado:', user.id)
+
+    // Usar admin client para bypass RLS
+    const supabaseAdmin = createAdminClient()
+
     // Insertar feedback
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('beta_feedback')
       .insert({
         user_id: userId || user.id,
@@ -42,14 +59,19 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('[Feedback API] Error:', error)
+      console.error('[Feedback API] Error al insertar:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      })
       return NextResponse.json(
-        { error: 'Error al guardar feedback' },
+        { error: 'Error al guardar feedback', details: error.message },
         { status: 500 }
       )
     }
 
-    console.log('[Feedback API] Feedback guardado:', data.id)
+    console.log('[Feedback API] ✅ Feedback guardado:', data.id)
 
     return NextResponse.json({
       success: true,
@@ -57,7 +79,7 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
-    console.error('[Feedback API] Error:', error)
+    console.error('[Feedback API] Error inesperado:', error)
     return NextResponse.json(
       { error: 'Error del servidor' },
       { status: 500 }

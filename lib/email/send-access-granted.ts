@@ -62,7 +62,7 @@ export async function sendAccessGrantedEmail(
               </p>
 
               <!-- Boton CTA -->
-              <a href="https://www.nodo360.com/dashboard"
+              <a href="https://www.nodo360.com/"
                  style="display: inline-block;
                         background: linear-gradient(to right, #ff6b35, #f7931a);
                         color: #ffffff;
@@ -71,7 +71,7 @@ export async function sendAccessGrantedEmail(
                         border-radius: 12px;
                         font-weight: bold;
                         font-size: 16px;">
-                Ir a mi Dashboard
+                Ir a Nodo360
               </a>
 
             </div>

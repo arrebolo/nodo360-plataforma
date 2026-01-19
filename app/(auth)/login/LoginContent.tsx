@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import {
   signInWithEmail,
   signInWithPassword,
@@ -16,9 +16,11 @@ type TabType = 'login' | 'register'
 
 export default function LoginContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('login')
   const [emailSent, setEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [isRegistering, setIsRegistering] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -105,6 +107,24 @@ export default function LoginContent() {
     setError(null)
     await signInWithOAuth(provider, redirectTo || undefined)
     // La redirección ocurre en la server action
+  }
+
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsRegistering(true)
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const result = await signUp(formData)
+
+    if (result.success) {
+      setSuccess(result.message)
+      // Redirigir al dashboard después de registro exitoso
+      router.push('/dashboard')
+    } else {
+      setError(result.message)
+      setIsRegistering(false)
+    }
   }
 
   if (emailSent) {
@@ -328,7 +348,7 @@ export default function LoginContent() {
                 </div>
               )}
 
-              <form action={signUp} className="space-y-4">
+              <form onSubmit={handleSignUp} className="space-y-4">
                 {/* Campo oculto para el código de invitación */}
                 <input type="hidden" name="inviteCode" value={inviteCode} />
 
@@ -446,10 +466,21 @@ export default function LoginContent() {
 
                 <button
                   type="submit"
-                  disabled={inviteValid !== true || validatingInvite}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  disabled={inviteValid !== true || validatingInvite || isRegistering}
+                  className={`w-full py-3 px-4 font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
+                    isRegistering
+                      ? 'bg-gray-500 text-white cursor-not-allowed'
+                      : 'bg-gradient-to-r from-brand-light to-brand text-white hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
+                  }`}
                 >
-                  Crear cuenta
+                  {isRegistering ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Creando cuenta...
+                    </>
+                  ) : (
+                    'Crear cuenta'
+                  )}
                 </button>
               </form>
             </div>
