@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Menu, X, ChevronDown, LogOut } from 'lucide-react'
+import { NotificationBell } from '@/components/notifications'
 import { createClient } from '@/lib/supabase/client'
 import { brandConfig } from '@/lib/brand-config'
 import type { User } from '@supabase/supabase-js'
@@ -153,8 +154,10 @@ export function GlobalHeader() {
             {loading ? (
               <div className="h-10 w-28 bg-white/10 rounded-lg animate-pulse" />
             ) : user ? (
-              /* Usuario logueado - Dropdown */
-              <div className="relative">
+              /* Usuario logueado - Notificaciones + Dropdown */
+              <>
+                <NotificationBell />
+                <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10
@@ -231,6 +234,7 @@ export function GlobalHeader() {
                   </>
                 )}
               </div>
+              </>
             ) : (
               /* Usuario NO logueado */
               <>
