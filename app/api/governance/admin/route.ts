@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { broadcastNewProposal } from '@/lib/notifications'
 
 type AdminAction = 'validate' | 'reject_validation' | 'veto' | 'cancel' | 'implement'
 
@@ -120,6 +121,17 @@ export async function POST(request: NextRequest) {
   if (updateError) {
     console.error('Error actualizando propuesta:', updateError)
     return NextResponse.json({ error: 'Error al actualizar propuesta' }, { status: 500 })
+  }
+
+  // 📢 Broadcast cuando propuesta se activa para votación
+  if (action === 'validate' && newStatus === 'active') {
+    try {
+      await broadcastNewProposal(proposal.title, proposal.slug)
+      console.log('📢 [Governance] Broadcast enviado para propuesta:', proposal.slug)
+    } catch (broadcastError) {
+      console.error('⚠️ [Governance] Error en broadcast:', broadcastError)
+      // No fallar la request principal por error de broadcast
+    }
   }
 
   // Registrar acción admin
