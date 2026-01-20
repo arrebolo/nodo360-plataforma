@@ -17,7 +17,7 @@ interface UserProfile {
 }
 
 const navLinks = [
-  { href: '/dashboard/rutas', label: 'Rutas' },
+  { href: '/rutas', label: 'Rutas' },
   { href: '/cursos', label: 'Cursos' },
   { href: '/comunidad', label: 'Comunidad' },
   { href: '/mentoria', label: 'Mentoría' },
