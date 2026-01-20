@@ -1,5 +1,5 @@
 // app/cursos/[slug]/[lessonSlug]/page.tsx
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
 import LessonPlayer from "@/components/lesson/LessonPlayer"
@@ -42,9 +42,15 @@ export default async function LessonPage({ params }: PageProps) {
   const { slug: courseSlug, lessonSlug } = await params
   const supabase = await createClient()
 
-  // 1) Get authenticated user (optional - lessons may be public)
+  // 1) Get authenticated user
   const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id || null
+
+  // Verificar autenticación obligatoria para ver lecciones
+  if (!user) {
+    redirect(`/login?redirect=/cursos/${courseSlug}/${lessonSlug}`)
+  }
+
+  const userId = user.id
 
   // 2) Fetch course with modules and lessons in one query
   const { data: course, error: courseError } = await supabase
