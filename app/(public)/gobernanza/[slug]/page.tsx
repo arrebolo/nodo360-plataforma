@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getProposalBySlug, getProposalVotes, hasUserVoted, getUserGPower } from '@/lib/governance/queries'
 import { PROPOSAL_STATUS_INFO, VOTE_INFO, getVotePercentage, hasQuorum, isPassing, VoteWithVoter } from '@/types/governance'
 import { VoteSection } from './VoteSection'
@@ -38,6 +38,11 @@ export default async function ProposalDetailPage({ params }: PageProps) {
 
   // Obtener usuario actual
   const { data: { user } } = await supabase.auth.getUser()
+
+  // Verificar autenticación obligatoria para ver propuestas
+  if (!user) {
+    redirect(`/login?redirect=/gobernanza/${slug}`)
+  }
 
   // Datos adicionales
   const votes = await getProposalVotes(proposal.id)
