@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Providers } from "./providers";
 import SiteHeaderServer from "@/components/navigation/SiteHeader/SiteHeaderServer";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
+import { GoogleAnalytics } from "@/components/analytics";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WebSiteJsonLd />
       </head>
       <body className="min-h-screen antialiased bg-dark text-white">
+        <GoogleAnalytics />
         {/* Skip to main content - accessibility */}
         <a
           href="#main-content"

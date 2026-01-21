@@ -1,33 +1,25 @@
 import type { LevelRules } from '@/lib/settings/defaults'
 
 /**
- * Calcula el nivel y el XP restante para el siguiente nivel,
- * usando una progresión exponencial coherente con tu UI:
- * XP_requerido(level) = xp_base * (xp_multiplier ^ (level - 1))
+ * Calcula el nivel y el XP restante para el siguiente nivel.
+ * Fórmula lineal: 1 nivel cada 100 XP
  *
- * totalXP = XP total acumulado del usuario.
+ * Nivel = floor(totalXP / 100) + 1
+ * XP para siguiente = 100 - (totalXP % 100)
+ *
+ * @param totalXP - XP total acumulado del usuario
+ * @param rules - Reglas de nivel (solo se usa max_level)
  */
 export function calculateLevel(totalXP: number, rules: LevelRules) {
   const safeXP = Number.isFinite(totalXP) ? Math.max(0, totalXP) : 0
-  const maxLevel = Math.max(1, Math.floor(rules.max_level || 1))
-  const xpBase = Math.max(1, Math.floor(rules.xp_base || 1))
-  const mult = Math.max(1, Number.isFinite(rules.xp_multiplier) ? rules.xp_multiplier : 1)
+  const maxLevel = Math.max(1, Math.floor(rules.max_level || 100))
 
-  const xpForNext = (level: number) =>
-    Math.floor(xpBase * Math.pow(mult, level - 1))
+  // Fórmula lineal: 1 nivel cada 100 XP
+  const level = Math.min(maxLevel, Math.max(1, Math.floor(safeXP / 100) + 1))
 
-  let level = 1
-  let remaining = safeXP
-
-  while (level < maxLevel) {
-    const need = xpForNext(level)
-    if (remaining < need) break
-    remaining -= need
-    level += 1
-  }
-
-  const xpToNextLevel =
-    level >= maxLevel ? 0 : Math.max(0, xpForNext(level) - remaining)
+  // XP para siguiente nivel siempre es 100 (excepto en nivel máximo)
+  const xpInCurrentLevel = safeXP % 100
+  const xpToNextLevel = level >= maxLevel ? 0 : 100 - xpInCurrentLevel
 
   return {
     level,
