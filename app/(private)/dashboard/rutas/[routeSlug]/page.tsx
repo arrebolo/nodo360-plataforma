@@ -57,7 +57,7 @@ export default async function RutaDetallePage({
 
   const totalLessons = courses.reduce((acc, c) => acc + (c.total_lessons || 0), 0)
 
-  // Obtener progreso del usuario para cada curso en paralelo
+// Obtener progreso del usuario para cada curso en paralelo
   const coursesProgress: Record<string, { completed: number; total: number }> = {}
 
   if (user && courses.length > 0) {
