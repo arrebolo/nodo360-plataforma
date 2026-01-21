@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight, BookOpen, Layers } from 'lucide-react'
+import { ChevronRight, BookOpen, Layers, CheckCircle, Play, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getLearningPaths, getCoursesByLearningPathSlug } from '@/lib/db/learning-paths'
 import { SelectPathButton } from '@/components/routes/SelectPathButton'
@@ -57,6 +57,56 @@ export default async function RutaDetallePage({
 
   const courses = await getCoursesByLearningPathSlug(path.slug)
   const totalLessons = courses.reduce((acc, c) => acc + (c.total_lessons || 0), 0)
+
+  // Obtener progreso del usuario para cada curso
+  const coursesProgress: Record<string, { completed: number; total: number }> = {}
+
+  if (user) {
+    for (const course of courses) {
+      const { data: modules } = await supabase
+        .from('modules')
+        .select('id')
+        .eq('course_id', course.id)
+
+      const moduleIds = modules?.map(m => m.id) || []
+
+      if (moduleIds.length > 0) {
+        const { data: lessons } = await supabase
+          .from('lessons')
+          .select('id')
+          .in('module_id', moduleIds)
+
+        const lessonIds = lessons?.map(l => l.id) || []
+
+        const { count: completedCount } = await supabase
+          .from('user_progress')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .in('lesson_id', lessonIds)
+          .eq('is_completed', true)
+
+        coursesProgress[course.id] = {
+          completed: completedCount || 0,
+          total: lessonIds.length
+        }
+      }
+    }
+  }
+
+  const getCourseStatus = (courseId: string, totalLessons: number) => {
+    if (!user || totalLessons === 0) return 'new'
+    const progress = coursesProgress[courseId]
+    if (!progress) return 'new'
+    if (progress.completed === 0) return 'new'
+    if (progress.completed >= progress.total) return 'completed'
+    return 'in_progress'
+  }
+
+  const getProgressPercentage = (courseId: string) => {
+    const progress = coursesProgress[courseId]
+    if (!progress || progress.total === 0) return 0
+    return Math.round((progress.completed / progress.total) * 100)
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
@@ -126,7 +176,7 @@ export default async function RutaDetallePage({
             <p className="text-white/60">Esta ruta todavia no tiene cursos asignados.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4">
             {courses.map((course: {
               id: string
               title: string
@@ -134,50 +184,117 @@ export default async function RutaDetallePage({
               description?: string | null
               total_modules?: number | null
               total_lessons?: number | null
-            }) => {
+            }, index) => {
+              const status = getCourseStatus(course.id, course.total_lessons || 0)
+              const progress = getProgressPercentage(course.id)
               const isComingSoon = (course.total_lessons || 0) === 0
+
+              const borderColor = {
+                completed: 'border-l-emerald-500',
+                in_progress: 'border-l-brand-orange',
+                new: 'border-l-white/20'
+              }[status]
+
+              const statusConfig = {
+                completed: { text: 'Completado', Icon: CheckCircle, color: 'bg-emerald-500/20 text-emerald-400' },
+                in_progress: { text: 'En progreso', Icon: Play, color: 'bg-brand-orange/20 text-brand-orange' },
+                new: { text: 'Nuevo', Icon: Sparkles, color: 'bg-white/10 text-white/60' }
+              }[status]
 
               return (
                 <Link key={course.id} href={`/cursos/${course.slug}`} className="block group">
-                  <div className="relative overflow-hidden bg-dark-surface border border-white/10 rounded-2xl min-h-[260px] flex flex-col transition-all duration-150 hover:-translate-y-1 hover:border-white/20 hover:shadow-lg">
-                    {/* Línea de acento */}
-                    <div className={`absolute inset-x-0 top-0 h-1 ${isComingSoon ? 'bg-white/20' : 'bg-white/30'}`} />
-
-                    {/* Coming soon badge */}
-                    {isComingSoon && (
-                      <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/60 z-10 border border-white/20">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
-                        Proximamente
-                      </span>
-                    )}
-
-                    <div className="p-5 pt-6 flex-1 flex flex-col">
-                      <h3 className="text-lg font-semibold text-white line-clamp-2">
-                        {course.title}
-                      </h3>
-
-                      {course.description && (
-                        <p className="mt-2 text-sm text-white/60 line-clamp-3">
-                          {course.description}
-                        </p>
-                      )}
-
-                      <div className="mt-4 flex items-center gap-3 text-xs text-white/50">
-                        <span className="inline-flex items-center gap-1">
-                          <Layers className="h-3.5 w-3.5" />
-                          {course.total_modules || 0} modulos
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <BookOpen className="h-3.5 w-3.5" />
-                          {course.total_lessons || 0} lecciones
-                        </span>
+                  <div className={`
+                    relative bg-white/5 border border-white/10 rounded-xl
+                    border-l-4 ${borderColor}
+                    transition-all duration-200
+                    hover:bg-white/[0.07] hover:border-white/20 hover:shadow-lg hover:shadow-black/20
+                    hover:-translate-y-0.5
+                  `}>
+                    <div className="p-5 flex gap-4">
+                      {/* Número del curso */}
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                        <span className="text-2xl font-bold text-white/40">{index + 1}</span>
                       </div>
 
-                      <div className="mt-auto pt-4">
-                        <span className="inline-flex items-center text-sm font-medium text-brand-light group-hover:text-brand">
-                          Ver curso
-                          <span className="ml-1">→</span>
-                        </span>
+                      {/* Contenido principal */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            {/* Título + Badge */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-lg font-semibold text-white group-hover:text-brand-light transition-colors">
+                                {course.title}
+                              </h3>
+
+                              {!isComingSoon && (
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.color}`}>
+                                  <statusConfig.Icon className="w-3 h-3" />
+                                  {statusConfig.text}
+                                </span>
+                              )}
+
+                              {isComingSoon && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-white/10 text-white/50">
+                                  Proximamente
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Descripción */}
+                            {course.description && (
+                              <p className="mt-1 text-sm text-white/60 line-clamp-2">
+                                {course.description}
+                              </p>
+                            )}
+
+                            {/* Barra de progreso */}
+                            {!isComingSoon && user && (
+                              <div className="mt-3">
+                                <div className="flex items-center justify-between text-xs text-white/50 mb-1">
+                                  <span>{coursesProgress[course.id]?.completed || 0} de {coursesProgress[course.id]?.total || course.total_lessons} lecciones</span>
+                                  <span>{progress}%</span>
+                                </div>
+                                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                      status === 'completed' ? 'bg-emerald-500' : 'bg-brand-orange'
+                                    }`}
+                                    style={{ width: `${progress}%` }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Stats */}
+                            <div className="mt-3 flex items-center gap-4 text-xs text-white/50">
+                              <span className="inline-flex items-center gap-1">
+                                <Layers className="h-3.5 w-3.5" />
+                                {course.total_modules || 0} modulos
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <BookOpen className="h-3.5 w-3.5" />
+                                {course.total_lessons || 0} lecciones
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Botón CTA */}
+                          <div className="flex-shrink-0 hidden sm:block">
+                            <span className={`
+                              inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium
+                              transition-all duration-200
+                              ${status === 'completed'
+                                ? 'bg-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/30'
+                                : status === 'in_progress'
+                                  ? 'bg-brand-orange text-white group-hover:bg-brand-orange/90'
+                                  : 'bg-white/10 text-white group-hover:bg-brand-orange group-hover:text-white'
+                              }
+                            `}>
+                              {status === 'completed' ? 'Repasar' : status === 'in_progress' ? 'Continuar' : 'Empezar'}
+                              <ChevronRight className="w-4 h-4" />
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

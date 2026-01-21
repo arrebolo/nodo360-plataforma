@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   Vote,
   Ticket,
+  Megaphone,
 } from 'lucide-react'
 
 const menuItems = [
@@ -18,6 +19,7 @@ const menuItems = [
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { href: '/admin/cursos', label: 'Cursos', icon: BookOpen },
   { href: '/admin/invitaciones', label: 'Invitaciones', icon: Ticket },
+  { href: '/admin/anuncios', label: 'Anuncios', icon: Megaphone },
   { href: '/admin/gobernanza', label: 'Gobernanza', icon: Vote },
   { href: '/admin/gamificacion', label: 'Gamificación', icon: Trophy },
   { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
