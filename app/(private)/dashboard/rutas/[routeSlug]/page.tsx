@@ -33,61 +33,81 @@ export default async function RutaDetallePage({
   const { routeSlug } = await params
 
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
 
-  const paths = await getLearningPaths()
+  // Fetch user and paths in parallel
+  const [{ data: { user } }, paths] = await Promise.all([
+    supabase.auth.getUser(),
+    getLearningPaths()
+  ])
+
   const path = paths.find((p) => p.slug === routeSlug)
   if (!path) notFound()
 
-  let activePathId: string | null = null
-  if (user) {
-    const { data: userData } = await supabase
-      .from('users')
-      .select('active_path_id')
-      .eq('id', user.id)
-      .single()
+  // Fetch courses and user data in parallel
+  const [courses, userData] = await Promise.all([
+    getCoursesByLearningPathSlug(path.slug),
+    user
+      ? supabase.from('users').select('active_path_id').eq('id', user.id).single()
+      : Promise.resolve({ data: null })
+  ])
 
-    activePathId = userData?.active_path_id ?? null
-  }
-
+  const activePathId = userData?.data?.active_path_id ?? null
   const isActive = activePathId === path.id
   const isLoggedIn = !!user
 
-  const courses = await getCoursesByLearningPathSlug(path.slug)
   const totalLessons = courses.reduce((acc, c) => acc + (c.total_lessons || 0), 0)
 
-  // Obtener progreso del usuario para cada curso
+// Obtener progreso del usuario para cada curso en paralelo
   const coursesProgress: Record<string, { completed: number; total: number }> = {}
 
-  if (user) {
-    for (const course of courses) {
-      const { data: modules } = await supabase
-        .from('modules')
-        .select('id')
-        .eq('course_id', course.id)
+  if (user && courses.length > 0) {
+    // Fetch all modules for all courses in one query
+    const courseIds = courses.map(c => c.id)
+    const { data: allModules } = await supabase
+      .from('modules')
+      .select('id, course_id')
+      .in('course_id', courseIds)
 
-      const moduleIds = modules?.map(m => m.id) || []
+    const moduleIds = allModules?.map(m => m.id) || []
 
-      if (moduleIds.length > 0) {
-        const { data: lessons } = await supabase
+    if (moduleIds.length > 0) {
+      // Fetch all lessons and progress in parallel
+      const [{ data: allLessons }, { data: allProgress }] = await Promise.all([
+        supabase
           .from('lessons')
-          .select('id')
-          .in('module_id', moduleIds)
-
-        const lessonIds = lessons?.map(l => l.id) || []
-
-        const { count: completedCount } = await supabase
+          .select('id, module_id')
+          .in('module_id', moduleIds),
+        supabase
           .from('user_progress')
-          .select('*', { count: 'exact', head: true })
+          .select('lesson_id')
           .eq('user_id', user.id)
-          .in('lesson_id', lessonIds)
           .eq('is_completed', true)
+      ])
+
+      // Build lookup maps for efficient processing
+      const modulesByCourse: Record<string, string[]> = {}
+      allModules?.forEach(m => {
+        if (!modulesByCourse[m.course_id]) modulesByCourse[m.course_id] = []
+        modulesByCourse[m.course_id].push(m.id)
+      })
+
+      const lessonsByModule: Record<string, string[]> = {}
+      allLessons?.forEach(l => {
+        if (!lessonsByModule[l.module_id]) lessonsByModule[l.module_id] = []
+        lessonsByModule[l.module_id].push(l.id)
+      })
+
+      const completedLessons = new Set(allProgress?.map(p => p.lesson_id) || [])
+
+      // Calculate progress for each course
+      for (const course of courses) {
+        const courseModuleIds = modulesByCourse[course.id] || []
+        const courseLessonIds = courseModuleIds.flatMap(mId => lessonsByModule[mId] || [])
+        const completedCount = courseLessonIds.filter(lid => completedLessons.has(lid)).length
 
         coursesProgress[course.id] = {
-          completed: completedCount || 0,
-          total: lessonIds.length
+          completed: completedCount,
+          total: courseLessonIds.length
         }
       }
     }
