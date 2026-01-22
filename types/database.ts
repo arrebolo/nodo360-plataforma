@@ -211,10 +211,23 @@ export interface NewsletterSubscriber {
 // =====================================================
 
 /**
+ * Learning Path basic info for course cards
+ */
+export interface LearningPathInfo {
+  id: string
+  name: string
+  slug: string
+  emoji: string | null
+}
+
+/**
  * Course with Instructor details
  */
 export interface CourseWithInstructor extends Course {
   instructor: Pick<User, 'id' | 'full_name' | 'avatar_url'> | null
+  learning_path_courses?: Array<{
+    learning_path: LearningPathInfo
+  }>
 }
 
 /**

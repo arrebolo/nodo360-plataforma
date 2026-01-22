@@ -5,6 +5,7 @@ import { checkAndAwardBadges } from '@/lib/gamification/checkAndAwardBadges'
 import { updateStreak } from '@/lib/gamification/updateStreak'
 import { rateLimit, getClientIP, rateLimitExceeded } from '@/lib/ratelimit'
 import { broadcastCourseCompleted } from '@/lib/notifications'
+import { sendBadgeEarnedEmail } from '@/lib/email/badge-earned'
 
 /**
  * POST /api/progress
@@ -207,7 +208,7 @@ export async function POST(request: NextRequest) {
     })
 
     // 7) Verificar y otorgar badges automáticamente
-    let awardedBadges: Array<{ id: string; slug: string; title: string; xpAwarded: number }> = []
+    let awardedBadges: Array<{ id: string; slug: string; title: string; description?: string | null; rarity?: string | null; xpAwarded: number }> = []
     try {
       // Verificar badges por lección completada (incluye nivel actual para badges de nivel)
       const badgeResult = await checkAndAwardBadges({
@@ -246,6 +247,43 @@ export async function POST(request: NextRequest) {
       if (levelBadgeResult.success && levelBadgeResult.awardedBadges.length > 0) {
         awardedBadges = [...awardedBadges, ...levelBadgeResult.awardedBadges]
         console.log('🏅 [API POST /progress] Badges de nivel:', levelBadgeResult.awardedBadges.map(b => b.title))
+      }
+
+      // Enviar email por badges importantes (rare, epic, legendary)
+      if (awardedBadges.length > 0 && user.email) {
+        const importantBadges = awardedBadges.filter(
+          b => ['rare', 'epic', 'legendary'].includes(b.rarity || '')
+        )
+
+        // Obtener nombre del usuario
+        const { data: userData } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', user.id)
+          .single()
+
+        const userName = userData?.full_name || user.email?.split('@')[0] || 'Estudiante'
+
+        for (const badge of importantBadges) {
+          try {
+            const rarityIcons: Record<string, string> = {
+              rare: '💎',
+              epic: '🌟',
+              legendary: '👑',
+            }
+
+            await sendBadgeEarnedEmail({
+              to: user.email,
+              userName,
+              badgeName: badge.title,
+              badgeDescription: badge.description || 'Has desbloqueado un nuevo logro en Nodo360',
+              badgeIcon: rarityIcons[badge.rarity || ''] || '🏆',
+            })
+            console.log('📧 [Progress] Email de badge enviado:', badge.title)
+          } catch (emailError) {
+            console.error('⚠️ [Progress] Error enviando email de badge:', emailError)
+          }
+        }
       }
     } catch (badgeError) {
       // No fallar la request principal por error de badges

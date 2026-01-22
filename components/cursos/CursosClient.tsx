@@ -113,25 +113,31 @@ export function CursosClient({ allCourses }: CursosClientProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredCourses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  id={course.id}
-                  title={course.title}
-                  slug={course.slug}
-                  description={course.description ?? undefined}
-                  thumbnailUrl={course.thumbnail_url ?? undefined}
-                  modulesCount={course.total_modules || 0}
-                  lessonsCount={course.total_lessons || 0}
-                  isEnrolled={false}
-                  isCompleted={false}
-                  progressPercent={0}
-                  isComingSoon={course.status === 'coming_soon'}
-                  onView={() => router.push(`/cursos/${course.slug}`)}
-                  onStart={() => router.push(`/cursos/${course.slug}`)}
-                  onContinue={() => router.push(`/cursos/${course.slug}`)}
-                />
-              ))}
+              {filteredCourses.map((course) => {
+                // Obtener la primera ruta de aprendizaje (un curso puede estar en múltiples rutas)
+                const learningPath = course.learning_path_courses?.[0]?.learning_path ?? null
+
+                return (
+                  <CourseCard
+                    key={course.id}
+                    id={course.id}
+                    title={course.title}
+                    slug={course.slug}
+                    description={course.description ?? undefined}
+                    thumbnailUrl={course.thumbnail_url ?? undefined}
+                    modulesCount={course.total_modules || 0}
+                    lessonsCount={course.total_lessons || 0}
+                    isEnrolled={false}
+                    isCompleted={false}
+                    progressPercent={0}
+                    isComingSoon={course.status === 'coming_soon'}
+                    learningPath={learningPath}
+                    onView={() => router.push(`/cursos/${course.slug}`)}
+                    onStart={() => router.push(`/cursos/${course.slug}`)}
+                    onContinue={() => router.push(`/cursos/${course.slug}`)}
+                  />
+                )
+              })}
             </div>
           )}
         </div>
