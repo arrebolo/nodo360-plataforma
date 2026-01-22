@@ -265,8 +265,9 @@ sql/create-user-progress-tables.sql     ✅ (creado recientemente)
 - lesson_progress
 - certificates
 - user_achievements
-- user_activity
-- user_profiles
+
+> **NOTA:** `user_activity` y `user_profiles` fueron eliminadas por redundancia.
+> Usar `xp_events` y `users` + `user_gamification_stats` respectivamente.
 
 ---
 

@@ -16,10 +16,12 @@ export type XPRules = {
   daily_login: number
 }
 
+// NOTA: Los umbrales de nivel reales están en lib/gamification/levels.ts
+// Estos valores son para compatibilidad con el sistema de settings
 export const DEFAULT_LEVEL_RULES = {
-  xp_base: 100,
-  xp_multiplier: 1.5,
-  max_level: 100
+  xp_base: 500,       // XP para nivel 2
+  xp_multiplier: 1.5, // No usado (sistema de umbrales fijos)
+  max_level: 10       // Nivel máximo: Satoshi (120,000 XP)
 } as const
 
 export type LevelRules = {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Trophy, Zap, Flame } from 'lucide-react'
+import { getXPProgress, getLevelName, MAX_LEVEL } from '@/lib/gamification/levels'
 
 interface GamificationStats {
   total_xp: number
@@ -74,10 +75,12 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
     return null
   }
 
-  // Calcular progreso del nivel actual
-  const xpForCurrentLevel = calculateXpForLevel(stats.current_level)
-  const xpInCurrentLevel = stats.total_xp - calculateTotalXpForLevel(stats.current_level - 1)
-  const progressPercentage = Math.round((xpInCurrentLevel / xpForCurrentLevel) * 100)
+  // Calcular progreso usando el sistema centralizado
+  const levelProgress = getXPProgress(stats.total_xp)
+  const xpInCurrentLevel = levelProgress.xpInLevel
+  const xpForCurrentLevel = levelProgress.xpForNextLevel || 1 // Evitar division por 0
+  const progressPercentage = levelProgress.progress
+  const levelName = getLevelName(stats.current_level)
 
   // Variante compacta (para header/navbar)
   if (variant === 'compact') {
@@ -117,7 +120,7 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
               <Trophy className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Tu Nivel</p>
+              <p className="text-white/80 text-sm">{levelName}</p>
               <h3 className="text-3xl font-bold">Nivel {stats.current_level}</h3>
             </div>
           </div>
@@ -144,7 +147,9 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
             />
           </div>
           <p className="text-white/80 text-xs mt-2">
-            {stats.xp_to_next_level.toLocaleString()} XP para el siguiente nivel
+            {levelProgress.isMaxLevel
+              ? `Nivel máximo - ${levelName}`
+              : `${levelProgress.xpToNextLevel.toLocaleString()} XP para el siguiente nivel`}
           </p>
         </div>
 
@@ -208,7 +213,9 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
           />
         </div>
         <p className="text-xs text-white/50 mt-1">
-          {stats.xp_to_next_level.toLocaleString()} XP para nivel {stats.current_level + 1}
+          {levelProgress.isMaxLevel
+            ? `Nivel máximo alcanzado - ${levelName}`
+            : `${levelProgress.xpToNextLevel.toLocaleString()} XP para nivel ${stats.current_level + 1}`}
         </p>
       </div>
 
@@ -230,19 +237,4 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
     </div>
   )
 }
-
-// Calcular XP requerido para un nivel específico
-function calculateXpForLevel(level: number): number {
-  return 100 + ((level - 1) * 50)
-}
-
-// Calcular XP total acumulado hasta un nivel
-function calculateTotalXpForLevel(level: number): number {
-  let total = 0
-  for (let i = 1; i <= level; i++) {
-    total += calculateXpForLevel(i)
-  }
-  return total
-}
-
 

@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { broadcastAnnouncement } from '@/lib/notifications'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 export async function POST(request: Request) {
+  // Rate limiting estricto para operaciones admin
+  const rateLimitResponse = await checkRateLimit(request, 'strict')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 
