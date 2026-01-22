@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/ratelimit'
 
 // PATCH - Marcar todas las notificaciones como leídas
 export async function PATCH(request: NextRequest) {
+  const rateLimitResponse = await checkRateLimit(request, 'api')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 
