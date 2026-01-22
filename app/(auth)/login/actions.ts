@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { redirectAfterLogin } from '@/lib/auth/redirect-after-login'
+import { sendWelcomeEmail } from '@/lib/email/welcome-email'
 
 /**
  * Helper para detectar errores de redirect de Next.js
@@ -247,6 +248,18 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
         // El usuario ya se creó, pero el código falló - logueamos pero continuamos
       } else {
         console.log('[Auth Actions] Código de invitación consumido exitosamente')
+      }
+
+      // Enviar email de bienvenida (no bloquea el flujo)
+      try {
+        await sendWelcomeEmail({
+          to: email,
+          userName: fullName || email.split('@')[0],
+        })
+        console.log('[Auth Actions] Email de bienvenida enviado')
+      } catch (emailError) {
+        // No fallar el registro por error de email
+        console.error('[Auth Actions] Error enviando email de bienvenida:', emailError)
       }
     }
 

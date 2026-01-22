@@ -6,6 +6,8 @@ import { checkAndAwardBadges } from '@/lib/gamification/checkAndAwardBadges'
 import { createCertificate } from '@/lib/certificates/createCertificate'
 import { checkRateLimit } from '@/lib/ratelimit'
 import { broadcastCourseCompleted } from '@/lib/notifications'
+import { sendCourseCompletedEmail } from '@/lib/email/course-completed'
+import { sendBadgeEarnedEmail } from '@/lib/email/badge-earned'
 
 interface SubmitQuizRequest {
   course_id: string
@@ -153,11 +155,30 @@ export async function POST(request: NextRequest) {
     // NUEVO: Marcar curso completado + Generar certificado
     // ========================================
     let certificate = null
+    let courseUserData: { email?: string | null; full_name?: string | null } | null = null
+    let courseTitle = 'Curso'
 
     if (passed) {
       console.log('[quiz/submit] Usuario aprobo, procesando certificado...')
 
       try {
+        // Obtener nombre del curso y usuario (necesario para broadcast y email)
+        const { data: courseData } = await admin
+          .from('courses')
+          .select('title')
+          .eq('id', course_id)
+          .single()
+
+        const { data: userData } = await admin
+          .from('users')
+          .select('full_name, email')
+          .eq('id', user_id)
+          .single()
+
+        courseUserData = userData
+        courseTitle = courseData?.title || 'Curso'
+        const userName = userData?.full_name || userData?.email?.split('@')[0] || 'Usuario'
+
         // 1. Marcar curso como completado en enrollments
         const { error: enrollmentError } = await admin
           .from('course_enrollments')
@@ -175,23 +196,7 @@ export async function POST(request: NextRequest) {
 
           // 🎉 Broadcast de curso completado
           try {
-            // Obtener nombre del curso y usuario
-            const { data: courseData } = await admin
-              .from('courses')
-              .select('title')
-              .eq('id', course_id)
-              .single()
-
-            const { data: userData } = await admin
-              .from('users')
-              .select('full_name, email')
-              .eq('id', user_id)
-              .single()
-
-            const userName = userData?.full_name || userData?.email?.split('@')[0] || 'Usuario'
-            const courseName = courseData?.title || 'Curso'
-
-            await broadcastCourseCompleted(userName, user_id, courseName)
+            await broadcastCourseCompleted(userName, user_id, courseTitle)
             console.log('[quiz/submit] Broadcast de curso completado enviado')
           } catch (broadcastError) {
             console.error('[quiz/submit] Error en broadcast:', broadcastError)
@@ -210,6 +215,32 @@ export async function POST(request: NextRequest) {
             console.log('[quiz/submit] Certificado ya existia:', certificate.certificate_number)
           } else {
             console.log('[quiz/submit] Certificado creado:', certificate.certificate_number)
+
+            // Enviar email de curso completado (solo para certificados nuevos)
+            if (courseUserData?.email) {
+              try {
+                // Obtener nivel actual del usuario
+                const { data: userStats } = await admin
+                  .from('user_gamification_stats')
+                  .select('current_level')
+                  .eq('user_id', user_id)
+                  .single()
+
+                const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com'
+
+                await sendCourseCompletedEmail({
+                  to: courseUserData.email,
+                  userName: userName,
+                  courseName: courseTitle,
+                  certificateUrl: `${siteUrl}/certificados/${certificate.id}`,
+                  xpEarned: xpAwarded,
+                  newLevel: userStats?.current_level,
+                })
+                console.log('[quiz/submit] Email de curso completado enviado')
+              } catch (emailError) {
+                console.error('[quiz/submit] Error enviando email:', emailError)
+              }
+            }
           }
         } else if (!certResult.success) {
           console.error('[quiz/submit] Error creando certificado:', certResult.error)
@@ -223,7 +254,7 @@ export async function POST(request: NextRequest) {
     // ========================================
     // NUEVO: Verificar y otorgar badges automáticamente
     // ========================================
-    let awardedBadges: Array<{ id: string; slug: string; title: string; xpAwarded: number }> = []
+    let awardedBadges: Array<{ id: string; slug: string; title: string; description?: string | null; rarity?: string | null; xpAwarded: number }> = []
     try {
       // Verificar badges por quiz aprobado
       const quizBadgeResult = await checkAndAwardBadges({
@@ -249,6 +280,37 @@ export async function POST(request: NextRequest) {
 
       if (awardedBadges.length > 0) {
         console.log('[quiz/submit] Badges otorgados:', awardedBadges.map(b => b.title))
+
+        // Enviar email por cada badge importante (rarity: rare, epic, legendary)
+        if (courseUserData?.email) {
+          const importantBadges = awardedBadges.filter(
+            b => ['rare', 'epic', 'legendary'].includes(b.rarity || '')
+          )
+
+          const badgeUserName = courseUserData.full_name || courseUserData.email?.split('@')[0] || 'Estudiante'
+
+          for (const badge of importantBadges) {
+            try {
+              // Mapear rarity a emoji
+              const rarityIcons: Record<string, string> = {
+                rare: '💎',
+                epic: '🌟',
+                legendary: '👑',
+              }
+
+              await sendBadgeEarnedEmail({
+                to: courseUserData.email,
+                userName: badgeUserName,
+                badgeName: badge.title,
+                badgeDescription: badge.description || 'Has desbloqueado un nuevo logro en Nodo360',
+                badgeIcon: rarityIcons[badge.rarity || ''] || '🏆',
+              })
+              console.log('[quiz/submit] Email de badge enviado:', badge.title)
+            } catch (emailError) {
+              console.error('[quiz/submit] Error enviando email de badge:', emailError)
+            }
+          }
+        }
       }
     } catch (badgeError) {
       // No fallar la request principal por error de badges

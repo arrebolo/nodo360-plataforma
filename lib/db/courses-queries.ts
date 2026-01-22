@@ -27,7 +27,7 @@ export type { LessonWithRelations }
 
 /**
  * Get all published and coming_soon courses
- * @returns Lista de cursos visibles con información del instructor
+ * @returns Lista de cursos visibles con información del instructor y ruta de aprendizaje
  */
 export async function getAllCourses(): Promise<CourseWithInstructor[]> {
   console.log('🔍 [getAllCourses] Obteniendo todos los cursos...')
@@ -42,6 +42,14 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
         id,
         full_name,
         avatar_url
+      ),
+      learning_path_courses (
+        learning_path:learning_paths (
+          id,
+          name,
+          slug,
+          emoji
+        )
       )
     `)
     .in('status', ['published', 'coming_soon'])
