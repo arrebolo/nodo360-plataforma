@@ -104,34 +104,9 @@ Logros y badges desbloqueados.
 - metadata: JSONB
 ```
 
-#### 5. `user_activity`
-Timeline de actividad para el dashboard.
-
-```sql
-- id: UUID (PK)
-- user_id: UUID (FK)
-- activity_type: TEXT
-- related_id: UUID (nullable)
-- created_at: TIMESTAMP
-- metadata: JSONB
-```
-
-#### 6. `user_profiles`
-Perfil extendido con gamificación.
-
-```sql
-- id: UUID (PK)
-- user_id: UUID (FK, unique)
-- display_name: TEXT
-- avatar_url: TEXT
-- bio: TEXT
-- current_streak: INTEGER
-- longest_streak: INTEGER
-- last_activity_date: DATE
-- total_xp: INTEGER
-- level: INTEGER
-- created_at/updated_at: TIMESTAMP
-```
+> **NOTA:** Las tablas `user_activity` y `user_profiles` fueron eliminadas por redundancia:
+> - `user_activity` → usar `xp_events` (tiene los mismos campos + más)
+> - `user_profiles` → usar `users` + `user_gamification_stats`
 
 ### Funciones SQL
 
@@ -143,9 +118,6 @@ Se ejecuta automáticamente al actualizar `lesson_progress` para recalcular el p
 
 #### `update_user_streak()` (Trigger)
 Actualiza la racha de días consecutivos al registrar actividad.
-
-#### `create_user_profile()` (Trigger)
-Crea automáticamente el perfil al registrar un nuevo usuario.
 
 ---
 

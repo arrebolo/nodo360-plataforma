@@ -1,8 +1,16 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Layers } from 'lucide-react'
+import { BookOpen, Layers, Route } from 'lucide-react'
+
+type LearningPathInfo = {
+  id: string
+  name: string
+  slug: string
+  emoji: string | null
+}
 
 type CourseCardProps = {
   id: string
@@ -16,6 +24,7 @@ type CourseCardProps = {
   isCompleted?: boolean
   progressPercent?: number
   isComingSoon?: boolean
+  learningPath?: LearningPathInfo | null
   onStart?: () => void
   onContinue?: () => void
   onView?: () => void
@@ -33,6 +42,7 @@ export function CourseCard({
   isCompleted = false,
   progressPercent = 0,
   isComingSoon = false,
+  learningPath,
   onStart,
   onContinue,
   onView,
@@ -68,6 +78,22 @@ export function CourseCard({
           ${isCompleted ? 'bg-success' : isInProgress ? 'bg-brand-light' : isComingSoon ? 'bg-white/20' : 'bg-white/30'}
         `}
       />
+
+      {/* Badge de ruta de aprendizaje */}
+      {learningPath && (
+        <Link
+          href={`/rutas/${learningPath.slug}`}
+          className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-2.5 py-1 text-xs font-medium text-purple-400 z-10 border border-purple-500/30 hover:bg-purple-500/30 transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {learningPath.emoji ? (
+            <span>{learningPath.emoji}</span>
+          ) : (
+            <Route className="h-3 w-3" />
+          )}
+          <span className="max-w-[120px] truncate">{learningPath.name}</span>
+        </Link>
+      )}
 
       {/* Badge de estado */}
       {isCompleted && (

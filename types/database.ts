@@ -211,10 +211,23 @@ export interface NewsletterSubscriber {
 // =====================================================
 
 /**
+ * Learning Path basic info for course cards
+ */
+export interface LearningPathInfo {
+  id: string
+  name: string
+  slug: string
+  emoji: string | null
+}
+
+/**
  * Course with Instructor details
  */
 export interface CourseWithInstructor extends Course {
   instructor: Pick<User, 'id' | 'full_name' | 'avatar_url'> | null
+  learning_path_courses?: Array<{
+    learning_path: LearningPathInfo
+  }>
 }
 
 /**
@@ -563,37 +576,9 @@ export interface UserAchievement {
   metadata: any
 }
 
-/**
- * User Activity Table
- * Timeline of user activities for dashboard
- */
-export interface UserActivity {
-  id: string
-  user_id: string
-  activity_type: string
-  related_id: string | null
-  created_at: string
-  metadata: any
-}
-
-/**
- * User Profiles Table
- * Extended user profile with gamification data
- */
-export interface UserProfile {
-  id: string
-  user_id: string
-  display_name: string | null
-  avatar_url: string | null
-  bio: string | null
-  current_streak: number
-  longest_streak: number
-  last_activity_date: string | null
-  total_xp: number
-  level: number
-  created_at: string
-  updated_at: string
-}
+// NOTA: user_activity y user_profiles fueron eliminadas por redundancia
+// - user_activity → usar xp_events (tiene los mismos campos + más)
+// - user_profiles → usar users + user_gamification_stats
 
 /**
  * Dashboard Statistics
@@ -625,14 +610,6 @@ export interface EnrollmentWithCourse extends CourseEnrollment {
     totalLessons: number
     percentage: number
   }
-}
-
-/**
- * Activity with Related Data
- */
-export interface ActivityWithDetails extends UserActivity {
-  course?: Pick<Course, 'id' | 'title' | 'slug' | 'thumbnail_url'>
-  lesson?: Pick<Lesson, 'id' | 'title' | 'slug'>
 }
 
 /**
@@ -694,11 +671,6 @@ export type InsertLessonProgress = Omit<
 >
 export type InsertCertificate = Omit<Certificate, 'id' | 'issued_at'>
 export type InsertUserAchievement = Omit<UserAchievement, 'id' | 'unlocked_at'>
-export type InsertUserActivity = Omit<UserActivity, 'id' | 'created_at'>
-export type InsertUserProfile = Omit<
-  UserProfile,
-  'id' | 'created_at' | 'updated_at'
->
 export type InsertQuizQuestion = Omit<QuizQuestion, 'id' | 'created_at' | 'updated_at'>
 export type InsertQuizAttempt = Omit<QuizAttempt, 'id' | 'created_at'>
 

@@ -49,31 +49,9 @@ CREATE TABLE IF NOT EXISTS user_achievements (
   UNIQUE(user_id, achievement_type)
 );
 
--- Tabla de actividad
-CREATE TABLE IF NOT EXISTS user_activity (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  activity_type TEXT NOT NULL, -- 'lesson_started', 'lesson_completed', 'course_enrolled', etc.
-  related_id UUID, -- ID del curso/lección relacionado
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  metadata JSONB
-);
-
--- Tabla de perfil de usuario extendido
-CREATE TABLE IF NOT EXISTS user_profiles (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
-  display_name TEXT,
-  avatar_url TEXT,
-  bio TEXT,
-  current_streak INTEGER DEFAULT 0,
-  longest_streak INTEGER DEFAULT 0,
-  last_activity_date DATE,
-  total_xp INTEGER DEFAULT 0,
-  level INTEGER DEFAULT 1,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- NOTA: Las tablas user_activity y user_profiles fueron ELIMINADAS por redundancia:
+-- - user_activity → usar xp_events (tiene los mismos campos + xp_earned, description, course_id, lesson_id)
+-- - user_profiles → usar users + user_gamification_stats (contienen toda la info necesaria)
 
 -- ============================================
 -- ÍNDICES
@@ -86,8 +64,7 @@ CREATE INDEX IF NOT EXISTS idx_lesson_progress_course ON lesson_progress(course_
 CREATE INDEX IF NOT EXISTS idx_lesson_progress_lesson ON lesson_progress(lesson_id);
 CREATE INDEX IF NOT EXISTS idx_certificates_user ON certificates(user_id);
 CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id);
-CREATE INDEX IF NOT EXISTS idx_activity_user ON user_activity(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_user_profiles_user ON user_profiles(user_id);
+-- NOTA: Índices para user_activity y user_profiles eliminados (tablas redundantes)
 
 -- ============================================
 -- FUNCIONES
@@ -200,29 +177,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trigger_update_streak ON user_activity;
-CREATE TRIGGER trigger_update_streak
-AFTER INSERT ON user_activity
-FOR EACH ROW
-EXECUTE FUNCTION update_user_streak();
-
--- Función para crear perfil de usuario automáticamente
-CREATE OR REPLACE FUNCTION create_user_profile()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO user_profiles (user_id, display_name)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', 'Usuario'))
-  ON CONFLICT (user_id) DO NOTHING;
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trigger_create_profile ON auth.users;
-CREATE TRIGGER trigger_create_profile
-AFTER INSERT ON auth.users
-FOR EACH ROW
-EXECUTE FUNCTION create_user_profile();
+-- NOTA: Triggers para user_activity y user_profiles eliminados (tablas redundantes)
+-- El streak ahora se maneja en user_gamification_stats con triggers en xp_events
 
 -- ============================================
 -- DATOS INICIALES - DEFINICIÓN DE LOGROS
@@ -259,5 +215,4 @@ COMMENT ON TABLE course_enrollments IS 'Registro de inscripciones de usuarios en
 COMMENT ON TABLE lesson_progress IS 'Progreso detallado de cada usuario en cada lección';
 COMMENT ON TABLE certificates IS 'Certificados emitidos a usuarios por completar cursos';
 COMMENT ON TABLE user_achievements IS 'Logros desbloqueados por usuarios';
-COMMENT ON TABLE user_activity IS 'Timeline de actividad de usuarios para el dashboard';
-COMMENT ON TABLE user_profiles IS 'Perfil extendido de usuario con estadísticas de gamificación';
+-- NOTA: Comentarios para user_activity y user_profiles eliminados (tablas redundantes)
