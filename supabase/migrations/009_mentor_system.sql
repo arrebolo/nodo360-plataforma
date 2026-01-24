@@ -373,14 +373,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Función: Verificar si usuario puede aplicar a mentor
 -- =====================================================
 CREATE OR REPLACE FUNCTION public.can_apply_mentor(p_user_id UUID)
-RETURNS TABLE (
-  can_apply BOOLEAN,
-  reason TEXT,
-  current_points INTEGER,
-  min_points INTEGER,
-  available_plazas INTEGER,
-  can_reapply_at TIMESTAMPTZ
-) AS $$
+RETURNS JSONB AS $$
 DECLARE
   v_points INTEGER;
   v_min_points INTEGER;
@@ -397,25 +390,22 @@ BEGIN
 
   -- Verificar si ya es mentor
   IF EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = p_user_id AND role = 'mentor' AND is_active = true) THEN
-    RETURN QUERY SELECT false, 'Ya eres mentor activo'::TEXT, v_points, v_min_points, 0, NULL::TIMESTAMPTZ;
-    RETURN;
+    RETURN jsonb_build_object('can_apply', false, 'reason', 'Ya eres mentor activo', 'current_points', v_points, 'min_points', v_min_points);
   END IF;
 
   -- Verificar puntos mínimos
   IF v_points < v_min_points THEN
-    RETURN QUERY SELECT false, 'No tienes suficientes puntos'::TEXT, v_points, v_min_points, 0, NULL::TIMESTAMPTZ;
-    RETURN;
+    RETURN jsonb_build_object('can_apply', false, 'reason', 'No tienes suficientes puntos', 'current_points', v_points, 'min_points', v_min_points);
   END IF;
 
   -- Verificar cooldown (aplicación previa rechazada o expulsión)
-  SELECT can_reapply_at INTO v_reapply_at
-  FROM public.mentor_applications
-  WHERE user_id = p_user_id AND status IN ('rejected', 'withdrawn')
-  ORDER BY created_at DESC LIMIT 1;
+  SELECT ma.can_reapply_at INTO v_reapply_at
+  FROM public.mentor_applications ma
+  WHERE ma.user_id = p_user_id AND ma.status IN ('rejected', 'withdrawn')
+  ORDER BY ma.created_at DESC LIMIT 1;
 
   IF v_reapply_at IS NOT NULL AND v_reapply_at > NOW() THEN
-    RETURN QUERY SELECT false, 'Debes esperar el período de cooldown'::TEXT, v_points, v_min_points, 0, v_reapply_at;
-    RETURN;
+    RETURN jsonb_build_object('can_apply', false, 'reason', 'Debes esperar el período de cooldown', 'current_points', v_points, 'can_reapply_at', v_reapply_at);
   END IF;
 
   -- Verificar si tiene aplicación pendiente o en votación
@@ -423,85 +413,79 @@ BEGIN
     SELECT 1 FROM public.mentor_applications
     WHERE user_id = p_user_id AND status IN ('pending', 'voting')
   ) THEN
-    RETURN QUERY SELECT false, 'Ya tienes una aplicación en proceso'::TEXT, v_points, v_min_points, 0, NULL::TIMESTAMPTZ;
-    RETURN;
+    RETURN jsonb_build_object('can_apply', false, 'reason', 'Ya tienes una aplicación en proceso', 'current_points', v_points);
   END IF;
 
   -- Verificar plazas disponibles
   SELECT p.available_plazas INTO v_plazas FROM public.calculate_mentor_plazas() p;
 
   IF v_plazas <= 0 THEN
-    RETURN QUERY SELECT false, 'No hay plazas disponibles actualmente'::TEXT, v_points, v_min_points, v_plazas, NULL::TIMESTAMPTZ;
-    RETURN;
+    RETURN jsonb_build_object('can_apply', false, 'reason', 'No hay plazas disponibles actualmente', 'current_points', v_points, 'available_plazas', 0);
   END IF;
 
   -- Puede aplicar
-  RETURN QUERY SELECT true, 'Puedes aplicar a mentor'::TEXT, v_points, v_min_points, v_plazas, NULL::TIMESTAMPTZ;
+  RETURN jsonb_build_object('can_apply', true, 'reason', 'Puedes aplicar a mentor', 'current_points', v_points, 'min_points', v_min_points, 'available_plazas', v_plazas);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- =====================================================
--- Función: Iniciar proceso de aplicación
+-- Función: Enviar aplicación de mentor
 -- =====================================================
 CREATE OR REPLACE FUNCTION public.submit_mentor_application(
   p_user_id UUID,
   p_motivation TEXT,
   p_experience TEXT DEFAULT NULL
 )
-RETURNS UUID AS $$
+RETURNS JSONB AS $$
 DECLARE
-  v_can_apply BOOLEAN;
-  v_reason TEXT;
+  v_can_apply JSONB;
   v_points INTEGER;
-  v_current_mentors INTEGER;
-  v_voting_threshold INTEGER;
-  v_voting_days INTEGER;
-  v_application_id UUID;
-  v_decision_method TEXT;
+  v_mentor_count INTEGER;
+  v_threshold INTEGER;
+  v_app_id UUID;
+  v_method TEXT;
 BEGIN
   -- Verificar elegibilidad
-  SELECT ca.can_apply, ca.reason, ca.current_points
-  INTO v_can_apply, v_reason, v_points
-  FROM public.can_apply_mentor(p_user_id) ca;
-
-  IF NOT v_can_apply THEN
-    RAISE EXCEPTION 'No puedes aplicar: %', v_reason;
+  v_can_apply := public.can_apply_mentor(p_user_id);
+  IF NOT (v_can_apply->>'can_apply')::BOOLEAN THEN
+    RETURN v_can_apply;
   END IF;
 
+  v_points := public.get_mentor_points(p_user_id);
+
   -- Determinar método de decisión
-  SELECT COUNT(*) INTO v_current_mentors
-  FROM public.user_roles WHERE role = 'mentor' AND is_active = true;
+  SELECT COUNT(*) INTO v_mentor_count FROM public.user_roles WHERE role = 'mentor' AND is_active = true;
+  SELECT (config_value)::INTEGER INTO v_threshold FROM public.mentor_config WHERE config_key = 'voting_threshold';
 
-  SELECT (config_value)::INTEGER INTO v_voting_threshold
-  FROM public.mentor_config WHERE config_key = 'voting_threshold';
-
-  SELECT (config_value)::INTEGER INTO v_voting_days
-  FROM public.mentor_config WHERE config_key = 'voting_duration_days';
-
-  IF v_current_mentors < v_voting_threshold THEN
-    v_decision_method := 'admin_designation';
+  IF v_mentor_count < v_threshold THEN
+    v_method := 'admin_designation';
   ELSE
-    v_decision_method := 'secret_vote';
+    v_method := 'secret_vote';
   END IF;
 
   -- Crear aplicación
   INSERT INTO public.mentor_applications (
     user_id, points_at_application, motivation, experience,
-    status, decision_method,
-    total_eligible_voters,
-    voting_starts_at, voting_ends_at
+    status, decision_method, voting_starts_at, voting_ends_at, total_eligible_voters
   ) VALUES (
     p_user_id, v_points, p_motivation, p_experience,
-    CASE WHEN v_decision_method = 'secret_vote' THEN 'voting' ELSE 'pending' END,
-    v_decision_method,
-    CASE WHEN v_decision_method = 'secret_vote' THEN v_current_mentors ELSE 0 END,
-    CASE WHEN v_decision_method = 'secret_vote' THEN NOW() ELSE NULL END,
-    CASE WHEN v_decision_method = 'secret_vote' THEN NOW() + (v_voting_days || ' days')::INTERVAL ELSE NULL END
-  )
-  RETURNING id INTO v_application_id;
+    CASE WHEN v_method = 'admin_designation' THEN 'pending' ELSE 'voting' END,
+    v_method,
+    CASE WHEN v_method = 'secret_vote' THEN NOW() ELSE NULL END,
+    CASE WHEN v_method = 'secret_vote' THEN NOW() + INTERVAL '14 days' ELSE NULL END,
+    CASE WHEN v_method = 'secret_vote' THEN v_mentor_count ELSE NULL END
+  ) RETURNING id INTO v_app_id;
 
-  RETURN v_application_id;
+  RETURN jsonb_build_object(
+    'success', true,
+    'application_id', v_app_id,
+    'decision_method', v_method,
+    'message', CASE WHEN v_method = 'admin_designation'
+      THEN 'Aplicación enviada. Un administrador revisará tu solicitud.'
+      ELSE 'Aplicación enviada. Los mentores votarán durante 14 días.'
+    END
+  );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -515,204 +499,263 @@ CREATE OR REPLACE FUNCTION public.vote_mentor_application(
   p_vote TEXT,
   p_comment TEXT DEFAULT NULL
 )
-RETURNS BOOLEAN AS $$
+RETURNS JSONB AS $$
 DECLARE
-  v_application RECORD;
+  v_app RECORD;
+  v_is_mentor BOOLEAN;
 BEGIN
-  -- Verificar que el votante es mentor activo
-  IF NOT EXISTS (
-    SELECT 1 FROM public.user_roles
-    WHERE user_id = p_voter_id AND role = 'mentor' AND is_active = true
-  ) THEN
-    RAISE EXCEPTION 'Solo mentores activos pueden votar';
+  -- Verificar que es mentor activo
+  SELECT EXISTS(
+    SELECT 1 FROM public.user_roles WHERE user_id = p_voter_id AND role = 'mentor' AND is_active = true
+  ) INTO v_is_mentor;
+
+  IF NOT v_is_mentor THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Solo mentores pueden votar');
   END IF;
 
-  -- Obtener aplicación
-  SELECT * INTO v_application FROM public.mentor_applications
-  WHERE id = p_application_id AND status = 'voting';
+  -- Verificar aplicación
+  SELECT * INTO v_app FROM public.mentor_applications WHERE id = p_application_id;
 
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Aplicación no encontrada o no está en votación';
+  IF v_app IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Aplicación no encontrada');
   END IF;
 
-  -- Verificar que la votación no ha expirado
-  IF v_application.voting_ends_at < NOW() THEN
-    RAISE EXCEPTION 'El período de votación ha terminado';
+  IF v_app.status != 'voting' THEN
+    RETURN jsonb_build_object('success', false, 'error', 'La votación no está activa');
   END IF;
 
-  -- Verificar que no es el aplicante votando por sí mismo
-  IF v_application.user_id = p_voter_id THEN
-    RAISE EXCEPTION 'No puedes votar en tu propia aplicación';
+  IF v_app.voting_ends_at < NOW() THEN
+    RETURN jsonb_build_object('success', false, 'error', 'La votación ha expirado');
   END IF;
 
-  -- Registrar voto
+  IF v_app.user_id = p_voter_id THEN
+    RETURN jsonb_build_object('success', false, 'error', 'No puedes votar en tu propia aplicación');
+  END IF;
+
+  -- Insertar o actualizar voto
   INSERT INTO public.mentor_application_votes (application_id, voter_id, vote, comment)
   VALUES (p_application_id, p_voter_id, p_vote, p_comment)
   ON CONFLICT (application_id, voter_id) DO UPDATE SET
     vote = EXCLUDED.vote,
-    comment = EXCLUDED.comment,
-    created_at = NOW();
+    comment = EXCLUDED.comment;
 
-  -- Actualizar conteos en la aplicación
+  -- Actualizar contadores
   UPDATE public.mentor_applications SET
     votes_for = (SELECT COUNT(*) FROM public.mentor_application_votes WHERE application_id = p_application_id AND vote = 'for'),
     votes_against = (SELECT COUNT(*) FROM public.mentor_application_votes WHERE application_id = p_application_id AND vote = 'against'),
-    votes_abstain = (SELECT COUNT(*) FROM public.mentor_application_votes WHERE application_id = p_application_id AND vote = 'abstain'),
-    updated_at = NOW()
+    votes_abstain = (SELECT COUNT(*) FROM public.mentor_application_votes WHERE application_id = p_application_id AND vote = 'abstain')
   WHERE id = p_application_id;
 
-  RETURN true;
+  RETURN jsonb_build_object('success', true, 'message', 'Voto registrado');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- =====================================================
--- Función: Resolver votación de aplicación
--- (llamada por cron o manualmente cuando expira votación)
+-- Función: Resolver aplicación de mentor
+-- (admin decide si <20 mentores, o resuelve votación si 20+)
 -- =====================================================
-CREATE OR REPLACE FUNCTION public.resolve_mentor_vote(p_application_id UUID)
-RETURNS TABLE (
-  resolved BOOLEAN,
-  result TEXT,
-  quorum_met BOOLEAN,
-  approval_met BOOLEAN,
-  vote_summary TEXT
-) AS $$
+CREATE OR REPLACE FUNCTION public.resolve_mentor_application(
+  p_application_id UUID,
+  p_resolved_by UUID DEFAULT NULL,
+  p_approved BOOLEAN DEFAULT NULL,
+  p_reason TEXT DEFAULT NULL
+)
+RETURNS JSONB AS $$
 DECLARE
   v_app RECORD;
   v_total_votes INTEGER;
   v_quorum_pct INTEGER;
   v_approval_pct INTEGER;
   v_cooldown_months INTEGER;
-  v_quorum_met BOOLEAN;
-  v_approval_met BOOLEAN;
   v_actual_quorum DECIMAL;
   v_actual_approval DECIMAL;
+  v_quorum_met BOOLEAN;
+  v_approval_met BOOLEAN;
+  v_is_approved BOOLEAN;
 BEGIN
   -- Obtener aplicación
-  SELECT * INTO v_app FROM public.mentor_applications WHERE id = p_application_id AND status = 'voting';
-  IF NOT FOUND THEN
-    RETURN QUERY SELECT false, 'Aplicación no encontrada o no está en votación'::TEXT, false, false, ''::TEXT;
-    RETURN;
+  SELECT * INTO v_app FROM public.mentor_applications WHERE id = p_application_id;
+
+  IF v_app IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Aplicación no encontrada');
   END IF;
 
-  -- Obtener configuración
-  SELECT (config_value)::INTEGER INTO v_quorum_pct FROM public.mentor_config WHERE config_key = 'voting_quorum_pct';
-  SELECT (config_value)::INTEGER INTO v_approval_pct FROM public.mentor_config WHERE config_key = 'voting_approval_pct';
+  IF v_app.status NOT IN ('voting', 'pending') THEN
+    RETURN jsonb_build_object('success', false, 'error', 'La aplicación no está en estado resoluble (status: ' || v_app.status || ')');
+  END IF;
+
   SELECT (config_value)::INTEGER INTO v_cooldown_months FROM public.mentor_config WHERE config_key = 'cooldown_months';
 
-  -- Calcular quórum (votos totales / elegibles)
-  v_total_votes := v_app.votes_for + v_app.votes_against + v_app.votes_abstain;
-  v_actual_quorum := CASE WHEN v_app.total_eligible_voters > 0
-    THEN (v_total_votes::DECIMAL / v_app.total_eligible_voters * 100)
-    ELSE 0 END;
-  v_quorum_met := v_actual_quorum >= v_quorum_pct;
+  -- ===== DECISIÓN POR ADMIN =====
+  IF v_app.decision_method = 'admin_designation' THEN
+    -- Verificar que hay un admin resolviendo
+    IF p_resolved_by IS NULL THEN
+      RETURN jsonb_build_object('success', false, 'error', 'Se requiere un admin para resolver esta aplicación');
+    END IF;
 
-  -- Calcular aprobación (votos a favor / (a favor + en contra))
-  v_actual_approval := CASE WHEN (v_app.votes_for + v_app.votes_against) > 0
-    THEN (v_app.votes_for::DECIMAL / (v_app.votes_for + v_app.votes_against) * 100)
-    ELSE 0 END;
-  v_approval_met := v_actual_approval >= v_approval_pct;
+    IF NOT EXISTS (
+      SELECT 1 FROM public.user_roles
+      WHERE user_id = p_resolved_by AND role = 'admin' AND is_active = true
+    ) THEN
+      RETURN jsonb_build_object('success', false, 'error', 'Solo admins pueden resolver designaciones directas');
+    END IF;
 
-  -- Determinar resultado
-  IF v_quorum_met AND v_approval_met THEN
-    -- Aprobado
+    IF p_approved IS NULL THEN
+      RETURN jsonb_build_object('success', false, 'error', 'Se requiere indicar si se aprueba o rechaza');
+    END IF;
+
+    v_is_approved := p_approved;
+
     UPDATE public.mentor_applications SET
-      status = 'approved',
-      quorum_met = true,
-      approval_met = true,
+      status = CASE WHEN p_approved THEN 'approved' ELSE 'rejected' END,
+      decided_by = p_resolved_by,
+      decision_reason = p_reason,
       decided_at = NOW(),
+      can_reapply_at = CASE WHEN NOT p_approved THEN NOW() + (v_cooldown_months || ' months')::INTERVAL ELSE NULL END,
       updated_at = NOW()
     WHERE id = p_application_id;
 
-    -- Otorgar rol de mentor
-    INSERT INTO public.user_roles (user_id, role, notes)
-    VALUES (v_app.user_id, 'mentor', 'Aprobado por votación secreta')
-    ON CONFLICT (user_id, role) DO UPDATE SET is_active = true, updated_at = NOW();
+  -- ===== DECISIÓN POR VOTACIÓN =====
+  ELSIF v_app.decision_method = 'secret_vote' THEN
+    -- Obtener configuración de votación
+    SELECT (config_value)::INTEGER INTO v_quorum_pct FROM public.mentor_config WHERE config_key = 'voting_quorum_pct';
+    SELECT (config_value)::INTEGER INTO v_approval_pct FROM public.mentor_config WHERE config_key = 'voting_approval_pct';
 
-    RETURN QUERY SELECT true, 'approved'::TEXT, true, true,
-      format('Quórum: %s%% (%s/%s), Aprobación: %s%% (%s/%s)',
-        ROUND(v_actual_quorum), v_total_votes, v_app.total_eligible_voters,
-        ROUND(v_actual_approval), v_app.votes_for, v_app.votes_for + v_app.votes_against)::TEXT;
-  ELSE
-    -- Rechazado
+    -- Calcular quórum (votos totales / elegibles)
+    v_total_votes := v_app.votes_for + v_app.votes_against + v_app.votes_abstain;
+    v_actual_quorum := CASE WHEN v_app.total_eligible_voters > 0
+      THEN (v_total_votes::DECIMAL / v_app.total_eligible_voters * 100)
+      ELSE 0 END;
+    v_quorum_met := v_actual_quorum >= v_quorum_pct;
+
+    -- Calcular aprobación (votos a favor / (a favor + en contra))
+    v_actual_approval := CASE WHEN (v_app.votes_for + v_app.votes_against) > 0
+      THEN (v_app.votes_for::DECIMAL / (v_app.votes_for + v_app.votes_against) * 100)
+      ELSE 0 END;
+    v_approval_met := v_actual_approval >= v_approval_pct;
+
+    v_is_approved := v_quorum_met AND v_approval_met;
+
     UPDATE public.mentor_applications SET
-      status = 'rejected',
+      status = CASE WHEN v_is_approved THEN 'approved' ELSE 'rejected' END,
       quorum_met = v_quorum_met,
       approval_met = v_approval_met,
+      decided_by = p_resolved_by,
       decided_at = NOW(),
-      can_reapply_at = NOW() + (v_cooldown_months || ' months')::INTERVAL,
+      can_reapply_at = CASE WHEN NOT v_is_approved THEN NOW() + (v_cooldown_months || ' months')::INTERVAL ELSE NULL END,
       updated_at = NOW()
     WHERE id = p_application_id;
 
-    RETURN QUERY SELECT true, 'rejected'::TEXT, v_quorum_met, v_approval_met,
-      format('Quórum: %s%% (%s/%s), Aprobación: %s%% (%s/%s)',
-        ROUND(v_actual_quorum), v_total_votes, v_app.total_eligible_voters,
-        ROUND(v_actual_approval), v_app.votes_for, v_app.votes_for + v_app.votes_against)::TEXT;
+  ELSE
+    RETURN jsonb_build_object('success', false, 'error', 'Método de decisión desconocido: ' || v_app.decision_method);
+  END IF;
+
+  -- Si fue aprobado, otorgar rol de mentor
+  IF v_is_approved THEN
+    INSERT INTO public.user_roles (user_id, role, notes)
+    VALUES (v_app.user_id, 'mentor', COALESCE(p_reason, 'Aprobado como mentor'))
+    ON CONFLICT (user_id, role) DO UPDATE SET is_active = true, updated_at = NOW();
+
+    -- Registrar punto inicial (0 puntos, marca de inicio)
+    INSERT INTO public.mentor_points (user_id, category, points, description)
+    VALUES (v_app.user_id, 'other', 0, 'Inicio como mentor - aplicación aprobada');
+  END IF;
+
+  -- Construir respuesta
+  IF v_app.decision_method = 'secret_vote' THEN
+    RETURN jsonb_build_object(
+      'success', true,
+      'approved', v_is_approved,
+      'reason', CASE
+        WHEN v_is_approved THEN 'Aprobado por votación secreta'
+        WHEN NOT v_quorum_met THEN 'Rechazado: no se alcanzó el quórum (' || ROUND(v_actual_quorum) || '% de ' || v_quorum_pct || '% requerido)'
+        ELSE 'Rechazado: no se alcanzó la aprobación (' || ROUND(v_actual_approval) || '% de ' || v_approval_pct || '% requerido)'
+      END,
+      'quorum_met', v_quorum_met,
+      'approval_met', v_approval_met,
+      'votes_for', v_app.votes_for,
+      'votes_against', v_app.votes_against,
+      'votes_abstain', v_app.votes_abstain,
+      'total_eligible', v_app.total_eligible_voters
+    );
+  ELSE
+    RETURN jsonb_build_object(
+      'success', true,
+      'approved', v_is_approved,
+      'reason', CASE WHEN v_is_approved
+        THEN 'Aprobado por designación de admin'
+        ELSE COALESCE(p_reason, 'Rechazado por admin')
+      END
+    );
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- =====================================================
--- Función: Designación directa por admin (< 20 mentores)
+-- Función: Remover status de mentor
 -- =====================================================
-CREATE OR REPLACE FUNCTION public.admin_decide_mentor_application(
-  p_admin_id UUID,
-  p_application_id UUID,
-  p_approved BOOLEAN,
-  p_reason TEXT DEFAULT NULL
+CREATE OR REPLACE FUNCTION public.remove_mentor_status(
+  p_user_id UUID,
+  p_reason TEXT,
+  p_removed_by UUID DEFAULT NULL
 )
-RETURNS BOOLEAN AS $$
+RETURNS JSONB AS $$
 DECLARE
-  v_app RECORD;
+  v_new_role TEXT;
+  v_cooldown_until TIMESTAMPTZ;
   v_cooldown_months INTEGER;
+  v_has_instructor_cert BOOLEAN;
 BEGIN
-  -- Verificar que es admin
+  -- Verificar que es mentor activo
   IF NOT EXISTS (
     SELECT 1 FROM public.user_roles
-    WHERE user_id = p_admin_id AND role = 'admin' AND is_active = true
+    WHERE user_id = p_user_id AND role = 'mentor' AND is_active = true
   ) THEN
-    RAISE EXCEPTION 'Solo admins pueden designar mentores directamente';
+    RETURN jsonb_build_object('success', false, 'error', 'El usuario no es mentor activo');
   END IF;
 
-  -- Obtener aplicación
-  SELECT * INTO v_app FROM public.mentor_applications
-  WHERE id = p_application_id AND status = 'pending' AND decision_method = 'admin_designation';
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Aplicación no encontrada o no es para designación admin';
-  END IF;
-
+  -- Obtener cooldown
   SELECT (config_value)::INTEGER INTO v_cooldown_months FROM public.mentor_config WHERE config_key = 'cooldown_months';
+  v_cooldown_until := NOW() + (v_cooldown_months || ' months')::INTERVAL;
 
-  IF p_approved THEN
-    -- Aprobar
-    UPDATE public.mentor_applications SET
-      status = 'approved',
-      decided_by = p_admin_id,
-      decision_reason = p_reason,
-      decided_at = NOW(),
-      updated_at = NOW()
-    WHERE id = p_application_id;
+  -- Determinar nuevo rol: si tiene certificación de instructor activa, mantener instructor
+  SELECT EXISTS (
+    SELECT 1 FROM public.instructor_certifications
+    WHERE user_id = p_user_id AND status = 'active' AND expires_at > NOW()
+  ) INTO v_has_instructor_cert;
 
-    -- Otorgar rol de mentor
-    INSERT INTO public.user_roles (user_id, role, notes)
-    VALUES (v_app.user_id, 'mentor', 'Designado por admin: ' || COALESCE(p_reason, 'Sin razón especificada'))
-    ON CONFLICT (user_id, role) DO UPDATE SET is_active = true, updated_at = NOW();
+  IF v_has_instructor_cert THEN
+    v_new_role := 'instructor';
   ELSE
-    -- Rechazar
-    UPDATE public.mentor_applications SET
-      status = 'rejected',
-      decided_by = p_admin_id,
-      decision_reason = p_reason,
-      decided_at = NOW(),
-      can_reapply_at = NOW() + (v_cooldown_months || ' months')::INTERVAL,
-      updated_at = NOW()
-    WHERE id = p_application_id;
+    v_new_role := 'student';
   END IF;
 
-  RETURN true;
+  -- Desactivar rol de mentor
+  UPDATE public.user_roles SET is_active = false, updated_at = NOW()
+  WHERE user_id = p_user_id AND role = 'mentor';
+
+  -- Registrar punto negativo con la razón
+  INSERT INTO public.mentor_points (user_id, category, points, description)
+  VALUES (p_user_id, 'other', -100, 'Mentor removido: ' || p_reason);
+
+  -- Registrar cooldown en la aplicación aprobada más reciente
+  UPDATE public.mentor_applications SET
+    can_reapply_at = v_cooldown_until,
+    updated_at = NOW()
+  WHERE id = (
+    SELECT id FROM public.mentor_applications
+    WHERE user_id = p_user_id AND status = 'approved'
+    ORDER BY decided_at DESC LIMIT 1
+  );
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'new_role', v_new_role,
+    'cooldown_until', v_cooldown_until,
+    'reason', p_reason
+  );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -722,59 +765,94 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- =====================================================
 CREATE OR REPLACE FUNCTION public.evaluate_mentor_monthly(
   p_user_id UUID,
-  p_month DATE DEFAULT DATE_TRUNC('month', NOW() - INTERVAL '1 month')::DATE
+  p_year INTEGER DEFAULT EXTRACT(YEAR FROM NOW())::INTEGER,
+  p_month INTEGER DEFAULT EXTRACT(MONTH FROM NOW() - INTERVAL '1 month')::INTEGER
 )
-RETURNS TABLE (
-  meets_requirements BOOLEAN,
-  is_on_leave BOOLEAN,
-  warning_issued BOOLEAN,
-  warning_number INTEGER,
-  expelled BOOLEAN
-) AS $$
+RETURNS JSONB AS $$
 DECLARE
   v_stats RECORD;
+  v_period DATE;
   v_on_leave BOOLEAN;
   v_active_warnings INTEGER;
   v_max_warnings INTEGER;
   v_new_warning_number INTEGER;
+  v_failures JSONB := '[]'::JSONB;
+  v_minimums JSONB;
+  v_remove_result JSONB;
 BEGIN
-  -- Verificar si el mentor está de licencia ese mes
+  v_period := make_date(p_year, p_month, 1);
+
+  -- Verificar que es mentor activo
+  IF NOT EXISTS (
+    SELECT 1 FROM public.user_roles
+    WHERE user_id = p_user_id AND role = 'mentor' AND is_active = true
+  ) THEN
+    RETURN jsonb_build_object('success', false, 'error', 'El usuario no es mentor activo');
+  END IF;
+
+  -- Verificar si está de licencia ese mes
   SELECT EXISTS (
     SELECT 1 FROM public.mentor_leaves
     WHERE user_id = p_user_id AND status = 'approved'
-    AND starts_at <= (p_month + INTERVAL '1 month' - INTERVAL '1 day')::DATE
-    AND ends_at >= p_month
+    AND starts_at <= (v_period + INTERVAL '1 month' - INTERVAL '1 day')::DATE
+    AND ends_at >= v_period
   ) INTO v_on_leave;
 
-  -- Si está de licencia, no evaluar
   IF v_on_leave THEN
     UPDATE public.mentor_monthly_stats SET on_leave = true, updated_at = NOW()
-    WHERE user_id = p_user_id AND period_month = p_month;
+    WHERE user_id = p_user_id AND period_month = v_period;
 
-    RETURN QUERY SELECT true, true, false, 0, false;
-    RETURN;
+    RETURN jsonb_build_object('success', true, 'met_requirements', true, 'on_leave', true, 'failures', '[]'::JSONB);
   END IF;
 
-  -- Obtener stats del mes
+  -- Obtener mínimos de configuración
+  SELECT config_value INTO v_minimums FROM public.mentor_config WHERE config_key = 'monthly_minimums';
+
+  -- Obtener o crear stats del mes
+  INSERT INTO public.mentor_monthly_stats (user_id, period_month)
+  VALUES (p_user_id, v_period)
+  ON CONFLICT (user_id, period_month) DO NOTHING;
+
   SELECT * INTO v_stats FROM public.mentor_monthly_stats
-  WHERE user_id = p_user_id AND period_month = p_month;
+  WHERE user_id = p_user_id AND period_month = v_period;
 
-  IF NOT FOUND THEN
-    -- No hay stats = no cumplió
-    INSERT INTO public.mentor_monthly_stats (user_id, period_month)
-    VALUES (p_user_id, p_month);
-
-    SELECT * INTO v_stats FROM public.mentor_monthly_stats
-    WHERE user_id = p_user_id AND period_month = p_month;
+  -- Evaluar cada mínimo
+  IF v_stats.active_days < (v_minimums->>'active_days')::INTEGER THEN
+    v_failures := v_failures || jsonb_build_array(jsonb_build_object(
+      'metric', 'active_days', 'required', (v_minimums->>'active_days')::INTEGER, 'actual', v_stats.active_days
+    ));
   END IF;
 
-  -- Si cumple mínimos, todo bien
-  IF v_stats.meets_minimums THEN
-    RETURN QUERY SELECT true, false, false, 0, false;
-    RETURN;
+  IF v_stats.community_responses < (v_minimums->>'community_responses')::INTEGER THEN
+    v_failures := v_failures || jsonb_build_array(jsonb_build_object(
+      'metric', 'community_responses', 'required', (v_minimums->>'community_responses')::INTEGER, 'actual', v_stats.community_responses
+    ));
   END IF;
 
-  -- No cumplió: emitir aviso
+  IF v_stats.content_reviews < (v_minimums->>'content_reviews')::INTEGER THEN
+    v_failures := v_failures || jsonb_build_array(jsonb_build_object(
+      'metric', 'content_reviews', 'required', (v_minimums->>'content_reviews')::INTEGER, 'actual', v_stats.content_reviews
+    ));
+  END IF;
+
+  IF v_stats.governance_votes < (v_minimums->>'governance_votes')::INTEGER THEN
+    v_failures := v_failures || jsonb_build_array(jsonb_build_object(
+      'metric', 'governance_votes', 'required', (v_minimums->>'governance_votes')::INTEGER, 'actual', v_stats.governance_votes
+    ));
+  END IF;
+
+  IF v_stats.mentoring_sessions < (v_minimums->>'mentoring_sessions')::INTEGER THEN
+    v_failures := v_failures || jsonb_build_array(jsonb_build_object(
+      'metric', 'mentoring_sessions', 'required', (v_minimums->>'mentoring_sessions')::INTEGER, 'actual', v_stats.mentoring_sessions
+    ));
+  END IF;
+
+  -- Si cumple todos los mínimos
+  IF jsonb_array_length(v_failures) = 0 THEN
+    RETURN jsonb_build_object('success', true, 'met_requirements', true, 'on_leave', false, 'failures', '[]'::JSONB);
+  END IF;
+
+  -- No cumplió: obtener warnings activos
   SELECT (config_value)::INTEGER INTO v_max_warnings FROM public.mentor_config WHERE config_key = 'max_warnings';
 
   SELECT COUNT(*) INTO v_active_warnings
@@ -783,33 +861,41 @@ BEGIN
 
   v_new_warning_number := v_active_warnings + 1;
 
+  -- Si ya tiene 2 warnings activos, expulsar
   IF v_new_warning_number > v_max_warnings THEN
-    -- Expulsar: desactivar rol de mentor
-    UPDATE public.user_roles SET is_active = false, updated_at = NOW()
-    WHERE user_id = p_user_id AND role = 'mentor';
+    v_remove_result := public.remove_mentor_status(
+      p_user_id,
+      'Expulsión automática: 3er incumplimiento mensual (' || TO_CHAR(v_period, 'Month YYYY') || ')',
+      NULL
+    );
 
-    -- Registrar cooldown en la última aplicación
-    UPDATE public.mentor_applications SET
-      can_reapply_at = NOW() + (
-        (SELECT (config_value)::INTEGER FROM public.mentor_config WHERE config_key = 'cooldown_months') || ' months'
-      )::INTERVAL,
-      updated_at = NOW()
-    WHERE user_id = p_user_id AND status = 'approved'
-    ORDER BY decided_at DESC LIMIT 1;
-
-    RETURN QUERY SELECT false, false, false, v_max_warnings, true;
-    RETURN;
+    RETURN jsonb_build_object(
+      'success', true,
+      'met_requirements', false,
+      'on_leave', false,
+      'failures', v_failures,
+      'expelled', true,
+      'warning_number', v_new_warning_number,
+      'remove_result', v_remove_result
+    );
   END IF;
 
-  -- Emitir aviso
-  INSERT INTO public.mentor_warnings (user_id, warning_type, warning_number, reason, reference_month, issued_by)
+  -- Emitir warning
+  INSERT INTO public.mentor_warnings (user_id, warning_type, warning_number, reason, reference_month, issued_by, details)
   VALUES (
     p_user_id, 'missed_minimums', v_new_warning_number,
-    'No cumplió los mínimos mensuales de ' || TO_CHAR(p_month, 'Month YYYY'),
-    p_month, NULL
+    'No cumplió los mínimos mensuales de ' || TO_CHAR(v_period, 'Month YYYY'),
+    v_period, NULL, v_failures
   );
 
-  RETURN QUERY SELECT false, false, true, v_new_warning_number, false;
+  RETURN jsonb_build_object(
+    'success', true,
+    'met_requirements', false,
+    'on_leave', false,
+    'failures', v_failures,
+    'expelled', false,
+    'warning_number', v_new_warning_number
+  );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -888,7 +974,7 @@ BEGIN
     SELECT id FROM public.mentor_applications
     WHERE status = 'voting' AND voting_ends_at <= NOW()
   LOOP
-    PERFORM public.resolve_mentor_vote(v_app.id);
+    PERFORM public.resolve_mentor_application(v_app.id);
     v_count := v_count + 1;
   END LOOP;
 
@@ -951,102 +1037,55 @@ CREATE TRIGGER trigger_mentor_leaves_updated_at
 
 
 -- #####################################################
--- SECCIÓN 10: POLÍTICAS RLS
+-- SECCIÓN 10: POLÍTICAS RLS (ACTUALIZADAS)
 -- #####################################################
 
--- === RLS: mentor_config ===
 ALTER TABLE public.mentor_config ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Config is viewable by everyone" ON public.mentor_config;
-CREATE POLICY "Config is viewable by everyone" ON public.mentor_config FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Only admins can manage config" ON public.mentor_config;
-CREATE POLICY "Only admins can manage config" ON public.mentor_config FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin' AND is_active = true));
-
--- === RLS: mentor_points ===
 ALTER TABLE public.mentor_points ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Users can view own points" ON public.mentor_points;
-CREATE POLICY "Users can view own points" ON public.mentor_points FOR SELECT USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Admins can manage all points" ON public.mentor_points;
-CREATE POLICY "Admins can manage all points" ON public.mentor_points FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin' AND is_active = true));
-
--- === RLS: mentor_applications ===
 ALTER TABLE public.mentor_applications ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Users can view own applications" ON public.mentor_applications;
-CREATE POLICY "Users can view own applications" ON public.mentor_applications FOR SELECT USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can insert own applications" ON public.mentor_applications;
-CREATE POLICY "Users can insert own applications" ON public.mentor_applications FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Mentors can view voting applications" ON public.mentor_applications;
-CREATE POLICY "Mentors can view voting applications" ON public.mentor_applications FOR SELECT
-  USING (
-    status = 'voting'
-    AND EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'mentor' AND is_active = true)
-  );
-
-DROP POLICY IF EXISTS "Admins can manage all applications" ON public.mentor_applications;
-CREATE POLICY "Admins can manage all applications" ON public.mentor_applications FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin' AND is_active = true));
-
--- === RLS: mentor_application_votes ===
 ALTER TABLE public.mentor_application_votes ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Voters can view own votes" ON public.mentor_application_votes;
-CREATE POLICY "Voters can view own votes" ON public.mentor_application_votes FOR SELECT USING (auth.uid() = voter_id);
-
-DROP POLICY IF EXISTS "Mentors can insert votes" ON public.mentor_application_votes;
-CREATE POLICY "Mentors can insert votes" ON public.mentor_application_votes FOR INSERT
-  WITH CHECK (
-    auth.uid() = voter_id
-    AND EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'mentor' AND is_active = true)
-  );
-
-DROP POLICY IF EXISTS "Mentors can update own votes" ON public.mentor_application_votes;
-CREATE POLICY "Mentors can update own votes" ON public.mentor_application_votes FOR UPDATE
-  USING (auth.uid() = voter_id);
-
-DROP POLICY IF EXISTS "Admins can view all votes" ON public.mentor_application_votes;
-CREATE POLICY "Admins can view all votes" ON public.mentor_application_votes FOR SELECT
-  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin' AND is_active = true));
-
--- === RLS: mentor_monthly_stats ===
 ALTER TABLE public.mentor_monthly_stats ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Users can view own stats" ON public.mentor_monthly_stats;
-CREATE POLICY "Users can view own stats" ON public.mentor_monthly_stats FOR SELECT USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Admins can manage all stats" ON public.mentor_monthly_stats;
-CREATE POLICY "Admins can manage all stats" ON public.mentor_monthly_stats FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin' AND is_active = true));
-
--- === RLS: mentor_warnings ===
 ALTER TABLE public.mentor_warnings ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Users can view own warnings" ON public.mentor_warnings;
-CREATE POLICY "Users can view own warnings" ON public.mentor_warnings FOR SELECT USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Admins can manage all warnings" ON public.mentor_warnings;
-CREATE POLICY "Admins can manage all warnings" ON public.mentor_warnings FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin' AND is_active = true));
-
--- === RLS: mentor_leaves ===
 ALTER TABLE public.mentor_leaves ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Users can view own leaves" ON public.mentor_leaves;
-CREATE POLICY "Users can view own leaves" ON public.mentor_leaves FOR SELECT USING (auth.uid() = user_id);
+-- mentor_config: solo lectura para autenticados
+CREATE POLICY "mentor_config_select" ON public.mentor_config FOR SELECT TO authenticated USING (true);
 
-DROP POLICY IF EXISTS "Users can insert own leaves" ON public.mentor_leaves;
-CREATE POLICY "Users can insert own leaves" ON public.mentor_leaves FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- mentor_points: usuarios ven sus propios, admins todo
+CREATE POLICY "mentor_points_select" ON public.mentor_points FOR SELECT TO authenticated
+  USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
 
-DROP POLICY IF EXISTS "Admins can manage all leaves" ON public.mentor_leaves;
-CREATE POLICY "Admins can manage all leaves" ON public.mentor_leaves FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin' AND is_active = true));
+-- mentor_applications: usuarios ven suyas, mentores ven voting, admins todo
+CREATE POLICY "mentor_applications_select" ON public.mentor_applications FOR SELECT TO authenticated
+  USING (user_id = auth.uid()
+    OR (status = 'voting' AND EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'mentor'))
+    OR EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "mentor_applications_insert" ON public.mentor_applications FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+-- mentor_application_votes: SOLO insertar, nadie puede ver (secreto)
+CREATE POLICY "mentor_votes_insert" ON public.mentor_application_votes FOR INSERT TO authenticated
+  WITH CHECK (voter_id = auth.uid()
+    AND EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'mentor')
+    AND EXISTS (SELECT 1 FROM public.mentor_applications WHERE id = application_id AND status = 'voting'));
+
+-- mentor_monthly_stats: usuarios ven suyas, admins todo
+CREATE POLICY "mentor_monthly_stats_select" ON public.mentor_monthly_stats FOR SELECT TO authenticated
+  USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
+
+-- mentor_warnings: usuarios ven suyas, admins todo e insertan
+CREATE POLICY "mentor_warnings_select" ON public.mentor_warnings FOR SELECT TO authenticated
+  USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "mentor_warnings_insert" ON public.mentor_warnings FOR INSERT TO authenticated
+  WITH CHECK (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
+
+-- mentor_leaves: usuarios ven suyas e insertan, admins todo
+CREATE POLICY "mentor_leaves_select" ON public.mentor_leaves FOR SELECT TO authenticated
+  USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "mentor_leaves_insert" ON public.mentor_leaves FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+CREATE POLICY "mentor_leaves_update" ON public.mentor_leaves FOR UPDATE TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
 
 
 -- #####################################################
@@ -1063,9 +1102,9 @@ COMMENT ON TABLE public.mentor_leaves IS 'Licencias de mentores (máx 60 días/a
 
 COMMENT ON FUNCTION public.calculate_mentor_plazas IS 'Calcula plazas disponibles: 2% hasta 20, 1% hasta 50, 0.75% después, mín 3';
 COMMENT ON FUNCTION public.get_mentor_points IS 'Obtiene puntos totales de un usuario para mentor';
-COMMENT ON FUNCTION public.can_apply_mentor IS 'Verifica elegibilidad para aplicar a mentor (puntos, cooldown, plazas)';
-COMMENT ON FUNCTION public.submit_mentor_application IS 'Crea aplicación de mentor (determina si admin designa o votación)';
-COMMENT ON FUNCTION public.vote_mentor_application IS 'Registra voto secreto en aplicación de mentor';
+COMMENT ON FUNCTION public.can_apply_mentor IS 'Verifica elegibilidad para aplicar a mentor, retorna JSONB con can_apply y razón';
+COMMENT ON FUNCTION public.submit_mentor_application IS 'Envía aplicación de mentor, retorna JSONB con resultado y método de decisión';
+COMMENT ON FUNCTION public.vote_mentor_application IS 'Registra voto secreto en aplicación, retorna JSONB con success/error';
 COMMENT ON FUNCTION public.resolve_mentor_vote IS 'Resuelve votación de aplicación (quórum + aprobación)';
 COMMENT ON FUNCTION public.admin_decide_mentor_application IS 'Designación directa por admin cuando hay <20 mentores';
 COMMENT ON FUNCTION public.evaluate_mentor_monthly IS 'Evalúa mínimos mensuales y emite avisos/expulsiones';
