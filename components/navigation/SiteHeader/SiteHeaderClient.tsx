@@ -255,12 +255,18 @@ function buildMenu(role?: Role) {
     { label: 'Dashboard', href: '/dashboard', icon: '📊' },
     { label: 'Mis cursos', href: '/dashboard/cursos', icon: '📚' },
     { label: 'Mis rutas', href: '/dashboard/rutas', icon: '🗺️' },
+    { label: 'Instructor', href: '/dashboard/instructor', icon: '🎓' },
+    { label: 'Mentor', href: '/dashboard/mentor', icon: '🤝' },
     { label: 'Certificados', href: '/dashboard/certificados', icon: '🏆' },
     { label: 'Mi perfil', href: '/dashboard/perfil', icon: '👤' },
   ]
 
   if (role === 'instructor' || role === 'admin') {
-    base.splice(2, 0, { label: 'Gestionar cursos', href: '/dashboard/instructor/cursos', icon: '✏️' })
+    base.splice(3, 0, { label: 'Gestionar cursos', href: '/dashboard/instructor/cursos', icon: '✏️' })
+  }
+
+  if (role === 'mentor' || role === 'admin') {
+    base.push({ label: 'Votaciones mentores', href: '/gobernanza/mentores', icon: '🗳️' })
   }
 
   if (role === 'admin') {

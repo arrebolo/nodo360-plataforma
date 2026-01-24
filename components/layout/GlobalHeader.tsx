@@ -94,12 +94,20 @@ export function GlobalHeader() {
       { href: '/dashboard', label: 'Mi Dashboard', icon: '📊' },
       { href: '/dashboard/rutas', label: 'Mis Rutas', icon: '🗺️' },
       { href: '/dashboard/cursos', label: 'Mis Cursos', icon: '📚' },
+      { href: '/dashboard/instructor', label: 'Instructor', icon: '🎓' },
+      { href: '/dashboard/mentor', label: 'Mentor', icon: '🤝' },
       { href: '/dashboard/perfil', label: 'Mi Perfil', icon: '👤' },
     ]
 
     if (profile?.role === 'instructor' || profile?.role === 'admin') {
       baseOptions.push(
         { href: '/dashboard/instructor/cursos', label: 'Gestionar Cursos', icon: '✏️' }
+      )
+    }
+
+    if (profile?.role === 'mentor' || profile?.role === 'admin') {
+      baseOptions.push(
+        { href: '/gobernanza/mentores', label: 'Votaciones Mentores', icon: '🗳️' }
       )
     }
 
