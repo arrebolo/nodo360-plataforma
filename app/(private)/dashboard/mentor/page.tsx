@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import PageHeader from '@/components/ui/PageHeader'
 import StatCard from '@/components/ui/StatCard'
-import { Card } from '@/components/ui/Card'
 import {
   ArrowLeft,
   Users,
@@ -144,32 +143,32 @@ export default async function MentorPage() {
             </div>
 
             {/* Info del mentor */}
-            <Card className="mb-8 bg-gradient-to-br from-brand-light/10 to-transparent">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-brand/20 flex items-center justify-center">
+            <div className="mb-8 rounded-2xl bg-white/5 border border-white/10 p-6 sm:p-7">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-light/20 to-brand/10 flex items-center justify-center">
                   <Shield className="w-6 h-6 text-brand" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-white">Estado de Mentor</h2>
-                  <p className="text-sm text-white/50">
+                  <p className="text-sm text-gray-400">
                     Mentor desde {mentorProfile?.created_at ? new Date(mentorProfile.created_at).toLocaleDateString('es-ES') : 'N/A'}
                   </p>
                 </div>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                   <div className="text-2xl font-bold text-white">{mentorProfile?.total_points || 0}</div>
-                  <div className="text-sm text-white/50">Puntos totales</div>
+                  <div className="text-sm text-gray-400">Puntos totales</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                   <div className="text-2xl font-bold text-white">{mentorProfile?.total_sessions || 0}</div>
-                  <div className="text-sm text-white/50">Sesiones totales</div>
+                  <div className="text-sm text-gray-400">Sesiones totales</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                   <div className={`text-2xl font-bold ${mentorProfile?.warnings > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
                     {mentorProfile?.warnings || 0}/3
                   </div>
-                  <div className="text-sm text-white/50">Warnings (máx. 3)</div>
+                  <div className="text-sm text-gray-400">Warnings (máx. 3)</div>
                 </div>
               </div>
               {mentorProfile?.warnings > 0 && (
@@ -180,10 +179,10 @@ export default async function MentorPage() {
                   </p>
                 </div>
               )}
-            </Card>
+            </div>
 
-            {/* Link a votaciones */}
-            <Card className="mb-8">
+            {/* Acciones rápidas */}
+            <div className="mb-8 rounded-2xl bg-white/5 border border-white/10 p-6">
               <Link
                 href="/gobernanza/mentores"
                 className="flex items-center gap-4 group"
@@ -195,24 +194,24 @@ export default async function MentorPage() {
                   <h3 className="font-semibold text-white group-hover:text-brand-light transition-colors">
                     Votaciones de Mentores
                   </h3>
-                  <p className="text-sm text-white/50">Revisa y vota aplicaciones pendientes</p>
+                  <p className="text-sm text-gray-400">Revisa y vota aplicaciones pendientes</p>
                 </div>
                 <ArrowLeft className="w-5 h-5 text-white/30 rotate-180" />
               </Link>
-            </Card>
+            </div>
           </>
         ) : (
           /* ===== VISTA NO-MENTOR ===== */
           <>
             {/* Elegibilidad */}
-            <Card className="mb-8">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-brand/20 flex items-center justify-center">
+            <div className="mb-8 rounded-2xl bg-white/5 border border-white/10 p-6 sm:p-7">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-light/20 to-brand/10 flex items-center justify-center">
                   <Users className="w-6 h-6 text-brand" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-white">Requisitos para ser Mentor</h2>
-                  <p className="text-sm text-white/50">Cumple estos requisitos para poder aplicar</p>
+                  <p className="text-sm text-gray-400">Cumple estos requisitos para poder aplicar</p>
                 </div>
               </div>
 
@@ -238,51 +237,51 @@ export default async function MentorPage() {
               {eligibility?.can_apply ? (
                 <Link
                   href="/dashboard/mentor/aplicar"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-brand-light hover:bg-brand-light/80 rounded-xl text-sm font-medium text-white transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand hover:opacity-90 rounded-xl text-sm font-medium text-white transition-opacity"
                 >
                   <Star className="w-4 h-4" />
                   Aplicar a Mentor
                 </Link>
               ) : (
-                <p className="text-sm text-white/50">
+                <p className="text-sm text-gray-400">
                   {eligibility?.reason || 'No cumples los requisitos para aplicar.'}
                 </p>
               )}
-            </Card>
+            </div>
           </>
         )}
 
         {/* Historial de aplicaciones */}
-        {applications && applications.length > 0 && (
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-white/60" />
-              Mis Aplicaciones
-            </h2>
+        <section>
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-gray-400" />
+            Historial de Aplicaciones
+          </h2>
+          {applications && applications.length > 0 ? (
             <div className="space-y-3">
               {applications.map((app: any) => {
                 const statusInfo = getStatusInfo(app.status)
                 return (
                   <div
                     key={app.id}
-                    className="p-4 rounded-xl bg-white/5 border border-white/10"
+                    className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color} ${statusInfo.bg}`}>
                         {statusInfo.label}
                       </span>
-                      <span className="text-xs text-white/40">
+                      <span className="text-xs text-gray-500">
                         {new Date(app.created_at).toLocaleDateString('es-ES')}
                       </span>
                     </div>
-                    <p className="text-sm text-white/70 line-clamp-2">{app.motivation}</p>
+                    <p className="text-sm text-gray-300 line-clamp-2">{app.motivation}</p>
                     {app.decision_reason && (
-                      <p className="text-xs text-white/40 mt-2">
+                      <p className="text-xs text-gray-500 mt-2">
                         Razón: {app.decision_reason}
                       </p>
                     )}
                     {app.decision_method && (
-                      <p className="text-xs text-white/30 mt-1">
+                      <p className="text-xs text-gray-600 mt-1">
                         Método: {app.decision_method === 'community_vote' ? 'Voto comunitario' : 'Decisión directa'}
                       </p>
                     )}
@@ -290,8 +289,16 @@ export default async function MentorPage() {
                 )
               })}
             </div>
-          </section>
-        )}
+          ) : (
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-8 text-center">
+              <Clock className="w-10 h-10 mx-auto text-gray-600 mb-3" />
+              <p className="text-gray-400">No tienes aplicaciones previas</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {isMentor ? 'Tu aplicación fue aprobada exitosamente.' : 'Cuando apliques, tu historial aparecerá aquí.'}
+              </p>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   )
