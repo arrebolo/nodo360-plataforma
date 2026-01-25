@@ -18,6 +18,8 @@ import {
   LayoutDashboard,
   Bookmark,
   FileText,
+  Award,
+  Shield,
 } from 'lucide-react'
 
 type NavItem = {
@@ -32,6 +34,8 @@ const navItems: NavItem[] = [
   { href: '/dashboard/rutas', icon: Route, label: 'Rutas', isPrivate: true },
   { href: '/cursos', icon: GraduationCap, label: 'Cursos' },
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', isPrivate: true },
+  { href: '/dashboard/instructor', icon: Award, label: 'Instructor', isPrivate: true },
+  { href: '/dashboard/mentor', icon: Shield, label: 'Mentor', isPrivate: true },
   { href: '/gobernanza', icon: Vote, label: 'Gobernanza' },
   { href: '/comunidad', icon: Users, label: 'Comunidad' },
   { href: '/mentoria', icon: MessageCircle, label: 'Mentoria' },
