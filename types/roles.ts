@@ -2,7 +2,7 @@
 // TIPOS DEL SISTEMA DE ROLES - NODO360
 // =============================================
 
-export type UserRole = 'user' | 'candidate_mentor' | 'mentor' | 'admin' | 'council'
+export type UserRole = 'user' | 'instructor' | 'candidate_mentor' | 'mentor' | 'admin' | 'council' | 'beta_tester'
 
 export interface UserRoleRecord {
   id: string
@@ -29,6 +29,8 @@ export interface UserWithRoles {
 // Jerarquía de roles (mayor número = más permisos)
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   user: 1,
+  beta_tester: 1,  // Mismo nivel que user (es un flag, no jerarquía)
+  instructor: 2,
   candidate_mentor: 2,
   mentor: 3,
   admin: 4,
@@ -49,6 +51,20 @@ export const ROLE_INFO: Record<UserRole, {
     color: 'text-gray-400',
     bgColor: 'bg-gray-500/20',
     icon: '👤',
+  },
+  beta_tester: {
+    label: 'Beta Tester',
+    description: 'Usuario con acceso a funciones en prueba',
+    color: 'text-green-400',
+    bgColor: 'bg-green-500/20',
+    icon: '🧪',
+  },
+  instructor: {
+    label: 'Instructor',
+    description: 'Puede crear y publicar cursos',
+    color: 'text-orange-400',
+    bgColor: 'bg-orange-500/20',
+    icon: '📚',
   },
   candidate_mentor: {
     label: 'Candidato a Mentor',

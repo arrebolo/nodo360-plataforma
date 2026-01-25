@@ -19,6 +19,8 @@ import {
   ClipboardList,
   MessageSquare,
   BarChart,
+  Shield,
+  ArrowRight,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -169,27 +171,29 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* PROMOCION INSTRUCTOR */}
-        <Link
-          href="/dashboard/instructor"
-          className="block rounded-2xl bg-white/5 border border-white/10 p-6 hover:border-orange-500/30 hover:bg-white/[0.07] transition-all group"
-        >
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
-              <GraduationCap className="w-6 h-6 text-orange-400" />
+        {/* PROMOCION INSTRUCTOR - Solo para estudiantes */}
+        {!isInstructor && (
+          <Link
+            href="/dashboard/instructor"
+            className="block rounded-2xl bg-white/5 border border-white/10 p-6 hover:border-orange-500/30 hover:bg-white/[0.07] transition-all group"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
+                <GraduationCap className="w-6 h-6 text-orange-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-white mb-1">¿Quieres ser Instructor?</h3>
+                <p className="text-sm text-gray-400 mb-3">
+                  Certifícate y enseña en Nodo360. Comparte tu conocimiento y obtén ingresos por tus cursos.
+                </p>
+                <span className="inline-flex items-center gap-1 text-sm font-medium text-orange-400 group-hover:text-orange-300 transition-colors">
+                  Ver requisitos
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-white mb-1">¿Quieres ser Instructor?</h3>
-              <p className="text-sm text-gray-400 mb-3">
-                Certifícate y enseña en Nodo360. Comparte tu conocimiento y obtén ingresos por tus cursos.
-              </p>
-              <span className="inline-flex items-center gap-1 text-sm font-medium text-orange-400 group-hover:text-orange-300 transition-colors">
-                Ver requisitos
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </span>
-            </div>
-          </div>
-        </Link>
+          </Link>
+        )}
 
         {/* MI APRENDIZAJE */}
         <DashboardSection title="Mi Aprendizaje" columns={4}>
@@ -222,6 +226,56 @@ export default async function DashboardPage() {
             color="emerald"
           />
         </DashboardSection>
+
+        {/* CONECTA CON EXPERTOS */}
+        <section>
+          <h2 className="text-xl font-semibold text-white mb-4">Conecta con Expertos</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Instructores */}
+            <Link
+              href="/instructores"
+              className="group rounded-2xl bg-white/5 border border-white/10 p-6 hover:border-orange-500/30 hover:bg-white/[0.07] transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
+                  <GraduationCap className="w-6 h-6 text-orange-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-white mb-1">Instructores</h3>
+                  <p className="text-sm text-gray-400 mb-3">
+                    Aprende de expertos certificados en Bitcoin y Blockchain.
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-sm font-medium text-orange-400 group-hover:text-orange-300 transition-colors">
+                    Buscar Instructores
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+
+            {/* Mentores */}
+            <Link
+              href="/mentores"
+              className="group rounded-2xl bg-white/5 border border-white/10 p-6 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/30 transition-colors">
+                  <Shield className="w-6 h-6 text-purple-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-white mb-1">Mentores</h3>
+                  <p className="text-sm text-gray-400 mb-3">
+                    Recibe guia personalizada de miembros destacados de la comunidad.
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-sm font-medium text-purple-400 group-hover:text-purple-300 transition-colors">
+                    Buscar Mentores
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </section>
 
         {/* LOGROS Y COMUNIDAD */}
         <DashboardSection title="Logros y Comunidad" columns={5}>
