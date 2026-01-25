@@ -255,6 +255,8 @@ function buildMenu(role?: Role) {
     { label: 'Dashboard', href: '/dashboard', icon: '📊' },
     { label: 'Mis cursos', href: '/dashboard/cursos', icon: '📚' },
     { label: 'Mis rutas', href: '/dashboard/rutas', icon: '🗺️' },
+    { label: 'Instructor', href: '/dashboard/instructor', icon: '🎓' },
+    { label: 'Mentor', href: '/dashboard/mentor', icon: '🛡️' },
     { label: 'Certificados', href: '/dashboard/certificados', icon: '🏆' },
     { label: 'Mi perfil', href: '/dashboard/perfil', icon: '👤' },
   ]

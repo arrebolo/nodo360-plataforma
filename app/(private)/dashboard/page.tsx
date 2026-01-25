@@ -169,6 +169,28 @@ export default async function DashboardPage() {
           </div>
         </section>
 
+        {/* PROMOCION INSTRUCTOR */}
+        <Link
+          href="/dashboard/instructor"
+          className="block rounded-2xl bg-white/5 border border-white/10 p-6 hover:border-orange-500/30 hover:bg-white/[0.07] transition-all group"
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
+              <GraduationCap className="w-6 h-6 text-orange-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-white mb-1">¿Quieres ser Instructor?</h3>
+              <p className="text-sm text-gray-400 mb-3">
+                Certifícate y enseña en Nodo360. Comparte tu conocimiento y obtén ingresos por tus cursos.
+              </p>
+              <span className="inline-flex items-center gap-1 text-sm font-medium text-orange-400 group-hover:text-orange-300 transition-colors">
+                Ver requisitos
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </span>
+            </div>
+          </div>
+        </Link>
+
         {/* MI APRENDIZAJE */}
         <DashboardSection title="Mi Aprendizaje" columns={4}>
           <DashboardIconCard
