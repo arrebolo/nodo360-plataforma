@@ -222,8 +222,9 @@ export default async function MentoresPage({
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {mentors.map((mentor) => (
-              <div
+              <Link
                 key={mentor.id}
+                href={`/mentores/${mentor.id}`}
                 className="group rounded-2xl bg-white/5 border border-white/10 p-6 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all"
               >
                 {/* Header con avatar */}
@@ -269,7 +270,7 @@ export default async function MentoresPage({
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
+                <div className="flex items-center gap-4 text-sm text-gray-400">
                   <div className="flex items-center gap-1">
                     <MessageCircle className="w-4 h-4" />
                     <span>{mentor.total_sessions} sesiones</span>
@@ -279,15 +280,7 @@ export default async function MentoresPage({
                     <span>{mentor.total_responses} respuestas</span>
                   </div>
                 </div>
-
-                {/* Acción */}
-                <button
-                  className="w-full px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 font-medium hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled
-                >
-                  Solicitar mentoria (pronto)
-                </button>
-              </div>
+              </Link>
             ))}
           </div>
         )}
