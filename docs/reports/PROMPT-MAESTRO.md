@@ -1,29 +1,71 @@
 # PROMPT MAESTRO - PROYECTO NODO360
 
-## 🎯 MISIÓN DEL PROYECTO
+## MISION DEL PROYECTO
 
-**Nodo360** es una plataforma educativa de Bitcoin y Blockchain en español.
+**Nodo360** es una plataforma educativa de Bitcoin y Blockchain en espanol.
 
 **Objetivo**: Crear una plataforma completa donde usuarios puedan:
-- Explorar cursos estructurados (módulos → lecciones)
+- Explorar cursos estructurados (modulos -> lecciones)
 - Inscribirse y seguir su progreso
 - Ver videos educativos
 - Tomar notas y marcar contenido importante
 - Obtener certificados al completar cursos
+- Certificarse como instructores
+- Participar en gobernanza (mentores)
 - Interactuar con la comunidad
 
-**Propuesta de valor**: Educación de calidad, gratuita, en español, con seguimiento personalizado.
+**Propuesta de valor**: Educacion de calidad en espanol, con seguimiento personalizado, sistema de gamificacion y comunidad activa.
 
 ---
 
-## 📋 CONTEXTO TÉCNICO
+## METRICAS DEL PROYECTO (26/01/2026)
 
-### Stack Tecnológico
+| Metrica | Valor |
+|---------|-------|
+| Rutas de App | 91 |
+| Migraciones SQL | 11 |
+| Funciones DB | 17 |
+| Tablas Core | 25+ |
+| Componentes | 50+ |
+| APIs | 40+ |
+
+---
+
+## HISTORIAL DE SESIONES
+
+### 26/01/2026
+- Merge de paginas publicas `/instructores` y `/mentores`
+- Merge de seccion "Conecta con Expertos" en dashboard
+- Migracion 010: funciones admin para asignar roles
+- Migracion 011: requisitos adicionales para examen instructor
+- 4 funciones SQL nuevas:
+  - `can_attempt_exam()` - actualizada con 3 nuevos requisitos
+  - `get_path_completion_status()` - cursos completados de ruta
+  - `get_path_quiz_status()` - quizzes aprobados de ruta
+  - `get_exam_eligibility_details()` - detalles para UI
+- Columna `has_final_quiz` en tabla courses
+- PRs mergeados: #54, #55
+
+### 25/01/2026
+- Sistema de examenes de instructor completo
+- UI de certificaciones en dashboard/instructor
+- APIs de examenes con timer y resultados
+
+### 24/01/2026
+- Sistema de suscripciones y compras (migracion 007)
+- Sistema de instructor (migracion 008)
+- Sistema de mentor (migracion 009)
+
+---
+
+## CONTEXTO TECNICO
+
+### Stack Tecnologico
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript 5
-- **Estilos**: Tailwind CSS v4
+- **Estilos**: Tailwind CSS v4 (tema oscuro glassmorphism)
 - **Base de Datos**: Supabase (PostgreSQL)
-- **Autenticación**: Supabase Auth
-- **Deploy**: Vercel (próximamente)
+- **Autenticacion**: Supabase Auth
+- **Deploy**: Vercel
 
 ### Arquitectura
 ```
@@ -38,326 +80,308 @@ Client Components ('use client')
 └── Event handlers (onClick, onChange, etc.)
 ```
 
-### Estructura de Datos CRÍTICA
+### Estructura de Datos CRITICA
 **REGLA DE ORO**: `lesson.module.course` (SIEMPRE SINGULAR)
 
 ```typescript
-// ✅ CORRECTO
+// CORRECTO
 const courseTitle = lesson.module.course.title
 
-// ❌ INCORRECTO (romperá todo)
+// INCORRECTO (rompera todo)
 const courseTitle = lesson.modules.courses.title
 ```
 
 ---
 
-## 🗄️ ESQUEMA DE BASE DE DATOS
+## ESQUEMA DE BASE DE DATOS
 
-### Tablas Core (7 tablas principales)
+### Migraciones SQL
 
-1. **users** - Perfiles extendidos
-   - id (UUID, FK a auth.users)
-   - email, full_name, avatar_url
-   - role (student/instructor/admin)
-   - bio, website, social links
-   - created_at, updated_at
+| # | Archivo | Descripcion |
+|---|---------|-------------|
+| 003 | `003_learning_paths.sql` | Rutas de aprendizaje |
+| 004 | `004_gamification_system.sql` | XP, badges, leaderboard |
+| 005 | `005_user_lesson_notes_and_final_quiz.sql` | Notas y quiz final |
+| 006 | `006_course_counters_triggers.sql` | Contadores automaticos |
+| 007 | `007_subscriptions_purchases.sql` | Suscripciones premium |
+| 008 | `008_instructor_system.sql` | Sistema de instructores |
+| 009 | `009_mentor_system.sql` | Sistema de mentores |
+| 010 | `010_admin_role_assignment.sql` | Asignacion de roles por admin |
+| 011 | `011_instructor_requirements.sql` | Requisitos examen instructor |
 
-2. **courses** - Cursos
-   - id, slug, title, description
-   - level (beginner/intermediate/advanced)
-   - status (draft/published/archived)
-   - is_free, is_premium
-   - instructor_id (FK a users)
-   - thumbnail_url, banner_url
-   - total_modules, total_lessons, duration_hours
+### Funciones SQL Principales (17 funciones)
 
-3. **modules** - Módulos/Secciones de curso
-   - id, course_id (FK)
-   - title, description
-   - order_index (orden de presentación)
-   - total_lessons, total_duration_minutes
+| Funcion | Proposito |
+|---------|-----------|
+| `has_premium_access()` | Verifica suscripcion premium |
+| `has_course_access()` | Verifica acceso a curso |
+| `can_attempt_exam()` | Verifica elegibilidad para examen |
+| `select_exam_model()` | Selecciona modelo aleatorio |
+| `issue_instructor_certification()` | Emite certificacion |
+| `get_path_completion_status()` | Estado de cursos completados |
+| `get_path_quiz_status()` | Estado de quizzes aprobados |
+| `get_exam_eligibility_details()` | Detalles de elegibilidad |
+| `admin_assign_instructor()` | Admin asigna rol instructor |
+| `admin_assign_mentor()` | Admin asigna rol mentor |
+| `admin_revoke_instructor()` | Admin revoca instructor |
+| `admin_revoke_mentor()` | Admin revoca mentor |
+| `apply_for_mentor()` | Usuario aplica a mentor |
+| `approve_mentor_application()` | Aprueba aplicacion |
+| `remove_mentor_status()` | Remueve status mentor |
+| `check_expiring_certifications()` | Certificaciones por expirar |
+| `expire_certifications()` | Expira certificaciones |
 
-4. **lessons** - Lecciones individuales
-   - id, module_id (FK)
-   - title, slug, description
-   - order_index
-   - content, content_json
-   - video_url, video_duration_minutes
-   - is_free_preview
-   - attachments (JSON array)
+### Tablas Core
 
-5. **user_progress** - Progreso del usuario
-   - id, user_id (FK), lesson_id (FK)
-   - is_completed, completed_at
-   - watch_time_seconds
+**Usuarios y Roles:**
+- `users` - Perfiles extendidos
+- `user_roles` - Roles asignados (instructor, mentor, admin)
+- `subscriptions` - Suscripciones premium
 
-6. **bookmarks** - Marcadores
-   - id, user_id (FK), lesson_id (FK)
-   - note, created_at
+**Cursos:**
+- `courses` - Cursos con `has_final_quiz`
+- `modules` - Modulos de curso
+- `lessons` - Lecciones
+- `learning_paths` - Rutas de aprendizaje
+- `path_courses` - Relacion ruta-curso
 
-7. **notes** - Notas de lecciones
-   - id, user_id (FK), lesson_id (FK)
-   - content
-   - video_timestamp_seconds
-   - created_at, updated_at
+**Progreso:**
+- `course_enrollments` - Inscripciones con `completed_at`
+- `user_progress` - Progreso por leccion
+- `course_final_quiz_attempts` - Intentos de quiz final
+
+**Instructores:**
+- `instructor_profiles` - Perfil publico
+- `instructor_exams` - Examenes de certificacion
+- `instructor_exam_models` - Modelos de examen (10 por examen)
+- `instructor_exam_questions` - Preguntas (20 por modelo)
+- `instructor_exam_attempts` - Intentos de examen
+- `instructor_certifications` - Certificaciones emitidas
+
+**Mentores:**
+- `mentor_applications` - Solicitudes
+- `mentor_points` - Puntos de merito
+- `mentor_monthly_stats` - Estadisticas mensuales
 
 ---
 
-## 📂 ESTRUCTURA DE ARCHIVOS
+## SISTEMA DE INSTRUCTORES
+
+### Requisitos para Examen de Certificacion
+
+| # | Requisito | Verificacion |
+|---|-----------|--------------|
+| 1 | Suscripcion Premium | `has_premium_access()` |
+| 2 | Cursos de la ruta completados | `course_enrollments.completed_at IS NOT NULL` |
+| 3 | Quiz final aprobado | `course_final_quiz_attempts.passed = true` |
+| 4 | Sin certificacion activa | `instructor_certifications.status != 'active'` |
+| 5 | Sin cooldown activo | 15 dias tras fallo, 6 meses si agota modelos |
+
+### Configuracion del Examen
+
+| Parametro | Valor |
+|-----------|-------|
+| Preguntas por examen | 20 |
+| Tiempo limite | 30 minutos |
+| Porcentaje aprobacion | 80% (16/20) |
+| Modelos por ruta | 10 |
+| Cooldown tras fallo | 15 dias |
+| Cooldown tras agotar modelos | 6 meses |
+| Validez certificacion | 2 anos |
+
+### Beneficios del Instructor Certificado
+
+- Crear cursos premium en la plataforma
+- Revenue share 60/40 (instructor/plataforma)
+- Badge de verificado en perfil publico
+- Listado en `/instructores`
+- Acceso a herramientas de instructor
+
+### Flujo de Certificacion
+
+```
+Usuario Premium
+    │
+    ▼
+Completar todos los cursos de la ruta
+    │
+    ▼
+Aprobar quiz final de cada curso
+    │
+    ▼
+Iniciar examen de certificacion
+    │
+    ▼
+Aprobar con 80%+ → Certificacion emitida
+    │
+    ▼
+Rol instructor + Perfil publico + Crear cursos
+```
+
+---
+
+## SISTEMA DE MENTORES
+
+### Requisitos
+
+- 650 puntos de merito minimo
+- Votacion del consejo de mentores
+- Minimo 3 votos a favor
+
+### Puntos de Merito
+
+| Categoria | Puntos |
+|-----------|--------|
+| Completar curso | +10 |
+| Ayudar en comunidad | +5 |
+| Sesion de mentoria | +20 |
+| Propuesta aprobada | +50 |
+
+---
+
+## SISTEMA DE ROLES
+
+### Tipos de Rol
+
+| Rol | Jerarquia | Descripcion |
+|-----|-----------|-------------|
+| `user` | 1 | Usuario base |
+| `beta_tester` | 1 | Acceso a funciones beta |
+| `instructor` | 2 | Puede crear cursos |
+| `candidate_mentor` | 2 | Aplicacion en proceso |
+| `mentor` | 3 | Guia comunidad, vota gobernanza |
+| `admin` | 4 | Panel administracion |
+| `council` | 5 | Consejo de gobernanza |
+
+---
+
+## ESTRUCTURA DE ARCHIVOS
 
 ```
 /nodo360-plataforma
-├── app/                    # Next.js App Router
-│   ├── page.tsx           # Homepage
-│   ├── layout.tsx         # Layout raíz
-│   ├── login/             # ✅ FASE 2
-│   │   └── page.tsx
-│   ├── register/          # ✅ FASE 2
-│   │   └── page.tsx
-│   ├── cursos/
-│   │   ├── page.tsx       # Listado de cursos
-│   │   └── [slug]/
-│   │       ├── page.tsx   # Detalle del curso
-│   │       └── [lessonSlug]/
-│   │           └── page.tsx
-│   ├── dashboard/
-│   │   └── page.tsx
-│   └── api/
-│       ├── enroll/
-│       ├── progress/
-│       └── notes/
-│
+├── app/
+│   ├── (private)/          # Rutas autenticadas
+│   │   ├── dashboard/
+│   │   │   ├── instructor/ # Panel instructor
+│   │   │   └── mentor/     # Panel mentor
+│   │   └── admin/          # Panel admin
+│   ├── (public)/           # Rutas publicas
+│   │   ├── instructores/   # Listado + perfiles
+│   │   └── mentores/       # Listado mentores
+│   ├── api/
+│   │   ├── admin/          # APIs admin
+│   │   ├── instructor/     # APIs instructor
+│   │   └── mentor/         # APIs mentor
+│   └── mentoria/           # Landing page
 ├── components/
-│   ├── common/
+│   ├── dashboard/
+│   ├── gamification/
 │   ├── navigation/
-│   ├── course/
-│   └── lesson/
-│
+│   └── ui/
 ├── lib/
 │   ├── supabase/
-│   │   ├── client.ts      # ✅ Cliente browser
-│   │   ├── server.ts      # ✅ Cliente server
-│   │   └── types.ts
-│   └── db/
-│       └── courses-queries.ts
-│
+│   ├── db/
+│   ├── gamification/
+│   └── roles/
 ├── types/
-│   └── database.ts
-│
-├── middleware.ts          # ✅ FASE 2
-├── PROMPT-MAESTRO.md      # Este archivo
-├── FASE_2_AUTENTICACION.md # ✅ Documentación
-└── .env.local
+│   ├── database.ts
+│   └── roles.ts
+└── supabase/
+    └── migrations/         # 11 migraciones
 ```
 
 ---
 
-## 🎨 CONVENCIONES DE CÓDIGO
+## CONVENCIONES DE CODIGO
 
-### 1. Imports (SIEMPRE usar alias @/)
+### Imports (SIEMPRE usar alias @/)
 ```typescript
-// ✅ CORRECTO
+// CORRECTO
 import { Course } from '@/types/database'
-import { getCourseBySlug } from '@/lib/db/courses-queries'
 import { createClient } from '@/lib/supabase/server'
 
-// ❌ INCORRECTO
+// INCORRECTO
 import { Course } from '../../../types/database'
 ```
 
-### 2. Logging (emojis estándar)
+### Logging (emojis estandar)
 ```typescript
-console.log('🔍 [functionName] Iniciando operación:', params)
-console.log('✅ [functionName] Éxito:', result)
-console.error('❌ [functionName] Error:', error)
-
-// Emojis:
-// 🔍 Inicio
-// ✅ Éxito
-// ❌ Error
-// ℹ️ Info
-// ⚠️ Advertencia
+console.log('[functionName] Iniciando operacion:', params)
+console.log('[functionName] Exito:', result)
+console.error('[functionName] Error:', error)
 ```
 
-### 3. Nomenclatura
-- Archivos de páginas: `page.tsx`, `layout.tsx`
-- Componentes: `ComponentName.tsx` (PascalCase)
-- Utilidades: `kebab-case.ts`
-- Tipos: `database.ts`, `lesson-content.ts`
-- Queries: `*-queries.ts`
+### Estilos (Glassmorphism oscuro)
+```typescript
+// Card basica
+className="rounded-2xl bg-white/5 border border-white/10 p-6"
+
+// Card hover
+className="hover:border-brand/30 hover:bg-white/[0.07] transition-all"
+
+// Gradiente brand
+className="bg-gradient-to-r from-brand-light to-brand"
+```
 
 ---
 
-## 🚀 PLAN DE IMPLEMENTACIÓN
+## REGLAS CRITICAS
 
-### ✅ FASE 0: FUNDACIÓN (MANUAL)
-**Estado:** ✅ COMPLETADA
-- Base de datos creada en Supabase
-- Variables de entorno configuradas
-- Cliente Supabase instalado
-
-### ✅ FASE 1: DATOS DE PRUEBA
-**Estado:** ⚠️ PENDIENTE
-**Objetivo:** Tener 1 curso funcional en la base de datos
-- Script de seed
-- Curso "Bitcoin desde Cero" con 2 módulos
-
-### ✅ FASE 2: AUTENTICACIÓN
-**Estado:** ✅ COMPLETADA (2025-11-17)
-**Archivos creados:**
-- `app/login/page.tsx`
-- `app/register/page.tsx`
-- `middleware.ts`
-- `FASE_2_AUTENTICACION.md`
-
-**Funcionalidades:**
-- Login con email/password
-- Registro de usuarios
-- Middleware de protección de rutas
-- Redirecciones automáticas
-
-### 📍 FASE 3: INSCRIPCIONES
-**Estado:** ⚠️ PENDIENTE (SIGUIENTE)
-**Objetivo:** Usuarios pueden inscribirse a cursos
-- Crear tabla `course_enrollments`
-- API endpoint `/api/enroll`
-- Botón "Inscribirse" en curso
-- Dashboard muestra cursos inscritos
-
-### FASE 4: DASHBOARD REAL
-**Estado:** ⚠️ PENDIENTE
-- Reemplazar mock data con datos reales
-- Mostrar cursos inscritos
-- Estadísticas de progreso
-
-### FASE 5: PROGRESO DE LECCIONES
-**Estado:** ⚠️ PENDIENTE
-- Marcar lecciones como completadas
-- Actualizar progreso en dashboard
-
-### FASE 6: BOOKMARKS
-**Estado:** ⚠️ PENDIENTE
-- Guardar lecciones favoritas
-- Página de bookmarks
-
-### FASE 7: NOTAS
-**Estado:** ⚠️ PENDIENTE
-- Tomar notas en lecciones
-- Panel de notas
-
-### FASE 8: CERTIFICADOS
-**Estado:** ⚠️ PENDIENTE
-- Generar certificados al completar curso
-
-### FASE 9: ADMIN PANEL
-**Estado:** ⚠️ PENDIENTE
-- CRUD de cursos
-- Panel de administración
-
-### FASE 10: OPTIMIZACIONES
-**Estado:** ⚠️ PENDIENTE
-- Caching, lazy loading, SEO
-
----
-
-## ⚠️ REGLAS CRÍTICAS
-
-### ❌ NUNCA HACER
+### NUNCA HACER
 - Usar relaciones plurales (`lesson.modules.courses`)
 - Saltarse lectura de archivos antes de editar
-- Ignorar tipos de `types/database.ts`
 - Commit sin probar que compila
-- Importaciones relativas (usar `@/`)
 - Hardcodear datos sensibles
+- Ignorar verificaciones de elegibilidad
 
-### ✅ SIEMPRE HACER
+### SIEMPRE HACER
 - Usar `lesson.module.course` (singular)
 - Leer archivos con Read tool antes de Edit
-- Seguir tipos de `types/database.ts`
+- Verificar build antes de commit
 - Usar alias `@/` para imports
-- Logging con emojis (🔍 ✅ ❌)
-- Verificar estructura de datos
-- Probar flujo end-to-end
+- Castear tipos Supabase cuando es necesario: `as unknown as { ... }`
 
 ---
 
-## 🎯 INSTRUCCIONES PARA LA IA
-
-### Al recibir este prompt:
-1. Confirmar que leíste PROMPT-MAESTRO.md
-2. Preguntar en qué FASE estamos
-3. Verificar estado actual del proyecto
-4. Proponer siguiente paso específico según el plan
-5. Pedir confirmación antes de generar código
-
-### Al generar código:
-1. Seguir convenciones de este documento
-2. Usar tipos correctos de `types/database.ts`
-3. Logging apropiado con emojis
-4. Comentarios en español
-5. Código limpio y mantenible
-
-### Al terminar una tarea:
-1. Resumir lo que se hizo
-2. Indicar cómo verificar que funciona
-3. Proponer siguiente paso lógico
-4. Actualizar estado de la fase
-5. Reportar resultado
-
----
-
-## 📊 ESTADO ACTUAL DEL PROYECTO (2025-11-17)
+## ESTADO ACTUAL (26/01/2026)
 
 ```
-FASE 0: Fundación               ✅ Completada
-FASE 1: Datos de Prueba         ⚠️ Pendiente
-FASE 2: Autenticación           ✅ Completada (2025-11-17)
-FASE 3: Inscripciones           📍 SIGUIENTE
-FASE 4: Dashboard Real          ⚠️ Pendiente
-FASE 5: Progreso Lecciones      ⚠️ Pendiente
-FASE 6: Bookmarks               ⚠️ Pendiente
-FASE 7: Notas                   ⚠️ Pendiente
-FASE 8: Certificados            ⚠️ Pendiente
-FASE 9: Admin Panel             ⚠️ Pendiente
-FASE 10: Optimizaciones         ⚠️ Pendiente
+Sistema Core                 COMPLETADO
+├── Autenticacion
+├── Cursos y Lecciones
+├── Progreso y Enrollments
+├── Gamificacion (XP, Badges)
+└── Certificados
+
+Sistema Premium             COMPLETADO
+├── Suscripciones
+├── Revenue Share
+└── Compras de Cursos
+
+Sistema Instructores        COMPLETADO
+├── Examenes de Certificacion
+├── Verificacion Premium
+├── Verificacion Cursos
+├── Verificacion Quizzes
+├── Perfil Publico
+└── Pagina /instructores
+
+Sistema Mentores            COMPLETADO
+├── Aplicaciones
+├── Puntos de Merito
+├── Votacion Consejo
+├── Perfil Publico
+└── Pagina /mentores
+
+Panel Admin                 COMPLETADO
+├── Gestion Usuarios
+├── Gestion Cursos
+├── Asignacion Roles
+└── Configuracion
 ```
 
-**Próxima acción:** Implementar FASE 3 (Inscripciones)
-
 ---
 
-## 🚀 INICIO DE SESIÓN
-
-**PREGUNTA INICIAL:** ¿En qué fase estamos y qué tarea específica vamos a hacer hoy?
-
-**VERIFICAR:**
-1. PROMPT-MAESTRO.md está adjunto
-2. Tengo acceso al código del proyecto
-3. .env.local está configurado
-4. Supabase está operativo
-
-**COMENZAR:** Dime qué fase implementamos y te guío paso a paso.
-
----
-
-## 📝 CÓMO USAR ESTE PROMPT
-
-### Opción 1: Claude.ai (Web)
-1. Copiar este archivo completo
-2. Nuevo chat en Claude.ai
-3. Pegar el prompt
-4. Agregar: "Estoy listo para continuar. Actualmente estamos en FASE [número]."
-
-### Opción 2: Claude Code (VS Code)
-1. Abrir proyecto en VS Code
-2. Claude leerá este archivo automáticamente
-3. Decir: "Lee PROMPT-MAESTRO.md. Continuemos desde donde lo dejamos."
-
----
-
-**FIN DEL PROMPT MAESTRO**
-
----
-
-Última actualización: 2025-11-17
-Proyecto: Nodo360 Plataforma Educativa
+**Ultima actualizacion:** 26/01/2026
+**Proyecto:** Nodo360 Plataforma Educativa
+**Version:** 2.0
