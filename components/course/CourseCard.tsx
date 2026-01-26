@@ -4,12 +4,20 @@ import * as React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { BookOpen, Layers, Route } from 'lucide-react'
+import { InstructorPreviewModal, useInstructorPreview } from '@/components/instructor/InstructorPreviewModal'
 
 type LearningPathInfo = {
   id: string
   name: string
   slug: string
   emoji: string | null
+}
+
+type InstructorInfo = {
+  id: string
+  full_name: string | null
+  avatar_url?: string | null
+  role?: string | null
 }
 
 type CourseCardProps = {
@@ -25,6 +33,7 @@ type CourseCardProps = {
   progressPercent?: number
   isComingSoon?: boolean
   learningPath?: LearningPathInfo | null
+  instructor?: InstructorInfo | null
   onStart?: () => void
   onContinue?: () => void
   onView?: () => void
@@ -43,10 +52,12 @@ export function CourseCard({
   progressPercent = 0,
   isComingSoon = false,
   learningPath,
+  instructor,
   onStart,
   onContinue,
   onView,
 }: CourseCardProps) {
+  const instructorPreview = useInstructorPreview()
   const isInProgress = isEnrolled && !isCompleted && progressPercent > 0
 
   const metaText = isComingSoon
@@ -64,6 +75,7 @@ export function CourseCard({
   const secondaryCTAText = isEnrolled ? 'Ver progreso' : 'Ver contenido'
 
   return (
+    <>
     <div
       className={`
         group relative overflow-hidden rounded-2xl p-6 h-full flex flex-col min-h-[260px]
@@ -148,6 +160,49 @@ export function CourseCard({
             </span>
           )}
         </div>
+
+        {/* Instructor */}
+        {(() => {
+          const isNodo360 = !instructor?.id || instructor?.role === 'admin'
+
+          if (isNodo360) {
+            return (
+              <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
+                <span>Creado por</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-4 h-4 rounded bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
+                    <span className="text-[8px] font-bold text-white">N</span>
+                  </div>
+                  <span className="text-white/70">Nodo360</span>
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
+              <span>Por</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  instructorPreview.openPreview(instructor.id, e)
+                }}
+                className="flex items-center gap-1.5 hover:text-orange-400 transition-colors cursor-pointer"
+              >
+                {instructor.avatar_url && (
+                  <img
+                    src={instructor.avatar_url}
+                    alt=""
+                    className="w-4 h-4 rounded-full object-cover"
+                  />
+                )}
+                <span className="text-white/70 hover:text-orange-400 transition-colors">
+                  {instructor.full_name}
+                </span>
+              </button>
+            </div>
+          )
+        })()}
       </div>
 
       <div className="flex items-center justify-between gap-3 mt-6 pt-4 border-t border-white/10">
@@ -171,5 +226,16 @@ export function CourseCard({
         )}
       </div>
     </div>
+
+    {/* Instructor Preview Modal */}
+    {instructorPreview.instructorId && (
+      <InstructorPreviewModal
+        instructorId={instructorPreview.instructorId}
+        isOpen={instructorPreview.isOpen}
+        onClose={instructorPreview.closePreview}
+        position={instructorPreview.position}
+      />
+    )}
+    </>
   )
 }

@@ -5,9 +5,17 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import { InstructorPreviewModal, useInstructorPreview } from '@/components/instructor/InstructorPreviewModal'
 
 type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
 type CourseStatus = 'draft' | 'published' | 'archived' | 'coming_soon'
+
+export type CourseAuthor = {
+  id: string
+  full_name: string | null
+  avatar_url?: string | null
+  role?: string | null
+}
 
 export type CourseHeroCourse = {
   id: string
@@ -26,6 +34,10 @@ export type CourseHeroCourse = {
   total_lessons?: number | null
   total_duration_minutes?: number | null
   enrolled_count?: number | null
+
+  // Author info
+  instructor_id?: string | null
+  instructor?: CourseAuthor | null
 }
 
 export type CourseHeroProps = {
@@ -112,6 +124,7 @@ export default function CourseHero({
 }: CourseHeroProps) {
   const pct = clampPct(progressPct)
   const published = course.status === 'published'
+  const instructorPreview = useInstructorPreview()
 
   const courseUrl = hrefCourse ?? `/cursos/${course.slug}`
   const canContinue = isEnrolled && (pct ?? 0) > 0 && !!hrefContinue
@@ -125,6 +138,7 @@ export default function CourseHero({
   if (course.enrolled_count != null) metrics.push({ label: 'Alumnos', value: String(course.enrolled_count) })
 
   return (
+    <>
     <section className="relative overflow-hidden rounded-2xl border border-dark-border bg-white/5">
       {/* Fondo neutro + halos cálidos */}
       <div className="pointer-events-none absolute inset-0">
@@ -162,6 +176,46 @@ export default function CourseHero({
                 </p>
               )}
             </div>
+
+            {/* Autor */}
+            {(() => {
+              const isNodo360 = !course.instructor_id || course.instructor?.role === 'admin'
+
+              if (isNodo360) {
+                return (
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <span>Creado por</span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-white">N</span>
+                      </div>
+                      <span className="font-medium text-white">Nodo360</span>
+                    </div>
+                  </div>
+                )
+              }
+
+              return (
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span>Por</span>
+                  <button
+                    onClick={(e) => instructorPreview.openPreview(course.instructor_id!, e)}
+                    className="flex items-center gap-2 hover:text-orange-400 transition-colors cursor-pointer"
+                  >
+                    {course.instructor?.avatar_url && (
+                      <img
+                        src={course.instructor.avatar_url}
+                        alt=""
+                        className="w-5 h-5 rounded-full object-cover"
+                      />
+                    )}
+                    <span className="font-medium text-white hover:text-orange-400 transition-colors">
+                      {course.instructor?.full_name}
+                    </span>
+                  </button>
+                </div>
+              )
+            })()}
 
             {/* Progreso */}
             {pct != null && isEnrolled && (
@@ -294,5 +348,16 @@ export default function CourseHero({
         </div>
       </div>
     </section>
+
+    {/* Instructor Preview Modal */}
+    {instructorPreview.instructorId && (
+      <InstructorPreviewModal
+        instructorId={instructorPreview.instructorId}
+        isOpen={instructorPreview.isOpen}
+        onClose={instructorPreview.closePreview}
+        position={instructorPreview.position}
+      />
+    )}
+    </>
   )
 }
