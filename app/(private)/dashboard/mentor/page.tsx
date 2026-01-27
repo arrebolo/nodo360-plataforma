@@ -15,12 +15,66 @@ import {
   TrendingUp,
   Shield,
   FileText,
+  Landmark,
+  Zap,
+  BadgeCheck,
+  Lock,
+  ClipboardCheck,
+  Calendar,
+  Activity,
+  Vote,
+  AlertCircle,
 } from 'lucide-react'
 
 export const metadata = {
   title: 'Mentor | Nodo360',
   description: 'Panel de mentor y aplicaciones',
 }
+
+const BENEFITS = [
+  {
+    icon: Landmark,
+    title: 'Poder de Decisión',
+    description: 'Vota y decide el futuro de la plataforma',
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-500/20',
+  },
+  {
+    icon: Zap,
+    title: 'gPower Aumentado',
+    description: 'Mayor peso en votaciones de gobernanza',
+    color: 'text-yellow-400',
+    bgColor: 'bg-yellow-500/20',
+  },
+  {
+    icon: BadgeCheck,
+    title: 'Badge de Mentor',
+    description: 'Distintivo exclusivo en tu perfil',
+    color: 'text-brand-light',
+    bgColor: 'bg-brand/20',
+  },
+  {
+    icon: Users,
+    title: 'Mentoría Remunerada',
+    description: 'Sesiones 1:1 con estudiantes (próximamente)',
+    color: 'text-green-400',
+    bgColor: 'bg-green-500/20',
+  },
+  {
+    icon: Lock,
+    title: 'Acceso Exclusivo',
+    description: 'Canal privado de mentores',
+    color: 'text-purple-400',
+    bgColor: 'bg-purple-500/20',
+  },
+  {
+    icon: ClipboardCheck,
+    title: 'Validar Contenido',
+    description: 'Revisa y aprueba cursos de instructores',
+    color: 'text-cyan-400',
+    bgColor: 'bg-cyan-500/20',
+  },
+]
 
 function getStatusInfo(status: string) {
   const map: Record<string, { label: string; color: string; bg: string }> = {
@@ -45,7 +99,7 @@ export default async function MentorPage() {
   // Obtener perfil y rol
   const { data: profile } = await supabase
     .from('users')
-    .select('role, full_name')
+    .select('role, full_name, created_at')
     .eq('id', user.id)
     .single()
 
@@ -81,10 +135,47 @@ export default async function MentorPage() {
 
   // Elegibilidad (para no-mentores)
   let eligibility: any = null
+  let meritPoints = 0
+  let hasInstructorCert = false
+  let accountAge = 0
+  let totalMentors = 0
+  const maxMentors = 50 // Placeholder - could come from config
+
   if (!isMentor) {
     const { data: result } = await supabase
       .rpc('can_apply_mentor', { p_user_id: user.id })
     eligibility = result
+
+    // Obtener puntos de mérito
+    const { data: points } = await supabase
+      .from('mentor_points')
+      .select('total_points')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    meritPoints = points?.total_points || 0
+
+    // Verificar si tiene certificación de instructor
+    const { data: certs } = await supabase
+      .from('instructor_certifications')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .limit(1)
+    hasInstructorCert = (certs?.length || 0) > 0
+
+    // Calcular antigüedad de cuenta
+    if (profile?.created_at) {
+      const created = new Date(profile.created_at)
+      const now = new Date()
+      accountAge = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24 * 30))
+    }
+
+    // Contar mentores activos
+    const { count } = await supabase
+      .from('mentors')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active')
+    totalMentors = count || 0
   }
 
   // Aplicaciones propias
@@ -94,6 +185,20 @@ export default async function MentorPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(10)
+
+  // Calcular próxima evaluación (ejemplo: cada 3 meses)
+  const getNextEvaluation = () => {
+    if (!mentorProfile?.created_at) return null
+    const created = new Date(mentorProfile.created_at)
+    const now = new Date()
+    const monthsSince = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24 * 30))
+    const nextEvalMonth = Math.ceil((monthsSince + 1) / 3) * 3
+    const nextEval = new Date(created)
+    nextEval.setMonth(nextEval.getMonth() + nextEvalMonth)
+    return nextEval
+  }
+
+  const nextEvaluation = getNextEvaluation()
 
   return (
     <div className="min-h-screen bg-dark">
@@ -109,10 +214,36 @@ export default async function MentorPage() {
 
         {/* Header */}
         <PageHeader
-          icon={Users}
+          icon={Shield}
           title={isMentor ? 'Panel de Mentor' : 'Ser Mentor'}
           subtitle={isMentor ? 'Estadísticas y actividad de mentoría' : 'Aplica para convertirte en mentor de la comunidad'}
         />
+
+        {/* Benefits Section - Visible para todos */}
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <Star className="w-5 h-5 text-amber-400" />
+            ¿Por qué ser Mentor de Nodo360?
+          </h2>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {BENEFITS.map((benefit) => (
+              <div
+                key={benefit.title}
+                className="rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-white/20 transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`w-10 h-10 rounded-xl ${benefit.bgColor} flex items-center justify-center flex-shrink-0`}>
+                    <benefit.icon className={`w-5 h-5 ${benefit.color}`} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">{benefit.title}</h3>
+                    <p className="text-sm text-gray-400 mt-1">{benefit.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {isMentor ? (
           /* ===== VISTA MENTOR ===== */
@@ -120,42 +251,45 @@ export default async function MentorPage() {
             {/* Stats mensuales */}
             <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
               <StatCard
-                icon={<Star className="w-5 h-5" />}
-                title="Puntos del Mes"
-                value={monthlyStats?.points_earned || 0}
+                icon={<Activity className="w-5 h-5" />}
+                title="Días Activo"
+                value={monthlyStats?.days_active || 0}
               />
               <StatCard
                 icon={<MessageSquare className="w-5 h-5" />}
-                title="Sesiones"
-                value={monthlyStats?.sessions_completed || 0}
+                title="Respuestas Comunidad"
+                value={monthlyStats?.community_replies || 0}
               />
               <StatCard
-                icon={<TrendingUp className="w-5 h-5" />}
-                title="Calificación"
-                value={monthlyStats?.avg_rating ? `${monthlyStats.avg_rating.toFixed(1)}/5` : 'N/A'}
+                icon={<ClipboardCheck className="w-5 h-5" />}
+                title="Revisiones"
+                value={monthlyStats?.reviews_completed || 0}
               />
               <StatCard
-                icon={<AlertTriangle className="w-5 h-5" />}
-                title="Warnings"
-                value={mentorProfile?.warnings || 0}
-                className={mentorProfile?.warnings > 0 ? 'border-yellow-500/30' : ''}
+                icon={<Vote className="w-5 h-5" />}
+                title="Votos Emitidos"
+                value={monthlyStats?.votes_cast || 0}
               />
             </div>
 
             {/* Info del mentor */}
             <div className="mb-8 rounded-2xl bg-white/5 border border-white/10 p-6 sm:p-7">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-light/20 to-brand/10 flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-brand" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-amber-400" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h2 className="text-lg font-semibold text-white">Estado de Mentor</h2>
                   <p className="text-sm text-gray-400">
                     Mentor desde {mentorProfile?.created_at ? new Date(mentorProfile.created_at).toLocaleDateString('es-ES') : 'N/A'}
                   </p>
                 </div>
+                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium">
+                  Activo
+                </span>
               </div>
-              <div className="grid gap-4 md:grid-cols-3">
+
+              <div className="grid gap-4 md:grid-cols-4 mb-4">
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                   <div className="text-2xl font-bold text-white">{mentorProfile?.total_points || 0}</div>
                   <div className="text-sm text-gray-400">Puntos totales</div>
@@ -165,30 +299,37 @@ export default async function MentorPage() {
                   <div className="text-sm text-gray-400">Sesiones totales</div>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <div className={`text-2xl font-bold ${mentorProfile?.warnings > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
-                    {mentorProfile?.warnings || 0}/3
+                  <div className={`text-2xl font-bold ${(mentorProfile?.warnings || 0) > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
+                    {mentorProfile?.warnings || 0}/2
                   </div>
-                  <div className="text-sm text-gray-400">Warnings (máx. 3)</div>
+                  <div className="text-sm text-gray-400">Avisos activos</div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-2xl font-bold text-white">
+                    {nextEvaluation ? nextEvaluation.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }) : 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-400">Próxima evaluación</div>
                 </div>
               </div>
-              {mentorProfile?.warnings > 0 && (
-                <div className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+
+              {(mentorProfile?.warnings || 0) > 0 && (
+                <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
                   <p className="text-sm text-yellow-400 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
-                    Tienes {mentorProfile.warnings} warning(s). Al llegar a 3 se revoca el rol de mentor.
+                    Tienes {mentorProfile.warnings} aviso(s). Al llegar a 2 se revoca el rol de mentor.
                   </p>
                 </div>
               )}
             </div>
 
             {/* Acciones rápidas */}
-            <div className="mb-8 rounded-2xl bg-white/5 border border-white/10 p-6">
+            <div className="mb-8 grid gap-4 md:grid-cols-2">
               <Link
                 href="/gobernanza/mentores"
-                className="flex items-center gap-4 group"
+                className="flex items-center gap-4 p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors group"
               >
                 <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
-                  <FileText className="w-6 h-6 text-purple-400" />
+                  <Vote className="w-6 h-6 text-purple-400" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-white group-hover:text-brand-light transition-colors">
@@ -198,16 +339,32 @@ export default async function MentorPage() {
                 </div>
                 <ArrowLeft className="w-5 h-5 text-white/30 rotate-180" />
               </Link>
+
+              <Link
+                href="/gobernanza"
+                className="flex items-center gap-4 p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500/30 transition-colors">
+                  <Landmark className="w-6 h-6 text-amber-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white group-hover:text-brand-light transition-colors">
+                    Propuestas de Gobernanza
+                  </h3>
+                  <p className="text-sm text-gray-400">Participa en las decisiones de la plataforma</p>
+                </div>
+                <ArrowLeft className="w-5 h-5 text-white/30 rotate-180" />
+              </Link>
             </div>
           </>
         ) : (
           /* ===== VISTA NO-MENTOR ===== */
           <>
-            {/* Elegibilidad */}
+            {/* Checklist de Requisitos */}
             <div className="mb-8 rounded-2xl bg-white/5 border border-white/10 p-6 sm:p-7">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-light/20 to-brand/10 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-brand" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center">
+                  <ClipboardCheck className="w-6 h-6 text-amber-400" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-white">Requisitos para ser Mentor</h2>
@@ -215,37 +372,86 @@ export default async function MentorPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 mb-6">
-                <RequirementItem
-                  met={eligibility?.has_enough_points}
-                  label="Tener al menos 650 puntos de experiencia"
-                />
-                <RequirementItem
-                  met={eligibility?.has_completed_courses}
-                  label="Haber completado los cursos requeridos"
-                />
-                <RequirementItem
-                  met={eligibility?.no_pending_application}
-                  label="No tener una aplicación pendiente"
-                />
-                <RequirementItem
-                  met={eligibility?.cooldown_passed}
-                  label="No estar en período de espera"
-                />
+              <div className="mb-6 p-4 rounded-xl bg-white/[0.03] border border-white/5">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {/* Puntos de mérito */}
+                  <RequirementItem
+                    passed={meritPoints >= 650}
+                    label="Puntos de mérito mínimos"
+                    detail={`${meritPoints}/650`}
+                  />
+
+                  {/* Instructor certificado */}
+                  <RequirementItem
+                    passed={hasInstructorCert}
+                    label="Instructor certificado"
+                    detail={hasInstructorCert ? 'Sí' : 'No'}
+                  />
+
+                  {/* Antigüedad de cuenta */}
+                  <RequirementItem
+                    passed={accountAge >= 3}
+                    label="Cuenta activa +3 meses"
+                    detail={`${accountAge} meses`}
+                  />
+
+                  {/* Sin sanciones */}
+                  <RequirementItem
+                    passed={true}
+                    label="Sin sanciones activas"
+                    detail="Limpio"
+                  />
+
+                  {/* Plazas disponibles */}
+                  <RequirementItem
+                    passed={totalMentors < maxMentors}
+                    label="Plazas disponibles"
+                    detail={`${totalMentors}/${maxMentors} mentores`}
+                  />
+
+                  {/* Sin aplicación pendiente */}
+                  <RequirementItem
+                    passed={eligibility?.no_pending_application && eligibility?.cooldown_passed}
+                    label="Sin aplicación pendiente/cooldown"
+                    detail={
+                      !eligibility?.no_pending_application
+                        ? 'Pendiente'
+                        : !eligibility?.cooldown_passed
+                        ? 'En cooldown'
+                        : 'Disponible'
+                    }
+                  />
+                </div>
               </div>
 
+              {/* CTA Button */}
               {eligibility?.can_apply ? (
                 <Link
                   href="/dashboard/mentor/aplicar"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand hover:opacity-90 rounded-xl text-sm font-medium text-white transition-opacity"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff6b35] to-[#f7931a] hover:opacity-90 rounded-xl text-sm font-medium text-white transition-opacity shadow-lg shadow-orange-500/20"
                 >
                   <Star className="w-4 h-4" />
-                  Aplicar a Mentor
+                  Solicitar ser Mentor
                 </Link>
               ) : (
-                <p className="text-sm text-gray-400">
-                  {eligibility?.reason || 'No cumples los requisitos para aplicar.'}
-                </p>
+                <div>
+                  <button
+                    disabled
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 rounded-xl text-sm font-medium text-white/50 cursor-not-allowed"
+                  >
+                    <Star className="w-4 h-4" />
+                    Solicitar ser Mentor
+                  </button>
+                  <p className="mt-3 text-sm text-yellow-400 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {eligibility?.reason || 'No cumples los requisitos para aplicar.'}
+                  </p>
+                  {meritPoints < 650 && (
+                    <p className="mt-2 text-xs text-gray-500">
+                      Te faltan {650 - meritPoints} puntos de mérito. Completa cursos y participa en la comunidad para ganar puntos.
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           </>
@@ -304,15 +510,28 @@ export default async function MentorPage() {
   )
 }
 
-function RequirementItem({ met, label }: { met?: boolean; label: string }) {
+function RequirementItem({
+  passed,
+  label,
+  detail
+}: {
+  passed: boolean
+  label: string
+  detail: string
+}) {
   return (
-    <div className="flex items-center gap-3">
-      {met ? (
-        <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+    <div className="flex items-center gap-2">
+      {passed ? (
+        <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
       ) : (
-        <XCircle className="w-5 h-5 text-white/30 flex-shrink-0" />
+        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
       )}
-      <span className={`text-sm ${met ? 'text-white' : 'text-white/50'}`}>{label}</span>
+      <span className={`text-sm ${passed ? 'text-gray-300' : 'text-gray-400'}`}>
+        {label}
+      </span>
+      <span className={`text-xs ml-auto ${passed ? 'text-green-400' : 'text-gray-500'}`}>
+        {detail}
+      </span>
     </div>
   )
 }

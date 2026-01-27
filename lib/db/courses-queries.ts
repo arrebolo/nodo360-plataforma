@@ -41,7 +41,8 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
       instructor:instructor_id (
         id,
         full_name,
-        avatar_url
+        avatar_url,
+        role
       ),
       learning_path_courses (
         learning_path:learning_paths (
@@ -85,7 +86,8 @@ export async function getCourseBySlug(
         id,
         full_name,
         avatar_url,
-        bio
+        bio,
+        role
       ),
       modules (
         *,

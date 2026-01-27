@@ -412,7 +412,7 @@ BEGIN
 
   -- Otorgar rol de instructor
   INSERT INTO public.user_roles (user_id, role, notes)
-  VALUES (p_user_id, 'instructor', 'Certificación aprobada: ' || v_path.title)
+  VALUES (p_user_id, 'instructor', 'Certificación aprobada: ' || v_path.name)
   ON CONFLICT (user_id, role) DO NOTHING;
 
   RETURN v_cert_id;
@@ -438,7 +438,7 @@ BEGIN
     ic.id,
     ic.user_id,
     ie.title,
-    lp.title,
+    lp.name,
     ic.expires_at,
     EXTRACT(DAY FROM ic.expires_at - NOW())::INTEGER as days_remaining
   FROM public.instructor_certifications ic
@@ -678,8 +678,8 @@ CREATE POLICY "Admins can manage profiles" ON public.instructor_profiles FOR ALL
 INSERT INTO public.instructor_exams (learning_path_id, title, description, slug)
 SELECT
   lp.id,
-  'Examen de Instructor - ' || lp.title,
-  'Examen de certificación para instructores en la ruta ' || lp.title || '. ' ||
+  'Examen de Instructor - ' || lp.name,
+  'Examen de certificación para instructores en la ruta ' || lp.name || '. ' ||
   '20 preguntas de dificultad alta. Necesitas 80% (16/20) para aprobar. Tiempo límite: 30 minutos.',
   'instructor-exam-' || lp.slug
 FROM public.learning_paths lp

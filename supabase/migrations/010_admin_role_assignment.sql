@@ -409,7 +409,7 @@ RETURNS TABLE (
   user_id UUID,
   full_name TEXT,
   email TEXT,
-  current_role TEXT,
+  user_current_role TEXT,
   avatar_url TEXT,
   has_role BOOLEAN,
   role_is_active BOOLEAN
@@ -420,7 +420,7 @@ BEGIN
     u.id as user_id,
     u.full_name,
     u.email,
-    u.role as current_role,
+    u.role as user_current_role,
     u.avatar_url,
     EXISTS(
       SELECT 1 FROM public.user_roles ur

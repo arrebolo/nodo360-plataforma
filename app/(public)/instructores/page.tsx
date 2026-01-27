@@ -69,7 +69,14 @@ export default async function InstructoresPage({
       break
   }
 
-  const { data: instructors } = await query
+  const { data: instructors, error: instructorsError } = await query
+
+  // DEBUG: Ver qué devuelve la query
+  console.log('🔍 [instructores] Query result:', {
+    count: instructors?.length || 0,
+    error: instructorsError?.message,
+    firstItem: instructors?.[0]
+  })
 
   // Obtener certificaciones activas para mostrar badges
   const { data: certifications } = await supabase

@@ -132,6 +132,7 @@ export function CursosClient({ allCourses }: CursosClientProps) {
                     progressPercent={0}
                     isComingSoon={course.status === 'coming_soon'}
                     learningPath={learningPath}
+                    instructor={course.instructor as { id: string; full_name: string | null; avatar_url: string | null; role: string | null } | null}
                     onView={() => router.push(`/cursos/${course.slug}`)}
                     onStart={() => router.push(`/cursos/${course.slug}`)}
                     onContinue={() => router.push(`/cursos/${course.slug}`)}

@@ -88,7 +88,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
       total_lessons,
       total_duration_minutes,
       enrolled_count,
-      owner:users!courses_owner_id_fkey (
+      instructor_id,
+      instructor:users!courses_instructor_id_fkey (
         id,
         full_name,
         avatar_url,
@@ -237,6 +238,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
             enrolled_count: course.enrolled_count ?? null,
             banner_url: course.banner_url ?? null,
             thumbnail_url: course.thumbnail_url ?? null,
+            instructor_id: course.instructor_id ?? null,
+            instructor: course.instructor as unknown as { id: string; full_name: string | null; avatar_url: string | null; role: string | null } | null,
           }}
           isEnrolled={isEnrolled}
           progressPct={courseProgress?.globalProgress?.percentage ?? null}
