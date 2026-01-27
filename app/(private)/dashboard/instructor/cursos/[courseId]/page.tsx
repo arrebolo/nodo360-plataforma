@@ -1,9 +1,9 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { Eye, ExternalLink, ArrowLeft, Layers } from "lucide-react";
+import { Eye, ExternalLink, ArrowLeft, Layers, Clock, XCircle, AlertTriangle, Send } from "lucide-react";
 import CourseForm from "@/components/instructor/CourseForm";
 import { PublishChecklist } from "@/components/courses/PublishChecklist";
-import { PublishCourseButton } from "@/components/admin/PublishCourseButton";
+import { SubmitForReviewButton } from "@/components/instructor/SubmitForReviewButton";
 import { requireInstructorLike } from "@/lib/auth/requireInstructor";
 import { getMyCourseForEdit, getMyCourseStats, updateMyCourse } from "@/lib/instructor/courses";
 
@@ -46,14 +46,25 @@ export default async function EditInstructorCoursePage({
                 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium
                 ${course.status === 'published'
                   ? 'bg-success/20 text-success'
-                  : course.status === 'archived'
-                    ? 'bg-white/10 text-white/60'
-                    : 'bg-warning/20 text-warning'
+                  : course.status === 'pending_review'
+                    ? 'bg-yellow-500/20 text-yellow-400'
+                    : course.status === 'rejected'
+                      ? 'bg-red-500/20 text-red-400'
+                      : course.status === 'archived'
+                        ? 'bg-white/10 text-white/60'
+                        : 'bg-warning/20 text-warning'
                 }
               `}>
-                {course.status === 'published' ? 'Publicado' :
-                 course.status === 'archived' ? 'Archivado' :
-                 course.status === 'coming_soon' ? 'Próximamente' : 'Borrador'}
+                {course.status === 'published' && 'Publicado'}
+                {course.status === 'pending_review' && (
+                  <><Clock className="w-3.5 h-3.5" /> Pendiente de aprobación</>
+                )}
+                {course.status === 'rejected' && (
+                  <><XCircle className="w-3.5 h-3.5" /> Rechazado</>
+                )}
+                {course.status === 'archived' && 'Archivado'}
+                {course.status === 'draft' && 'Borrador'}
+                {course.status === 'coming_soon' && 'Próximamente'}
               </span>
             </div>
           </div>
@@ -69,11 +80,22 @@ export default async function EditInstructorCoursePage({
               Gestionar módulos
             </Link>
 
-            {/* Botón Publicar/Despublicar */}
-            <PublishCourseButton
-              courseId={courseId}
-              currentStatus={course.status}
-            />
+            {/* Botón Enviar a revisión (solo si es borrador o rechazado) */}
+            {(course.status === 'draft' || course.status === 'rejected') && (
+              <SubmitForReviewButton
+                courseId={courseId}
+                currentStatus={course.status}
+              />
+            )}
+
+            {/* Mensaje si está pendiente */}
+            {course.status === 'pending_review' && (
+              <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-xl text-sm">
+                <Clock className="w-4 h-4" />
+                En revisión por administrador
+              </div>
+            )}
+
 
             {/* Botón secundario: Preview */}
             <Link
@@ -109,6 +131,24 @@ export default async function EditInstructorCoursePage({
 
         {/* Separador visual */}
         <div className="border-b border-white/10 mb-8" />
+
+        {/* Alerta de rechazo */}
+        {course.status === 'rejected' && course.rejection_reason && (
+          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-red-400 mb-1">Curso rechazado</h3>
+                <p className="text-white/70 text-sm">
+                  <span className="font-medium text-white/80">Motivo:</span> {course.rejection_reason}
+                </p>
+                <p className="text-white/50 text-sm mt-2">
+                  Corrige los problemas indicados y vuelve a enviar el curso a revisión.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Grid de 2 columnas */}
         <div className="grid lg:grid-cols-3 gap-8">
