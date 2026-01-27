@@ -694,6 +694,54 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- =====================================================
+-- Función: Decisión directa de admin para aplicación de mentor
+-- (Wrapper conveniente para cuando hay <20 mentores)
+-- =====================================================
+CREATE OR REPLACE FUNCTION public.admin_decide_mentor_application(
+  p_application_id UUID,
+  p_admin_id UUID,
+  p_approved BOOLEAN,
+  p_reason TEXT DEFAULT NULL
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_app RECORD;
+BEGIN
+  -- Verificar que existe la aplicación
+  SELECT * INTO v_app FROM public.mentor_applications WHERE id = p_application_id;
+
+  IF v_app IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Aplicación no encontrada');
+  END IF;
+
+  -- Verificar que es designación por admin
+  IF v_app.decision_method != 'admin_designation' THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'error', 'Esta aplicación requiere votación secreta, no decisión de admin'
+    );
+  END IF;
+
+  -- Verificar que el usuario es admin
+  IF NOT EXISTS (
+    SELECT 1 FROM public.user_roles
+    WHERE user_id = p_admin_id AND role = 'admin' AND is_active = true
+  ) THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Solo admins pueden usar esta función');
+  END IF;
+
+  -- Delegar a resolve_mentor_application
+  RETURN public.resolve_mentor_application(
+    p_application_id,
+    p_admin_id,
+    p_approved,
+    p_reason
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- =====================================================
 -- Función: Remover status de mentor
 -- =====================================================
 CREATE OR REPLACE FUNCTION public.remove_mentor_status(
@@ -1105,7 +1153,7 @@ COMMENT ON FUNCTION public.get_mentor_points IS 'Obtiene puntos totales de un us
 COMMENT ON FUNCTION public.can_apply_mentor IS 'Verifica elegibilidad para aplicar a mentor, retorna JSONB con can_apply y razón';
 COMMENT ON FUNCTION public.submit_mentor_application IS 'Envía aplicación de mentor, retorna JSONB con resultado y método de decisión';
 COMMENT ON FUNCTION public.vote_mentor_application IS 'Registra voto secreto en aplicación, retorna JSONB con success/error';
-COMMENT ON FUNCTION public.resolve_mentor_vote IS 'Resuelve votación de aplicación (quórum + aprobación)';
+COMMENT ON FUNCTION public.resolve_mentor_application IS 'Resuelve votación de aplicación (quórum + aprobación)';
 COMMENT ON FUNCTION public.admin_decide_mentor_application IS 'Designación directa por admin cuando hay <20 mentores';
 COMMENT ON FUNCTION public.evaluate_mentor_monthly IS 'Evalúa mínimos mensuales y emite avisos/expulsiones';
 COMMENT ON FUNCTION public.request_mentor_leave IS 'Solicita licencia validando límite anual de 60 días';
