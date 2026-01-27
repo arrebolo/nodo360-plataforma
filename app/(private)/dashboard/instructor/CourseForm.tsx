@@ -2,13 +2,15 @@
 
 import React, { useState, useTransition } from "react";
 
+type CourseStatus = "draft" | "pending_review" | "published" | "rejected" | "archived" | "coming_soon";
+
 type Props = {
   initial?: {
     title: string;
     slug: string;
     description?: string | null;
     level: "beginner" | "intermediate" | "advanced";
-    status: "draft" | "published" | "archived" | "coming_soon";
+    status: CourseStatus;
     is_free: boolean;
     price?: number | null;
   };
@@ -115,18 +117,35 @@ export default function CourseForm({ initial, onSave }: Props) {
         </div>
 
         <div className="grid gap-2">
-          <label className={labelClasses}>Estado *</label>
-          <select
-            className={selectClasses}
-            value={form.status}
-            onChange={(e) => update("status", e.target.value as any)}
-            style={{ colorScheme: 'dark' }}
-          >
-            <option value="draft" className="bg-[#0d1117] text-white">Borrador</option>
-            <option value="published" className="bg-[#0d1117] text-white">Publicado</option>
-            <option value="coming_soon" className="bg-[#0d1117] text-white">Próximamente</option>
-            <option value="archived" className="bg-[#0d1117] text-white">Archivado</option>
-          </select>
+          <label className={labelClasses}>Estado</label>
+          {/* Estados controlados por admin - mostrar como solo lectura */}
+          {(form.status === 'published' || form.status === 'pending_review' || form.status === 'rejected') ? (
+            <div className={`${inputClasses} flex items-center gap-2`}>
+              <span className={`w-2 h-2 rounded-full ${
+                form.status === 'published' ? 'bg-green-400' :
+                form.status === 'pending_review' ? 'bg-yellow-400' :
+                'bg-red-400'
+              }`} />
+              <span>
+                {form.status === 'published' ? 'Publicado' :
+                 form.status === 'pending_review' ? 'Pendiente de revisión' :
+                 'Rechazado'}
+              </span>
+            </div>
+          ) : (
+            <select
+              className={selectClasses}
+              value={form.status}
+              onChange={(e) => update("status", e.target.value as any)}
+              style={{ colorScheme: 'dark' }}
+            >
+              <option value="draft" className="bg-[#0d1117] text-white">Borrador</option>
+              <option value="archived" className="bg-[#0d1117] text-white">Archivado</option>
+            </select>
+          )}
+          <p className="text-xs text-white/50">
+            Para publicar, usa "Enviar a revisión". Un admin aprobará tu curso.
+          </p>
         </div>
       </div>
 
