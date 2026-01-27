@@ -6,11 +6,12 @@ export type InstructorCourseForm = {
   slug: string;
   description?: string | null;
   level: "beginner" | "intermediate" | "advanced";
-  status: "draft" | "published" | "archived" | "coming_soon";
+  status: "draft" | "published" | "archived" | "coming_soon" | "pending_review" | "rejected";
   is_free: boolean;
   price?: number | null;
   thumbnail_url?: string | null;
   banner_url?: string | null;
+  rejection_reason?: string | null;
 };
 
 export async function listMyCourses(userId: string) {
@@ -89,7 +90,7 @@ export async function getMyCourseForEdit(userId: string, courseId: string) {
     .select(`
       id, title, slug, description, long_description,
       level, status, is_free, is_premium, price,
-      thumbnail_url, banner_url
+      thumbnail_url, banner_url, rejection_reason
     `)
     .eq("id", courseId)
     .eq("instructor_id", userId)

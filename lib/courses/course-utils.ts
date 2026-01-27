@@ -29,7 +29,9 @@ export const COURSE_LEVELS = [
  */
 export const COURSE_STATUSES = [
   { value: 'draft', label: 'Borrador' },
+  { value: 'pending_review', label: 'Pendiente de revisión' },
   { value: 'published', label: 'Publicado' },
+  { value: 'rejected', label: 'Rechazado' },
   { value: 'archived', label: 'Archivado' },
 ] as const
 
