@@ -103,13 +103,11 @@ export default async function InstructorProfilePage({
       id,
       title,
       slug,
-      short_description,
+      description,
       thumbnail_url,
       enrolled_count,
-      rating_average,
-      rating_count,
-      difficulty,
-      duration_hours
+      level,
+      total_duration_minutes
     `)
     .eq('instructor_id', id)
     .eq('status', 'published')
@@ -258,31 +256,29 @@ export default async function InstructorProfilePage({
                         <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors truncate">
                           {course.title}
                         </h3>
-                        {course.short_description && (
+                        {course.description && (
                           <p className="text-sm text-gray-400 line-clamp-1 mt-1">
-                            {course.short_description}
+                            {course.description}
                           </p>
                         )}
                         <div className="flex items-center gap-4 mt-2 text-sm">
-                          {course.rating_count > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                              <span className="text-white">{course.rating_average?.toFixed(1)}</span>
-                              <span className="text-gray-500">({course.rating_count})</span>
-                            </div>
-                          )}
                           <div className="flex items-center gap-1 text-gray-400">
                             <Users className="w-4 h-4" />
-                            <span>{course.enrolled_count?.toLocaleString()}</span>
+                            <span>{course.enrolled_count?.toLocaleString() || 0} estudiantes</span>
                           </div>
-                          {course.difficulty && (
+                          {course.level && (
                             <span className={`px-2 py-0.5 rounded text-xs ${
-                              course.difficulty === 'beginner' ? 'bg-green-500/20 text-green-400' :
-                              course.difficulty === 'intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
+                              course.level === 'beginner' ? 'bg-green-500/20 text-green-400' :
+                              course.level === 'intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
                               'bg-red-500/20 text-red-400'
                             }`}>
-                              {course.difficulty === 'beginner' ? 'Principiante' :
-                               course.difficulty === 'intermediate' ? 'Intermedio' : 'Avanzado'}
+                              {course.level === 'beginner' ? 'Principiante' :
+                               course.level === 'intermediate' ? 'Intermedio' : 'Avanzado'}
+                            </span>
+                          )}
+                          {course.total_duration_minutes && course.total_duration_minutes > 0 && (
+                            <span className="text-gray-400">
+                              {Math.round(course.total_duration_minutes / 60)}h
                             </span>
                           )}
                         </div>
