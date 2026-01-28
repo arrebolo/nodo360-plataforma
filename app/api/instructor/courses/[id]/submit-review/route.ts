@@ -63,8 +63,15 @@ export async function POST(
     console.log(`📊 [Submit Review] Modules count: ${modulesCount}, error: ${modulesError?.message || 'none'}`)
 
     if (modulesError) {
-      console.log(`⚠️ [Submit Review] Error counting modules (possible RLS issue):`, modulesError)
-      // Intentar con bypass - esto es una verificación, no un cambio de datos
+      console.error(`❌ [Submit Review] Error counting modules:`, modulesError)
+      return NextResponse.json(
+        {
+          error: 'Error al verificar módulos del curso',
+          details: modulesError.message,
+          code: modulesError.code
+        },
+        { status: 500 }
+      )
     }
 
     if (!modulesCount || modulesCount === 0) {
@@ -74,15 +81,24 @@ export async function POST(
       )
     }
 
+    // Contar lecciones a través de los módulos del curso
     const { count: lessonsCount, error: lessonsError } = await supabase
       .from('lessons')
-      .select('*', { count: 'exact', head: true })
-      .eq('course_id', courseId)
+      .select('*, modules!inner(course_id)', { count: 'exact', head: true })
+      .eq('modules.course_id', courseId)
 
     console.log(`📊 [Submit Review] Lessons count: ${lessonsCount}, error: ${lessonsError?.message || 'none'}`)
 
     if (lessonsError) {
-      console.log(`⚠️ [Submit Review] Error counting lessons (possible RLS issue):`, lessonsError)
+      console.error(`❌ [Submit Review] Error counting lessons:`, lessonsError)
+      return NextResponse.json(
+        {
+          error: 'Error al verificar lecciones del curso',
+          details: lessonsError.message,
+          code: lessonsError.code
+        },
+        { status: 500 }
+      )
     }
 
     if (!lessonsCount || lessonsCount === 0) {
@@ -102,9 +118,13 @@ export async function POST(
       .eq('id', courseId)
 
     if (updateError) {
-      console.error('Error updating course status:', updateError)
+      console.error('❌ [Submit Review] Error updating course status:', updateError)
       return NextResponse.json(
-        { error: 'Error al enviar a revisión' },
+        {
+          error: 'Error al actualizar el estado del curso',
+          details: updateError.message,
+          code: updateError.code
+        },
         { status: 500 }
       )
     }
@@ -121,9 +141,12 @@ export async function POST(
       message: 'Curso enviado a revisión correctamente',
     })
   } catch (error) {
-    console.error('Error in submit-review:', error)
+    console.error('❌ [Submit Review] Unexpected error:', error)
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      {
+        error: error instanceof Error ? error.message : 'Error desconocido',
+        details: String(error)
+      },
       { status: 500 }
     )
   }
