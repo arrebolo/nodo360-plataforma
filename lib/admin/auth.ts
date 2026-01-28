@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 /**
- * Verifica que el usuario autenticado sea admin o instructor
- * Si no, redirige al home
+ * Verifica que el usuario autenticado sea admin
+ * Si no es admin, redirige al dashboard
  */
 export async function requireAdmin(returnUrl?: string) {
   console.log('🔍 [requireAdmin] Verificando permisos de admin...')
@@ -35,10 +35,10 @@ export async function requireAdmin(returnUrl?: string) {
 
   console.log('🔍 [requireAdmin] Rol del usuario:', profile?.role)
 
-  // Verificar permisos
-  if (profile?.role !== 'admin' && profile?.role !== 'instructor') {
-    console.log('❌ [requireAdmin] Usuario sin permisos de admin')
-    redirect('/')
+  // Verificar permisos - SOLO admin puede acceder
+  if (profile?.role !== 'admin') {
+    console.log(`❌ [requireAdmin] Usuario con rol '${profile?.role}' intentó acceder a admin`)
+    redirect('/dashboard')
   }
 
   console.log('✅ [requireAdmin] Permisos de admin verificados')
