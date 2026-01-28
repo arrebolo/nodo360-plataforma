@@ -6,6 +6,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  console.log('🚀 [submit-review] API v2 - Starting request')
   try {
     const { id: courseId } = await params
     const supabase = await createClient()
