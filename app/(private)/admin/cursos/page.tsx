@@ -27,9 +27,10 @@ function statusLabel(status: 'draft' | 'pending_review' | 'published' | null) {
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams?: SearchParams
+  searchParams: Promise<SearchParams>
 }): Promise<Metadata> {
-  const status = normalizeStatus(searchParams?.status)
+  const params = await searchParams
+  const status = normalizeStatus(params?.status)
   const label = statusLabel(status)
 
   const title = label
@@ -46,13 +47,14 @@ export async function generateMetadata({
 export default async function AdminCoursesPage({
   searchParams,
 }: {
-  searchParams?: SearchParams
+  searchParams: Promise<SearchParams>
 }) {
-  console.log('🎯 [Admin Courses] Cargando lista de cursos')
+  const params = await searchParams
+  console.log('🎯 [Admin Courses] Cargando lista de cursos, status:', params?.status)
 
   const supabase = await createClient()
 
-  const statusFilter = normalizeStatus(searchParams?.status)
+  const statusFilter = normalizeStatus(params?.status)
   const label = statusLabel(statusFilter)
 
   // 🔁 ReturnTo: preserva filtro al navegar a detalle/editar
