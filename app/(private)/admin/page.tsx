@@ -12,6 +12,7 @@ import {
   Zap,
   Target,
   Award,
+  Clock,
 } from 'lucide-react'
 
 export const metadata = {
@@ -30,6 +31,12 @@ export default async function AdminDashboardPage() {
     .select('id, title, slug, status, created_at')
     .order('created_at', { ascending: false })
     .limit(5)
+
+  // Contar cursos pendientes de revisión
+  const { count: pendingCoursesCount } = await supabase
+    .from('courses')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending_review')
 
   console.log('✅ [Admin Dashboard] Datos cargados', stats)
 
@@ -131,6 +138,31 @@ export default async function AdminDashboardPage() {
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-4 gap-6 mb-8">
+        {/* Cursos Pendientes de Revisión - Destacado si hay pendientes */}
+        <Link
+          href="/admin/cursos/pendientes"
+          className={`group backdrop-blur-sm border rounded-xl p-6 transition-all ${
+            pendingCoursesCount && pendingCoursesCount > 0
+              ? 'bg-orange-500/10 border-orange-500/30 hover:bg-orange-500/20 hover:border-orange-500/50'
+              : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-orange-500/40'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <Clock className="w-6 h-6 text-orange-400" />
+            {pendingCoursesCount && pendingCoursesCount > 0 && (
+              <span className="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded-full">
+                {pendingCoursesCount}
+              </span>
+            )}
+          </div>
+          <h3 className="text-lg font-bold text-white mb-1">Pendientes</h3>
+          <p className="text-sm text-white/60">
+            {pendingCoursesCount && pendingCoursesCount > 0
+              ? `${pendingCoursesCount} curso${pendingCoursesCount > 1 ? 's' : ''} por revisar`
+              : 'Sin cursos pendientes'}
+          </p>
+        </Link>
+
         <Link
           href="/admin/cursos/nuevo"
           className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 hover:border-brand-light/50 transition-all"
@@ -138,8 +170,8 @@ export default async function AdminDashboardPage() {
           <div className="flex items-center justify-between mb-3">
             <Plus className="w-6 h-6 text-brand-light" />
           </div>
-          <h3 className="text-lg font-bold text-white mb-1">Crear Nuevo Curso</h3>
-          <p className="text-sm text-white/60">Comienza a crear contenido</p>
+          <h3 className="text-lg font-bold text-white mb-1">Crear Curso</h3>
+          <p className="text-sm text-white/60">Nuevo contenido</p>
         </Link>
 
         <Link
@@ -150,7 +182,7 @@ export default async function AdminDashboardPage() {
             <BookOpen className="w-6 h-6 text-yellow-400" />
           </div>
           <h3 className="text-lg font-bold text-white mb-1">Borradores</h3>
-          <p className="text-sm text-white/60">Revisar cursos pendientes</p>
+          <p className="text-sm text-white/60">Cursos en desarrollo</p>
         </Link>
 
         <Link
