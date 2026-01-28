@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 type PutBody = {
-  key: 'xp_rules' | 'level_rules'
+  key: 'xp_rules' | 'level_rules' | 'commission_rates'
   value: unknown
 }
 
@@ -12,7 +12,7 @@ type PutBody = {
  * Whitelist estricta para evitar keys arbitrarias
  */
 function isValidKey(key: string): key is PutBody['key'] {
-  return key === 'xp_rules' || key === 'level_rules'
+  return key === 'xp_rules' || key === 'level_rules' || key === 'commission_rates'
 }
 
 /**

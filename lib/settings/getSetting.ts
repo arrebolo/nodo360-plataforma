@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
-type SettingsKey = 'xp_rules' | 'level_rules'
+type SettingsKey = 'xp_rules' | 'level_rules' | 'commission_rates'
 
 /**
  * Lee un setting desde public.system_settings (key/value jsonb).
