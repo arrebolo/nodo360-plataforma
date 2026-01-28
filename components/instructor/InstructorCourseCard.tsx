@@ -2,16 +2,17 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Pencil,
   Eye,
-  Globe,
-  GlobeLock,
   BookOpen,
   Clock,
   Users,
   Calendar,
-  Copy
+  Copy,
+  Send,
+  Loader2
 } from 'lucide-react'
 
 interface Course {
@@ -19,7 +20,7 @@ interface Course {
   title: string
   slug: string
   level: 'beginner' | 'intermediate' | 'advanced'
-  status: 'draft' | 'published' | 'archived' | 'coming_soon'
+  status: 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived' | 'coming_soon'
   is_free: boolean
   price?: number | null
   total_modules: number | null
@@ -37,7 +38,9 @@ interface InstructorCourseCardProps {
 
 const statusConfig = {
   draft: { label: 'Borrador', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  pending_review: { label: 'En revisión', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
   published: { label: 'Publicado', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  rejected: { label: 'Rechazado', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
   archived: { label: 'Archivado', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
   coming_soon: { label: 'Proximamente', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
 }
@@ -49,9 +52,10 @@ const levelConfig = {
 }
 
 export default function InstructorCourseCard({ course, onStatusChange }: InstructorCourseCardProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDuplicating, setIsDuplicating] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(course.status)
+  const router = useRouter()
 
   const status = statusConfig[currentStatus] || statusConfig.draft
   const level = levelConfig[course.level] || levelConfig.beginner
@@ -69,29 +73,39 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
     ? Math.round(course.total_duration_minutes / 60)
     : null
 
-  const handleTogglePublish = async () => {
-    if (isLoading) return
-    setIsLoading(true)
+  // Enviar a revisión (para cursos en draft o rejected)
+  const handleSubmitForReview = async () => {
+    if (isSubmitting) return
 
-    const newStatus = currentStatus === 'published' ? 'draft' : 'published'
+    if (!confirm('¿Enviar este curso a revisión? Un administrador lo revisará antes de publicarlo.')) {
+      return
+    }
+
+    setIsSubmitting(true)
 
     try {
-      const res = await fetch(`/api/instructor/courses/${course.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+      const res = await fetch(`/api/instructor/courses/${course.id}/submit-review`, {
+        method: 'POST',
       })
 
       if (res.ok) {
-        setCurrentStatus(newStatus)
+        setCurrentStatus('pending_review')
         if (onStatusChange) {
-          onStatusChange(course.id, newStatus)
+          onStatusChange(course.id, 'pending_review')
         }
+        router.refresh()
+      } else {
+        const data = await res.json()
+        const errorMsg = data.details
+          ? `${data.error}: ${data.details}`
+          : data.error
+        alert(errorMsg || 'Error al enviar a revisión')
       }
     } catch (error) {
-      console.error('Error cambiando estado:', error)
+      console.error('Error enviando a revisión:', error)
+      alert('Error al enviar a revisión')
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -177,7 +191,7 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
         <div className="flex items-center gap-2">
           {/* Editar */}
           <Link
-            href={`/admin/cursos/${course.id}`}
+            href={`/dashboard/instructor/cursos/${course.id}`}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
           >
             <Pencil className="w-4 h-4" />
@@ -205,28 +219,35 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
             {isDuplicating ? '...' : 'Duplicar'}
           </button>
 
-          {/* Publicar/Despublicar */}
-          <button
-            onClick={handleTogglePublish}
-            disabled={isLoading}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors disabled:opacity-50 ${
-              currentStatus === 'published'
-                ? 'text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20'
-                : 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
-            }`}
-          >
-            {currentStatus === 'published' ? (
-              <>
-                <GlobeLock className="w-4 h-4" />
-                {isLoading ? '...' : 'Despublicar'}
-              </>
-            ) : (
-              <>
-                <Globe className="w-4 h-4" />
-                {isLoading ? '...' : 'Publicar'}
-              </>
-            )}
-          </button>
+          {/* Enviar a revisión (solo para draft o rejected) */}
+          {(currentStatus === 'draft' || currentStatus === 'rejected') && (
+            <button
+              onClick={handleSubmitForReview}
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-brand-light bg-brand-light/10 hover:bg-brand-light/20 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+              {isSubmitting ? 'Enviando...' : currentStatus === 'rejected' ? 'Reenviar' : 'Enviar a revisión'}
+            </button>
+          )}
+
+          {/* Indicador de estado para pending_review */}
+          {currentStatus === 'pending_review' && (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-orange-400 bg-orange-500/10 rounded-lg">
+              En revisión
+            </span>
+          )}
+
+          {/* Indicador de estado para published */}
+          {currentStatus === 'published' && (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-emerald-400 bg-emerald-500/10 rounded-lg">
+              Publicado
+            </span>
+          )}
         </div>
       </div>
     </div>

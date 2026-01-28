@@ -15,6 +15,8 @@ import {
   Clock,
   Eye,
 } from 'lucide-react'
+import { sendCourseApprovedEmail } from '@/lib/email/course-approved'
+import { sendCourseRejectedEmail } from '@/lib/email/course-rejected'
 
 interface ReviewCoursePageProps {
   params: Promise<{ id: string }>
@@ -34,10 +36,25 @@ async function approveCourse(courseId: string) {
   await requireAdmin()
   const supabase = await createClient()
 
+  // Obtener curso con info del instructor para el email
+  const { data: course } = await supabase
+    .from('courses')
+    .select(`
+      id, title, slug,
+      users!courses_instructor_id_fkey (
+        email,
+        full_name
+      )
+    `)
+    .eq('id', courseId)
+    .single()
+
   const { error } = await supabase
     .from('courses')
     .update({
       status: 'published',
+      published_at: new Date().toISOString(),
+      rejection_reason: null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', courseId)
@@ -47,6 +64,17 @@ async function approveCourse(courseId: string) {
   }
 
   console.log(`✅ [Admin] Course ${courseId} approved and published`)
+
+  // Enviar email al instructor (non-blocking)
+  if (course?.users) {
+    const instructor = course.users as any
+    sendCourseApprovedEmail({
+      to: instructor.email,
+      instructorName: instructor.full_name || 'Instructor',
+      courseName: course.title,
+      courseSlug: course.slug,
+    }).catch(err => console.error('Error enviando email de aprobación:', err))
+  }
 
   revalidatePath('/admin/cursos/pendientes')
   revalidatePath('/admin/cursos')
@@ -67,6 +95,19 @@ async function rejectCourse(courseId: string, formData: FormData) {
     throw new Error('Debes proporcionar un motivo de rechazo (mínimo 10 caracteres)')
   }
 
+  // Obtener curso con info del instructor para el email
+  const { data: course } = await supabase
+    .from('courses')
+    .select(`
+      id, title,
+      users!courses_instructor_id_fkey (
+        email,
+        full_name
+      )
+    `)
+    .eq('id', courseId)
+    .single()
+
   const { error } = await supabase
     .from('courses')
     .update({
@@ -81,6 +122,18 @@ async function rejectCourse(courseId: string, formData: FormData) {
   }
 
   console.log(`❌ [Admin] Course ${courseId} rejected. Reason: ${reason}`)
+
+  // Enviar email al instructor (non-blocking)
+  if (course?.users) {
+    const instructor = course.users as any
+    sendCourseRejectedEmail({
+      to: instructor.email,
+      instructorName: instructor.full_name || 'Instructor',
+      courseName: course.title,
+      courseId: courseId,
+      rejectionReason: reason.trim(),
+    }).catch(err => console.error('Error enviando email de rechazo:', err))
+  }
 
   revalidatePath('/admin/cursos/pendientes')
   revalidatePath('/admin/cursos')

@@ -4,7 +4,7 @@ import React, { useState, useTransition } from "react";
 import { LearningPathSelect } from "./LearningPathSelect";
 
 type CourseLevel = "beginner" | "intermediate" | "advanced";
-type CourseStatus = "draft" | "published" | "archived" | "coming_soon";
+type CourseStatus = "draft" | "published" | "pending_review" | "rejected" | "archived" | "coming_soon";
 
 type Initial = {
   title: string;
@@ -21,6 +21,8 @@ type Initial = {
 type Props = {
   initial?: Initial;
   courseId?: string;
+  /** Si true, el botón mostrará advertencia de re-aprobación */
+  isPublished?: boolean;
   onSave: (payload: {
     title: string;
     slug: string;
@@ -34,7 +36,7 @@ type Props = {
   }) => Promise<void>;
 };
 
-export default function CourseForm({ initial, courseId, onSave }: Props) {
+export default function CourseForm({ initial, courseId, isPublished, onSave }: Props) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -274,9 +276,17 @@ export default function CourseForm({ initial, courseId, onSave }: Props) {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-brand-light to-brand px-6 py-3 text-sm font-semibold text-white hover:opacity-90 hover:shadow-lg hover:shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        className={`w-full sm:w-auto rounded-xl px-6 py-3 text-sm font-semibold text-white hover:opacity-90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition ${
+          isPublished
+            ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:shadow-amber-500/20"
+            : "bg-gradient-to-r from-brand-light to-brand hover:shadow-brand/20"
+        }`}
       >
-        {isPending ? "Guardando..." : "Guardar curso"}
+        {isPending
+          ? "Guardando..."
+          : isPublished
+            ? "Guardar (requiere re-aprobación)"
+            : "Guardar curso"}
       </button>
     </form>
   );

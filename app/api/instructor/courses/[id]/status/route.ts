@@ -6,8 +6,15 @@ type RouteContext = {
   params: Promise<{ id: string }>
 }
 
-const VALID_STATUSES = ['draft', 'published', 'archived', 'coming_soon'] as const
-type CourseStatus = typeof VALID_STATUSES[number]
+// Estados válidos para el sistema
+const ALL_STATUSES = ['draft', 'pending_review', 'published', 'rejected', 'archived', 'coming_soon'] as const
+type CourseStatus = typeof ALL_STATUSES[number]
+
+// Estados que un instructor puede establecer (NO puede publicar directamente)
+const INSTRUCTOR_ALLOWED_STATUSES = ['draft', 'archived'] as const
+
+// Estados que SOLO admin puede establecer
+const ADMIN_ONLY_STATUSES = ['published', 'rejected'] as const
 
 /**
  * PATCH /api/instructor/courses/[id]/status
@@ -70,21 +77,38 @@ export async function PATCH(
     const body = await request.json()
     const newStatus = body.status as CourseStatus
 
-    if (!newStatus || !VALID_STATUSES.includes(newStatus)) {
+    if (!newStatus || !ALL_STATUSES.includes(newStatus)) {
       return NextResponse.json(
-        { error: `Estado invalido. Valores permitidos: ${VALID_STATUSES.join(', ')}` },
+        { error: `Estado invalido. Valores permitidos: ${ALL_STATUSES.join(', ')}` },
         { status: 400 }
       )
     }
 
+    // IMPORTANTE: Solo admin puede cambiar a 'published' o 'rejected'
+    if (!isAdmin && ADMIN_ONLY_STATUSES.includes(newStatus as any)) {
+      return NextResponse.json(
+        { error: 'Solo los administradores pueden publicar o rechazar cursos. Usa "Enviar a revisión" para solicitar aprobación.' },
+        { status: 403 }
+      )
+    }
+
+    // Instructor no puede cambiar desde pending_review (debe esperar al admin)
+    if (!isAdmin && course.status === 'pending_review' && newStatus !== 'draft') {
+      return NextResponse.json(
+        { error: 'El curso está pendiente de revisión. Solo un administrador puede aprobarlo o rechazarlo.' },
+        { status: 403 }
+      )
+    }
+
     // Actualizar el estado del curso
-    const updateData: { status: CourseStatus; published_at?: string | null } = {
+    const updateData: { status: CourseStatus; published_at?: string | null; rejection_reason?: string | null } = {
       status: newStatus
     }
 
-    // Si se publica, establecer published_at
+    // Si se publica, establecer published_at y limpiar rejection_reason
     if (newStatus === 'published' && course.status !== 'published') {
       updateData.published_at = new Date().toISOString()
+      updateData.rejection_reason = null
     }
 
     // Si se despublica, limpiar published_at

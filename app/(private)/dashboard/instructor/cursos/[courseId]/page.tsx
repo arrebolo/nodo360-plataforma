@@ -132,6 +132,21 @@ export default async function EditInstructorCoursePage({
         {/* Separador visual */}
         <div className="border-b border-white/10 mb-8" />
 
+        {/* Advertencia para cursos publicados */}
+        {course.status === 'published' && (
+          <div className="mb-8 p-4 bg-amber-500/20 border border-amber-500/50 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-200 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-amber-200 mb-1">Curso publicado</h3>
+                <p className="text-amber-200/80 text-sm">
+                  Si guardas cambios en título, descripción, nivel o precio, el curso volverá a estado de revisión y deberá ser aprobado nuevamente por un administrador.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Alerta de rechazo */}
         {course.status === 'rejected' && course.rejection_reason && (
           <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
@@ -166,6 +181,7 @@ export default async function EditInstructorCoursePage({
                   price: course.price ?? null,
                 }}
                 courseId={courseId}
+                isPublished={course.status === 'published'}
                 onSave={onSave}
               />
             </div>
