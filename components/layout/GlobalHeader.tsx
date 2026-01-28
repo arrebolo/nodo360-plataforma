@@ -99,7 +99,8 @@ export function GlobalHeader() {
 
     if (profile?.role === 'instructor' || profile?.role === 'admin') {
       baseOptions.push(
-        { href: '/dashboard/instructor/cursos', label: 'Gestionar Cursos', icon: '✏️' }
+        { href: '/dashboard/instructor/cursos', label: 'Gestionar Cursos', icon: '✏️' },
+        { href: '/dashboard/instructor/referidos', label: 'Promocionar', icon: '🔗' }
       )
     }
 
