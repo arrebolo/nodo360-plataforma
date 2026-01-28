@@ -14,6 +14,7 @@ interface UserProfile {
   role: 'student' | 'instructor' | 'admin' | 'mentor'
   full_name?: string
   avatar_url?: string
+  additionalRoles?: string[] // Roles de user_roles table
 }
 
 const navLinks = [
@@ -43,14 +44,26 @@ export function GlobalHeader() {
         setUser(user)
 
         if (user) {
+          // Obtener perfil básico
           const { data: profileData } = await supabase
             .from('users')
             .select('role, full_name, avatar_url')
             .eq('id', user.id)
             .single()
 
-          if (!cancelled) {
-            setProfile(profileData as UserProfile | null)
+          // Obtener roles adicionales de user_roles (tabla no tipada)
+          const { data: userRoles } = await (supabase as any)
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+
+          if (!cancelled && profileData) {
+            const additionalRoles = userRoles?.map((r: { role: string }) => r.role) || []
+            setProfile({
+              ...profileData,
+              additionalRoles,
+            } as UserProfile)
           }
         }
       } catch (error) {
@@ -97,14 +110,28 @@ export function GlobalHeader() {
       { href: '/dashboard/perfil', label: 'Mi Perfil', icon: '👤' },
     ]
 
-    if (profile?.role === 'instructor' || profile?.role === 'admin') {
+    // Verificar si es instructor (por users.role O por user_roles)
+    const isInstructor = profile?.role === 'instructor' ||
+                         profile?.additionalRoles?.includes('instructor')
+    const isMentor = profile?.role === 'mentor' ||
+                     profile?.additionalRoles?.includes('mentor')
+    const isAdmin = profile?.role === 'admin' ||
+                    profile?.additionalRoles?.includes('admin')
+
+    if (isInstructor || isMentor || isAdmin) {
       baseOptions.push(
         { href: '/dashboard/instructor/cursos', label: 'Gestionar Cursos', icon: '✏️' },
         { href: '/dashboard/instructor/referidos', label: 'Promocionar', icon: '🔗' }
       )
     }
 
-    if (profile?.role === 'admin') {
+    if (isMentor || isAdmin) {
+      baseOptions.push(
+        { href: '/dashboard/mentor', label: 'Panel Mentor', icon: '👥' }
+      )
+    }
+
+    if (isAdmin) {
       baseOptions.push(
         { href: '/admin', label: 'Admin Panel', icon: '⚙️' }
       )
@@ -200,7 +227,10 @@ export function GlobalHeader() {
                         </p>
                         <p className="text-xs text-white/50 truncate">{user.email}</p>
                         <span className="inline-block mt-1.5 px-2 py-0.5 text-xs rounded-full bg-brand-light/20 text-brand-light capitalize">
-                          {profile?.role || 'student'}
+                          {profile?.additionalRoles?.includes('admin') ? 'admin' :
+                           profile?.additionalRoles?.includes('mentor') ? 'mentor' :
+                           profile?.additionalRoles?.includes('instructor') ? 'instructor' :
+                           profile?.role || 'student'}
                         </span>
                       </div>
 
