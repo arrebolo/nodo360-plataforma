@@ -23,7 +23,10 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Error al enviar a revisión')
+        const errorMsg = data.details
+          ? `${data.error}: ${data.details}`
+          : data.error
+        throw new Error(errorMsg || 'Error al enviar a revisión')
       }
 
       router.refresh()
