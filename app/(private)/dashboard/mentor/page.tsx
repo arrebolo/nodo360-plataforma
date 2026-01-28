@@ -323,7 +323,24 @@ export default async function MentorPage() {
             </div>
 
             {/* Acciones rápidas */}
-            <div className="mb-8 grid gap-4 md:grid-cols-2">
+            <div className="mb-8 grid gap-4 md:grid-cols-3">
+              {/* Revisar Cursos - Destacado */}
+              <Link
+                href="/dashboard/mentor/cursos/pendientes"
+                className="flex items-center gap-4 p-5 rounded-2xl bg-orange-500/10 border border-orange-500/30 hover:border-orange-500/50 hover:bg-orange-500/20 transition-colors group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-orange-500/30 flex items-center justify-center group-hover:bg-orange-500/40 transition-colors">
+                  <ClipboardCheck className="w-6 h-6 text-orange-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors">
+                    Revisar Cursos
+                  </h3>
+                  <p className="text-sm text-gray-400">Aprueba o rechaza cursos pendientes</p>
+                </div>
+                <ArrowLeft className="w-5 h-5 text-orange-400/50 rotate-180" />
+              </Link>
+
               <Link
                 href="/gobernanza/mentores"
                 className="flex items-center gap-4 p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors group"
@@ -335,7 +352,7 @@ export default async function MentorPage() {
                   <h3 className="font-semibold text-white group-hover:text-brand-light transition-colors">
                     Votaciones de Mentores
                   </h3>
-                  <p className="text-sm text-gray-400">Revisa y vota aplicaciones pendientes</p>
+                  <p className="text-sm text-gray-400">Revisa y vota aplicaciones</p>
                 </div>
                 <ArrowLeft className="w-5 h-5 text-white/30 rotate-180" />
               </Link>
@@ -349,9 +366,9 @@ export default async function MentorPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-white group-hover:text-brand-light transition-colors">
-                    Propuestas de Gobernanza
+                    Gobernanza
                   </h3>
-                  <p className="text-sm text-gray-400">Participa en las decisiones de la plataforma</p>
+                  <p className="text-sm text-gray-400">Propuestas de la plataforma</p>
                 </div>
                 <ArrowLeft className="w-5 h-5 text-white/30 rotate-180" />
               </Link>
