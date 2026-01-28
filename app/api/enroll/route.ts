@@ -1,7 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { enrollUserInCourse, unenrollUser } from '@/lib/db/enrollments'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimit, getClientIP, rateLimitExceeded } from '@/lib/ratelimit'
+
+/**
+ * Trackea conversión de referido si existe cookie de atribución
+ */
+async function trackReferralConversion(
+  supabase: any,
+  userId: string,
+  courseId: string,
+  isFree: boolean,
+  priceCents: number
+) {
+  try {
+    const cookieStore = await cookies()
+    const refCookie = cookieStore.get('nodo360_ref')
+
+    if (!refCookie?.value) {
+      return // No hay atribución de referido
+    }
+
+    const attribution = JSON.parse(refCookie.value)
+    const { link_id, click_id } = attribution
+
+    if (!link_id) {
+      return
+    }
+
+    // Llamar a la función RPC para trackear conversión
+    const { data: result, error } = await supabase.rpc('track_referral_conversion', {
+      p_link_id: link_id,
+      p_user_id: userId,
+      p_course_id: courseId,
+      p_conversion_type: isFree ? 'enrollment' : 'purchase',
+      p_revenue_cents: isFree ? 0 : priceCents,
+      p_click_id: click_id || null,
+      p_commission_rate: 0.30, // 30% comisión
+    })
+
+    if (error) {
+      console.error('❌ [enroll] Error tracking referral conversion:', error)
+    } else if (result?.success) {
+      console.log(`✅ [enroll] Referral conversion tracked: link=${link_id}, commission=${result.commission_cents}c`)
+    } else {
+      console.log(`ℹ️ [enroll] Referral conversion not tracked: ${result?.error}`)
+    }
+  } catch (err) {
+    console.error('❌ [enroll] Error parsing referral cookie:', err)
+  }
+}
 
 /**
  * GET /api/enroll
@@ -62,7 +111,7 @@ export async function GET(request: NextRequest) {
   // 3) Obtener datos del curso
   const { data: course, error: courseError } = await supabase
     .from('courses')
-    .select('id, slug, title, status, is_free')
+    .select('id, slug, title, status, is_free, price')
     .eq('id', courseId)
     .maybeSingle()
 
@@ -108,6 +157,10 @@ export async function GET(request: NextRequest) {
     } else {
       console.log('✅ [API GET /enroll] Enrollment creado:', { userId: user.id, courseId })
       enrolled = true
+
+      // Trackear conversión de referido si aplica
+      const priceCents = course.price ? Math.round(course.price * 100) : 0
+      await trackReferralConversion(supabase, user.id, courseId, course.is_free, priceCents)
     }
   } else {
     console.log('ℹ️ [API GET /enroll] Usuario ya inscrito:', { userId: user.id, courseId })
@@ -185,7 +238,7 @@ export async function POST(request: NextRequest) {
     // 3. Validar que el curso existe
     const { data: course, error: courseError } = await supabase
       .from('courses')
-      .select('id, title, status')
+      .select('id, title, status, is_free, price')
       .eq('id', courseId)
       .single()
 
@@ -215,6 +268,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Trackear conversión de referido si aplica
+    const priceCents = course.price ? Math.round(course.price * 100) : 0
+    await trackReferralConversion(supabase, user.id, courseId, course.is_free, priceCents)
 
     console.log('✅ [API POST /enroll] Inscripción exitosa')
     return NextResponse.json(
