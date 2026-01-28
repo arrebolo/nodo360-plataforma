@@ -12,14 +12,12 @@ import {
   Vote,
   Ticket,
   Megaphone,
-  Clock,
 } from 'lucide-react'
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { href: '/admin/cursos', label: 'Cursos', icon: BookOpen },
-  { href: '/admin/cursos/pendientes', label: 'Pendientes', icon: Clock },
   { href: '/admin/invitaciones', label: 'Invitaciones', icon: Ticket },
   { href: '/admin/anuncios', label: 'Anuncios', icon: Megaphone },
   { href: '/admin/gobernanza', label: 'Gobernanza', icon: Vote },

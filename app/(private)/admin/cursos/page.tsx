@@ -11,12 +11,14 @@ type SearchParams = {
 function normalizeStatus(status?: string) {
   const raw = (status || '').toLowerCase()
   if (raw === 'draft') return 'draft'
+  if (raw === 'pending_review') return 'pending_review'
   if (raw === 'published') return 'published'
   return null
 }
 
-function statusLabel(status: 'draft' | 'published' | null) {
+function statusLabel(status: 'draft' | 'pending_review' | 'published' | null) {
   if (status === 'draft') return 'Borradores'
+  if (status === 'pending_review') return 'Pendientes'
   if (status === 'published') return 'Publicados'
   return null
 }
@@ -93,11 +95,13 @@ export default async function AdminCoursesPage({
     { count: modulesCount },
     { count: lessonsCount },
     { count: enrollmentsCount },
+    { count: pendingCount },
   ] = await Promise.all([
     supabase.from('courses').select('id', { count: 'exact', head: true }),
     supabase.from('modules').select('id', { count: 'exact', head: true }),
     supabase.from('lessons').select('id', { count: 'exact', head: true }),
     supabase.from('course_enrollments').select('id', { count: 'exact', head: true }),
+    supabase.from('courses').select('id', { count: 'exact', head: true }).eq('status', 'pending_review'),
   ])
 
   const totalCoursesGlobal = coursesCount ?? 0
@@ -151,6 +155,24 @@ export default async function AdminCoursesPage({
             }`}
           >
             Borradores
+          </Link>
+          <Link
+            href="/admin/cursos?status=pending_review"
+            className={`px-3 py-1.5 rounded-lg text-sm border transition flex items-center gap-2 ${
+              statusFilter === 'pending_review'
+                ? 'bg-orange-500/20 border-orange-500/40 text-orange-200'
+                : pendingCount && pendingCount > 0
+                  ? 'bg-orange-500/10 border-orange-500/30 text-orange-300 hover:bg-orange-500/20'
+                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            Pendientes
+            {pendingCount && pendingCount > 0 && (
+              <span className="px-1.5 py-0.5 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                {pendingCount}
+              </span>
+            )}
           </Link>
           <Link
             href="/admin/cursos?status=published"
