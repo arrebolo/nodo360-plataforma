@@ -6,6 +6,7 @@ import { updateStreak } from '@/lib/gamification/updateStreak'
 import { rateLimit, getClientIP, rateLimitExceeded } from '@/lib/ratelimit'
 import { broadcastCourseCompleted } from '@/lib/notifications'
 import { sendBadgeEarnedEmail } from '@/lib/email/badge-earned'
+import { createCertificate } from '@/lib/certificates/createCertificate'
 
 /**
  * POST /api/progress
@@ -171,6 +172,25 @@ export async function POST(request: NextRequest) {
             // Enviar broadcast a Discord/Telegram + notificación in-app
             await broadcastCourseCompleted(userName, user.id, courseData.title)
             console.log('📢 [Progress] Broadcast de curso completado enviado')
+
+            // 🎓 Generar certificado automáticamente
+            try {
+              const certResult = await createCertificate({
+                userId: user.id,
+                courseId: courseId,
+              })
+              if (certResult.success) {
+                if (certResult.alreadyExists) {
+                  console.log('📜 [Progress] Certificado ya existía:', certResult.certificate?.certificate_number)
+                } else {
+                  console.log('📜 [Progress] Certificado generado:', certResult.certificate?.certificate_number)
+                }
+              } else {
+                console.warn('⚠️ [Progress] Error generando certificado:', certResult.error)
+              }
+            } catch (certError) {
+              console.error('⚠️ [Progress] Excepción generando certificado:', certError)
+            }
           }
         }
       }
