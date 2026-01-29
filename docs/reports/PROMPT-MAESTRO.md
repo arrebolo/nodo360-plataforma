@@ -23,8 +23,8 @@
 | Metrica | Valor |
 |---------|-------|
 | Rutas de App | 100+ |
-| Migraciones SQL | 18 |
-| Funciones DB | 25+ |
+| Migraciones SQL | 19 |
+| Funciones DB | 27+ |
 | Tablas Core | 30+ |
 | Componentes | 60+ |
 | APIs | 50+ |
@@ -51,6 +51,12 @@
   - Metricas: total alumnos, activos mes, tasa completacion, certificados
   - Tabla por curso y lista de inscripciones recientes
 - Revenue share actualizado: 35/65 (instructor/plataforma), 40% con referidos
+- **Sistema de Revision de Cursos por Mentores**:
+  - Migracion 019: tabla `course_reviews` y funcion `submit_course_review`
+  - Paginas: `/dashboard/mentor/cursos/pendientes`, `/dashboard/mentor/cursos/pendientes/[id]`
+  - Helper `requireMentor()` para autenticacion de mentores/admins
+  - Mentores pueden aprobar o rechazar cursos con feedback
+  - Emails automaticos a instructores al aprobar/rechazar
 
 ### 26/01/2026
 - Merge de paginas publicas `/instructores` y `/mentores`
@@ -129,8 +135,9 @@ const courseTitle = lesson.modules.courses.title
 | 011 | `011_instructor_requirements.sql` | Requisitos examen instructor |
 | 017 | `017_student_certificates.sql` | Certificados automaticos al completar |
 | 018 | `018_messaging_system.sql` | Sistema de mensajeria 1:1 |
+| 019 | `019_mentor_course_review.sql` | Revision de cursos por mentores |
 
-### Funciones SQL Principales (25+ funciones)
+### Funciones SQL Principales (27+ funciones)
 
 | Funcion | Proposito |
 |---------|-----------|
@@ -157,6 +164,8 @@ const courseTitle = lesson.modules.courses.title
 | `get_or_create_conversation()` | Obtiene o crea conversacion |
 | `get_unread_message_count()` | Cuenta mensajes no leidos |
 | `mark_messages_as_read()` | Marca mensajes como leidos |
+| `submit_course_review()` | Procesa decision de mentor (aprobar/rechazar curso) |
+| `get_course_review_history()` | Historial de revisiones de un curso |
 
 ### Tablas Core
 
@@ -189,6 +198,7 @@ const courseTitle = lesson.modules.courses.title
 - `mentor_applications` - Solicitudes
 - `mentor_points` - Puntos de merito
 - `mentor_monthly_stats` - Estadisticas mensuales
+- `course_reviews` - Revisiones de cursos por mentores/admins
 
 **Mensajeria:**
 - `conversations` - Conversaciones 1:1 entre usuarios
@@ -444,7 +454,8 @@ Sistema Mentores            COMPLETADO
 ├── Puntos de Merito
 ├── Votacion Consejo
 ├── Perfil Publico
-└── Pagina /mentores
+├── Pagina /mentores
+└── Revision de Cursos (aprobar/rechazar)
 
 Sistema Mensajeria          COMPLETADO
 ├── Conversaciones 1:1
@@ -464,4 +475,4 @@ Panel Admin                 COMPLETADO
 
 **Ultima actualizacion:** 30/01/2026
 **Proyecto:** Nodo360 Plataforma Educativa
-**Version:** 2.1
+**Version:** 2.2
