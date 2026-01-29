@@ -51,7 +51,8 @@ export function GlobalHeader() {
             .eq('id', user.id)
             .single()
 
-          // Obtener roles adicionales de user_roles (tabla no tipada)
+          // Obtener roles adicionales de user_roles (mentor, admin, council)
+          // Nota: 'instructor' NO está en user_roles, solo en users.role
           const { data: userRoles } = await (supabase as any)
             .from('user_roles')
             .select('role')
@@ -110,13 +111,15 @@ export function GlobalHeader() {
       { href: '/dashboard/perfil', label: 'Mi Perfil', icon: '👤' },
     ]
 
-    // Verificar si es instructor (por users.role O por user_roles)
-    const isInstructor = profile?.role === 'instructor' ||
-                         profile?.additionalRoles?.includes('instructor')
+    // Verificar roles:
+    // - instructor: solo existe en users.role (no en user_roles ENUM)
+    // - mentor, admin, council: existen en user_roles
+    const isInstructor = profile?.role === 'instructor'
     const isMentor = profile?.role === 'mentor' ||
                      profile?.additionalRoles?.includes('mentor')
     const isAdmin = profile?.role === 'admin' ||
-                    profile?.additionalRoles?.includes('admin')
+                    profile?.additionalRoles?.includes('admin') ||
+                    profile?.additionalRoles?.includes('council')
 
     if (isInstructor || isMentor || isAdmin) {
       baseOptions.push(
@@ -227,9 +230,9 @@ export function GlobalHeader() {
                         </p>
                         <p className="text-xs text-white/50 truncate">{user.email}</p>
                         <span className="inline-block mt-1.5 px-2 py-0.5 text-xs rounded-full bg-brand-light/20 text-brand-light capitalize">
-                          {profile?.additionalRoles?.includes('admin') ? 'admin' :
+                          {profile?.additionalRoles?.includes('council') ? 'council' :
+                           profile?.additionalRoles?.includes('admin') ? 'admin' :
                            profile?.additionalRoles?.includes('mentor') ? 'mentor' :
-                           profile?.additionalRoles?.includes('instructor') ? 'instructor' :
                            profile?.role || 'student'}
                         </span>
                       </div>
