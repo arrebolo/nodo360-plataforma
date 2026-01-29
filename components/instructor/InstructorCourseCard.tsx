@@ -12,7 +12,7 @@ import {
   Calendar,
   Copy,
   Send,
-  Loader2,
+Loader2,
   Share2
 } from 'lucide-react'
 

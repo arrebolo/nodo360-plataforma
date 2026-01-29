@@ -51,7 +51,7 @@ export function GlobalHeader() {
             .eq('id', user.id)
             .single()
 
-          // Obtener roles adicionales de user_roles (mentor, admin, council)
+// Obtener roles adicionales de user_roles (mentor, admin, council)
           // Nota: 'instructor' NO está en user_roles, solo en users.role
           const { data: userRoles } = await (supabase as any)
             .from('user_roles')
@@ -102,7 +102,7 @@ export function GlobalHeader() {
     router.refresh()
   }
 
-  // Opciones del dropdown (simplificado - enlaces extra están en Dashboard)
+// Opciones del dropdown (simplificado - enlaces extra están en Dashboard)
   const dropdownOptions = [
     { href: '/dashboard', label: 'Mi Dashboard', icon: '📊' },
     { href: '/dashboard/rutas', label: 'Mis Rutas', icon: '🗺️' },
@@ -197,7 +197,7 @@ export function GlobalHeader() {
                         </p>
                         <p className="text-xs text-white/50 truncate">{user.email}</p>
                         <span className="inline-block mt-1.5 px-2 py-0.5 text-xs rounded-full bg-brand-light/20 text-brand-light capitalize">
-                          {profile?.additionalRoles?.includes('council') ? 'council' :
+{profile?.additionalRoles?.includes('council') ? 'council' :
                            profile?.additionalRoles?.includes('admin') ? 'admin' :
                            profile?.additionalRoles?.includes('mentor') ? 'mentor' :
                            profile?.role || 'student'}
