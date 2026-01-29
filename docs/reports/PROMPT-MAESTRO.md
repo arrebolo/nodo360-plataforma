@@ -18,20 +18,39 @@
 
 ---
 
-## METRICAS DEL PROYECTO (26/01/2026)
+## METRICAS DEL PROYECTO (30/01/2026)
 
 | Metrica | Valor |
 |---------|-------|
-| Rutas de App | 91 |
-| Migraciones SQL | 11 |
-| Funciones DB | 17 |
-| Tablas Core | 25+ |
-| Componentes | 50+ |
-| APIs | 40+ |
+| Rutas de App | 100+ |
+| Migraciones SQL | 18 |
+| Funciones DB | 25+ |
+| Tablas Core | 30+ |
+| Componentes | 60+ |
+| APIs | 50+ |
 
 ---
 
 ## HISTORIAL DE SESIONES
+
+### 30/01/2026
+- **Sistema de Mensajeria** completo:
+  - Migracion 018: tablas `conversations` y `messages`
+  - APIs: `/api/messages/conversations`, `/api/messages/[id]`, `/api/messages/unread`
+  - Componentes: `ChatView`, `ConversationList`, `MessageBubble`, `MessageInput`, `MessageBell`
+  - Paginas: `/dashboard/mensajes`, `/dashboard/mensajes/[id]`
+  - Icono de mensajes en header con badge de no leidos
+  - Boton "Enviar mensaje" funcional en perfiles de instructores
+- **Certificados Automaticos**:
+  - Migracion 017: trigger `auto_issue_course_certificate`
+  - Genera certificado al completar curso al 100%
+  - Funcion `backfill_missing_certificates()` para cursos ya completados
+- **Estadisticas de Alumnos para Instructores**:
+  - Pagina `/dashboard/instructor/estadisticas`
+  - API `/api/instructor/students/stats`
+  - Metricas: total alumnos, activos mes, tasa completacion, certificados
+  - Tabla por curso y lista de inscripciones recientes
+- Revenue share actualizado: 35/65 (instructor/plataforma), 40% con referidos
 
 ### 26/01/2026
 - Merge de paginas publicas `/instructores` y `/mentores`
@@ -108,8 +127,10 @@ const courseTitle = lesson.modules.courses.title
 | 009 | `009_mentor_system.sql` | Sistema de mentores |
 | 010 | `010_admin_role_assignment.sql` | Asignacion de roles por admin |
 | 011 | `011_instructor_requirements.sql` | Requisitos examen instructor |
+| 017 | `017_student_certificates.sql` | Certificados automaticos al completar |
+| 018 | `018_messaging_system.sql` | Sistema de mensajeria 1:1 |
 
-### Funciones SQL Principales (17 funciones)
+### Funciones SQL Principales (25+ funciones)
 
 | Funcion | Proposito |
 |---------|-----------|
@@ -130,6 +151,12 @@ const courseTitle = lesson.modules.courses.title
 | `remove_mentor_status()` | Remueve status mentor |
 | `check_expiring_certifications()` | Certificaciones por expirar |
 | `expire_certifications()` | Expira certificaciones |
+| `auto_issue_course_certificate()` | Trigger: genera certificado al completar |
+| `issue_course_certificate_manual()` | Emite certificado manualmente |
+| `backfill_missing_certificates()` | Genera certificados faltantes |
+| `get_or_create_conversation()` | Obtiene o crea conversacion |
+| `get_unread_message_count()` | Cuenta mensajes no leidos |
+| `mark_messages_as_read()` | Marca mensajes como leidos |
 
 ### Tablas Core
 
@@ -163,6 +190,10 @@ const courseTitle = lesson.modules.courses.title
 - `mentor_points` - Puntos de merito
 - `mentor_monthly_stats` - Estadisticas mensuales
 
+**Mensajeria:**
+- `conversations` - Conversaciones 1:1 entre usuarios
+- `messages` - Mensajes (max 5000 chars, tracking de leidos)
+
 ---
 
 ## SISTEMA DE INSTRUCTORES
@@ -192,10 +223,11 @@ const courseTitle = lesson.modules.courses.title
 ### Beneficios del Instructor Certificado
 
 - Crear cursos premium en la plataforma
-- Revenue share 60/40 (instructor/plataforma)
+- Revenue share 35/65 (instructor/plataforma), 40% con referidos
 - Badge de verificado en perfil publico
 - Listado en `/instructores`
 - Acceso a herramientas de instructor
+- Estadisticas de alumnos en `/dashboard/instructor/estadisticas`
 
 ### Flujo de Certificacion
 
@@ -239,6 +271,45 @@ Rol instructor + Perfil publico + Crear cursos
 
 ---
 
+## SISTEMA DE MENSAJERIA
+
+### Arquitectura
+
+```
+conversations (1:1)
+├── participant_1, participant_2
+├── last_message_at
+└── RLS: solo participantes ven sus conversaciones
+
+messages
+├── conversation_id, sender_id
+├── content (max 5000 chars)
+├── read_at (NULL = no leido)
+└── RLS: solo participantes del chat
+```
+
+### Endpoints API
+
+| Endpoint | Metodo | Proposito |
+|----------|--------|-----------|
+| `/api/messages/conversations` | GET | Listar conversaciones |
+| `/api/messages/conversations` | POST | Crear conversacion |
+| `/api/messages/[id]` | GET | Obtener mensajes |
+| `/api/messages/[id]` | POST | Enviar mensaje |
+| `/api/messages/[id]/read` | POST | Marcar como leidos |
+| `/api/messages/unread` | GET | Contador no leidos |
+
+### Componentes
+
+- `MessageBell` - Icono en header con badge de no leidos
+- `ConversationList` - Lista de conversaciones con busqueda
+- `ChatView` - Vista de chat con auto-scroll
+- `MessageBubble` - Burbuja con check de lectura
+- `MessageInput` - Textarea auto-resize
+- `SendMessageButton` - Boton en perfil de instructor
+
+---
+
 ## SISTEMA DE ROLES
 
 ### Tipos de Rol
@@ -276,6 +347,7 @@ Rol instructor + Perfil publico + Crear cursos
 ├── components/
 │   ├── dashboard/
 │   ├── gamification/
+│   ├── messages/          # Componentes de mensajeria
 │   ├── navigation/
 │   └── ui/
 ├── lib/
@@ -343,7 +415,7 @@ className="bg-gradient-to-r from-brand-light to-brand"
 
 ---
 
-## ESTADO ACTUAL (26/01/2026)
+## ESTADO ACTUAL (30/01/2026)
 
 ```
 Sistema Core                 COMPLETADO
@@ -351,11 +423,11 @@ Sistema Core                 COMPLETADO
 ├── Cursos y Lecciones
 ├── Progreso y Enrollments
 ├── Gamificacion (XP, Badges)
-└── Certificados
+└── Certificados (auto-generacion al completar)
 
 Sistema Premium             COMPLETADO
 ├── Suscripciones
-├── Revenue Share
+├── Revenue Share (35/65, 40% con referidos)
 └── Compras de Cursos
 
 Sistema Instructores        COMPLETADO
@@ -364,7 +436,8 @@ Sistema Instructores        COMPLETADO
 ├── Verificacion Cursos
 ├── Verificacion Quizzes
 ├── Perfil Publico
-└── Pagina /instructores
+├── Pagina /instructores
+└── Estadisticas de Alumnos
 
 Sistema Mentores            COMPLETADO
 ├── Aplicaciones
@@ -372,6 +445,13 @@ Sistema Mentores            COMPLETADO
 ├── Votacion Consejo
 ├── Perfil Publico
 └── Pagina /mentores
+
+Sistema Mensajeria          COMPLETADO
+├── Conversaciones 1:1
+├── Mensajes con read receipts
+├── Icono en header con badge
+├── Chat en tiempo real (polling)
+└── Integracion con perfiles
 
 Panel Admin                 COMPLETADO
 ├── Gestion Usuarios
@@ -382,6 +462,6 @@ Panel Admin                 COMPLETADO
 
 ---
 
-**Ultima actualizacion:** 26/01/2026
+**Ultima actualizacion:** 30/01/2026
 **Proyecto:** Nodo360 Plataforma Educativa
-**Version:** 2.0
+**Version:** 2.1
