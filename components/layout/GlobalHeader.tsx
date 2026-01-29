@@ -101,44 +101,13 @@ export function GlobalHeader() {
     router.refresh()
   }
 
-  // Opciones del dropdown según rol
-  const getDropdownOptions = () => {
-    const baseOptions = [
-      { href: '/dashboard', label: 'Mi Dashboard', icon: '📊' },
-      { href: '/dashboard/rutas', label: 'Mis Rutas', icon: '🗺️' },
-      { href: '/dashboard/cursos', label: 'Mis Cursos', icon: '📚' },
-      { href: '/dashboard/perfil', label: 'Mi Perfil', icon: '👤' },
-    ]
-
-    // Verificar si es instructor (por users.role O por user_roles)
-    const isInstructor = profile?.role === 'instructor' ||
-                         profile?.additionalRoles?.includes('instructor')
-    const isMentor = profile?.role === 'mentor' ||
-                     profile?.additionalRoles?.includes('mentor')
-    const isAdmin = profile?.role === 'admin' ||
-                    profile?.additionalRoles?.includes('admin')
-
-    if (isInstructor || isMentor || isAdmin) {
-      baseOptions.push(
-        { href: '/dashboard/instructor/cursos', label: 'Gestionar Cursos', icon: '✏️' },
-        { href: '/dashboard/instructor/referidos', label: 'Promocionar', icon: '🔗' }
-      )
-    }
-
-    if (isMentor || isAdmin) {
-      baseOptions.push(
-        { href: '/dashboard/mentor', label: 'Panel Mentor', icon: '👥' }
-      )
-    }
-
-    if (isAdmin) {
-      baseOptions.push(
-        { href: '/admin', label: 'Admin Panel', icon: '⚙️' }
-      )
-    }
-
-    return baseOptions
-  }
+// Opciones del dropdown (simplificado - enlaces extra están en Dashboard)
+  const dropdownOptions = [
+    { href: '/dashboard', label: 'Mi Dashboard', icon: '📊' },
+    { href: '/dashboard/rutas', label: 'Mis Rutas', icon: '🗺️' },
+    { href: '/dashboard/cursos', label: 'Mis Cursos', icon: '📚' },
+    { href: '/dashboard/perfil', label: 'Mi Perfil', icon: '👤' },
+  ]
 
   const initials = profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'
   const displayName = profile?.full_name?.split(' ')[0] || 'Mi cuenta'
@@ -236,7 +205,7 @@ export function GlobalHeader() {
 
                       {/* Options */}
                       <div className="py-2">
-                        {getDropdownOptions().map((option) => (
+                        {dropdownOptions.map((option) => (
                           <Link
                             key={option.href}
                             href={option.href}
@@ -339,7 +308,7 @@ export function GlobalHeader() {
                   </div>
 
                   {/* Options mobile */}
-                  {getDropdownOptions().map((option) => (
+                  {dropdownOptions.map((option) => (
                     <Link
                       key={option.href}
                       href={option.href}
