@@ -12,7 +12,8 @@ import {
   Calendar,
   Copy,
   Send,
-  Loader2
+  Loader2,
+  Share2
 } from 'lucide-react'
 
 interface Course {
@@ -189,6 +190,17 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
 
         {/* Acciones */}
         <div className="flex items-center gap-2">
+          {/* Promocionar (solo cursos publicados) */}
+          {currentStatus === 'published' && (
+            <Link
+              href={`/dashboard/instructor/referidos/nuevo?course=${course.id}`}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-purple-400 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-colors"
+            >
+              <Share2 className="w-4 h-4" />
+              Promocionar
+            </Link>
+          )}
+
           {/* Editar */}
           <Link
             href={`/dashboard/instructor/cursos/${course.id}`}
