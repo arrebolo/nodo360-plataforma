@@ -314,12 +314,19 @@ export default async function DashboardPage() {
         </DashboardSection>
 
         {/* MENTORIAS */}
-        <DashboardSection title="Mentorias" columns={3}>
+        <DashboardSection title="Mentorias" columns={4}>
           <DashboardIconCard
             href="/mentoria"
             icon={GraduationCap}
             label="Buscar Mentor"
             description="Encuentra guia"
+            color="purple"
+          />
+          <DashboardIconCard
+            href="/dashboard/mentor"
+            icon={Shield}
+            label="Panel Mentor"
+            description="Revisar cursos"
             color="purple"
           />
           <DashboardIconCard
@@ -340,7 +347,14 @@ export default async function DashboardPage() {
 
         {/* ZONA INSTRUCTOR */}
         {isInstructor && (
-          <DashboardSection title="Zona Instructor" columns={3}>
+          <DashboardSection title="Zona Instructor" columns={4}>
+            <DashboardIconCard
+              href="/dashboard/instructor"
+              icon={Award}
+              label="Panel Instructor"
+              description="Certificaciones"
+              color="green"
+            />
             <DashboardIconCard
               href="/dashboard/instructor/cursos/nuevo"
               icon={PlusCircle}
