@@ -12,10 +12,12 @@ import {
   Vote,
   Ticket,
   Megaphone,
+  BarChart3,
 } from 'lucide-react'
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/estadisticas', label: 'Estadísticas', icon: BarChart3 },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { href: '/admin/cursos', label: 'Cursos', icon: BookOpen },
   { href: '/admin/invitaciones', label: 'Invitaciones', icon: Ticket },
