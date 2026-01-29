@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { Menu, X, ChevronDown, LogOut } from 'lucide-react'
 import { NotificationBell } from '@/components/notifications'
+import { MessageBell } from '@/components/messages'
 import { brandConfig } from '@/lib/brand-config'
 
 type Role = 'student' | 'instructor' | 'mentor' | 'admin'
@@ -88,6 +89,7 @@ export default function SiteHeaderClient({
             </>
           ) : (
             <>
+              <MessageBell />
               <NotificationBell />
               <div className="relative">
                 <button

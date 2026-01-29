@@ -1,4 +1,4 @@
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
@@ -12,6 +12,7 @@ import {
   Calendar,
   ExternalLink,
 } from 'lucide-react'
+import SendMessageButton from '@/components/messages/SendMessageButton'
 
 export async function generateMetadata({
   params,
@@ -112,6 +113,11 @@ export default async function InstructorProfilePage({
     .eq('instructor_id', id)
     .eq('status', 'published')
     .order('enrolled_count', { ascending: false })
+
+  // Check if current user is authenticated
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const isAuthenticated = !!currentUser
+  const isOwnProfile = currentUser?.id === id
 
   return (
     <div className="min-h-screen bg-dark">
@@ -347,18 +353,17 @@ export default async function InstructorProfilePage({
             )}
 
             {/* Contacto */}
-            {profile.accepts_messages && (
+            {profile.accepts_messages && !isOwnProfile && (
               <section className="rounded-2xl bg-gradient-to-br from-orange-500/10 to-amber-500/10 border border-orange-500/20 p-6">
                 <h2 className="text-lg font-semibold text-white mb-2">¿Tienes preguntas?</h2>
                 <p className="text-sm text-gray-400 mb-4">
                   Este instructor acepta mensajes de estudiantes.
                 </p>
-                <button
-                  className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium hover:opacity-90 transition-opacity"
-                  disabled
-                >
-                  Enviar mensaje (pronto)
-                </button>
+                <SendMessageButton
+                  instructorId={id}
+                  instructorName={user?.full_name || 'Instructor'}
+                  isAuthenticated={isAuthenticated}
+                />
               </section>
             )}
           </div>
