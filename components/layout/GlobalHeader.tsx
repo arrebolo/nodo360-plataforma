@@ -104,43 +104,41 @@ export function GlobalHeader() {
 
   // Opciones del dropdown según rol
   const getDropdownOptions = () => {
-    const baseOptions = [
+    const options = [
       { href: '/dashboard', label: 'Mi Dashboard', icon: '📊' },
       { href: '/dashboard/rutas', label: 'Mis Rutas', icon: '🗺️' },
       { href: '/dashboard/cursos', label: 'Mis Cursos', icon: '📚' },
       { href: '/dashboard/perfil', label: 'Mi Perfil', icon: '👤' },
     ]
 
-    // Verificar roles:
-    // - instructor: solo existe en users.role (no en user_roles ENUM)
-    // - mentor, admin, council: existen en user_roles
-    const isInstructor = profile?.role === 'instructor'
-    const isMentor = profile?.role === 'mentor' ||
-                     profile?.additionalRoles?.includes('mentor')
-    const isAdmin = profile?.role === 'admin' ||
-                    profile?.additionalRoles?.includes('admin') ||
-                    profile?.additionalRoles?.includes('council')
-
-    if (isInstructor || isMentor || isAdmin) {
-      baseOptions.push(
+    // Instructor: mostrar Gestionar Cursos + Promocionar
+    if (profile?.role === 'instructor') {
+      options.push(
         { href: '/dashboard/instructor/cursos', label: 'Gestionar Cursos', icon: '✏️' },
         { href: '/dashboard/instructor/referidos', label: 'Promocionar', icon: '🔗' }
       )
     }
 
-    if (isMentor || isAdmin) {
-      baseOptions.push(
+    // Mentor: mostrar gestión de cursos + panel mentor
+    if (profile?.role === 'mentor' || profile?.additionalRoles?.includes('mentor')) {
+      options.push(
+        { href: '/dashboard/instructor/cursos', label: 'Gestionar Cursos', icon: '✏️' },
+        { href: '/dashboard/instructor/referidos', label: 'Promocionar', icon: '🔗' },
         { href: '/dashboard/mentor', label: 'Panel Mentor', icon: '👥' }
       )
     }
 
-    if (isAdmin) {
-      baseOptions.push(
+    // Admin/Council: mostrar todo
+    if (profile?.role === 'admin' || profile?.additionalRoles?.includes('admin') || profile?.additionalRoles?.includes('council')) {
+      options.push(
+        { href: '/dashboard/instructor/cursos', label: 'Gestionar Cursos', icon: '✏️' },
+        { href: '/dashboard/instructor/referidos', label: 'Promocionar', icon: '🔗' },
+        { href: '/dashboard/mentor', label: 'Panel Mentor', icon: '👥' },
         { href: '/admin', label: 'Admin Panel', icon: '⚙️' }
       )
     }
 
-    return baseOptions
+    return options
   }
 
   const initials = profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'
