@@ -316,17 +316,17 @@ export default async function DashboardPage() {
         {/* MENTORIAS */}
         <DashboardSection title="Mentorias" columns={4}>
           <DashboardIconCard
-            href="/mentoria"
-            icon={GraduationCap}
-            label="Buscar Mentor"
-            description="Encuentra guia"
-            color="purple"
-          />
-          <DashboardIconCard
             href="/dashboard/mentor"
             icon={Shield}
             label="Panel Mentor"
             description="Revisar cursos"
+            color="purple"
+          />
+          <DashboardIconCard
+            href="/mentoria"
+            icon={GraduationCap}
+            label="Buscar Mentor"
+            description="Encuentra guia"
             color="purple"
           />
           <DashboardIconCard
