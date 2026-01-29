@@ -278,7 +278,7 @@ export default async function DashboardPage() {
         </section>
 
         {/* LOGROS Y COMUNIDAD */}
-        <DashboardSection title="Logros y Comunidad" columns={5}>
+        <DashboardSection title="Logros y Comunidad" columns={6}>
           <DashboardIconCard
             href="/dashboard/badges"
             icon={Trophy}
@@ -292,6 +292,13 @@ export default async function DashboardPage() {
             label="Leaderboard"
             description="Ranking"
             color="blue"
+          />
+          <DashboardIconCard
+            href="/dashboard/mensajes"
+            icon={MessageSquare}
+            label="Mensajes"
+            description="Conversaciones"
+            color="cyan"
           />
           <DashboardIconCard
             href="/dashboard/guardados"
