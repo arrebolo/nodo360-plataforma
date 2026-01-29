@@ -250,24 +250,12 @@ export default function SiteHeaderClient({
   )
 }
 
-function buildMenu(role?: Role) {
-  const base = [
+function buildMenu(_role?: Role) {
+  // Menú simplificado - enlaces extra están accesibles desde Dashboard
+  return [
     { label: 'Dashboard', href: '/dashboard', icon: '📊' },
     { label: 'Mis cursos', href: '/dashboard/cursos', icon: '📚' },
     { label: 'Mis rutas', href: '/dashboard/rutas', icon: '🗺️' },
-    { label: 'Instructor', href: '/dashboard/instructor', icon: '🎓' },
-    { label: 'Mentor', href: '/dashboard/mentor', icon: '🛡️' },
-    { label: 'Certificados', href: '/dashboard/certificados', icon: '🏆' },
     { label: 'Mi perfil', href: '/dashboard/perfil', icon: '👤' },
   ]
-
-  if (role === 'instructor' || role === 'admin') {
-    base.splice(2, 0, { label: 'Gestionar cursos', href: '/dashboard/instructor/cursos', icon: '✏️' })
-  }
-
-  if (role === 'admin') {
-    base.splice(1, 0, { label: 'Panel Admin', href: '/admin', icon: '⚙️' })
-  }
-
-  return base
 }
