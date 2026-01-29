@@ -29,8 +29,8 @@ export const metadata = {
 const BENEFITS = [
   {
     icon: DollarSign,
-    title: 'Revenue Share 60/40',
-    description: 'Gana el 60% de cada venta de tus cursos',
+    title: 'Revenue Share 35/65',
+    description: 'Gana el 35% de cada venta (40% con referidos)',
     color: 'text-green-400',
     bgColor: 'bg-green-500/20',
   },
