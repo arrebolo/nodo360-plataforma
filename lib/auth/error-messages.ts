@@ -39,6 +39,19 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // Errores de OAuth
   'oauth error': 'Error al iniciar sesión con este proveedor.',
   'provider not enabled': 'Este método de inicio de sesión no está habilitado.',
+  'access_denied': 'Acceso denegado. Cancelaste el inicio de sesión o no tienes permisos.',
+
+  // Errores de callback y PKCE
+  'callback_error': 'Error al procesar el enlace. Por favor, intenta de nuevo.',
+  'code verifier': 'El enlace ha expirado o fue abierto en otro navegador. Solicita uno nuevo.',
+  'pkce': 'El enlace ha expirado o fue abierto en otro navegador. Solicita uno nuevo.',
+  'invalid flow state': 'El enlace ha expirado o fue abierto en otro navegador.',
+  'otp_error': 'El enlace de verificación ha expirado o es inválido.',
+
+  // Errores de cuenta
+  'suspended': 'Tu cuenta ha sido suspendida. Contacta a soporte para más información.',
+  'account suspended': 'Tu cuenta ha sido suspendida.',
+  'user banned': 'Tu cuenta ha sido bloqueada.',
 
   // Errores de código de invitación
   'invite required': 'Se requiere un código de invitación para registrarse.',

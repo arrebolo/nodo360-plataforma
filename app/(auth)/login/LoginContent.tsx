@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2, AlertCircle, AlertTriangle, Info } from 'lucide-react'
 import {
   signInWithEmail,
   signInWithPassword,
@@ -75,7 +75,12 @@ export default function LoginContent() {
     const successParam = searchParams.get('success')
     const inviteParam = searchParams.get('invite')
 
-    if (errorParam) setError(decodeURIComponent(errorParam))
+    // Traducir el error al español si viene de la URL
+    if (errorParam) {
+      const decodedError = decodeURIComponent(errorParam)
+      // El error ya se traducirá en el render con getSpanishErrorMessage
+      setError(decodedError)
+    }
     if (successParam) setSuccess(decodeURIComponent(successParam))
 
     // Si viene código de invitación en URL, validarlo y cambiar a tab registro
@@ -241,14 +246,43 @@ export default function LoginContent() {
             </button>
           </div>
 
-          {/* Mensajes - usando tokens semánticos */}
+          {/* Mensajes de error - con iconos y estilos mejorados */}
           {error && (
             <div
-              className="mb-4 bg-error/10 border border-error/30 rounded-lg p-4"
+              className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4"
               role="alert"
               aria-live="assertive"
             >
-              <p className="text-error text-sm">{error}</p>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  {error.toLowerCase().includes('suspendid') || error.toLowerCase().includes('banned') ? (
+                    <AlertTriangle className="w-5 h-5 text-orange-400" />
+                  ) : error.toLowerCase().includes('navegador') || error.toLowerCase().includes('expirad') ? (
+                    <Info className="w-5 h-5 text-yellow-400" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-400" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-red-300 text-sm font-medium">
+                    {getSpanishErrorMessage(error)}
+                  </p>
+                  {/* Mostrar sugerencia según el tipo de error */}
+                  {error.toLowerCase().includes('navegador') && (
+                    <p className="text-red-300/70 text-xs mt-1">
+                      Abre el enlace en el mismo navegador donde lo solicitaste.
+                    </p>
+                  )}
+                  {error.toLowerCase().includes('credenciales') && (
+                    <p className="text-red-300/70 text-xs mt-1">
+                      ¿Olvidaste tu contraseña?{' '}
+                      <Link href="/forgot-password" className="underline hover:text-red-200">
+                        Recupérala aquí
+                      </Link>
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
