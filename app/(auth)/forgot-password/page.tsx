@@ -19,10 +19,16 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient()
 
+      // Usar la variable de entorno si está disponible, sino window.location.origin
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      const redirectTo = `${siteUrl}/auth/callback?type=recovery`
+
       console.log('[Forgot Password] Solicitando reset para:', email)
+      console.log('[Forgot Password] Redirect URL:', redirectTo)
+      console.log('[Forgot Password] NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+        redirectTo,
       })
 
       if (resetError) {
