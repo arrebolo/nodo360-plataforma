@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, HelpCircle } from 'lucide-react'
 
 interface NuevoModuloPageProps {
   params: Promise<{ courseId: string }>
@@ -159,27 +159,39 @@ export default async function NuevoModuloPage({ params }: NuevoModuloPageProps) 
         <form action={createAction} className="space-y-6">
           <div className="bg-dark-surface border border-white/10 rounded-2xl p-6">
             <div className="mb-6">
-              <label className="block text-sm font-medium text-white mb-2">
-                Título del Módulo *
+              <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
+                Titulo del Modulo *
+                <span className="group relative">
+                  <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
+                  <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    Usa un nombre descriptivo que indique el contenido del modulo. Ej: Modulo 1 - Fundamentos
+                  </span>
+                </span>
               </label>
               <input
                 type="text"
                 name="title"
                 required
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:border-brand-light focus:ring-2 focus:ring-brand-light/20 transition"
-                placeholder="ej. Introducción a Bitcoin"
+                placeholder="Ej: Modulo 1 - Fundamentos de Bitcoin"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Descripción
+              <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
+                Descripcion
+                <span className="group relative">
+                  <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
+                  <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    Breve resumen de lo que cubre este modulo. Ayuda a los estudiantes a entender que aprenderan
+                  </span>
+                </span>
               </label>
               <textarea
                 name="description"
                 rows={4}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:border-brand-light focus:ring-2 focus:ring-brand-light/20 transition resize-none"
-                placeholder="Descripción del módulo (opcional)"
+                placeholder="Ej: En este modulo aprenderemos que es Bitcoin, su historia, y por que es importante para la economia digital."
               />
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { COURSE_LEVELS, COURSE_STATUSES, type CourseLevel, type CourseStatus } from '@/lib/courses/course-utils'
+import { LabelWithTooltip } from '@/components/ui/Tooltip'
 
 interface LevelStatusSelectsProps {
   level: CourseLevel
@@ -24,10 +25,14 @@ export function LevelStatusSelects({
     <div className="grid md:grid-cols-2 gap-6 mb-6">
       {/* Level */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
-          Nivel *
-        </label>
+        <LabelWithTooltip
+          label="Nivel"
+          tooltip="Principiante: sin conocimientos previos. Intermedio: conoce lo basico. Avanzado: experiencia previa requerida"
+          required
+          htmlFor="course-level"
+        />
         <select
+          id="course-level"
           name="level"
           required
           value={level}
@@ -46,10 +51,14 @@ export function LevelStatusSelects({
 
       {/* Status */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
-          Estado *
-        </label>
+        <LabelWithTooltip
+          label="Estado"
+          tooltip="Borrador: solo tu lo ves. En revision: esperando aprobacion. Publicado: visible para estudiantes"
+          required
+          htmlFor="course-status"
+        />
         <select
+          id="course-status"
           name="status"
           required
           value={status}
