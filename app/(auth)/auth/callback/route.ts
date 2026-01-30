@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     // Si es recovery (reset password)
     if (type === 'recovery') {
       console.log('[Auth Callback] Recovery detectado')
-      const response = NextResponse.redirect(`${origin}/auth/reset-password`)
+      const response = NextResponse.redirect(`${origin}/reset-password`)
       response.cookies.delete('auth_redirect')
       return response
     }

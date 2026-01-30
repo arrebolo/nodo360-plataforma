@@ -374,9 +374,17 @@ export default function LoginContent() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">
-                    Contraseña
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label htmlFor="password" className="block text-sm font-medium text-white/90">
+                      Contraseña
+                    </label>
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm text-brand-light hover:underline"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
                   <input
                     id="password"
                     name="password"
