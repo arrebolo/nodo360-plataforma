@@ -21,7 +21,10 @@ export default function ForgotPasswordPage() {
 
       // Usar la variable de entorno si está disponible, sino window.location.origin
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-      const redirectTo = `${siteUrl}/auth/callback?type=recovery`
+
+      // Nota: Supabase añadirá automáticamente los parámetros token_hash y type
+      // El formato final será: /auth/callback?token_hash=xxx&type=recovery
+      const redirectTo = `${siteUrl}/auth/callback`
 
       console.log('[Forgot Password] Solicitando reset para:', email)
       console.log('[Forgot Password] Redirect URL:', redirectTo)
