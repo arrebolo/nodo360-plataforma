@@ -144,7 +144,9 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
 }
 
 /**
- * Validar código de invitación (server-side)
+ * Validar y consumir código de invitación (server-side)
+ * NOTA: Función reservada para uso futuro con cursos premium
+ * Ya no se usa para registro (beta abierta)
  */
 async function validateAndConsumeInvite(code: string, userId: string): Promise<{ valid: boolean; error?: string }> {
   if (!code) return { valid: false, error: 'Código de invitación requerido' }
@@ -177,25 +179,19 @@ async function validateAndConsumeInvite(code: string, userId: string): Promise<{
 
 /**
  * Registrar nuevo usuario con email y contraseña
- * Requiere código de invitación válido
+ * Beta abierta - No requiere código de invitación
  * Retorna AuthResult para manejar errores en el cliente
  */
 export async function signUp(formData: FormData): Promise<AuthResult> {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
-  const inviteCode = formData.get('inviteCode') as string
 
   console.log('[Auth] Registrando nuevo usuario')
 
   if (!email || !password) {
     console.error('[Auth Actions] Datos incompletos')
     return { success: false, message: 'Email y contraseña son requeridos', error: 'INCOMPLETE_DATA' }
-  }
-
-  if (!inviteCode) {
-    console.error('[Auth Actions] Código de invitación no proporcionado')
-    return { success: false, message: 'Código de invitación requerido', error: 'INVITE_REQUIRED' }
   }
 
   try {
@@ -220,7 +216,7 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
       if (error.message.includes('already registered') || error.code === 'user_already_exists') {
         return {
           success: false,
-          message: 'Este email ya está registrado. ¿Quieres iniciar sesión?',
+          message: 'Este email ya está registrado. Quieres iniciar sesion?',
           error: 'EMAIL_EXISTS',
         }
       }
@@ -228,7 +224,7 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
       if (error.message.includes('password') || error.code === 'weak_password') {
         return {
           success: false,
-          message: 'La contraseña debe tener al menos 6 caracteres',
+          message: 'La contrasena debe tener al menos 6 caracteres',
           error: 'WEAK_PASSWORD',
         }
       }
@@ -240,17 +236,8 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
       }
     }
 
-    // Consumir código de invitación
+    // Enviar email de bienvenida (no bloquea el flujo)
     if (data.user) {
-      const inviteResult = await validateAndConsumeInvite(inviteCode, data.user.id)
-      if (!inviteResult.valid) {
-        console.error('[Auth Actions] Error con código de invitación:', inviteResult.error)
-        // El usuario ya se creó, pero el código falló - logueamos pero continuamos
-      } else {
-        console.log('[Auth Actions] Código de invitación consumido exitosamente')
-      }
-
-      // Enviar email de bienvenida (no bloquea el flujo)
       try {
         await sendWelcomeEmail({
           to: email,
