@@ -92,17 +92,21 @@ export default function LoginContent() {
     setLoading(true)
     setError(null)
 
-    const formData = new FormData(e.currentTarget)
-    const result = await signInWithEmail(formData)
+    try {
+      const formData = new FormData(e.currentTarget)
+      const result = await signInWithEmail(formData)
 
-    if (result.success) {
-      setEmailSent(true)
-      setSuccess(result.message)
-    } else {
-      setError(result.message)
+      if (result.success) {
+        setEmailSent(true)
+        setSuccess(result.message)
+      } else {
+        setError(result.message)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error inesperado')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   const handleOAuth = async (provider: OAuthProvider) => {
@@ -124,10 +128,16 @@ export default function LoginContent() {
       // Si no hay error, la redirección ocurre en la server action
     } catch (err) {
       // Los errores de redirect son esperados, no mostrarlos
-      if (err instanceof Error && err.message.includes('NEXT_REDIRECT')) {
-        return
+      const isRedirect = err instanceof Error && (
+        err.message.includes('NEXT_REDIRECT') ||
+        (err as any).digest?.startsWith?.('NEXT_REDIRECT')
+      )
+      if (!isRedirect) {
+        setError(getSpanishErrorMessage(err instanceof Error ? err.message : 'Error inesperado'))
       }
-      setError(getSpanishErrorMessage(err instanceof Error ? err.message : 'Error inesperado'))
+    } finally {
+      // Siempre resetear el estado de loading
+      // Si hay redirect, el componente se desmontará de todos modos
       setIsPasswordLogin(false)
     }
   }
@@ -137,15 +147,20 @@ export default function LoginContent() {
     setIsRegistering(true)
     setError(null)
 
-    const formData = new FormData(e.currentTarget)
-    const result = await signUp(formData)
+    try {
+      const formData = new FormData(e.currentTarget)
+      const result = await signUp(formData)
 
-    if (result.success) {
-      setSuccess(result.message)
-      // Redirigir al dashboard después de registro exitoso
-      router.push('/dashboard')
-    } else {
-      setError(result.message)
+      if (result.success) {
+        setSuccess(result.message)
+        // Redirigir al dashboard después de registro exitoso
+        router.push('/dashboard')
+      } else {
+        setError(result.message)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error inesperado')
+    } finally {
       setIsRegistering(false)
     }
   }
