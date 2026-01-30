@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Send, Loader2 } from 'lucide-react'
+import { Send, Loader2, ExternalLink } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface SubmitForReviewButtonProps {
   courseId: string
@@ -41,26 +42,36 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
 
   if (showConfirm) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-white/60">¿Enviar a revisión?</span>
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="px-3 py-1.5 bg-brand-light text-white text-sm font-medium rounded-lg hover:bg-brand transition disabled:opacity-50"
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white/60">¿Enviar a revision?</span>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="px-3 py-1.5 bg-brand-light text-white text-sm font-medium rounded-lg hover:bg-brand transition disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              'Si, enviar'
+            )}
+          </button>
+          <button
+            onClick={() => setShowConfirm(false)}
+            disabled={isSubmitting}
+            className="px-3 py-1.5 bg-white/10 text-white/70 text-sm rounded-lg hover:bg-white/20 transition"
+          >
+            Cancelar
+          </button>
+        </div>
+        <Link
+          href="/guia-revision"
+          target="_blank"
+          className="inline-flex items-center gap-1 text-xs text-brand-light hover:text-brand transition-colors"
         >
-          {isSubmitting ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            'Sí, enviar'
-          )}
-        </button>
-        <button
-          onClick={() => setShowConfirm(false)}
-          disabled={isSubmitting}
-          className="px-3 py-1.5 bg-white/10 text-white/70 text-sm rounded-lg hover:bg-white/20 transition"
-        >
-          Cancelar
-        </button>
+          <ExternalLink className="w-3 h-3" />
+          Ver guia de revision antes de enviar
+        </Link>
       </div>
     )
   }
