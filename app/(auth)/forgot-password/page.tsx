@@ -19,21 +19,47 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient()
 
+      console.log('[Forgot Password] Solicitando reset para:', email)
+
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
       })
 
       if (resetError) {
-        if (resetError.message.includes('rate limit')) {
+        console.error('[Forgot Password] Error de Supabase:', {
+          message: resetError.message,
+          status: resetError.status,
+          name: resetError.name,
+        })
+
+        // Mapear errores específicos a mensajes en español
+        const errorMessage = resetError.message.toLowerCase()
+
+        if (errorMessage.includes('rate limit') || errorMessage.includes('too many')) {
           setError('Has solicitado demasiados correos. Espera unos minutos e intenta de nuevo.')
+        } else if (errorMessage.includes('invalid email') || errorMessage.includes('invalid_email')) {
+          setError('El formato del email no es valido.')
+        } else if (errorMessage.includes('email not confirmed')) {
+          setError('Tu email aun no ha sido confirmado. Revisa tu bandeja de entrada.')
+        } else if (errorMessage.includes('user not found')) {
+          // Por seguridad, no revelamos si el usuario existe o no
+          // Mostramos exito de todos modos
+          console.log('[Forgot Password] Usuario no encontrado, mostrando exito por seguridad')
+          setSuccess(true)
+          return
+        } else if (errorMessage.includes('smtp') || errorMessage.includes('email provider')) {
+          setError('Error del servidor de correo. Intenta de nuevo en unos minutos.')
         } else {
-          setError('Error al enviar el correo. Verifica tu email e intenta de nuevo.')
+          // Mostrar el mensaje original de Supabase si no es sensible
+          setError(`Error: ${resetError.message}`)
         }
         return
       }
 
+      console.log('[Forgot Password] Email de recuperacion enviado exitosamente')
       setSuccess(true)
-    } catch {
+    } catch (err) {
+      console.error('[Forgot Password] Error inesperado:', err)
       setError('Error inesperado. Por favor, intenta de nuevo.')
     } finally {
       setLoading(false)
