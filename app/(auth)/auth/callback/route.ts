@@ -118,14 +118,47 @@ export async function GET(request: Request) {
 
       // Detectar error de PKCE (code verifier no encontrado)
       const isPKCEError = error.message.toLowerCase().includes('code verifier') ||
-                          error.message.toLowerCase().includes('pkce')
+                          error.message.toLowerCase().includes('pkce') ||
+                          error.message.toLowerCase().includes('invalid flow state')
 
-      if (isPKCEError && type === 'recovery') {
-        console.log('[Auth Callback] Error PKCE en recovery - el usuario abrió en otro navegador')
-        const errorMsg = encodeURIComponent('Por favor, abre el enlace de recuperación en el mismo navegador donde lo solicitaste, o solicita un nuevo enlace.')
-        return NextResponse.redirect(`${origin}/forgot-password?error=${errorMsg}`)
+      if (isPKCEError) {
+        console.log('[Auth Callback] Error PKCE detectado, verificando si hay sesión activa...')
+
+        // Verificar si el usuario ya tiene una sesión activa
+        const { data: sessionData } = await supabase.auth.getSession()
+
+        if (sessionData.session) {
+          console.log('[Auth Callback] Usuario ya tiene sesión activa, redirigiendo...')
+
+          // Si es recovery, ir a reset-password
+          if (type === 'recovery') {
+            const response = NextResponse.redirect(`${origin}/reset-password`)
+            response.cookies.delete('auth_redirect')
+            return response
+          }
+
+          // Para otros casos, ir al dashboard
+          return await handleSuccessfulAuth(supabase, sessionData.session.user, origin, redirectTo || next)
+        }
+
+        // No hay sesión activa, mostrar mensaje amigable
+        console.log('[Auth Callback] No hay sesión activa, mostrando error PKCE amigable')
+
+        if (type === 'recovery') {
+          const errorMsg = encodeURIComponent('El enlace ha expirado o fue abierto en un navegador diferente. Por favor, solicita un nuevo enlace de recuperación.')
+          return NextResponse.redirect(`${origin}/forgot-password?error=${errorMsg}`)
+        }
+
+        if (type === 'magiclink' || type === 'email') {
+          const errorMsg = encodeURIComponent('El enlace ha expirado o fue abierto en un navegador diferente. Por favor, solicita un nuevo enlace de acceso.')
+          return NextResponse.redirect(`${origin}/login?error=${errorMsg}`)
+        }
+
+        const errorMsg = encodeURIComponent('El enlace ha expirado o fue abierto en un navegador diferente. Por favor, intenta iniciar sesión nuevamente.')
+        return NextResponse.redirect(`${origin}/login?error=${errorMsg}`)
       }
 
+      // Otros errores no relacionados con PKCE
       if (type === 'recovery') {
         const errorMsg = encodeURIComponent(error.message || 'Enlace de recuperación expirado o inválido')
         return NextResponse.redirect(`${origin}/forgot-password?error=${errorMsg}`)
@@ -150,8 +183,19 @@ export async function GET(request: Request) {
     return await handleSuccessfulAuth(supabase, data.user, origin, redirectTo || next)
   }
 
-  // Si no hay código ni token_hash ni error
-  console.log('[Auth Callback] Sin código ni token_hash, redirigiendo a login')
+  // =====================================================
+  // Sin código ni token_hash - verificar sesión existente
+  // =====================================================
+  console.log('[Auth Callback] Sin código ni token_hash, verificando sesión existente...')
+
+  const { data: existingSession } = await supabase.auth.getSession()
+
+  if (existingSession.session) {
+    console.log('[Auth Callback] Sesión existente encontrada, redirigiendo al dashboard')
+    return await handleSuccessfulAuth(supabase, existingSession.session.user, origin, redirectTo || next)
+  }
+
+  console.log('[Auth Callback] No hay sesión, redirigiendo a login')
   return NextResponse.redirect(`${origin}/login`)
 }
 
