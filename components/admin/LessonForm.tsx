@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { ArrowLeft, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, HelpCircle } from 'lucide-react'
+import { translateError } from '@/lib/error-messages'
 
 // Dynamic import for heavy RichTextEditor component
 const RichTextEditor = dynamic(
@@ -66,8 +67,8 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
         return
       }
       console.error('Error al guardar:', error)
-      const errorMessage = error?.message || 'Error desconocido'
-      alert('Error al guardar la lección: ' + errorMessage)
+      const errorMessage = translateError(error?.message || 'Error desconocido')
+      alert('Error al guardar la leccion: ' + errorMessage)
       setIsSubmitting(false)
     }
   }
@@ -77,8 +78,14 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
         {/* Título */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-white mb-2">
-            Título de la Lección *
+          <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
+            Titulo de la Leccion *
+            <span className="group relative">
+              <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
+              <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                Un titulo claro que indique el tema de la leccion
+              </span>
+            </span>
           </label>
           <input
             type="text"
@@ -86,15 +93,21 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
             value={title}
             onChange={handleTitleChange}
             required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
-            placeholder="ej. ¿Qué es Bitcoin?"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
+            placeholder="Ej: Que es Bitcoin y por que importa?"
           />
         </div>
 
         {/* Slug */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-white mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
             Slug (URL amigable) *
+            <span className="group relative">
+              <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
+              <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                Se genera automaticamente del titulo. Solo letras, numeros y guiones
+              </span>
+            </span>
           </label>
           <input
             type="text"
@@ -102,29 +115,35 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
-            placeholder="que-es-bitcoin"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
+            placeholder="Ej: que-es-bitcoin-por-que-importa"
           />
         </div>
 
         {/* Descripción */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-white mb-2">
-            Descripción
+            Descripcion
           </label>
           <textarea
             name="description"
             defaultValue={initialData?.description}
             rows={3}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition resize-none"
-            placeholder="Descripción breve de la lección"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition resize-none"
+            placeholder="Ej: Aprende los conceptos fundamentales de Bitcoin y su importancia en el sistema financiero actual."
           />
         </div>
 
         {/* Contenido (editor WYSIWYG) */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-white mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
             Contenido de la leccion
+            <span className="group relative">
+              <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
+              <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                Usa el editor para dar formato. Puedes incluir codigo, listas, enlaces, imagenes y videos
+              </span>
+            </span>
           </label>
           <RichTextEditor
             content={content}
@@ -132,36 +151,48 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
             placeholder="Escribe el contenido de la leccion. Usa la barra de herramientas para dar formato..."
           />
           <p className="mt-2 text-xs text-white/50">
-            Puedes usar titulos, listas, bloques de codigo, imagenes y videos de YouTube
+            Soporta Markdown, bloques de codigo, imagenes y videos de YouTube
           </p>
         </div>
 
         {/* Video URL */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-white mb-2">
-            URL del Video (YouTube)
+          <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
+            URL del Video
+            <span className="group relative">
+              <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
+              <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                YouTube, Vimeo o enlace directo al video. El video se mostrara antes del contenido
+              </span>
+            </span>
           </label>
           <input
             type="url"
             name="video_url"
             defaultValue={initialData?.video_url}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
-            placeholder="https://www.youtube.com/watch?v=..."
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
+            placeholder="Ej: https://www.youtube.com/watch?v=abc123"
           />
         </div>
 
         {/* Duración del video */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-white mb-2">
-            Duración del Video (minutos)
+          <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
+            Duracion del Video (minutos)
+            <span className="group relative">
+              <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
+              <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                Duracion estimada en minutos. Ayuda a los estudiantes a planificar su tiempo
+              </span>
+            </span>
           </label>
           <input
             type="number"
             name="video_duration_minutes"
             defaultValue={initialData?.video_duration_minutes}
             min="0"
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
-            placeholder="ej. 15"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
+            placeholder="Ej: 15"
           />
         </div>
 

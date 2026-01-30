@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { translateError } from '@/lib/error-messages'
 import {
   slugify,
   validateCourseData,
@@ -117,13 +118,14 @@ export function CourseFormCore({
       try {
         const result = await action(formData)
         if (!result.success && result.error) {
-          toast.error(result.error)
+          toast.error(translateError(result.error))
         } else {
           toast.success(initialData?.id ? 'Curso actualizado' : 'Curso creado')
         }
       } catch (error) {
         console.error('Error al guardar:', error)
-        toast.error('Error al guardar el curso')
+        const errorMessage = error instanceof Error ? translateError(error.message) : 'Error al guardar el curso'
+        toast.error(errorMessage)
       }
     })
   }
