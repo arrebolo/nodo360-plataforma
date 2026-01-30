@@ -40,7 +40,7 @@ export function CommunitySection() {
 
               {/* Discord */}
               <Link
-                href="https://discord.gg/qjQUC7e4"
+                href="https://discord.gg/ag5aPsNuPY"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/20 hover:bg-[#5865F2]/20 hover:border-[#5865F2]/40 transition-all group"

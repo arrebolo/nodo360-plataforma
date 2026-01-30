@@ -13,7 +13,7 @@ export interface CommunityConfig {
 export const communityConfig: CommunityConfig = {
   platform: 'discord', // Plataforma por defecto
   urls: {
-    discord: 'https://discord.gg/gKRFcPZD',
+    discord: 'https://discord.gg/ag5aPsNuPY',
     telegram: 'https://t.me/nodo360',
     slack: 'https://nodo360.slack.com',
     forum: 'https://comunidad.nodo360.com',

@@ -21,7 +21,7 @@ export const brandConfig = {
     premiumLight: '#FFA500'
   },
   social: {
-    discord: 'https://discord.gg/gKRFcPZD',
+    discord: 'https://discord.gg/ag5aPsNuPY',
     telegram: 'https://t.me/nodo360',
     twitter: 'https://twitter.com/nodo360',
     youtube: 'https://youtube.com/@nodo360'

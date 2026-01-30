@@ -29,7 +29,7 @@ export default function ProyectosPage() {
         'Ejecución automática de propuestas'
       ],
       github: 'https://github.com/nodo360/dao',
-      discord: 'https://discord.gg/nodo360'
+      discord: 'https://discord.gg/ag5aPsNuPY'
     },
     {
       id: 2,
@@ -48,7 +48,7 @@ export default function ProyectosPage() {
         'Portfolio on-chain'
       ],
       github: null,
-      discord: 'https://discord.gg/nodo360'
+      discord: 'https://discord.gg/ag5aPsNuPY'
     },
     {
       id: 3,
@@ -67,7 +67,7 @@ export default function ProyectosPage() {
         'Análisis de estrategias'
       ],
       github: null,
-      discord: 'https://discord.gg/nodo360'
+      discord: 'https://discord.gg/ag5aPsNuPY'
     },
     {
       id: 4,
@@ -86,7 +86,7 @@ export default function ProyectosPage() {
         'Sin intermediarios'
       ],
       github: null,
-      discord: 'https://discord.gg/nodo360'
+      discord: 'https://discord.gg/ag5aPsNuPY'
     },
     {
       id: 5,
@@ -105,7 +105,7 @@ export default function ProyectosPage() {
         'Portfolio de proyectos'
       ],
       github: null,
-      discord: 'https://discord.gg/nodo360'
+      discord: 'https://discord.gg/ag5aPsNuPY'
     },
     {
       id: 6,
@@ -124,7 +124,7 @@ export default function ProyectosPage() {
         'Mejor experiencia de aprendizaje'
       ],
       github: null,
-      discord: 'https://discord.gg/nodo360'
+      discord: 'https://discord.gg/ag5aPsNuPY'
     },
   ]
 
@@ -349,7 +349,7 @@ export default function ProyectosPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="https://discord.gg/nodo360"
+                href="https://discord.gg/ag5aPsNuPY"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-105"

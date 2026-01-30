@@ -164,7 +164,7 @@ export default function BetaAccessPage() {
                 <Twitter className="w-5 h-5" />
               </a>
               <a
-                href="https://discord.gg/nodo360"
+                href="https://discord.gg/ag5aPsNuPY"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:border-white/20 transition"

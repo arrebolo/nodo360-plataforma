@@ -66,7 +66,7 @@ export function generateOrganizationStructuredData() {
       'https://twitter.com/nodo360',
       'https://linkedin.com/company/nodo360',
       'https://github.com/nodo360',
-      'https://discord.gg/nodo360',
+      'https://discord.gg/ag5aPsNuPY',
       'https://t.me/nodo360',
     ],
     contactPoint: {
