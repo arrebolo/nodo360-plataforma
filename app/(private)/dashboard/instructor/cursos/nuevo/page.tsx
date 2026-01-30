@@ -59,11 +59,18 @@ export default async function NewInstructorCoursePage() {
       <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
         <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
         <div className="text-sm">
-          <p className="text-blue-300 font-medium">Proceso de publicación</p>
+          <p className="text-blue-300 font-medium">Proceso de publicacion</p>
           <p className="text-white/60 mt-1">
-            Tu curso comenzará como borrador. Cuando esté listo, podrás enviarlo a revisión.
-            Un administrador lo revisará antes de publicarlo.
+            Tu curso comenzara como borrador. Cuando este listo, podras enviarlo a revision.
+            Un mentor lo revisara antes de publicarlo.
           </p>
+          <Link
+            href="/guia-revision"
+            className="inline-flex items-center gap-1 mt-2 text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Lee nuestra guia de revision antes de enviar
+            <ArrowLeft className="w-3 h-3 rotate-180" />
+          </Link>
         </div>
       </div>
 

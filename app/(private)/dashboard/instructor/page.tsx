@@ -19,6 +19,8 @@ import {
   BarChart3,
   BadgeCheck,
   MessageCircle,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react'
 
 export const metadata = {
@@ -165,6 +167,16 @@ export default async function InstructorPage() {
   const activeCerts = certifications?.filter(c => c.status === 'active') || []
   const expiredCerts = certifications?.filter(c => c.status === 'expired') || []
 
+  // Check if user has any published courses (for onboarding banner)
+  const { data: publishedCourses } = await supabase
+    .from('courses')
+    .select('id')
+    .eq('instructor_id', user.id)
+    .eq('status', 'published')
+    .limit(1)
+
+  const hasPublishedCourses = (publishedCourses?.length ?? 0) > 0
+
   return (
     <div className="min-h-screen bg-dark">
       <div className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -176,6 +188,34 @@ export default async function InstructorPage() {
           <ArrowLeft className="w-4 h-4" />
           Volver al dashboard
         </Link>
+
+        {/* Onboarding Banner for new instructors */}
+        {!hasPublishedCourses && (
+          <div className="mb-6 p-5 rounded-2xl border border-brand-light/30 bg-gradient-to-r from-brand-light/10 via-brand/5 to-transparent">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-brand-light/20 flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-brand-light" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">
+                    ¿Nuevo como instructor?
+                  </h3>
+                  <p className="text-sm text-white/60 mt-0.5">
+                    Sigue nuestra guia paso a paso para crear y publicar tu primer curso
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/dashboard/instructor/onboarding"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-light to-brand text-white font-medium text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+              >
+                Comenzar onboarding
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <PageHeader
