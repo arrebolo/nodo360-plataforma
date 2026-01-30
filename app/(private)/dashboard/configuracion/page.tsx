@@ -163,7 +163,7 @@ export default function ConfiguracionPage() {
             </div>
             <div className="pt-2">
               <Link
-                href="/auth/reset-password"
+                href="/reset-password"
                 className="text-sm text-brand-light hover:underline"
               >
                 Cambiar contrasena

@@ -21,6 +21,7 @@ import {
   BarChart,
   Shield,
   ArrowRight,
+  Vote,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -383,31 +384,31 @@ export default async function DashboardPage() {
         {isMentor && (
           <DashboardSection title="Zona Mentor" columns={4}>
             <DashboardIconCard
-              href="/gobernanza"
-              icon={Landmark}
-              label="Gobernanza"
-              description="Propuestas y votos"
-              color="orange"
-            />
-            <DashboardIconCard
-              href="/dashboard/mentor/mentorias"
+              href="/dashboard/mentor"
               icon={GraduationCap}
-              label="Mis Mentorias"
-              description="Gestionar"
+              label="Panel Mentor"
+              description="Tu panel"
               color="purple"
             />
             <DashboardIconCard
-              href="/dashboard/mentor/solicitudes"
+              href="/dashboard/mentor/cursos/pendientes"
               icon={ClipboardList}
-              label="Solicitudes"
+              label="Revisar Cursos"
               description="Pendientes"
+              color="orange"
+            />
+            <DashboardIconCard
+              href="/gobernanza/mentores"
+              icon={Vote}
+              label="Votaciones"
+              description="Aplicaciones"
               color="blue"
             />
             <DashboardIconCard
-              href="/dashboard/mentor/sesiones"
-              icon={MessageSquare}
-              label="Sesiones"
-              description="Calendario"
+              href="/gobernanza"
+              icon={Landmark}
+              label="Gobernanza"
+              description="Propuestas"
               color="cyan"
             />
           </DashboardSection>
