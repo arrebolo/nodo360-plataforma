@@ -64,8 +64,24 @@ export default function ForgotPasswordPage() {
 
       console.log('[Forgot Password] Email de recuperacion enviado exitosamente')
       setSuccess(true)
-    } catch (err) {
-      console.error('[Forgot Password] Error inesperado:', err)
+    } catch (err: unknown) {
+      // Log completo del error para debugging
+      const error = err as Record<string, unknown>
+      console.error('[Forgot Password] Error completo:', err)
+      console.error('[Forgot Password] Error name:', error?.name)
+      console.error('[Forgot Password] Error message:', error?.message)
+      console.error('[Forgot Password] Error cause:', error?.cause)
+      console.error('[Forgot Password] Error code:', error?.code)
+      console.error('[Forgot Password] Error status:', error?.status)
+      console.error('[Forgot Password] Stack:', error?.stack)
+
+      // Log del objeto completo como JSON
+      try {
+        console.error('[Forgot Password] JSON:', JSON.stringify(err, Object.getOwnPropertyNames(err as object)))
+      } catch {
+        // Ignorar si no se puede serializar
+      }
+
       setError('Error inesperado. Por favor, intenta de nuevo.')
     } finally {
       setLoading(false)
