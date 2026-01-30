@@ -79,7 +79,17 @@ export function ImageUpload({
       const supabase = createClient()
 
       // Verificar autenticacion
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+      if (authError) {
+        console.error('[ImageUpload] Error de autenticacion:', {
+          message: authError.message,
+          status: authError.status,
+          name: authError.name,
+        })
+        throw new Error('Error de autenticacion. Por favor, recarga la pagina.')
+      }
+
       if (!user) {
         throw new Error('Debes iniciar sesion para subir imagenes')
       }
@@ -91,8 +101,17 @@ export function ImageUpload({
       const fileName = `${timestamp}-${randomId}.${ext}`
       const filePath = folder ? `${folder}/${fileName}` : fileName
 
+      // Log de la operacion de upload
+      console.log('[ImageUpload] Iniciando upload:', {
+        bucket,
+        filePath,
+        fileType: file.type,
+        fileSize: `${(file.size / 1024).toFixed(2)} KB`,
+        userId: user.id,
+      })
+
       // Subir a Supabase Storage
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -101,9 +120,52 @@ export function ImageUpload({
         })
 
       if (uploadError) {
-        console.error('[ImageUpload] Error:', uploadError)
-        throw new Error('Error al subir la imagen')
+        // Log detallado del error de Supabase Storage
+        console.error('[ImageUpload] ==================')
+        console.error('[ImageUpload] Error de Supabase Storage:', {
+          message: uploadError.message,
+          name: uploadError.name,
+          // @ts-expect-error - statusCode may exist on StorageError
+          statusCode: uploadError.statusCode,
+          // @ts-expect-error - error may exist on StorageError
+          error: uploadError.error,
+        })
+        console.error('[ImageUpload] Detalles de la operacion:', {
+          bucket,
+          filePath,
+          fileType: file.type,
+          fileSize: file.size,
+          userId: user.id,
+        })
+        console.error('[ImageUpload] Error completo:', uploadError)
+        console.error('[ImageUpload] ==================')
+
+        // Mapear errores comunes a mensajes en espanol
+        const errorMessage = uploadError.message.toLowerCase()
+
+        if (errorMessage.includes('bucket') && errorMessage.includes('not found')) {
+          throw new Error(`El almacenamiento "${bucket}" no existe. Contacta al administrador.`)
+        }
+        if (errorMessage.includes('not allowed') || errorMessage.includes('policy')) {
+          throw new Error('No tienes permisos para subir imagenes. Verifica tu rol.')
+        }
+        if (errorMessage.includes('payload too large') || errorMessage.includes('too large')) {
+          throw new Error('La imagen es demasiado grande. Intenta con una mas pequena.')
+        }
+        if (errorMessage.includes('invalid') && errorMessage.includes('mime')) {
+          throw new Error('Tipo de archivo no permitido. Usa JPG, PNG o WebP.')
+        }
+        if (errorMessage.includes('storage') && errorMessage.includes('quota')) {
+          throw new Error('Almacenamiento lleno. Contacta al administrador.')
+        }
+        if (errorMessage.includes('duplicate') || errorMessage.includes('already exists')) {
+          throw new Error('Ya existe un archivo con ese nombre.')
+        }
+
+        throw new Error(`Error al subir: ${uploadError.message}`)
       }
+
+      console.log('[ImageUpload] Upload exitoso:', uploadData)
 
       // Obtener URL publica
       const { data: urlData } = supabase.storage
@@ -116,8 +178,34 @@ export function ImageUpload({
       onUpload(urlData.publicUrl)
 
     } catch (err) {
-      console.error('[ImageUpload] Error:', err)
-      setError(err instanceof Error ? err.message : 'Error al subir la imagen')
+      // Log completo del error para debugging
+      console.error('[ImageUpload] ==================')
+      console.error('[ImageUpload] Error capturado:', err)
+
+      if (err instanceof Error) {
+        console.error('[ImageUpload] Error name:', err.name)
+        console.error('[ImageUpload] Error message:', err.message)
+        console.error('[ImageUpload] Error stack:', err.stack)
+
+        // Intentar extraer mas info si es un error de Supabase
+        const supabaseError = err as unknown as Record<string, unknown>
+        if (supabaseError.status) {
+          console.error('[ImageUpload] Error status:', supabaseError.status)
+        }
+        if (supabaseError.code) {
+          console.error('[ImageUpload] Error code:', supabaseError.code)
+        }
+      }
+
+      // Log del objeto completo como JSON
+      try {
+        console.error('[ImageUpload] JSON:', JSON.stringify(err, Object.getOwnPropertyNames(err as object)))
+      } catch {
+        // Ignorar si no se puede serializar
+      }
+      console.error('[ImageUpload] ==================')
+
+      setError(err instanceof Error ? err.message : 'Error al subir la imagen. Revisa la consola para mas detalles.')
       // Revertir preview si falla
       setPreview(currentUrl || null)
     } finally {

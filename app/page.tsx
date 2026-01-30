@@ -10,6 +10,10 @@ import {
   Zap,
   Target,
   BookOpen,
+  Sparkles,
+  DollarSign,
+  Wrench,
+  HeartHandshake,
 } from 'lucide-react'
 import { HomeFeaturedCourses } from '@/components/home/HomeFeaturedCourses'
 import { HomeFooter } from '@/components/home/HomeFooter'
@@ -275,6 +279,80 @@ export default function HomePage() {
                 </div>
               )
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Instructor CTA */}
+      <section className="py-20 bg-dark-surface">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="relative rounded-3xl border border-brand-light/20 bg-gradient-to-br from-brand-light/10 via-brand/5 to-transparent p-8 md:p-12 backdrop-blur-sm overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-light/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-brand/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+
+            <div className="relative grid md:grid-cols-2 gap-8 items-center">
+              {/* Content */}
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-light/20 border border-brand-light/30 text-brand-light text-sm font-medium mb-4">
+                  <Sparkles className="w-4 h-4" />
+                  Programa de instructores
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                  Eres experto en Bitcoin o Blockchain?
+                </h2>
+                <p className="text-lg text-white/70 mb-6">
+                  Comparte tu conocimiento y genera ingresos enseñando en Nodo360.
+                  Unete a nuestra comunidad de educadores.
+                </p>
+
+                {/* Benefits */}
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-3 text-white/80">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center">
+                      <DollarSign className="w-4 h-4 text-success" />
+                    </div>
+                    <span>Comision 35-40% por cada venta</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-brand-light/20 flex items-center justify-center">
+                      <Wrench className="w-4 h-4 text-brand-light" />
+                    </div>
+                    <span>Herramientas de creacion de cursos incluidas</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-warning/20 flex items-center justify-center">
+                      <HeartHandshake className="w-4 h-4 text-warning" />
+                    </div>
+                    <span>Soporte de mentores certificados</span>
+                  </li>
+                </ul>
+
+                <Link
+                  href="/dashboard/instructor"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg font-medium h-12 px-6 text-base text-white bg-gradient-to-r from-brand-light to-brand hover:opacity-90 transition-opacity"
+                >
+                  Conviertete en Instructor
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+              </div>
+
+              {/* Visual */}
+              <div className="hidden md:flex items-center justify-center">
+                <div className="relative">
+                  <div className="w-48 h-48 rounded-full bg-gradient-to-br from-brand-light/30 to-brand/20 flex items-center justify-center">
+                    <GraduationCap className="w-24 h-24 text-brand-light" />
+                  </div>
+                  {/* Floating badges */}
+                  <div className="absolute -top-4 -right-4 px-3 py-1.5 rounded-full bg-success/20 border border-success/30 text-success text-sm font-medium">
+                    +500 estudiantes
+                  </div>
+                  <div className="absolute -bottom-2 -left-4 px-3 py-1.5 rounded-full bg-warning/20 border border-warning/30 text-warning text-sm font-medium">
+                    4.8 rating
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
