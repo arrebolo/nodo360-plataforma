@@ -69,7 +69,7 @@ export default function ComunidadPage() {
               </div>
 
               <a
-                href="https://discord.gg/nodo360"
+                href="https://discord.gg/ag5aPsNuPY"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full py-4 bg-discord hover:bg-discord/90 text-white font-bold text-center rounded-xl transition-all duration-300 hover:scale-105"
