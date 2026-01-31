@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Calendar, Clock, ArrowLeft, ArrowRight, User, BookOpen } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
-import { getPostBySlug, getRelatedPosts, blogCategories, getAllPosts } from '@/lib/blog-data'
+import { getPostBySlug, getRelatedPosts, blogCategories, getAllPosts, type InlineImage } from '@/lib/blog-data'
 import { JsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import type { Metadata } from 'next'
 
@@ -66,14 +66,61 @@ function formatDate(dateString: string): string {
   })
 }
 
+// Component for inline images with captions
+function InlineImageBlock({ image, index }: { image: InlineImage; index: number }) {
+  return (
+    <figure key={`inline-img-${index}`} className="my-8">
+      <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10">
+        <Image
+          src={image.src}
+          alt={image.alt}
+          fill
+          sizes="(max-width: 896px) 100vw, 896px"
+          className="object-cover"
+        />
+      </div>
+      {image.caption && (
+        <figcaption className="mt-3 text-center text-sm text-white/60 italic">
+          {image.caption}
+        </figcaption>
+      )}
+    </figure>
+  )
+}
+
 // Simple markdown-like rendering (headers, bold, lists, links, tables)
-function renderContent(content: string): React.ReactElement {
+function renderContent(content: string, inlineImages?: InlineImage[]): React.ReactElement {
   const lines = content.trim().split('\n')
   const elements: React.ReactElement[] = []
   let currentList: string[] = []
   let inTable = false
   let tableRows: string[][] = []
   let tableHeader: string[] = []
+  let h2Count = 0 // Track H2 sections for inline image placement
+
+  // Create a map of images by section number
+  const imagesBySection = new Map<number, InlineImage[]>()
+  if (inlineImages) {
+    inlineImages.forEach(img => {
+      const section = img.afterSection
+      if (!imagesBySection.has(section)) {
+        imagesBySection.set(section, [])
+      }
+      imagesBySection.get(section)!.push(img)
+    })
+  }
+
+  // Helper to insert images after a section
+  const insertImagesAfterSection = (sectionNum: number) => {
+    const images = imagesBySection.get(sectionNum)
+    if (images) {
+      images.forEach((img, idx) => {
+        elements.push(
+          <InlineImageBlock key={`img-${sectionNum}-${idx}`} image={img} index={idx} />
+        )
+      })
+    }
+  }
 
   const flushList = () => {
     if (currentList.length > 0) {
@@ -166,6 +213,11 @@ function renderContent(content: string): React.ReactElement {
     // Headers
     if (trimmedLine.startsWith('## ')) {
       flushList()
+      // Insert images after previous section (before this new H2)
+      if (h2Count > 0) {
+        insertImagesAfterSection(h2Count)
+      }
+      h2Count++
       elements.push(
         <h2 key={`h2-${i}`} className="text-2xl font-bold text-white mt-10 mb-4">
           {trimmedLine.slice(3)}
@@ -226,6 +278,11 @@ function renderContent(content: string): React.ReactElement {
 
   flushList()
   flushTable()
+
+  // Insert any remaining images after the last section
+  if (h2Count > 0) {
+    insertImagesAfterSection(h2Count)
+  }
 
   return <>{elements}</>
 }
@@ -352,7 +409,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {/* Content */}
       <article className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="prose prose-invert prose-lg max-w-none">
-          {renderContent(post.content)}
+          {renderContent(post.content, post.inlineImages)}
         </div>
 
         {/* Keywords/Tags */}

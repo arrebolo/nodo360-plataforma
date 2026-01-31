@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F7931A" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FF9F43" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F7931A"/>
+      <stop offset="100%" stop-color="#FF9F43"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="#0a0a0a"/>
+  <rect width="1200" height="675" fill="url(#bgGradient)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="url(#accentGradient)"/>
+  <text x="600" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#F7931A">Emisión de Bitcoin: Camino a 21 Millones</text>
+      <text x="180" y="152" text-anchor="end" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">2009</text>
+      <rect x="200" y="120" width="800" height="50" rx="8" fill="rgba(255,255,255,0.05)"/>
+      <rect x="200" y="120" width="10" height="50" rx="8" fill="url(#accentGradient)"/>
+      <text x="225" y="152" font-family="system-ui, sans-serif" font-size="14" fill="rgba(255,255,255,0.8)">0</text>
+      <text x="180" y="232" text-anchor="end" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">2012</text>
+      <rect x="200" y="200" width="800" height="50" rx="8" fill="rgba(255,255,255,0.05)"/>
+      <rect x="200" y="200" width="400" height="50" rx="8" fill="url(#accentGradient)"/>
+      <text x="615" y="232" font-family="system-ui, sans-serif" font-size="14" fill="rgba(255,255,255,0.8)">10.5M</text>
+      <text x="180" y="312" text-anchor="end" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">2016</text>
+      <rect x="200" y="280" width="800" height="50" rx="8" fill="rgba(255,255,255,0.05)"/>
+      <rect x="200" y="280" width="600" height="50" rx="8" fill="url(#accentGradient)"/>
+      <text x="815" y="312" font-family="system-ui, sans-serif" font-size="14" fill="rgba(255,255,255,0.8)">15.75M</text>
+      <text x="180" y="392" text-anchor="end" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">2020</text>
+      <rect x="200" y="360" width="800" height="50" rx="8" fill="rgba(255,255,255,0.05)"/>
+      <rect x="200" y="360" width="700.8" height="50" rx="8" fill="url(#accentGradient)"/>
+      <text x="915.8" y="392" font-family="system-ui, sans-serif" font-size="14" fill="rgba(255,255,255,0.8)">18.4M</text>
+      <text x="180" y="472" text-anchor="end" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">2024</text>
+      <rect x="200" y="440" width="800" height="50" rx="8" fill="rgba(255,255,255,0.05)"/>
+      <rect x="200" y="440" width="746.4" height="50" rx="8" fill="url(#accentGradient)"/>
+      <text x="961.4" y="472" font-family="system-ui, sans-serif" font-size="14" fill="rgba(255,255,255,0.8)">19.6M</text>
+      <text x="180" y="552" text-anchor="end" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">2140</text>
+      <rect x="200" y="520" width="800" height="50" rx="8" fill="rgba(255,255,255,0.05)"/>
+      <rect x="200" y="520" width="800" height="50" rx="8" fill="url(#accentGradient)"/>
+      <text x="1015" y="552" font-family="system-ui, sans-serif" font-size="14" fill="rgba(255,255,255,0.8)">21M</text>
+  <text x="1170" y="655" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="rgba(255,255,255,0.3)">Nodo360</text></svg>

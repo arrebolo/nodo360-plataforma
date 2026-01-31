@@ -37,6 +37,16 @@ const imageAltMap: Record<string, string> = {
   'que-es-blockchain-explicado': 'Representación visual de la tecnología blockchain',
   'soberania-financiera-bitcoin': 'Llave dorada representando la soberanía financiera con Bitcoin',
   'defi-para-principiantes': 'Interfaz de finanzas descentralizadas DeFi',
+  'que-es-ethereum-guia-completa': 'Logo de Ethereum y smart contracts en blockchain',
+  'que-es-wallet-crypto-tipos': 'Hardware wallet y software wallet para criptomonedas',
+  'que-es-mineria-bitcoin': 'Equipos ASIC de minería de Bitcoin en centro de datos',
+  'nfts-que-son-para-que-sirven': 'Arte digital NFT y tokens no fungibles',
+  'staking-criptomonedas-guia': 'Monedas de criptomonedas generando rendimientos por staking',
+  'seguridad-crypto-proteger-criptomonedas': 'Escudo de seguridad protegiendo criptomonedas',
+  'bitcoin-vs-oro-comparativa': 'Comparación entre Bitcoin y lingote de oro',
+  'layer-2-blockchain-escalabilidad': 'Capas de blockchain mostrando Layer 2 y escalabilidad',
+  'dao-organizaciones-descentralizadas': 'Red de nodos representando una organización descentralizada DAO',
+  'halving-bitcoin-que-es-cuando': 'Símbolo de Bitcoin dividido a la mitad representando el halving',
 }
 
 function BlogCard({ post, priority = false }: { post: BlogPost; priority?: boolean }) {
