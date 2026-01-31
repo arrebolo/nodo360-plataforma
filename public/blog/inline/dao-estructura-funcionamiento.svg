@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#F472B6" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#F472B6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="#0a0a0a"/>
+  <rect width="1200" height="675" fill="url(#bgGradient)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="url(#accentGradient)"/>
+  <text x="600" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#EC4899">Cómo Funciona una DAO</text>
+    <rect x="170" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#EC4899" stroke-width="2" filter="url(#shadow)"/>
+    <text x="240" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#EC4899">1. Propuesta</text>
+    <text x="240" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Miembro sugiere</text>
+      <path d="M315 300 L345 300" stroke="#EC4899" stroke-width="2" stroke-dasharray="5,5"/>
+      <polygon points="340,294 350,300 340,306" fill="#EC4899"/>
+    <rect x="350" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#EC4899" stroke-width="2" filter="url(#shadow)"/>
+    <text x="420" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#EC4899">2. Discusión</text>
+    <text x="420" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Debate comunidad</text>
+      <path d="M495 300 L525 300" stroke="#EC4899" stroke-width="2" stroke-dasharray="5,5"/>
+      <polygon points="520,294 530,300 520,306" fill="#EC4899"/>
+    <rect x="530" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#EC4899" stroke-width="2" filter="url(#shadow)"/>
+    <text x="600" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#EC4899">3. Votación</text>
+    <text x="600" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Token holders votan</text>
+      <path d="M675 300 L705 300" stroke="#EC4899" stroke-width="2" stroke-dasharray="5,5"/>
+      <polygon points="700,294 710,300 700,306" fill="#EC4899"/>
+    <rect x="710" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#EC4899" stroke-width="2" filter="url(#shadow)"/>
+    <text x="780" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#EC4899">4. Quórum</text>
+    <text x="780" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Mínimo participación</text>
+      <path d="M855 300 L885 300" stroke="#EC4899" stroke-width="2" stroke-dasharray="5,5"/>
+      <polygon points="880,294 890,300 880,306" fill="#EC4899"/>
+    <rect x="890" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#EC4899" stroke-width="2" filter="url(#shadow)"/>
+    <text x="960" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#EC4899">5. Ejecución</text>
+    <text x="960" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Smart contract actúa</text>
+  <text x="1170" y="655" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="rgba(255,255,255,0.3)">Nodo360</text></svg>

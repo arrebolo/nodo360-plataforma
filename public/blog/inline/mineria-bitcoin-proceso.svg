@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F7931A" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FF9F43" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F7931A"/>
+      <stop offset="100%" stop-color="#FF9F43"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="#0a0a0a"/>
+  <rect width="1200" height="675" fill="url(#bgGradient)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="url(#accentGradient)"/>
+  <text x="600" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#F7931A">Proceso de Minería Bitcoin</text>
+    <rect x="170" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#F7931A" stroke-width="2" filter="url(#shadow)"/>
+    <text x="240" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#F7931A">1. Mempool</text>
+    <text x="240" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Tx esperando</text>
+      <path d="M315 300 L345 300" stroke="#F7931A" stroke-width="2" stroke-dasharray="5,5"/>
+      <polygon points="340,294 350,300 340,306" fill="#F7931A"/>
+    <rect x="350" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#F7931A" stroke-width="2" filter="url(#shadow)"/>
+    <text x="420" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#F7931A">2. Selección</text>
+    <text x="420" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Minero elige txs</text>
+      <path d="M495 300 L525 300" stroke="#F7931A" stroke-width="2" stroke-dasharray="5,5"/>
+      <polygon points="520,294 530,300 520,306" fill="#F7931A"/>
+    <rect x="530" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#F7931A" stroke-width="2" filter="url(#shadow)"/>
+    <text x="600" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#F7931A">3. Hash</text>
+    <text x="600" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Buscar nonce válido</text>
+      <path d="M675 300 L705 300" stroke="#F7931A" stroke-width="2" stroke-dasharray="5,5"/>
+      <polygon points="700,294 710,300 700,306" fill="#F7931A"/>
+    <rect x="710" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#F7931A" stroke-width="2" filter="url(#shadow)"/>
+    <text x="780" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#F7931A">4. Bloque</text>
+    <text x="780" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Bloque minado</text>
+      <path d="M855 300 L885 300" stroke="#F7931A" stroke-width="2" stroke-dasharray="5,5"/>
+      <polygon points="880,294 890,300 880,306" fill="#F7931A"/>
+    <rect x="890" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#F7931A" stroke-width="2" filter="url(#shadow)"/>
+    <text x="960" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#F7931A">5. Reward</text>
+    <text x="960" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">3.125 BTC + fees</text>
+  <text x="1170" y="655" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="rgba(255,255,255,0.3)">Nodo360</text></svg>

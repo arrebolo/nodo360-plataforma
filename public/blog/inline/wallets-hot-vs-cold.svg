@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F7931A" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FF9F43" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F7931A"/>
+      <stop offset="100%" stop-color="#FF9F43"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="#0a0a0a"/>
+  <rect width="1200" height="675" fill="url(#bgGradient)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="url(#accentGradient)"/>
+  <text x="600" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#F7931A">Hot Wallet vs Cold Wallet</text>
+  <rect x="50" y="90" width="530" height="520" rx="16" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <rect x="50" y="90" width="530" height="60" rx="16" fill="#F7931A" fill-opacity="0.2"/>
+  <text x="315" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="22" font-weight="600" fill="#F7931A">Hot Wallet</text>
+    <circle cx="90" cy="185" r="8" fill="#F7931A"/>
+    <text x="115" y="192" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.85)">Conectada a internet</text>
+    <circle cx="90" cy="260" r="8" fill="#F7931A"/>
+    <text x="115" y="267" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.85)">Fácil acceso</text>
+    <circle cx="90" cy="335" r="8" fill="#F7931A"/>
+    <text x="115" y="342" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.85)">Para uso diario</text>
+    <circle cx="90" cy="410" r="8" fill="#F7931A"/>
+    <text x="115" y="417" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.85)">Menor seguridad</text>
+    <circle cx="90" cy="485" r="8" fill="#F7931A"/>
+    <text x="115" y="492" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.85)">Gratis</text>
+  <rect x="620" y="90" width="530" height="520" rx="16" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <rect x="620" y="90" width="530" height="60" rx="16" fill="rgba(255,255,255,0.1)"/>
+  <text x="885" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="22" font-weight="600" fill="rgba(255,255,255,0.9)">Cold Wallet</text>
+    <circle cx="660" cy="185" r="8" fill="rgba(255,255,255,0.4)"/>
+    <text x="685" y="192" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)">Sin internet</text>
+    <circle cx="660" cy="260" r="8" fill="rgba(255,255,255,0.4)"/>
+    <text x="685" y="267" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)">Mayor fricción</text>
+    <circle cx="660" cy="335" r="8" fill="rgba(255,255,255,0.4)"/>
+    <text x="685" y="342" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)">Para HODL</text>
+    <circle cx="660" cy="410" r="8" fill="rgba(255,255,255,0.4)"/>
+    <text x="685" y="417" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)">Máxima seguridad</text>
+    <circle cx="660" cy="485" r="8" fill="rgba(255,255,255,0.4)"/>
+    <text x="685" y="492" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)">~80-150€</text>
+  <circle cx="600" cy="350" r="35" fill="#0a0a0a" stroke="#F7931A" stroke-width="3"/>
+  <text x="600" y="358" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#F7931A">VS</text>
+  <text x="1170" y="655" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="rgba(255,255,255,0.3)">Nodo360</text></svg>
