@@ -41,50 +41,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // URLs estáticas principales
     const staticPages: MetadataRoute.Sitemap = [
+      // Página principal
       {
         url: baseUrl,
         lastModified: new Date(),
         changeFrequency: 'daily',
         priority: 1.0,
       },
+      // Cursos y aprendizaje
       {
         url: `${baseUrl}/cursos`,
-        lastModified: new Date(),
-        changeFrequency: 'daily',
-        priority: 0.9,
-      },
-      {
-        url: `${baseUrl}/comunidad`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      },
-      {
-        url: `${baseUrl}/proyectos`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      },
-      {
-        url: `${baseUrl}/mentoria`,
-        lastModified: new Date(),
-        changeFrequency: 'monthly',
-        priority: 0.8,
-      },
-      {
-        url: `${baseUrl}/sobre-nosotros`,
-        lastModified: new Date(),
-        changeFrequency: 'monthly',
-        priority: 0.6,
-      },
-      {
-        url: `${baseUrl}/gobernanza`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      },
-      {
-        url: `${baseUrl}/blog`,
         lastModified: new Date(),
         changeFrequency: 'daily',
         priority: 0.9,
@@ -96,10 +62,80 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
       },
       {
+        url: `${baseUrl}/pricing`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.8,
+      },
+      // Contenido educativo
+      {
+        url: `${baseUrl}/blog`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.9,
+      },
+      {
         url: `${baseUrl}/glosario`,
         lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
+      },
+      // Comunidad y personas
+      {
+        url: `${baseUrl}/comunidad`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
+      {
+        url: `${baseUrl}/mentoria`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.8,
+      },
+      {
+        url: `${baseUrl}/mentores`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
+      {
+        url: `${baseUrl}/instructores`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
+      {
+        url: `${baseUrl}/proyectos`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
+      // Gobernanza
+      {
+        url: `${baseUrl}/gobernanza`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
+      // Información
+      {
+        url: `${baseUrl}/sobre-nosotros`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.6,
+      },
+      {
+        url: `${baseUrl}/privacidad`,
+        lastModified: new Date(),
+        changeFrequency: 'yearly',
+        priority: 0.3,
+      },
+      {
+        url: `${baseUrl}/terminos`,
+        lastModified: new Date(),
+        changeFrequency: 'yearly',
+        priority: 0.3,
       },
     ]
 
@@ -121,9 +157,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }))
 
-    // URLs de rutas de aprendizaje
+    // URLs de rutas de aprendizaje (públicas)
     const pathPages: MetadataRoute.Sitemap = (learningPaths || []).map((path) => ({
-      url: `${baseUrl}/dashboard/rutas/${path.slug}`,
+      url: `${baseUrl}/rutas/${path.slug}`,
       lastModified: path.updated_at ? new Date(path.updated_at) : new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
