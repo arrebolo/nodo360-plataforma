@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { getAllPosts } from '@/lib/blog-data'
+import { getAllTerms } from '@/lib/glossary-data'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,7 +95,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'weekly',
         priority: 0.8,
       },
+      {
+        url: `${baseUrl}/glosario`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
     ]
+
+    // URLs de términos del glosario
+    const glossaryTerms = getAllTerms()
+    const glossaryPages: MetadataRoute.Sitemap = glossaryTerms.map((term) => ({
+      url: `${baseUrl}/glosario/${term.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }))
 
     // URLs de artículos del blog
     const blogPosts = getAllPosts()
@@ -129,7 +145,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-    return [...staticPages, ...blogPages, ...pathPages, ...coursePages, ...lessonPages]
+    return [...staticPages, ...glossaryPages, ...blogPages, ...pathPages, ...coursePages, ...lessonPages]
 
   } catch (error) {
     console.error('Error generating sitemap:', error)
