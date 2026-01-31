@@ -21,6 +21,7 @@ interface Props {
 const navLinks = [
   { href: '/rutas', label: 'Rutas' },
   { href: '/cursos', label: 'Cursos' },
+  { href: '/blog', label: 'Blog' },
   { href: '/comunidad', label: 'Comunidad' },
   { href: '/mentoria', label: 'Mentoría' },
 ]
