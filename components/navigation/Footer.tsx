@@ -53,6 +53,14 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/glosario"
+                  className="hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 rounded"
+                >
+                  Glosario Crypto
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/dashboard/certificados"
                   className="hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 rounded"
                 >
@@ -130,5 +138,3 @@ export function Footer() {
     </footer>
   )
 }
-
-

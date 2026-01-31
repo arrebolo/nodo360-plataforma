@@ -22,8 +22,8 @@ const navLinks = [
   { href: '/rutas', label: 'Rutas' },
   { href: '/cursos', label: 'Cursos' },
   { href: '/blog', label: 'Blog' },
+  { href: '/glosario', label: 'Glosario' },
   { href: '/comunidad', label: 'Comunidad' },
-  { href: '/mentoria', label: 'Mentoría' },
 ]
 
 export default function SiteHeaderClient({
