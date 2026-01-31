@@ -86,8 +86,20 @@ async function getNextLessonUrl(
 }
 
 export const metadata: Metadata = {
-  title: 'Rutas de Aprendizaje | Nodo360',
-  description: 'Elige tu ruta de aprendizaje personalizada. Desde Bitcoin hasta desarrollo Web3 avanzado.',
+  title: 'Rutas de Aprendizaje Crypto | Nodo360',
+  description: 'Elige tu ruta de aprendizaje personalizada. Desde Bitcoin hasta desarrollo Web3 avanzado. Guía paso a paso.',
+  openGraph: {
+    title: 'Rutas de Aprendizaje Crypto | Nodo360',
+    description: 'Rutas guiadas paso a paso para aprender Bitcoin, Blockchain y Web3 en español.',
+    type: 'website',
+    url: 'https://nodo360.com/rutas',
+    images: [{ url: '/imagenes/og-rutas.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Rutas de Aprendizaje Crypto | Nodo360',
+    description: 'Rutas guiadas paso a paso para aprender Bitcoin, Blockchain y Web3 en español.',
+  },
 }
 
 export const dynamic = 'force-dynamic'

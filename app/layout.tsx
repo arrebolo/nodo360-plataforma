@@ -33,6 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@nodo360",
+    creator: "@nodo360",
     title: "Nodo360 - Aprende Bitcoin y Blockchain",
     description: "La plataforma educativa más completa en español para aprender Bitcoin, Blockchain y Web3",
     images: ["/imagenes/og-nodo360.png"],

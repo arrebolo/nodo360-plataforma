@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { getAllPosts } from '@/lib/blog-data'
 
 export const dynamic = 'force-dynamic'
 
@@ -81,7 +82,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'weekly',
         priority: 0.7,
       },
+      {
+        url: `${baseUrl}/blog`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.9,
+      },
+      {
+        url: `${baseUrl}/rutas`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
     ]
+
+    // URLs de artículos del blog
+    const blogPosts = getAllPosts()
+    const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.updatedAt || post.publishedAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    }))
 
     // URLs de rutas de aprendizaje
     const pathPages: MetadataRoute.Sitemap = (learningPaths || []).map((path) => ({
@@ -107,7 +129,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-    return [...staticPages, ...pathPages, ...coursePages, ...lessonPages]
+    return [...staticPages, ...blogPages, ...pathPages, ...coursePages, ...lessonPages]
 
   } catch (error) {
     console.error('Error generating sitemap:', error)
