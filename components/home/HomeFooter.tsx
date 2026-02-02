@@ -51,10 +51,26 @@ export function HomeFooter() {
               </li>
               <li>
                 <Link
-                  href="/dashboard/certificados"
+                  href="/blog"
                   className="hover:text-white transition-colors"
                 >
-                  Certificados
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/glosario"
+                  className="hover:text-white transition-colors"
+                >
+                  Glosario
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/faq"
+                  className="hover:text-white transition-colors"
+                >
+                  Preguntas frecuentes
                 </Link>
               </li>
             </ul>

@@ -1,9 +1,7 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Suspense } from 'react'
 import {
-  Bitcoin,
-  Shield,
-  Users,
   GraduationCap,
   ArrowRight,
   CheckCircle,
@@ -14,75 +12,19 @@ import {
   DollarSign,
   Wrench,
   HeartHandshake,
+  FileText,
+  Search,
 } from 'lucide-react'
 import { HomeFeaturedCourses } from '@/components/home/HomeFeaturedCourses'
 import { HomeFooter } from '@/components/home/HomeFooter'
-import { CommunitySection } from '@/components/home/CommunitySection'
 import { brandConfig } from '@/lib/brand-config'
+import { blogPosts, blogCategories } from '@/lib/blog-data'
+import { glossaryTerms, glossaryCategories } from '@/lib/glossary-data'
 
 export const metadata = {
   title: `${brandConfig.name} | ${brandConfig.tagline}`,
   description: brandConfig.description,
 }
-
-// Los 4 pilares de Nodo360
-const pillars = [
-  {
-    icon: Bitcoin,
-    title: 'Bitcoin',
-    description:
-      'Comprende Bitcoin desde sus fundamentos técnicos hasta su impacto económico y social.',
-    color: 'text-brand-light',
-    bgColor: 'bg-brand-light/10',
-    borderColor: 'border-brand-light/20',
-  },
-  {
-    icon: Shield,
-    title: 'Soberanía Digital',
-    description:
-      'Aprende a proteger tu privacidad y tomar control de tu identidad digital.',
-    color: 'text-accent-blue',
-    bgColor: 'bg-accent-blue/10',
-    borderColor: 'border-accent-blue/20',
-  },
-  {
-    icon: Users,
-    title: 'Comunidad',
-    description:
-      'Conecta con otros aprendices y expertos en un espacio colaborativo.',
-    color: 'text-success',
-    bgColor: 'bg-success/10',
-    borderColor: 'border-success/20',
-  },
-  {
-    icon: GraduationCap,
-    title: 'Certificación',
-    description:
-      'Obtén certificados verificables que validan tu conocimiento.',
-    color: 'text-warning',
-    bgColor: 'bg-warning/10',
-    borderColor: 'border-warning/20',
-  },
-]
-
-// Cómo funciona
-const howItWorks = [
-  {
-    step: 1,
-    title: 'Elige tu ruta',
-    description: 'Selecciona el camino de aprendizaje que mejor se adapte a tus objetivos.',
-  },
-  {
-    step: 2,
-    title: 'Aprende a tu ritmo',
-    description: 'Accede a lecciones en video, ejercicios prácticos y recursos adicionales.',
-  },
-  {
-    step: 3,
-    title: 'Obtén tu certificado',
-    description: 'Completa los módulos y demuestra tu conocimiento con certificados verificables.',
-  },
-]
 
 // Diferenciadores
 const differentiators = [
@@ -167,73 +109,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Comunidad */}
-      <CommunitySection />
-
-      {/* 4 Pilares */}
-      <section className="py-20 bg-dark">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <p className="text-sm uppercase tracking-wide text-brand-light font-medium mb-2">
-              Nuestros pilares
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">
-              Formación integral en Web3
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {pillars.map((pillar) => {
-              const Icon = pillar.icon
-              return (
-                <div
-                  key={pillar.title}
-                  className={`${pillar.bgColor} ${pillar.borderColor} border rounded-2xl p-6 text-center`}
-                >
-                  <div
-                    className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${pillar.bgColor} ${pillar.color} mb-4`}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    {pillar.title}
-                  </h3>
-                  <p className="text-sm text-white/60">{pillar.description}</p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Cómo funciona */}
-      <section className="py-20 bg-dark-surface">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <p className="text-sm uppercase tracking-wide text-brand-light font-medium mb-2">
-              Proceso simple
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">
-              Cómo funciona
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {howItWorks.map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-brand-light to-brand text-white font-bold text-lg mb-4">
-                  {item.step}
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-white/60">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Featured Courses */}
       <Suspense
         fallback={
@@ -283,8 +158,73 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Instructor CTA */}
+      {/* Blog Section - SEO */}
       <section className="py-20 bg-dark-surface">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <p className="text-sm uppercase tracking-wide text-brand-light font-medium mb-2">
+              Blog educativo
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Aprende sobre Bitcoin y Blockchain
+            </h2>
+            <p className="text-lg text-white/60 max-w-2xl mx-auto">
+              Articulos gratuitos para empezar tu camino en el mundo crypto
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {blogPosts.slice(0, 3).map((post) => {
+              const categoryInfo = blogCategories[post.category]
+              return (
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="group bg-dark border border-white/10 rounded-2xl overflow-hidden hover:border-brand-light/30 transition-colors"
+                >
+                  <div className="aspect-video relative overflow-hidden bg-dark-surface">
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <span className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full border ${categoryInfo.color} mb-3`}>
+                      {categoryInfo.name}
+                    </span>
+                    <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-brand-light transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-white/60 line-clamp-2 mb-3">
+                      {post.description}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-sm text-brand-light font-medium">
+                      Leer articulo
+                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+
+          <div className="text-center">
+            <Link
+              href="/blog"
+              className="inline-flex items-center justify-center gap-2 rounded-lg font-medium h-12 px-6 text-base text-white bg-white/10 border border-white/20 hover:bg-white/15 transition-colors"
+            >
+              <FileText className="h-5 w-5" />
+              Ver todos los articulos
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Instructor CTA */}
+      <section className="py-20 bg-dark">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="relative rounded-3xl border border-brand-light/20 bg-gradient-to-br from-brand-light/10 via-brand/5 to-transparent p-8 md:p-12 backdrop-blur-sm overflow-hidden">
             {/* Decorative elements */}
@@ -357,30 +297,65 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section className="py-20 bg-gradient-to-b from-dark-surface to-dark">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Empieza tu viaje hacia la soberanía digital
-          </h2>
-          <p className="text-lg text-white/60 mb-8 max-w-2xl mx-auto">
-            Únete a nuestra comunidad de aprendices y expertos. Accede a
-            contenido gratuito y comienza hoy mismo.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/login?mode=register"
-              className="inline-flex items-center justify-center gap-2 rounded-lg font-medium h-12 px-6 text-base text-white bg-gradient-to-r from-brand-light to-brand hover:opacity-90 transition-opacity"
-            >
-              Crear cuenta gratis
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-            <Link
-              href="/cursos"
-              className="inline-flex items-center justify-center gap-2 rounded-lg font-medium h-12 px-6 text-base text-white/70 hover:text-white transition-colors"
-            >
-              Ver cursos primero
-            </Link>
+      {/* Glosario Section - SEO */}
+      <section className="py-20 bg-dark-surface">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-sm uppercase tracking-wide text-brand-light font-medium mb-2">
+                Glosario crypto
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                No entiendes un termino? Consulta nuestro glosario
+              </h2>
+              <p className="text-lg text-white/60 mb-6">
+                Mas de 50 terminos explicados de forma clara y sencilla. Desde Bitcoin hasta DeFi, todo lo que necesitas saber.
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-8">
+                {Object.entries(glossaryCategories).slice(0, 6).map(([key, cat]) => (
+                  <Link
+                    key={key}
+                    href={`/glosario?categoria=${key}`}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-full border ${cat.color} hover:opacity-80 transition-opacity`}
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+
+              <Link
+                href="/glosario"
+                className="inline-flex items-center justify-center gap-2 rounded-lg font-medium h-12 px-6 text-base text-white bg-gradient-to-r from-brand-light to-brand hover:opacity-90 transition-opacity"
+              >
+                <Search className="h-5 w-5" />
+                Explorar glosario
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {glossaryTerms.slice(0, 6).map((term) => {
+                const categoryInfo = glossaryCategories[term.category]
+                return (
+                  <Link
+                    key={term.slug}
+                    href={`/glosario/${term.slug}`}
+                    className="group bg-dark border border-white/10 rounded-xl p-4 hover:border-brand-light/30 transition-colors"
+                  >
+                    <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded border ${categoryInfo.color} mb-2`}>
+                      {categoryInfo.name}
+                    </span>
+                    <h3 className="text-base font-semibold text-white group-hover:text-brand-light transition-colors">
+                      {term.term}
+                    </h3>
+                    <p className="text-xs text-white/50 line-clamp-2 mt-1">
+                      {term.definition}
+                    </p>
+                  </Link>
+                )
+              })}
+            </div>
           </div>
         </div>
       </section>
