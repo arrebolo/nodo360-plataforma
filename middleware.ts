@@ -69,10 +69,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // 7) Verificar acceso beta, suspensión y ruta activa
+  // 7) Verificar suspensión y ruta activa
   const { data: userRow, error: userError } = await supabase
     .from('users')
-    .select('role, is_beta, active_path_id, is_suspended, suspended_reason')
+    .select('role, active_path_id, is_suspended, suspended_reason')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -85,9 +85,6 @@ export async function middleware(request: NextRequest) {
   const isAdmin = userRole === 'admin'
   const isInstructor = userRole === 'instructor'
   const isMentor = userRole === 'mentor'
-  const hasBetaAccess = userRow?.is_beta === true
-
-  // Admins, instructores y mentores siempre tienen acceso (sin importar is_beta)
   const isPrivileged = isAdmin || isInstructor || isMentor
 
   // Debug log para verificar roles
@@ -106,13 +103,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(suspendedUrl)
   }
 
-  // Sin acceso beta y sin rol privilegiado → /beta
-  if (!hasBetaAccess && !isPrivileged) {
-    console.log('[Middleware] No beta access for user:', user.id.substring(0, 8) + '...', 'role:', userRole)
-    const betaUrl = new URL('/beta', request.url)
-    betaUrl.searchParams.set('_p', '1')
-    return NextResponse.redirect(betaUrl)
-  }
+  // Beta access check removed - all authenticated users can access
 
   // 8) Solo rutas de CONTENIDO de cursos requieren ruta activa
   // La mayoría de rutas del dashboard NO requieren active_path_id

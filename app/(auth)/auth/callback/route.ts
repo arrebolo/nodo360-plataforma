@@ -218,7 +218,7 @@ async function handleSuccessfulAuth(
 
   const { data: profile, error: profileError } = await supabase
     .from('users')
-    .select('role, is_beta, is_suspended')
+    .select('role, is_suspended')
     .eq('id', user.id)
     .single()
 
@@ -243,13 +243,7 @@ async function handleSuccessfulAuth(
     return response
   }
 
-  // Usuario normal sin acceso beta
-  if (!profile?.is_beta) {
-    console.log('[Auth Callback] Usuario sin acceso beta')
-    const response = NextResponse.redirect(`${origin}/beta`)
-    response.cookies.delete('auth_redirect')
-    return response
-  }
+  // Beta access check removed - all authenticated users can access
 
   // Usuario con acceso
   console.log('[Auth Callback] Redirigiendo a:', redirectTo)
