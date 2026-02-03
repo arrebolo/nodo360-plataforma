@@ -1,31 +1,11 @@
-'use client'
+import { GoogleAnalytics as GA } from '@next/third-parties/google'
 
-import Script from 'next/script'
-
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-4L1V170N61'
+const GA_MEASUREMENT_ID = 'G-4L1V170N61'
 
 export default function GoogleAnalytics() {
   if (process.env.NODE_ENV !== 'production') {
     return null
   }
 
-  return (
-    <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${GA_MEASUREMENT_ID}', {
-            page_title: document.title,
-            page_location: window.location.href,
-          });
-        `}
-      </Script>
-    </>
-  )
+  return <GA gaId={GA_MEASUREMENT_ID} />
 }
