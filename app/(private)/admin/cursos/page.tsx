@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import CourseAdminCard from '@/components/admin/CourseAdminCard'
+import CoursesGrid from '@/components/admin/CoursesGrid'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { Plus, BookOpen, GraduationCap, Users, Clock } from 'lucide-react'
@@ -272,15 +272,7 @@ export default async function AdminCoursesPage({
               )}
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course: any) => (
-                <CourseAdminCard
-                  key={course.id}
-                  course={course}
-                  returnTo={returnTo}
-                />
-              ))}
-            </div>
+            <CoursesGrid courses={courses} returnTo={returnTo} />
           </div>
         ) : (
           <div className="relative bg-gradient-to-br from-white/5 via-white/[0.02] to-transparent backdrop-blur-sm border border-white/10 rounded-3xl p-16 text-center overflow-hidden">
