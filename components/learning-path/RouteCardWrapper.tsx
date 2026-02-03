@@ -9,6 +9,7 @@ type PathData = {
   name: string
   slug: string
   emoji: string | null
+  subtitle: string | null
   short_description: string | null
   courseCount: number
   totalLessons: number
@@ -68,6 +69,7 @@ export function RouteCardWrapper({
       name={path.name}
       slug={path.slug}
       emoji={path.emoji ?? undefined}
+      subtitle={path.subtitle ?? undefined}
       shortDescription={path.short_description ?? undefined}
       educationalHint={educationalHint}
       courseCount={path.courseCount}

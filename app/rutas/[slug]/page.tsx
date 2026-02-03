@@ -76,6 +76,12 @@ export default async function RutaDetallePage({ params }: PageProps) {
                 </h1>
               </div>
 
+              {path.subtitle && (
+                <p className="text-lg text-white/80">
+                  {path.subtitle}
+                </p>
+              )}
+
               {path.short_description && (
                 <p className="text-white/70 max-w-2xl">
                   {path.short_description}
@@ -112,11 +118,14 @@ export default async function RutaDetallePage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Descripción larga */}
+        {/* Descripción larga - Glassmorphism card */}
         {path.long_description && (
-          <div className="bg-dark-surface border border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-3">Sobre esta ruta</h2>
-            <p className="text-white/70 whitespace-pre-wrap">{path.long_description}</p>
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+              {path.emoji && <span>{path.emoji}</span>}
+              Sobre esta ruta
+            </h2>
+            <p className="text-white/70 whitespace-pre-wrap leading-relaxed">{path.long_description}</p>
           </div>
         )}
 

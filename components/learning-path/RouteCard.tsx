@@ -8,6 +8,7 @@ type RouteCardProps = {
   name: string
   slug: string
   emoji?: string
+  subtitle?: string
   shortDescription?: string
   educationalHint?: string
   courseCount: number
@@ -24,6 +25,7 @@ export function RouteCard({
   name,
   slug,
   emoji,
+  subtitle,
   shortDescription,
   educationalHint,
   courseCount,
@@ -87,6 +89,11 @@ export function RouteCard({
           <h3 className="text-xl font-semibold text-white leading-snug line-clamp-2">
             {name}
           </h3>
+          {subtitle && (
+            <p className="text-sm text-white/80 mt-0.5 line-clamp-1">
+              {subtitle}
+            </p>
+          )}
           <p className="text-sm text-white/60 mt-1">
             <span className="inline-flex items-center gap-1.5">
               <span className={`h-1.5 w-1.5 rounded-full ${isComingSoon ? 'bg-white/40' : 'bg-brand-light'}`} />
