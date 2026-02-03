@@ -1,3 +1,5 @@
+'use client'
+
 import { GoogleAnalytics as GA } from '@next/third-parties/google'
 
 const GA_MEASUREMENT_ID = 'G-4L1V170N61'
