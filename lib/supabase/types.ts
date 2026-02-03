@@ -863,6 +863,7 @@ export type Database = {
           position: number
           short_description: string | null
           slug: string
+          subtitle: string | null
           updated_at: string
         }
         Insert: {
@@ -875,6 +876,7 @@ export type Database = {
           position?: number
           short_description?: string | null
           slug: string
+          subtitle?: string | null
           updated_at?: string
         }
         Update: {
@@ -887,6 +889,7 @@ export type Database = {
           position?: number
           short_description?: string | null
           slug?: string
+          subtitle?: string | null
           updated_at?: string
         }
         Relationships: []
