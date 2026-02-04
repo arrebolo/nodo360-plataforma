@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { scanMessage } from '@/lib/moderation/message-scanner'
 
 interface RouteParams {
   params: Promise<{ conversationId: string }>
@@ -147,6 +149,50 @@ export async function POST(
     if (insertError) {
       console.error('[POST /api/messages/[id]] Insert error:', insertError)
       return NextResponse.json({ error: 'Error al enviar mensaje' }, { status: 500 })
+    }
+
+    // Scan message for moderation flags (async, non-blocking)
+    try {
+      const scanResult = scanMessage(trimmedContent)
+
+      if (scanResult.hasFlags) {
+        // Use service role to insert flags (bypasses RLS)
+        const serviceClient = createServiceClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+
+        // Insert all flags
+        const flagsToInsert = scanResult.flags.map(flag => ({
+          conversation_id: conversationId,
+          message_id: message.id,
+          flag_type: flag.type,
+          severity: flag.severity,
+          evidence_hash: flag.evidenceHash,
+          evidence_meta: flag.evidenceMeta,
+          created_by: null // System-generated flag
+        }))
+
+        const { error: flagError } = await serviceClient
+          .from('message_flags')
+          .insert(flagsToInsert)
+
+        if (flagError) {
+          // Log but don't fail the message send
+          console.error('[POST /api/messages] Flag insert error:', flagError)
+        } else if (scanResult.maxSeverity >= 4) {
+          // Log high-severity flags for monitoring
+          console.warn('[MODERATION] High severity flag detected:', {
+            conversationId,
+            messageId: message.id,
+            severity: scanResult.maxSeverity,
+            flagTypes: scanResult.flags.map(f => f.type)
+          })
+        }
+      }
+    } catch (scanError) {
+      // Log but don't fail the message send
+      console.error('[POST /api/messages] Scan error:', scanError)
     }
 
     return NextResponse.json({ message })
