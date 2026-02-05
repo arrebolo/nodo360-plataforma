@@ -693,6 +693,33 @@ export type InsertQuizAttempt = Omit<QuizAttempt, 'id' | 'created_at'>
  */
 
 // =====================================================
+// ENTITLEMENTS TYPES
+// =====================================================
+
+export type EntitlementType = 'course_access' | 'full_platform' | 'learning_path_access'
+
+/**
+ * Entitlements Table
+ * Permisos de acceso a contenido premium
+ */
+export interface Entitlement {
+  id: string
+  user_id: string
+  type: EntitlementType
+  target_id: string | null
+  granted_by: string | null
+  reason: string | null
+  is_active: boolean
+  starts_at: string
+  expires_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type InsertEntitlement = Omit<Entitlement, 'id' | 'created_at' | 'updated_at' | 'starts_at'>
+export type UpdateEntitlement = Partial<Entitlement> & { id: string }
+
+// =====================================================
 // NOTIFICATIONS TYPES
 // =====================================================
 
