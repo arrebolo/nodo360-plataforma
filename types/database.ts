@@ -26,7 +26,7 @@ export type LearningPathUpdate = SupabaseDatabase['public']['Tables']['learning_
 
 export type UserRole = 'student' | 'instructor' | 'admin' | 'mentor' | 'council'
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
-export type CourseStatus = 'draft' | 'published' | 'archived' | 'coming_soon'
+export type CourseStatus = 'draft' | 'published' | 'archived' | 'coming_soon' | 'changes_requested'
 export type CourseCategory = 'bitcoin' | 'blockchain' | 'defi' | 'nfts' | 'development' | 'trading' | 'other'
 export type MentorshipRequestStatus = 'pending' | 'contacted' | 'scheduled' | 'completed'
 
@@ -723,9 +723,22 @@ export type UpdateEntitlement = Partial<Entitlement> & { id: string }
 // NOTIFICATIONS TYPES
 // =====================================================
 
+export type CourseReviewVote = 'approve' | 'request_changes'
+
+export interface CourseReview {
+  id: string
+  course_id: string
+  mentor_id: string
+  vote: CourseReviewVote
+  comment: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type NotificationType =
   | 'beta_granted'
   | 'course_published'
+  | 'course_changes_requested'
   | 'proposal_active'
   | 'course_completed'
   | 'certificate_issued'

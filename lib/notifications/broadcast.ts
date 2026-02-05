@@ -289,6 +289,28 @@ export async function broadcastBadgeEarned(
 }
 
 /**
+ * Broadcast: Cambios solicitados en curso
+ */
+export async function broadcastCourseChangesRequested(
+  instructorId: string,
+  courseName: string,
+  feedback: string,
+  options: BroadcastOptions = { inApp: true, discord: false, telegram: false }
+): Promise<void> {
+  const results = await Promise.allSettled([
+    options.inApp && createInAppNotification(
+      instructorId,
+      'course_changes_requested',
+      '📝 Cambios solicitados en tu curso',
+      `Los mentores han solicitado cambios en "${courseName}": ${feedback.substring(0, 100)}${feedback.length > 100 ? '...' : ''}`,
+      '/dashboard/instructor/cursos'
+    ),
+  ])
+
+  console.log('📢 [Broadcast] courseChangesRequested:', results)
+}
+
+/**
  * Broadcast: Subida de nivel
  */
 export async function broadcastLevelUp(

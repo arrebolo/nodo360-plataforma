@@ -21,7 +21,7 @@ interface Course {
   title: string
   slug: string
   level: 'beginner' | 'intermediate' | 'advanced'
-  status: 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived' | 'coming_soon'
+  status: 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived' | 'coming_soon' | 'changes_requested'
   is_free: boolean
   price?: number | null
   total_modules: number | null
@@ -42,6 +42,7 @@ const statusConfig = {
   pending_review: { label: 'En revisión', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
   published: { label: 'Publicado', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
   rejected: { label: 'Rechazado', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  changes_requested: { label: 'Cambios solicitados', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
   archived: { label: 'Archivado', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
   coming_soon: { label: 'Proximamente', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
 }
@@ -231,8 +232,8 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
             {isDuplicating ? '...' : 'Duplicar'}
           </button>
 
-          {/* Enviar a revisión (solo para draft o rejected) */}
-          {(currentStatus === 'draft' || currentStatus === 'rejected') && (
+          {/* Enviar a revisión (para draft, rejected o changes_requested) */}
+          {(currentStatus === 'draft' || currentStatus === 'rejected' || currentStatus === 'changes_requested') && (
             <button
               onClick={handleSubmitForReview}
               disabled={isSubmitting}
@@ -243,7 +244,7 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
               ) : (
                 <Send className="w-4 h-4" />
               )}
-              {isSubmitting ? 'Enviando...' : currentStatus === 'rejected' ? 'Reenviar' : 'Enviar a revisión'}
+              {isSubmitting ? 'Enviando...' : currentStatus === 'changes_requested' ? 'Editar y reenviar' : currentStatus === 'rejected' ? 'Reenviar' : 'Enviar a revisión'}
             </button>
           )}
 
