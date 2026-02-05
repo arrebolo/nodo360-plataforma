@@ -2,6 +2,7 @@
 import { notFound, redirect } from "next/navigation"
 import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
+import { hasEntitlement } from "@/lib/billing/entitlements"
 import LessonPlayer from "@/components/lesson/LessonPlayer"
 import { getCourseQuizStatus } from "@/lib/quiz/checkCourseQuiz"
 import type { LessonPlayerProps, ModuleWithLessons, LessonNavigation, LessonProgress, QuizStatus } from "@/types/lesson-player"
@@ -59,6 +60,7 @@ export default async function LessonPage({ params }: PageProps) {
       id,
       slug,
       title,
+      is_premium,
       modules (
         id,
         title,
@@ -78,6 +80,14 @@ export default async function LessonPage({ params }: PageProps) {
   if (courseError || !course) {
     console.error("❌ [LessonPage] Error cargando curso:", courseError?.message)
     notFound()
+  }
+
+  // 2b) Verificar entitlement para cursos premium
+  if (course.is_premium) {
+    const entitled = await hasEntitlement(userId, course.id)
+    if (!entitled) {
+      redirect(`/cursos/${courseSlug}`)
+    }
   }
 
   // 3) Fetch the specific lesson with full details

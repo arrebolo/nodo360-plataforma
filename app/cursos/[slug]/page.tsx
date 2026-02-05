@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getCourseProgressForUser } from '@/lib/progress/getCourseProgress'
+import { hasEntitlement } from '@/lib/billing/entitlements'
 import ModuleList from '@/components/course/ModuleList'
 import EnrollButton from '@/components/course/EnrollButton'
 import CourseHero from '@/components/course/CourseHero'
@@ -10,7 +11,7 @@ import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import { CourseJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { tokens, cx } from '@/lib/design/tokens'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Lock } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -148,7 +149,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
     )
   }
 
-  // 4. Verificar inscripción
+  // 4. Verificar entitlement para cursos premium
+  const isPremium = course.is_premium === true
+  const hasPremiumAccess = isPremium
+    ? await hasEntitlement(user.id, course.id)
+    : true // cursos no-premium no requieren entitlement
+
+  // 5. Verificar inscripción
   const { data: enrollment } = await supabase
     .from('course_enrollments')
     .select('id')
@@ -158,7 +165,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const isEnrolled = !!enrollment
 
-  // 5. Obtener progreso completo
+  // 6. Obtener progreso completo
   const courseProgress = isEnrolled
     ? await getCourseProgressForUser(course.id, user.id)
     : {
@@ -166,7 +173,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         globalProgress: { totalLessons: 0, completedLessons: 0, percentage: 0 },
       }
 
-  // 6. Obtener primera lección del curso
+  // 7. Obtener primera lección del curso
   let firstLessonSlug: string | undefined
   const { data: firstModule } = await supabase
     .from('modules')
@@ -244,8 +251,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
           isEnrolled={isEnrolled}
           progressPct={courseProgress?.globalProgress?.percentage ?? null}
           hrefCourse={`/cursos/${course.slug}`}
-          hrefContinue={`/api/continue?courseSlug=${course.slug}`}
-          hrefEnroll={`/api/enroll?courseId=${course.id}`}
+          hrefContinue={hasPremiumAccess ? `/api/continue?courseSlug=${course.slug}` : undefined}
+          hrefEnroll={hasPremiumAccess ? `/api/enroll?courseId=${course.id}` : undefined}
           hrefDashboard="/dashboard"
         />
 
@@ -257,7 +264,32 @@ export default async function CoursePage({ params }: CoursePageProps) {
           />
 
           <div className="mt-4">
-            {isEnrolled ? (
+            {isPremium && !hasPremiumAccess ? (
+              /* Gate premium: usuario autenticado pero sin entitlement */
+              <div className="relative overflow-hidden bg-dark-surface border border-amber-500/20 rounded-2xl p-8 text-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+
+                <div className="relative">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                    <Lock className="w-8 h-8 text-amber-400" />
+                  </div>
+
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 mb-4">
+                    Curso Premium
+                  </span>
+
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    Contenido exclusivo
+                  </h3>
+                  <p className="text-white/60 mb-2 max-w-sm mx-auto">
+                    Este curso requiere acceso premium para ver su contenido.
+                  </p>
+                  <p className="text-white/40 text-sm max-w-sm mx-auto">
+                    Contacta al equipo de Nodo360 para obtener acceso.
+                  </p>
+                </div>
+              </div>
+            ) : isEnrolled ? (
               <ModuleList courseSlug={course.slug} modules={courseProgress.modules} />
             ) : (
               <div className="relative overflow-hidden bg-dark-surface border border-white/10 rounded-2xl p-8 text-center">
