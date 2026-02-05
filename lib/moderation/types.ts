@@ -2,8 +2,14 @@
  * Types for the Admin Moderation Panel (Phase 3)
  */
 
-// Re-export from message-scanner
-export type { MessageFlagType } from './message-scanner'
+// Flag types (matches message_flag_type DB enum)
+export type MessageFlagType =
+  | 'external_link'
+  | 'invite_link'
+  | 'spam_pattern'
+  | 'trading_promo'
+  | 'repeat_message'
+  | 'mass_dm'
 
 // === Review Actions ===
 export type ReviewAction = 'dismissed' | 'warning_sent' | 'user_banned'
