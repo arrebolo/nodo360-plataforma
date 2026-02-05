@@ -212,6 +212,9 @@ export default function ChatView({ conversationId, currentUserId }: ChatViewProp
                     createdAt={msg.created_at}
                     isOwn={msg.sender_id === currentUserId}
                     isRead={msg.read_at !== null}
+                    messageId={msg.id}
+                    conversationId={conversationId}
+                    senderId={msg.sender_id}
                   />
                 ))}
               </div>
