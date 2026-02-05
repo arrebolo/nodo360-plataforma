@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Flag, Users, AlertTriangle } from 'lucide-react'
+import { Flag, Users, AlertTriangle, UserX } from 'lucide-react'
 import FlagsList from './FlagsList'
 import ReportsList from './ReportsList'
+import UserIncidentsList from './UserIncidentsList'
 import type {
   MessageFlagRow,
   MessageReportWithUsers,
@@ -29,7 +30,7 @@ export default function ModerationPanel({
   initialReportsPagination,
   stats,
 }: ModerationPanelProps) {
-  const [activeTab, setActiveTab] = useState<'flags' | 'reports'>('flags')
+  const [activeTab, setActiveTab] = useState<'flags' | 'reports' | 'users'>('flags')
 
   return (
     <div className="space-y-6">
@@ -88,19 +89,34 @@ export default function ModerationPanel({
         >
           Reportes de usuarios
         </button>
+        <button
+          onClick={() => setActiveTab('users')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+            activeTab === 'users'
+              ? 'bg-brand text-white'
+              : 'text-white/60 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <UserX className="w-4 h-4" />
+          Usuarios con incidencias
+        </button>
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'flags' ? (
+      {activeTab === 'flags' && (
         <FlagsList
           initialFlags={initialFlags}
           initialPagination={initialFlagsPagination}
         />
-      ) : (
+      )}
+      {activeTab === 'reports' && (
         <ReportsList
           initialReports={initialReports}
           initialPagination={initialReportsPagination}
         />
+      )}
+      {activeTab === 'users' && (
+        <UserIncidentsList />
       )}
     </div>
   )

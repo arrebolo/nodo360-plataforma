@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type')
     const severity = searchParams.get('severity')
     const unreviewed = searchParams.get('unreviewed') === 'true'
+    const reviewed = searchParams.get('reviewed') === 'true'
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const offset = (page - 1) * PAGE_SIZE
 
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
     // Query con filtros
     let query = supabaseAdmin
       .from('message_flags')
-      .select('*', { count: 'exact' })
+      .select('*, creator:users!created_by(id, full_name, avatar_url)', { count: 'exact' })
 
     if (type) {
       query = query.eq('flag_type', type)
@@ -54,6 +55,9 @@ export async function GET(request: NextRequest) {
     }
     if (unreviewed) {
       query = query.is('reviewed_at', null)
+    }
+    if (reviewed) {
+      query = query.not('reviewed_at', 'is', null)
     }
 
     const { data: flags, count, error } = await query

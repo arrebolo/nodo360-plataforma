@@ -18,15 +18,16 @@ export default async function ModerationPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabaseAdmin = createAdminClient() as any
 
-  // Fetch flags (primera página, ordenado por severidad y fecha)
+  // Fetch flags pendientes (sin revisar, primera página)
   const { data: flags, count: flagsCount } = await supabaseAdmin
     .from('message_flags')
-    .select('*', { count: 'exact' })
+    .select('*, creator:users!created_by(id, full_name, avatar_url)', { count: 'exact' })
+    .is('reviewed_at', null)
     .order('severity', { ascending: false })
     .order('created_at', { ascending: false })
     .range(0, PAGE_SIZE - 1)
 
-  // Fetch reports con joins de usuarios
+  // Fetch reportes abiertos (open + triaged, primera página)
   const { data: reports, count: reportsCount } = await supabaseAdmin
     .from('message_reports')
     .select(
@@ -35,6 +36,7 @@ export default async function ModerationPage() {
       reported_user:users!message_reports_reported_user_id_fkey(full_name, avatar_url)`,
       { count: 'exact' }
     )
+    .in('status', ['open', 'triaged'])
     .order('created_at', { ascending: false })
     .range(0, PAGE_SIZE - 1)
 

@@ -34,6 +34,7 @@ export interface MessageFlagRow {
   review_action: string | null
   created_at: string
   created_by: string | null
+  creator?: { id: string; full_name: string; avatar_url: string | null } | null
 }
 
 export interface MessageReportRow {
@@ -76,6 +77,31 @@ export interface PaginationInfo {
   pageSize: number
   total: number
   totalPages: number
+}
+
+// === Incident / Recidivism Types ===
+export type RiskLevel = 'alto' | 'medio' | 'bajo' | 'limpio'
+
+export interface UserIncidentSummary {
+  user_id: string
+  full_name: string | null
+  avatar_url: string | null
+  role: string
+  total_flags: number
+  high_severity_flags: number
+  pending_flags: number
+  total_reports_received: number
+  open_reports: number
+  actioned_reports: number
+  last_flag_at: string | null
+  last_report_at: string | null
+  risk_level: RiskLevel
+}
+
+export interface UserIncidentDetail {
+  summary: UserIncidentSummary
+  flags: MessageFlagRow[]
+  reports: MessageReportWithUsers[]
 }
 
 // === API Response Types ===

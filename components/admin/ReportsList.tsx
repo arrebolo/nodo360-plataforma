@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  AlertTriangle,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
@@ -16,6 +15,7 @@ import type {
   ReportReason,
   ReportStatus,
 } from '@/lib/moderation/types'
+import RecidivismBadge from './RecidivismBadge'
 
 const REASON_LABELS: Record<ReportReason, string> = {
   spam: 'Spam',
@@ -44,8 +44,10 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
   const [pagination, setPagination] = useState(initialPagination)
   const [loading, setLoading] = useState(false)
 
+  // Tab: abiertos vs cerrados
+  const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open')
+
   // Filtros
-  const [filterStatus, setFilterStatus] = useState('')
   const [filterReason, setFilterReason] = useState('')
 
   // Modal
@@ -54,11 +56,17 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
   const [modalNotes, setModalNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
+  // Cargar al cambiar de tab
+  useEffect(() => {
+    fetchReports(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
+
   async function fetchReports(page: number = 1) {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (filterStatus) params.set('status', filterStatus)
+      params.set('status_group', activeTab)
       if (filterReason) params.set('reason', filterReason)
       params.set('page', page.toString())
 
@@ -99,14 +107,8 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
 
       if (!res.ok) throw new Error('Error al actualizar reporte')
 
-      // Actualizar localmente
-      setReports(prev =>
-        prev.map(r =>
-          r.id === selectedReport.id
-            ? { ...r, status: modalStatus, admin_notes: modalNotes }
-            : r
-        )
-      )
+      // Refrescar la lista para reflejar cambios de estado
+      await fetchReports(pagination.page)
       closeModal()
     } catch (err) {
       console.error('Error saving report:', err)
@@ -121,19 +123,32 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
 
   return (
     <div className="space-y-4">
-      {/* Filtros */}
-      <div className="flex flex-wrap gap-3">
-        <select
-          value={filterStatus}
-          onChange={e => { setFilterStatus(e.target.value); }}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand/30"
-        >
-          <option value="">Todos los estados</option>
-          {Object.entries(STATUS_CONFIG).map(([key, val]) => (
-            <option key={key} value={key}>{val.label}</option>
-          ))}
-        </select>
+      {/* Sub-tabs: Abiertos / Cerrados */}
+      <div className="flex items-center gap-4">
+        <div className="flex gap-1 bg-white/5 rounded-lg p-1">
+          <button
+            onClick={() => setActiveTab('open')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              activeTab === 'open'
+                ? 'bg-yellow-500/20 text-yellow-400'
+                : 'text-white/50 hover:text-white/80'
+            }`}
+          >
+            Abiertos
+          </button>
+          <button
+            onClick={() => setActiveTab('closed')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              activeTab === 'closed'
+                ? 'bg-green-500/20 text-green-400'
+                : 'text-white/50 hover:text-white/80'
+            }`}
+          >
+            Cerrados
+          </button>
+        </div>
 
+        {/* Filtros */}
         <select
           value={filterReason}
           onChange={e => { setFilterReason(e.target.value); }}
@@ -154,7 +169,7 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
         </button>
       </div>
 
-      {/* Tabla */}
+      {/* Lista */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-white/40" />
@@ -162,7 +177,11 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
       ) : reports.length === 0 ? (
         <div className="bg-white/5 rounded-xl p-12 text-center border border-white/10">
           <CheckCircle className="w-12 h-12 mx-auto text-green-400/60 mb-3" />
-          <p className="text-white/60">No hay reportes que coincidan con los filtros</p>
+          <p className="text-white/60">
+            {activeTab === 'open'
+              ? 'No hay reportes abiertos'
+              : 'No hay reportes cerrados'}
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -173,7 +192,11 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
             return (
               <div
                 key={report.id}
-                className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-white/20 transition-all"
+                className={`bg-white/5 rounded-xl p-4 border transition-all ${
+                  activeTab === 'closed'
+                    ? 'border-white/5'
+                    : 'border-white/10 hover:border-white/20'
+                }`}
               >
                 <div className="flex items-center gap-4">
                   {/* Reporter */}
@@ -189,7 +212,7 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
                   </div>
 
                   {/* Arrow */}
-                  <span className="text-white/20">→</span>
+                  <span className="text-white/20">&rarr;</span>
 
                   {/* Reported */}
                   <div className="flex items-center gap-2 min-w-[130px]">
@@ -201,6 +224,7 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
                     <span className="text-sm text-white truncate">
                       {report.reported_user?.full_name || 'Usuario'}
                     </span>
+                    <RecidivismBadge userId={report.reported_user_id} />
                   </div>
 
                   {/* Razón */}
@@ -208,10 +232,15 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
                     {reasonLabel}
                   </span>
 
-                  {/* Detalles (truncado) */}
-                  {report.details && (
+                  {/* Detalles o notas admin (según tab) */}
+                  {activeTab === 'open' && report.details && (
                     <span className="text-xs text-white/40 truncate max-w-[150px]" title={report.details}>
                       {report.details}
+                    </span>
+                  )}
+                  {activeTab === 'closed' && report.admin_notes && (
+                    <span className="text-xs text-white/40 truncate max-w-[150px]" title={report.admin_notes}>
+                      {report.admin_notes}
                     </span>
                   )}
 
@@ -222,7 +251,7 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
 
                   {/* Fecha */}
                   <span className="text-xs text-white/40">
-                    {new Date(report.created_at).toLocaleDateString('es-ES', {
+                    {new Date(activeTab === 'closed' && report.resolved_at ? report.resolved_at : report.created_at).toLocaleDateString('es-ES', {
                       day: 'numeric',
                       month: 'short',
                     })}
@@ -233,7 +262,7 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
                     onClick={() => openModal(report)}
                     className="px-3 py-1 bg-brand/10 hover:bg-brand/20 rounded-lg text-xs text-brand-light transition-colors"
                   >
-                    Gestionar
+                    {activeTab === 'open' ? 'Gestionar' : 'Ver'}
                   </button>
                 </div>
               </div>
@@ -299,6 +328,20 @@ export default function ReportsList({ initialReports, initialPagination }: Repor
                 <div>
                   <label className="text-xs text-white/40 block mb-1">Detalles del reporter</label>
                   <p className="text-sm text-white/80 bg-white/5 rounded-lg p-3">{selectedReport.details}</p>
+                </div>
+              )}
+              {selectedReport.resolved_at && (
+                <div>
+                  <label className="text-xs text-white/40 block mb-1">Resuelto</label>
+                  <p className="text-sm text-white/60">
+                    {new Date(selectedReport.resolved_at).toLocaleDateString('es-ES', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
                 </div>
               )}
             </div>

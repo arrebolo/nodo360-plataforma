@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Link2,
   Share2,
@@ -12,8 +12,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  User,
 } from 'lucide-react'
 import type { MessageFlagRow, PaginationInfo } from '@/lib/moderation/types'
+import RecidivismBadge from './RecidivismBadge'
 
 const FLAG_TYPE_CONFIG: Record<string, { label: string; icon: typeof Link2 }> = {
   external_link: { label: 'Enlace externo', icon: Link2 },
@@ -22,6 +24,12 @@ const FLAG_TYPE_CONFIG: Record<string, { label: string; icon: typeof Link2 }> = 
   trading_promo: { label: 'Promo trading', icon: TrendingUp },
   repeat_message: { label: 'Mensaje repetido', icon: Repeat },
   mass_dm: { label: 'DM masivo', icon: Mail },
+}
+
+const REVIEW_ACTION_LABELS: Record<string, { label: string; className: string }> = {
+  dismissed: { label: 'Descartado', className: 'bg-white/5 text-white/40' },
+  warning_sent: { label: 'Advertencia', className: 'bg-yellow-500/20 text-yellow-400' },
+  user_banned: { label: 'Baneado', className: 'bg-red-500/20 text-red-400' },
 }
 
 function SeverityBadge({ severity }: { severity: number }) {
@@ -51,10 +59,18 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
+  // Tab: pendientes vs resueltos
+  const [activeTab, setActiveTab] = useState<'pending' | 'resolved'>('pending')
+
   // Filtros
   const [filterType, setFilterType] = useState('')
   const [filterSeverity, setFilterSeverity] = useState('')
-  const [filterUnreviewed, setFilterUnreviewed] = useState(false)
+
+  // Cargar al cambiar de tab
+  useEffect(() => {
+    fetchFlags(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
 
   async function fetchFlags(page: number = 1) {
     setLoading(true)
@@ -62,7 +78,11 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
       const params = new URLSearchParams()
       if (filterType) params.set('type', filterType)
       if (filterSeverity) params.set('severity', filterSeverity)
-      if (filterUnreviewed) params.set('unreviewed', 'true')
+      if (activeTab === 'pending') {
+        params.set('unreviewed', 'true')
+      } else {
+        params.set('reviewed', 'true')
+      }
       params.set('page', page.toString())
 
       const res = await fetch(`/api/admin/moderation/flags?${params}`)
@@ -89,14 +109,8 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
 
       if (!res.ok) throw new Error('Error al actualizar flag')
 
-      // Actualizar localmente
-      setFlags(prev =>
-        prev.map(f =>
-          f.id === flagId
-            ? { ...f, reviewed_at: new Date().toISOString(), review_action: reviewAction }
-            : f
-        )
-      )
+      // Quitar de la lista de pendientes
+      setFlags(prev => prev.filter(f => f.id !== flagId))
     } catch (err) {
       console.error('Error reviewing flag:', err)
     } finally {
@@ -110,8 +124,32 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
 
   return (
     <div className="space-y-4">
-      {/* Filtros */}
-      <div className="flex flex-wrap gap-3">
+      {/* Sub-tabs: Pendientes / Resueltos */}
+      <div className="flex items-center gap-4">
+        <div className="flex gap-1 bg-white/5 rounded-lg p-1">
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              activeTab === 'pending'
+                ? 'bg-yellow-500/20 text-yellow-400'
+                : 'text-white/50 hover:text-white/80'
+            }`}
+          >
+            Pendientes
+          </button>
+          <button
+            onClick={() => setActiveTab('resolved')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              activeTab === 'resolved'
+                ? 'bg-green-500/20 text-green-400'
+                : 'text-white/50 hover:text-white/80'
+            }`}
+          >
+            Resueltos
+          </button>
+        </div>
+
+        {/* Filtros */}
         <select
           value={filterType}
           onChange={e => { setFilterType(e.target.value); }}
@@ -136,16 +174,6 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
           <option value="1">1 - Mínimo</option>
         </select>
 
-        <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={filterUnreviewed}
-            onChange={e => { setFilterUnreviewed(e.target.checked); }}
-            className="rounded border-white/20 bg-white/5 text-brand focus:ring-brand/30"
-          />
-          Solo sin revisar
-        </label>
-
         <button
           onClick={handleFilterChange}
           disabled={loading}
@@ -155,7 +183,7 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
         </button>
       </div>
 
-      {/* Tabla */}
+      {/* Lista */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-white/40" />
@@ -163,7 +191,11 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
       ) : flags.length === 0 ? (
         <div className="bg-white/5 rounded-xl p-12 text-center border border-white/10">
           <CheckCircle className="w-12 h-12 mx-auto text-green-400/60 mb-3" />
-          <p className="text-white/60">No hay flags que coincidan con los filtros</p>
+          <p className="text-white/60">
+            {activeTab === 'pending'
+              ? 'No hay flags pendientes de revisión'
+              : 'No hay flags resueltos'}
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -173,13 +205,14 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
               icon: AlertTriangle,
             }
             const Icon = typeConfig.icon
-            const isReviewed = !!flag.reviewed_at
 
             return (
               <div
                 key={flag.id}
                 className={`bg-white/5 rounded-xl p-4 border transition-all ${
-                  isReviewed ? 'border-white/5 opacity-60' : 'border-white/10 hover:border-white/20'
+                  activeTab === 'resolved'
+                    ? 'border-white/5'
+                    : 'border-white/10 hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center gap-4">
@@ -192,10 +225,20 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
                   {/* Severidad */}
                   <SeverityBadge severity={flag.severity} />
 
-                  {/* Conversación */}
-                  <span className="text-xs text-white/40 font-mono truncate max-w-[120px]">
-                    {flag.conversation_id.substring(0, 8)}...
-                  </span>
+                  {/* Usuario */}
+                  <div className="flex items-center gap-2 min-w-[130px]">
+                    {flag.creator?.avatar_url ? (
+                      <img src={flag.creator.avatar_url} alt="" className="w-5 h-5 rounded-full" />
+                    ) : (
+                      <User className="w-4 h-4 text-white/40" />
+                    )}
+                    <span className="text-sm text-white truncate">
+                      {flag.creator?.full_name || 'Sistema'}
+                    </span>
+                    {flag.creator?.id && (
+                      <RecidivismBadge userId={flag.creator.id} />
+                    )}
+                  </div>
 
                   {/* Fecha */}
                   <span className="text-xs text-white/40 ml-auto">
@@ -207,14 +250,8 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
                     })}
                   </span>
 
-                  {/* Estado / Acción */}
-                  {isReviewed ? (
-                    <span className="px-3 py-1 bg-white/5 rounded-full text-xs text-white/40">
-                      {flag.review_action === 'dismissed' && 'Descartado'}
-                      {flag.review_action === 'warning_sent' && 'Advertencia'}
-                      {flag.review_action === 'user_banned' && 'Baneado'}
-                    </span>
-                  ) : (
+                  {/* Acciones o estado resuelto */}
+                  {activeTab === 'pending' ? (
                     <div className="flex gap-1">
                       <button
                         onClick={() => handleReview(flag.id, 'dismissed')}
@@ -238,6 +275,12 @@ export default function FlagsList({ initialFlags, initialPagination }: FlagsList
                         Banear
                       </button>
                     </div>
+                  ) : (
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      REVIEW_ACTION_LABELS[flag.review_action || '']?.className || 'bg-white/5 text-white/40'
+                    }`}>
+                      {REVIEW_ACTION_LABELS[flag.review_action || '']?.label || flag.review_action}
+                    </span>
                   )}
                 </div>
               </div>

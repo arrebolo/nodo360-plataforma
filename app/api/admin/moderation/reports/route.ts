@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     // Parsear filtros
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const statusGroup = searchParams.get('status_group') // 'open' | 'closed'
     const reason = searchParams.get('reason')
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const offset = (page - 1) * PAGE_SIZE
@@ -52,6 +53,11 @@ export async function GET(request: NextRequest) {
 
     if (status) {
       query = query.eq('status', status)
+    }
+    if (statusGroup === 'open') {
+      query = query.in('status', ['open', 'triaged'])
+    } else if (statusGroup === 'closed') {
+      query = query.in('status', ['closed', 'actioned'])
     }
     if (reason) {
       query = query.eq('reason', reason)
