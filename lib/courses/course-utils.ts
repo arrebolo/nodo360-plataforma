@@ -32,6 +32,7 @@ export const COURSE_STATUSES = [
   { value: 'pending_review', label: 'Pendiente de revisión' },
   { value: 'published', label: 'Publicado' },
   { value: 'rejected', label: 'Rechazado' },
+  { value: 'changes_requested', label: 'Cambios solicitados' },
   { value: 'archived', label: 'Archivado' },
 ] as const
 

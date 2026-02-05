@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { resetCourseReviews } from '@/lib/courses/reviews'
 
 export async function POST(
   request: NextRequest,
@@ -45,11 +46,11 @@ export async function POST(
       return NextResponse.json({ error: 'No tienes permisos sobre este curso' }, { status: 403 })
     }
 
-    // Solo se puede enviar a revisión si está en draft o rejected
-    if (course.status !== 'draft' && course.status !== 'rejected') {
-      console.log(`❌ [Submit Review] Invalid status: ${course.status}. Must be draft or rejected.`)
+    // Solo se puede enviar a revisión si está en draft, rejected o changes_requested
+    if (course.status !== 'draft' && course.status !== 'rejected' && course.status !== 'changes_requested') {
+      console.log(`❌ [Submit Review] Invalid status: ${course.status}. Must be draft, rejected or changes_requested.`)
       return NextResponse.json(
-        { error: 'Solo se pueden enviar a revisión cursos en borrador o rechazados' },
+        { error: 'Solo se pueden enviar a revisión cursos en borrador, rechazados o con cambios solicitados' },
         { status: 400 }
       )
     }
@@ -130,12 +131,16 @@ export async function POST(
       )
     }
 
+    // Reset previous reviews when resubmitting
+    await resetCourseReviews(courseId)
+
     console.log(`✅ [Submit Review] Course ${courseId} submitted for review by ${user.id}`)
 
     // Revalidar paths
     revalidatePath('/dashboard/instructor/cursos')
     revalidatePath(`/dashboard/instructor/cursos/${courseId}`)
     revalidatePath('/admin/cursos/pendientes')
+    revalidatePath('/dashboard/mentor/cursos/pendientes')
 
     return NextResponse.json({
       success: true,

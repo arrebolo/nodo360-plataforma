@@ -10,7 +10,9 @@ import {
   Layers,
   Calendar,
   Eye,
+  CheckCircle,
 } from 'lucide-react'
+import { getReviewCounts } from '@/lib/courses/reviews'
 
 export const metadata = {
   title: 'Cursos Pendientes | Mentor Nodo360',
@@ -18,7 +20,7 @@ export const metadata = {
 }
 
 export default async function MentorPendingCoursesPage() {
-  await requireMentor()
+  const { userId } = await requireMentor()
   const supabase = await createClient()
 
   // Obtener cursos pendientes de revisión
@@ -68,6 +70,23 @@ export default async function MentorPendingCoursesPage() {
     })
   }
 
+  // Obtener conteo de reviews por curso
+  const reviewCounts = await getReviewCounts(courseIds)
+
+  // Check which courses this mentor has already voted on
+  let mentorVotes: Record<string, string> = {}
+  if (courseIds.length > 0) {
+    const { data: mentorReviews } = await (supabase as any)
+      .from('course_reviews')
+      .select('course_id, vote')
+      .eq('mentor_id', userId)
+      .in('course_id', courseIds)
+
+    for (const review of mentorReviews || []) {
+      mentorVotes[review.course_id] = review.vote
+    }
+  }
+
   const levelLabels: Record<string, string> = {
     beginner: 'Principiante',
     intermediate: 'Intermedio',
@@ -95,7 +114,7 @@ export default async function MentorPendingCoursesPage() {
             <div>
               <h1 className="text-2xl font-bold text-white">Cursos Pendientes de Revisión</h1>
               <p className="text-white/60">
-                {courses?.length || 0} curso{(courses?.length || 0) !== 1 ? 's' : ''} esperando tu revisión
+                {courses?.length || 0} curso{(courses?.length || 0) !== 1 ? 's' : ''} esperando revisión
               </p>
             </div>
           </div>
@@ -107,6 +126,8 @@ export default async function MentorPendingCoursesPage() {
             {courses.map((course: any) => {
               const instructor = course.users
               const stats = courseStats[course.id] || { modules: 0, lessons: 0 }
+              const counts = reviewCounts[course.id] || { approve: 0, request_changes: 0 }
+              const mentorVote = mentorVotes[course.id] || null
 
               return (
                 <div
@@ -137,9 +158,28 @@ export default async function MentorPendingCoursesPage() {
                         <h2 className="text-lg font-semibold text-white truncate">
                           {course.title}
                         </h2>
-                        <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs font-medium flex-shrink-0">
-                          Pendiente
-                        </span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {/* Review progress */}
+                          <span className="flex items-center gap-1.5 px-3 py-1 bg-white/10 text-white/70 rounded-full text-xs font-medium">
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            {counts.approve}/2 aprobaciones
+                          </span>
+                          {/* Mentor vote indicator */}
+                          {mentorVote && (
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              mentorVote === 'approve'
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-amber-500/20 text-amber-400'
+                            }`}>
+                              {mentorVote === 'approve' ? 'Ya aprobaste' : 'Cambios solicitados'}
+                            </span>
+                          )}
+                          {!mentorVote && (
+                            <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs font-medium">
+                              Pendiente
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <p className="text-sm text-white/60 line-clamp-2 mb-3">

@@ -7,17 +7,17 @@ import Image from 'next/image'
 import {
   ArrowLeft,
   CheckCircle,
-  XCircle,
+  AlertTriangle,
   User,
   BookOpen,
   Layers,
-  Clock,
-  Eye,
   ExternalLink,
   Play,
 } from 'lucide-react'
 import { sendCourseApprovedEmail } from '@/lib/email/course-approved'
-import { sendCourseRejectedEmail } from '@/lib/email/course-rejected'
+import { sendCourseChangesRequestedEmail } from '@/lib/email/course-changes-requested'
+import { submitReview, getCourseReviews, canMentorReview } from '@/lib/courses/reviews'
+import { broadcastCourseChangesRequested, createInAppNotification } from '@/lib/notifications/broadcast'
 
 interface ReviewCoursePageProps {
   params: Promise<{ id: string }>
@@ -34,33 +34,25 @@ async function approveCourse(courseId: string) {
   'use server'
 
   const { userId } = await requireMentor()
-  const supabase = await createClient()
 
-  // Llamar a la función RPC submit_course_review
-  const { data: result, error } = await supabase.rpc('submit_course_review', {
-    p_course_id: courseId,
-    p_reviewer_id: userId,
-    p_decision: 'approved',
-    p_feedback: null,
-  })
+  const result = await submitReview(courseId, userId, 'approve')
 
-  if (error) {
-    console.error('❌ [Mentor] Error en RPC submit_course_review:', error)
-    throw new Error('Error al aprobar el curso: ' + error.message)
-  }
-
-  if (!result?.success) {
-    throw new Error(result?.error || 'Error al aprobar el curso')
+  if (!result.success) {
+    throw new Error(result.error || 'Error al aprobar el curso')
   }
 
   console.log(`✅ [Mentor] Course ${courseId} approved by mentor ${userId}`)
 
-  // Obtener datos del curso para el email
+  // Check if course got auto-published (2nd approval)
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+
   const { data: course } = await supabase
     .from('courses')
     .select(`
-      title, slug,
+      title, slug, status,
       users!courses_instructor_id_fkey (
+        id,
         email,
         full_name
       )
@@ -68,8 +60,8 @@ async function approveCourse(courseId: string) {
     .eq('id', courseId)
     .single()
 
-  // Enviar email al instructor (non-blocking)
-  if (course?.users) {
+  if (course?.status === 'published' && course?.users) {
+    // Auto-published! Send approval email and notification
     const instructor = course.users as any
     sendCourseApprovedEmail({
       to: instructor.email,
@@ -77,6 +69,14 @@ async function approveCourse(courseId: string) {
       courseName: course.title,
       courseSlug: course.slug,
     }).catch(err => console.error('Error enviando email de aprobación:', err))
+
+    createInAppNotification(
+      instructor.id,
+      'course_published',
+      '🎉 ¡Tu curso ha sido publicado!',
+      `Tu curso "${course.title}" ha recibido 2 aprobaciones y ya está publicado.`,
+      `/cursos/${course.slug}`
+    ).catch(err => console.error('Error creando notificación:', err))
   }
 
   revalidatePath('/dashboard/mentor/cursos/pendientes')
@@ -86,44 +86,36 @@ async function approveCourse(courseId: string) {
   redirect('/dashboard/mentor/cursos/pendientes')
 }
 
-// Server Action: Rechazar curso
-async function rejectCourse(courseId: string, formData: FormData) {
+// Server Action: Solicitar cambios
+async function requestChanges(courseId: string, formData: FormData) {
   'use server'
 
   const { userId } = await requireMentor()
+
+  const comment = formData.get('comment') as string
+
+  if (!comment || comment.trim().length < 10) {
+    throw new Error('Debes proporcionar un comentario (mínimo 10 caracteres)')
+  }
+
+  const result = await submitReview(courseId, userId, 'request_changes', comment.trim())
+
+  if (!result.success) {
+    throw new Error(result.error || 'Error al solicitar cambios')
+  }
+
+  console.log(`📝 [Mentor] Course ${courseId} changes requested by mentor ${userId}`)
+
+  // Get course data for email/notification
+  const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
 
-  const reason = formData.get('reason') as string
-
-  if (!reason || reason.trim().length < 10) {
-    throw new Error('Debes proporcionar un motivo de rechazo (mínimo 10 caracteres)')
-  }
-
-  // Llamar a la función RPC submit_course_review
-  const { data: result, error } = await supabase.rpc('submit_course_review', {
-    p_course_id: courseId,
-    p_reviewer_id: userId,
-    p_decision: 'rejected',
-    p_feedback: reason.trim(),
-  })
-
-  if (error) {
-    console.error('❌ [Mentor] Error en RPC submit_course_review:', error)
-    throw new Error('Error al rechazar el curso: ' + error.message)
-  }
-
-  if (!result?.success) {
-    throw new Error(result?.error || 'Error al rechazar el curso')
-  }
-
-  console.log(`❌ [Mentor] Course ${courseId} rejected by mentor ${userId}. Reason: ${reason}`)
-
-  // Obtener datos del curso para el email
   const { data: course } = await supabase
     .from('courses')
     .select(`
       title,
       users!courses_instructor_id_fkey (
+        id,
         email,
         full_name
       )
@@ -131,16 +123,24 @@ async function rejectCourse(courseId: string, formData: FormData) {
     .eq('id', courseId)
     .single()
 
-  // Enviar email al instructor (non-blocking)
   if (course?.users) {
     const instructor = course.users as any
-    sendCourseRejectedEmail({
+
+    // Send email with mentor comments
+    sendCourseChangesRequestedEmail({
       to: instructor.email,
       instructorName: instructor.full_name || 'Instructor',
       courseName: course.title,
       courseId: courseId,
-      rejectionReason: reason.trim(),
-    }).catch(err => console.error('Error enviando email de rechazo:', err))
+      mentorComments: [comment.trim()],
+    }).catch(err => console.error('Error enviando email de cambios solicitados:', err))
+
+    // In-app notification
+    broadcastCourseChangesRequested(
+      instructor.id,
+      course.title,
+      comment.trim()
+    ).catch(err => console.error('Error creando notificación:', err))
   }
 
   revalidatePath('/dashboard/mentor/cursos/pendientes')
@@ -150,7 +150,7 @@ async function rejectCourse(courseId: string, formData: FormData) {
 }
 
 export default async function MentorReviewCoursePage({ params }: ReviewCoursePageProps) {
-  await requireMentor()
+  const { userId } = await requireMentor()
   const { id: courseId } = await params
   const supabase = await createClient()
 
@@ -198,6 +198,11 @@ export default async function MentorReviewCoursePage({ params }: ReviewCoursePag
     .eq('course_id', courseId)
     .order('order_index', { ascending: true })
 
+  // Obtener reviews existentes
+  const reviews = await getCourseReviews(courseId)
+  const hasAlreadyVoted = !(await canMentorReview(courseId, userId))
+  const approveCount = reviews.filter((r: any) => r.vote === 'approve').length
+
   const instructor = course.users as any
 
   // Calcular estadísticas
@@ -207,7 +212,7 @@ export default async function MentorReviewCoursePage({ params }: ReviewCoursePag
     acc + (m.lessons?.reduce((lacc: number, l: any) => lacc + (l.video_duration_minutes || 0), 0) || 0), 0) || 0
 
   const approveAction = approveCourse.bind(null, courseId)
-  const rejectAction = rejectCourse.bind(null, courseId)
+  const requestChangesAction = requestChanges.bind(null, courseId)
 
   const levelLabels: Record<string, string> = {
     beginner: 'Principiante',
@@ -234,6 +239,9 @@ export default async function MentorReviewCoursePage({ params }: ReviewCoursePag
                 <h1 className="text-3xl font-bold text-white">{course.title}</h1>
                 <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-sm font-medium">
                   Pendiente de revisión
+                </span>
+                <span className="px-3 py-1 bg-white/10 text-white/60 rounded-full text-sm font-medium">
+                  {approveCount}/2 aprobaciones
                 </span>
               </div>
               <p className="text-white/60">{course.description}</p>
@@ -368,6 +376,53 @@ export default async function MentorReviewCoursePage({ params }: ReviewCoursePag
                 <p className="text-white/50 text-sm">Sin contenido</p>
               )}
             </div>
+
+            {/* Reviews existentes */}
+            {reviews.length > 0 && (
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                <h2 className="text-lg font-semibold text-white mb-4">
+                  Revisiones anteriores ({approveCount}/2 aprobaciones)
+                </h2>
+                <div className="space-y-3">
+                  {reviews.map((review: any) => (
+                    <div
+                      key={review.id}
+                      className={`p-4 rounded-xl border ${
+                        review.vote === 'approve'
+                          ? 'border-green-500/30 bg-green-500/10'
+                          : 'border-amber-500/30 bg-amber-500/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        {review.vote === 'approve' ? (
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                        ) : (
+                          <AlertTriangle className="w-4 h-4 text-amber-400" />
+                        )}
+                        <span className="font-medium text-white text-sm">
+                          {review.users?.full_name || 'Mentor'}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          review.vote === 'approve'
+                            ? 'bg-green-500/20 text-green-400'
+                            : 'bg-amber-500/20 text-amber-400'
+                        }`}>
+                          {review.vote === 'approve' ? 'Aprobado' : 'Cambios solicitados'}
+                        </span>
+                        <span className="text-xs text-white/40 ml-auto">
+                          {new Date(review.created_at).toLocaleDateString('es-ES')}
+                        </span>
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-white/70 ml-6 whitespace-pre-line">
+                          {review.comment}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -428,39 +483,52 @@ export default async function MentorReviewCoursePage({ params }: ReviewCoursePag
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
               <h2 className="text-lg font-semibold text-white mb-4">Tu Decisión</h2>
 
-              {/* Aprobar */}
-              <form action={approveAction}>
-                <button
-                  type="submit"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-500/20 border border-green-500/30 text-green-400 font-semibold rounded-xl hover:bg-green-500/30 transition"
-                >
-                  <CheckCircle className="w-5 h-5" />
-                  Aprobar y Publicar
-                </button>
-              </form>
+              {hasAlreadyVoted ? (
+                <div className="text-center py-4">
+                  <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                  <p className="text-white/70 text-sm">Ya has enviado tu voto para este curso.</p>
+                  <p className="text-white/50 text-xs mt-1">
+                    {approveCount}/2 aprobaciones
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Aprobar */}
+                  <form action={approveAction}>
+                    <button
+                      type="submit"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-500/20 border border-green-500/30 text-green-400 font-semibold rounded-xl hover:bg-green-500/30 transition"
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                      Aprobar
+                    </button>
+                  </form>
 
-              {/* Rechazar */}
-              <form action={rejectAction} className="space-y-3">
-                <textarea
-                  name="reason"
-                  placeholder="Motivo del rechazo (mínimo 10 caracteres)...&#10;Ej: El contenido necesita más profundidad en el tema X"
-                  required
-                  minLength={10}
-                  rows={4}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:border-red-500/50 focus:ring-1 focus:ring-red-500/20 transition resize-none"
-                />
-                <button
-                  type="submit"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/20 border border-red-500/30 text-red-400 font-semibold rounded-xl hover:bg-red-500/30 transition"
-                >
-                  <XCircle className="w-5 h-5" />
-                  Rechazar con Feedback
-                </button>
-              </form>
+                  {/* Solicitar cambios */}
+                  <form action={requestChangesAction} className="space-y-3">
+                    <textarea
+                      name="comment"
+                      placeholder="Describe los cambios necesarios (mínimo 10 caracteres)...&#10;Ej: El contenido necesita más profundidad en el tema X"
+                      required
+                      minLength={10}
+                      rows={4}
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition resize-none"
+                    />
+                    <button
+                      type="submit"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-500/20 border border-amber-500/30 text-amber-400 font-semibold rounded-xl hover:bg-amber-500/30 transition"
+                    >
+                      <AlertTriangle className="w-5 h-5" />
+                      Solicitar cambios
+                    </button>
+                  </form>
 
-              <p className="text-xs text-white/40 text-center">
-                Al rechazar, proporciona feedback constructivo para ayudar al instructor a mejorar.
-              </p>
+                  <p className="text-xs text-white/40 text-center">
+                    Se necesitan 2 aprobaciones para publicar el curso.
+                    Al solicitar cambios, el instructor podrá editar y reenviar.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
