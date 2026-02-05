@@ -18,20 +18,36 @@
 
 ---
 
-## METRICAS DEL PROYECTO (30/01/2026)
+## METRICAS DEL PROYECTO (05/02/2026)
 
 | Metrica | Valor |
 |---------|-------|
 | Rutas de App | 100+ |
-| Migraciones SQL | 19 |
+| Migraciones SQL | 17 |
 | Funciones DB | 27+ |
-| Tablas Core | 30+ |
+| Tablas Core | 37+ |
 | Componentes | 60+ |
-| APIs | 50+ |
+| APIs | 76 (Admin: 29) |
 
 ---
 
 ## HISTORIAL DE SESIONES
+
+### 05/02/2026
+- **Sistema de Revision por Mentores - Fase 24**:
+  - Migracion 016: reemplaza sistema viejo (019) con 2 aprobaciones
+  - Tabla `course_reviews` con UNIQUE(course_id, mentor_id) y trigger `check_course_approval`
+  - Enum `course_review_vote` (approve, request_changes)
+  - Status `changes_requested` agregado a course_status
+  - `lib/courses/reviews.ts`: funciones server-side (submitReview, getCourseReviews, resetCourseReviews, etc.)
+  - API `/api/mentor/courses/review` (GET + POST): listar cursos pendientes y enviar voto
+  - API `/api/instructor/courses/[id]/reviews` (GET): instructor ve reviews de sus cursos
+  - Email template `course-changes-requested.ts` con comentarios de mentores
+  - Notificacion in-app `course_changes_requested` via broadcast
+  - Panel mentor actualizado: progreso X/2 aprobaciones, boton "Solicitar cambios"
+  - InstructorCourseCard: status `changes_requested` (amber), boton "Editar y reenviar"
+  - Submit-review actualizado: acepta reenvio desde `changes_requested`, limpia votos anteriores
+  - Auto-publicacion al recibir 2a aprobacion (trigger SQL)
 
 ### 30/01/2026
 - **Sistema de Mensajeria** completo:
@@ -51,12 +67,10 @@
   - Metricas: total alumnos, activos mes, tasa completacion, certificados
   - Tabla por curso y lista de inscripciones recientes
 - Revenue share actualizado: 35/65 (instructor/plataforma), 40% con referidos
-- **Sistema de Revision de Cursos por Mentores**:
+- **Sistema de Revision de Cursos por Mentores** (v1, reemplazado por Fase 24):
   - Migracion 019: tabla `course_reviews` y funcion `submit_course_review`
   - Paginas: `/dashboard/mentor/cursos/pendientes`, `/dashboard/mentor/cursos/pendientes/[id]`
   - Helper `requireMentor()` para autenticacion de mentores/admins
-  - Mentores pueden aprobar o rechazar cursos con feedback
-  - Emails automaticos a instructores al aprobar/rechazar
 
 ### 26/01/2026
 - Merge de paginas publicas `/instructores` y `/mentores`
@@ -135,7 +149,9 @@ const courseTitle = lesson.modules.courses.title
 | 011 | `011_instructor_requirements.sql` | Requisitos examen instructor |
 | 017 | `017_student_certificates.sql` | Certificados automaticos al completar |
 | 018 | `018_messaging_system.sql` | Sistema de mensajeria 1:1 |
-| 019 | `019_mentor_course_review.sql` | Revision de cursos por mentores |
+| 019 | `019_mentor_course_review.sql` | Revision de cursos por mentores (reemplazado por 016) |
+| 015e | `015_entitlements.sql` (docs/migrations/) | Sistema de entitlements para acceso premium |
+| 016 | `016_mentor_course_reviews.sql` (docs/migrations/) | Revision de cursos: 2 aprobaciones, changes_requested, trigger auto-publish |
 
 ### Funciones SQL Principales (27+ funciones)
 
@@ -164,8 +180,8 @@ const courseTitle = lesson.modules.courses.title
 | `get_or_create_conversation()` | Obtiene o crea conversacion |
 | `get_unread_message_count()` | Cuenta mensajes no leidos |
 | `mark_messages_as_read()` | Marca mensajes como leidos |
-| `submit_course_review()` | Procesa decision de mentor (aprobar/rechazar curso) |
-| `get_course_review_history()` | Historial de revisiones de un curso |
+| `check_course_approval()` | Trigger: auto-publica curso con 2 aprobaciones o marca changes_requested |
+| `update_course_review_updated_at()` | Trigger: actualiza updated_at en course_reviews |
 
 ### Tablas Core
 
@@ -198,11 +214,21 @@ const courseTitle = lesson.modules.courses.title
 - `mentor_applications` - Solicitudes
 - `mentor_points` - Puntos de merito
 - `mentor_monthly_stats` - Estadisticas mensuales
-- `course_reviews` - Revisiones de cursos por mentores/admins
+- `course_reviews` - Revisiones de cursos (2 aprobaciones, UNIQUE por mentor+curso)
 
 **Mensajeria:**
 - `conversations` - Conversaciones 1:1 entre usuarios
 - `messages` - Mensajes (max 5000 chars, tracking de leidos)
+
+**Acceso/Entitlements:**
+- `entitlements` - Permisos de acceso a contenido premium (course_access, full_platform, learning_path_access)
+
+### Enums Personalizados
+
+| Enum | Valores |
+|------|---------|
+| `course_status` | draft, pending_review, published, rejected, changes_requested, archived, coming_soon |
+| `course_review_vote` | approve, request_changes |
 
 ---
 
@@ -308,6 +334,22 @@ messages
 | `/api/messages/[id]` | POST | Enviar mensaje |
 | `/api/messages/[id]/read` | POST | Marcar como leidos |
 | `/api/messages/unread` | GET | Contador no leidos |
+
+### Endpoints API - Revision de Cursos (Mentor)
+
+| Endpoint | Metodo | Proposito |
+|----------|--------|-----------|
+| `/api/mentor/courses/review` | GET | Listar cursos pendientes con info de votos |
+| `/api/mentor/courses/review` | POST | Enviar review (vote + comment) |
+| `/api/instructor/courses/[id]/reviews` | GET | Ver reviews de un curso (solo instructor dueno) |
+
+### Endpoints API - Entitlements (Admin)
+
+| Endpoint | Metodo | Proposito |
+|----------|--------|-----------|
+| `/api/admin/entitlements` | GET | Listar entitlements (filtros: user_id, type, page) |
+| `/api/admin/entitlements` | POST | Otorgar entitlement a usuario |
+| `/api/admin/entitlements` | DELETE | Revocar entitlement |
 
 ### Componentes
 
@@ -425,7 +467,7 @@ className="bg-gradient-to-r from-brand-light to-brand"
 
 ---
 
-## ESTADO ACTUAL (30/01/2026)
+## ESTADO ACTUAL (05/02/2026)
 
 ```
 Sistema Core                 COMPLETADO
@@ -455,7 +497,7 @@ Sistema Mentores            COMPLETADO
 ├── Votacion Consejo
 ├── Perfil Publico
 ├── Pagina /mentores
-└── Revision de Cursos (aprobar/rechazar)
+└── Revision de Cursos (2 aprobaciones, changes_requested)
 
 Sistema Mensajeria          COMPLETADO
 ├── Conversaciones 1:1
@@ -463,6 +505,14 @@ Sistema Mensajeria          COMPLETADO
 ├── Icono en header con badge
 ├── Chat en tiempo real (polling)
 └── Integracion con perfiles
+
+Sistema de Acceso (Entitlements) COMPLETADO
+├── Tabla entitlements con RLS
+├── Tipos: course_access, full_platform, learning_path_access
+├── API admin para gestionar entitlements
+├── Gating server-side en cursos premium
+├── Gating server-side en lecciones premium
+└── Soporte expiracion
 
 Panel Admin                 COMPLETADO
 ├── Gestion Usuarios
@@ -473,6 +523,6 @@ Panel Admin                 COMPLETADO
 
 ---
 
-**Ultima actualizacion:** 30/01/2026
+**Ultima actualizacion:** 05/02/2026
 **Proyecto:** Nodo360 Plataforma Educativa
-**Version:** 2.2
+**Version:** 2.4
