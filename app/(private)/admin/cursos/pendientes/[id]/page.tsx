@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { sendCourseApprovedEmail } from '@/lib/email/course-approved'
 import { sendCourseRejectedEmail } from '@/lib/email/course-rejected'
+import { notifyNewCourse } from '@/lib/discord/webhook'
 
 interface ReviewCoursePageProps {
   params: Promise<{ id: string }>
@@ -36,11 +37,11 @@ async function approveCourse(courseId: string) {
   await requireAdmin()
   const supabase = await createClient()
 
-  // Obtener curso con info del instructor para el email
+  // Obtener curso con info del instructor para el email y Discord
   const { data: course } = await supabase
     .from('courses')
     .select(`
-      id, title, slug,
+      id, title, slug, description, level, thumbnail_url,
       users!courses_instructor_id_fkey (
         email,
         full_name
@@ -74,6 +75,16 @@ async function approveCourse(courseId: string) {
       courseName: course.title,
       courseSlug: course.slug,
     }).catch(err => console.error('Error enviando email de aprobación:', err))
+
+    // Notify Discord about new course
+    notifyNewCourse({
+      title: course.title,
+      slug: course.slug,
+      description: course.description,
+      instructor_name: instructor.full_name || 'Instructor Nodo360',
+      level: course.level,
+      thumbnail_url: course.thumbnail_url,
+    }).catch(err => console.error('Error notificando a Discord:', err))
   }
 
   revalidatePath('/admin/cursos/pendientes')

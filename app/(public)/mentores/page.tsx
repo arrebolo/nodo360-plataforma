@@ -49,7 +49,7 @@ export default async function MentoresPage({
               ¿Quieres ser mentor? Acumula 650 puntos de merito y aplica.
             </p>
             <Link
-              href="/dashboard/mentor"
+              href="/mentores/requisitos"
               className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
             >
               Ver requisitos
@@ -294,7 +294,7 @@ export default async function MentoresPage({
             completando cursos y ayudando a otros estudiantes.
           </p>
           <Link
-            href="/dashboard/mentor"
+            href="/mentores/requisitos"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-medium hover:opacity-90 transition-opacity"
           >
             Ver requisitos y aplicar
