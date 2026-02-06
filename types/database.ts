@@ -735,10 +735,35 @@ export interface CourseReview {
   updated_at: string
 }
 
+// =====================================================
+// LESSON COMMENTS TYPES
+// =====================================================
+
+export interface LessonComment {
+  id: string
+  lesson_id: string
+  user_id: string
+  content: string
+  is_hidden: boolean
+  is_answer: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface LessonCommentWithUser extends LessonComment {
+  user: {
+    id: string
+    full_name: string | null
+    avatar_url: string | null
+    role: UserRole
+  }
+}
+
 export type NotificationType =
   | 'beta_granted'
   | 'course_published'
   | 'course_changes_requested'
+  | 'lesson_comment_new'
   | 'proposal_active'
   | 'course_completed'
   | 'certificate_issued'

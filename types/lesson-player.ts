@@ -84,6 +84,9 @@ export type LessonPlayerProps = {
   progress: LessonProgress
   navigation: LessonNavigation
   quizStatus?: QuizStatus
+  // For comments system
+  courseInstructorId: string | null
+  userRole: string
 }
 
 // Props for sub-components

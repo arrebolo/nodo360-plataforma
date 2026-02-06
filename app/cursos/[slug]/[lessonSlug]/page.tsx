@@ -61,6 +61,7 @@ export default async function LessonPage({ params }: PageProps) {
       slug,
       title,
       is_premium,
+      instructor_id,
       modules (
         id,
         title,
@@ -143,17 +144,28 @@ export default async function LessonPage({ params }: PageProps) {
     m.lessons.some((l) => l.id === lesson.id)
   ) || modules[0]
 
-  // 6) Fetch user progress (completed lessons)
+  // 6) Fetch user progress (completed lessons) and user role
   let completedLessonIds: string[] = []
+  let userRole = 'student'
   if (userId) {
-    const { data: progressData } = await supabase
-      .from("user_progress")
-      .select("lesson_id")
-      .eq("user_id", userId)
-      .eq("is_completed", true)
+    const [progressResult, userResult] = await Promise.all([
+      supabase
+        .from("user_progress")
+        .select("lesson_id")
+        .eq("user_id", userId)
+        .eq("is_completed", true),
+      supabase
+        .from("users")
+        .select("role")
+        .eq("id", userId)
+        .single()
+    ])
 
-    if (progressData) {
-      completedLessonIds = progressData.map((p) => p.lesson_id)
+    if (progressResult.data) {
+      completedLessonIds = progressResult.data.map((p) => p.lesson_id)
+    }
+    if (userResult.data) {
+      userRole = userResult.data.role || 'student'
     }
   }
 
@@ -218,6 +230,8 @@ export default async function LessonPage({ params }: PageProps) {
     progress,
     navigation,
     quizStatus,
+    courseInstructorId: course.instructor_id || null,
+    userRole,
   }
 
   return <LessonPlayer {...playerProps} />
