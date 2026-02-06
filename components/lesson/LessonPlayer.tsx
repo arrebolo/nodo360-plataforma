@@ -10,6 +10,7 @@ import { LessonContent, type TabKey } from '@/components/lesson/LessonContent'
 import { LessonSidebar } from '@/components/lesson/LessonSidebar'
 import { LessonFooter } from '@/components/lesson/LessonFooter'
 import { SlidesEmbed } from '@/components/lesson/SlidesEmbed'
+import LessonComments from '@/components/lesson/LessonComments'
 import { useCourseCompletion } from '@/hooks/useCourseCompletion'
 import type { LessonPlayerProps } from '@/types/lesson-player'
 
@@ -28,6 +29,8 @@ export default function LessonPlayer({
   progress,
   navigation,
   quizStatus,
+  courseInstructorId,
+  userRole,
 }: LessonPlayerProps) {
   const router = useRouter()
 
@@ -282,6 +285,16 @@ export default function LessonPlayer({
               courseSlug={course.slug}
               onTabChange={setActiveContentTab}
             />
+
+            {/* Comments section - only for authenticated users */}
+            {userId && (
+              <LessonComments
+                lessonId={lesson.id}
+                courseInstructorId={courseInstructorId}
+                userId={userId}
+                userRole={userRole}
+              />
+            )}
 
             {/* Footer with CTAs - desktop sticky at bottom of content area */}
             <div className="hidden sm:block sticky bottom-4 z-40">
