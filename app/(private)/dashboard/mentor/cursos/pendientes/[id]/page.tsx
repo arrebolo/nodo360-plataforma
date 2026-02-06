@@ -18,6 +18,7 @@ import { sendCourseApprovedEmail } from '@/lib/email/course-approved'
 import { sendCourseChangesRequestedEmail } from '@/lib/email/course-changes-requested'
 import { submitReview, getCourseReviews, canMentorReview } from '@/lib/courses/reviews'
 import { broadcastCourseChangesRequested, createInAppNotification } from '@/lib/notifications/broadcast'
+import { notifyNewCourse } from '@/lib/discord/webhook'
 
 interface ReviewCoursePageProps {
   params: Promise<{ id: string }>
@@ -50,7 +51,7 @@ async function approveCourse(courseId: string) {
   const { data: course } = await supabase
     .from('courses')
     .select(`
-      title, slug, status,
+      title, slug, status, description, level, thumbnail_url,
       users!courses_instructor_id_fkey (
         id,
         email,
@@ -77,6 +78,16 @@ async function approveCourse(courseId: string) {
       `Tu curso "${course.title}" ha recibido 2 aprobaciones y ya está publicado.`,
       `/cursos/${course.slug}`
     ).catch(err => console.error('Error creando notificación:', err))
+
+    // Notify Discord about new course
+    notifyNewCourse({
+      title: course.title,
+      slug: course.slug,
+      description: course.description,
+      instructor_name: instructor.full_name || 'Instructor Nodo360',
+      level: course.level,
+      thumbnail_url: course.thumbnail_url,
+    }).catch(err => console.error('Error notificando a Discord:', err))
   }
 
   revalidatePath('/dashboard/mentor/cursos/pendientes')
