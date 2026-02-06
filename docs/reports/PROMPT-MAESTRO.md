@@ -18,20 +18,33 @@
 
 ---
 
-## METRICAS DEL PROYECTO (05/02/2026)
+## METRICAS DEL PROYECTO (06/02/2026)
 
 | Metrica | Valor |
 |---------|-------|
 | Rutas de App | 100+ |
-| Migraciones SQL | 17 |
+| Migraciones SQL | 18 |
 | Funciones DB | 27+ |
-| Tablas Core | 37+ |
-| Componentes | 60+ |
-| APIs | 76 (Admin: 29) |
+| Tablas Core | 38+ |
+| Componentes | 61+ |
+| APIs | 78 (Admin: 29) |
 
 ---
 
 ## HISTORIAL DE SESIONES
+
+### 06/02/2026
+- **Sistema de Comentarios en Lecciones - Fase 26**:
+  - Migracion 017: tabla `lesson_comments` con RLS (SELECT usuarios ven no-ocultos, admin ve todo)
+  - Indices en lesson_id+created_at y user_id
+  - `lib/comments/index.ts`: funciones server-side (getCommentsByLesson, createComment, updateComment, hideComment, markAsAnswer, getCommentCount, getLessonCourseInfo)
+  - API `/api/lessons/[lessonId]/comments` (GET + POST): listar y crear comentarios
+  - API `/api/comments/[commentId]` (PATCH): editar contenido (autor), marcar respuesta (instructor/mentor/admin), ocultar (admin)
+  - Componente `LessonComments` integrado en LessonPlayer (solo usuarios autenticados)
+  - Badges de rol: Instructor, Mentor, Admin, Consejo
+  - Feature "Respuesta util" para marcar comentarios destacados
+  - Notificacion in-app `lesson_comment_new` al instructor cuando hay nuevo comentario
+  - Types: `LessonComment`, `LessonCommentWithUser` en database.ts
 
 ### 05/02/2026
 - **Sistema de Revision por Mentores - Fase 24**:
@@ -152,6 +165,7 @@ const courseTitle = lesson.modules.courses.title
 | 019 | `019_mentor_course_review.sql` | Revision de cursos por mentores (reemplazado por 016) |
 | 015e | `015_entitlements.sql` (docs/migrations/) | Sistema de entitlements para acceso premium |
 | 016 | `016_mentor_course_reviews.sql` (docs/migrations/) | Revision de cursos: 2 aprobaciones, changes_requested, trigger auto-publish |
+| 017c | `017_lesson_comments.sql` (docs/migrations/) | Comentarios en lecciones con RLS y moderacion |
 
 ### Funciones SQL Principales (27+ funciones)
 
@@ -219,6 +233,9 @@ const courseTitle = lesson.modules.courses.title
 **Mensajeria:**
 - `conversations` - Conversaciones 1:1 entre usuarios
 - `messages` - Mensajes (max 5000 chars, tracking de leidos)
+
+**Comentarios:**
+- `lesson_comments` - Comentarios en lecciones (is_hidden, is_answer, moderacion)
 
 **Acceso/Entitlements:**
 - `entitlements` - Permisos de acceso a contenido premium (course_access, full_platform, learning_path_access)
@@ -351,6 +368,14 @@ messages
 | `/api/admin/entitlements` | POST | Otorgar entitlement a usuario |
 | `/api/admin/entitlements` | DELETE | Revocar entitlement |
 
+### Endpoints API - Comentarios en Lecciones
+
+| Endpoint | Metodo | Proposito |
+|----------|--------|-----------|
+| `/api/lessons/[lessonId]/comments` | GET | Listar comentarios (filtra ocultos para no-admins) |
+| `/api/lessons/[lessonId]/comments` | POST | Crear comentario (notifica al instructor) |
+| `/api/comments/[commentId]` | PATCH | Editar (autor), marcar respuesta (instructor/mentor/admin), ocultar (admin) |
+
 ### Componentes
 
 - `MessageBell` - Icono en header con badge de no leidos
@@ -359,6 +384,37 @@ messages
 - `MessageBubble` - Burbuja con check de lectura
 - `MessageInput` - Textarea auto-resize
 - `SendMessageButton` - Boton en perfil de instructor
+
+---
+
+## SISTEMA DE COMENTARIOS EN LECCIONES
+
+### Arquitectura
+
+```
+lesson_comments
+├── lesson_id, user_id
+├── content (max 2000 chars)
+├── is_hidden (moderacion)
+├── is_answer (respuesta util)
+└── RLS: usuarios ven no-ocultos, admin ve todo
+```
+
+### Roles y Permisos
+
+| Accion | Autor | Instructor | Mentor | Admin |
+|--------|-------|------------|--------|-------|
+| Crear comentario | Si | Si | Si | Si |
+| Editar propio | Si | Si | Si | Si |
+| Marcar respuesta | - | Si | Si | Si |
+| Ocultar comentario | - | - | - | Si |
+
+### Componentes
+
+- `LessonComments` - Componente principal integrado en LessonPlayer
+- Badges de rol: Instructor (cyan), Mentor (purple), Admin (red), Consejo (amber)
+- Badge "Respuesta util" (green) para comentarios destacados
+- Tiempo relativo: "hace 5 min", "hace 2h", "hace 3d"
 
 ---
 
@@ -467,7 +523,7 @@ className="bg-gradient-to-r from-brand-light to-brand"
 
 ---
 
-## ESTADO ACTUAL (05/02/2026)
+## ESTADO ACTUAL (06/02/2026)
 
 ```
 Sistema Core                 COMPLETADO
@@ -506,6 +562,15 @@ Sistema Mensajeria          COMPLETADO
 ├── Chat en tiempo real (polling)
 └── Integracion con perfiles
 
+Sistema Comentarios (Lecciones) COMPLETADO
+├── Tabla lesson_comments con RLS
+├── APIs GET/POST/PATCH con rate limiting
+├── Componente LessonComments
+├── Badges de rol (Instructor, Mentor, Admin, Consejo)
+├── Feature "Respuesta util"
+├── Moderacion: admin puede ocultar
+└── Notificacion al instructor
+
 Sistema de Acceso (Entitlements) COMPLETADO
 ├── Tabla entitlements con RLS
 ├── Tipos: course_access, full_platform, learning_path_access
@@ -523,6 +588,6 @@ Panel Admin                 COMPLETADO
 
 ---
 
-**Ultima actualizacion:** 05/02/2026
+**Ultima actualizacion:** 06/02/2026
 **Proyecto:** Nodo360 Plataforma Educativa
-**Version:** 2.4
+**Version:** 2.5
