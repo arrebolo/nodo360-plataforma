@@ -27,7 +27,8 @@
 | Funciones DB | 27+ |
 | Tablas Core | 38+ |
 | Componentes | 61+ |
-| APIs | 78 (Admin: 29) |
+| APIs | 79 (Admin: 29) |
+| Modulos lib/ | 15+ |
 
 ---
 
@@ -45,6 +46,16 @@
   - Feature "Respuesta util" para marcar comentarios destacados
   - Notificacion in-app `lesson_comment_new` al instructor cuando hay nuevo comentario
   - Types: `LessonComment`, `LessonCommentWithUser` en database.ts
+- **Integracion Discord Webhooks**:
+  - `lib/discord/webhook.ts`: funciones sendDiscordNotification, notifyNewCourse, notifyNewBlogPost
+  - `types/discord.ts`: tipos DiscordEmbed, DiscordWebhookPayload, NewCourseNotification
+  - API interna `/api/internal/discord-notify` protegida con INTERNAL_API_SECRET
+  - Notificacion automatica a Discord al publicar curso (mentor 2a aprobacion o admin override)
+  - Embed rico: titulo, instructor, nivel, descripcion, thumbnail, link al curso
+  - Variables de entorno: DISCORD_WEBHOOK_ANNOUNCEMENTS, INTERNAL_API_SECRET
+- **Mejoras UI**:
+  - Empty state en pagina de votaciones de mentores (glassmorphism dark)
+  - Pagina publica `/mentores/requisitos` con requisitos detallados para ser mentor
 
 ### 05/02/2026
 - **Sistema de Revision por Mentores - Fase 24**:
@@ -118,6 +129,7 @@
 - **Base de Datos**: Supabase (PostgreSQL)
 - **Autenticacion**: Supabase Auth
 - **Deploy**: Vercel
+- **Notificaciones**: Discord Webhooks (anuncios comunidad)
 
 ### Arquitectura
 ```
@@ -376,6 +388,12 @@ messages
 | `/api/lessons/[lessonId]/comments` | POST | Crear comentario (notifica al instructor) |
 | `/api/comments/[commentId]` | PATCH | Editar (autor), marcar respuesta (instructor/mentor/admin), ocultar (admin) |
 
+### Endpoints API - Discord (Interno)
+
+| Endpoint | Metodo | Proposito |
+|----------|--------|-----------|
+| `/api/internal/discord-notify` | POST | Enviar notificacion a Discord (protegido con secret) |
+
 ### Componentes
 
 - `MessageBell` - Icono en header con badge de no leidos
@@ -462,6 +480,8 @@ lesson_comments
 │   ├── supabase/
 │   ├── db/
 │   ├── gamification/
+│   ├── discord/           # Webhooks Discord
+│   ├── comments/          # Sistema comentarios
 │   └── roles/
 ├── types/
 │   ├── database.ts
@@ -469,6 +489,80 @@ lesson_comments
 └── supabase/
     └── migrations/         # 11 migraciones
 ```
+
+---
+
+## INTEGRACION DISCORD
+
+### Webhooks Configurados
+
+| Variable | Canal | Uso |
+|----------|-------|-----|
+| `DISCORD_WEBHOOK_ANNOUNCEMENTS` | #anuncios | Nuevos cursos publicados |
+
+### Funciones Disponibles
+
+| Funcion | Descripcion |
+|---------|-------------|
+| `sendDiscordNotification(url, embed)` | Envia embed al webhook |
+| `notifyNewCourse(course)` | Notifica nuevo curso publicado |
+| `notifyNewBlogPost(post)` | Notifica nuevo post (futuro) |
+
+### Formato del Embed
+
+```
+Titulo: 🎓 Nuevo curso disponible
+Descripcion: **{titulo del curso}**
+Color: #ff6b35 (brand)
+Fields:
+  - 👨‍🏫 Instructor: {nombre}
+  - 📊 Nivel: {nivel}
+  - 📝 Descripcion: {descripcion truncada}
+Footer: Nodo360 - Educacion Bitcoin
+Thumbnail: {imagen del curso}
+URL: https://nodo360.com/cursos/{slug}
+```
+
+### Flujo de Notificacion
+
+```
+Curso pendiente
+    │
+    ▼
+Mentor aprueba (1/2)
+    │
+    ▼
+Mentor aprueba (2/2) ──┬── O ── Admin aprueba directamente
+    │                  │
+    ▼                  ▼
+Curso publicado (trigger SQL)
+    │
+    ▼
+notifyNewCourse() → Discord webhook
+    │
+    ▼
+Mensaje en #anuncios
+```
+
+---
+
+## VARIABLES DE ENTORNO
+
+### Requeridas
+
+| Variable | Descripcion |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anonima Supabase |
+| `NEXT_PUBLIC_SITE_URL` | URL del sitio (localhost o produccion) |
+
+### Opcionales
+
+| Variable | Descripcion |
+|----------|-------------|
+| `DISCORD_WEBHOOK_ANNOUNCEMENTS` | Webhook para canal #anuncios |
+| `INTERNAL_API_SECRET` | Secret para APIs internas |
+| `RESEND_API_KEY` | API key para emails |
 
 ---
 
@@ -571,6 +665,13 @@ Sistema Comentarios (Lecciones) COMPLETADO
 ├── Moderacion: admin puede ocultar
 └── Notificacion al instructor
 
+Integracion Discord           COMPLETADO
+├── Webhook para canal #anuncios
+├── Notificacion automatica de nuevos cursos
+├── Embeds ricos con formato brand
+├── API interna protegida
+└── Preparado para notificaciones de blog
+
 Sistema de Acceso (Entitlements) COMPLETADO
 ├── Tabla entitlements con RLS
 ├── Tipos: course_access, full_platform, learning_path_access
@@ -590,4 +691,4 @@ Panel Admin                 COMPLETADO
 
 **Ultima actualizacion:** 06/02/2026
 **Proyecto:** Nodo360 Plataforma Educativa
-**Version:** 2.5
+**Version:** 2.6
