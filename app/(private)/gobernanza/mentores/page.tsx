@@ -2,11 +2,9 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import PageHeader from '@/components/ui/PageHeader'
-import { Card } from '@/components/ui/Card'
 import {
   ArrowLeft,
   Users,
-  Clock,
   AlertCircle,
 } from 'lucide-react'
 import { MentorVoteCard } from './MentorVoteCard'
@@ -105,13 +103,13 @@ export default async function GobernanzaMentoresPage() {
 
         {/* Aplicaciones en votación */}
         {!applications || applications.length === 0 ? (
-          <Card className="text-center py-12">
-            <Clock className="w-12 h-12 mx-auto text-white/20 mb-3" />
-            <h3 className="text-lg font-semibold text-white mb-2">Sin votaciones pendientes</h3>
-            <p className="text-sm text-white/50">
-              No hay aplicaciones de mentor en proceso de votación actualmente.
+          <div className="rounded-2xl bg-white/5 border border-white/10 p-12 text-center">
+            <Users className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-semibold text-white mb-2">No hay aplicaciones pendientes</h3>
+            <p className="text-sm text-gray-400">
+              Cuando haya nuevas solicitudes de mentores, aparecerán aquí para tu revisión
             </p>
-          </Card>
+          </div>
         ) : (
           <div className="space-y-6">
             {applications.map((app: any) => (
