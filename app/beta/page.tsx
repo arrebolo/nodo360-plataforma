@@ -21,14 +21,14 @@ export default function BetaAccessPage() {
   const [notifySubmitted, setNotifySubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Cerrar sesion
+  // Cerrar sesión
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  // Notificarme cuando mi acceso este listo
+  // Notificarme cuando mi acceso esté listo
   async function handleNotify() {
     setIsSubmitting(true)
 
@@ -46,7 +46,7 @@ export default function BetaAccessPage() {
         setNotifySubmitted(true)
       }
     } catch (error) {
-      console.error('Error al registrar notificacion:', error)
+      console.error('Error al registrar notificación:', error)
     } finally {
       setIsSubmitting(false)
     }
@@ -87,26 +87,26 @@ export default function BetaAccessPage() {
 
           {/* Titulo */}
           <h1 className="text-2xl font-bold text-white text-center mb-2">
-            Tu cuenta esta activa
+            Tu cuenta está activa
           </h1>
 
           <p className="text-gray-300 text-center mb-4">
-            Ya puedes acceder a los cursos gratuitos. El contenido premium se habilitara progresivamente durante la beta.
+            Ya puedes acceder a los cursos gratuitos. El contenido premium se habilitará progresivamente durante la beta.
           </p>
 
           {/* Seccion ¿Por que beta? */}
           <div className="bg-white/5 rounded-xl p-5 mb-6 border border-white/10">
             <h2 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <Users className="w-4 h-4 text-brand" />
-              ¿Por que beta?
+              ¿Por qué beta?
             </h2>
             <p className="text-sm text-gray-400 leading-relaxed mb-4">
-              Nodo360 esta en fase beta porque preferimos crecer de forma responsable, escuchar a los primeros usuarios y asegurar una experiencia solida antes de escalar.
+              Nodo360 está en fase beta porque preferimos crecer de forma responsable, escuchar a los primeros usuarios y asegurar una experiencia sólida antes de escalar.
             </p>
             <div className="flex items-start gap-2 text-sm text-gray-400">
               <Shield className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
               <span>
-                <strong className="text-white">Transparencia total:</strong> no recopilamos datos innecesarios ni compartimos tu informacion.
+                <strong className="text-white">Transparencia total:</strong> no recopilamos datos innecesarios ni compartimos tu información.
               </span>
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function BetaAccessPage() {
                   <span className="font-medium">Registrado</span>
                 </div>
                 <p className="text-gray-400 text-xs">
-                  Te enviaremos un email cuando el acceso premium este listo.
+                  Te enviaremos un email cuando el acceso premium esté listo.
                 </p>
               </div>
             )}
@@ -177,7 +177,7 @@ export default function BetaAccessPage() {
 
           {/* Redes sociales */}
           <div className="text-center mb-6">
-            <p className="text-gray-500 text-sm mb-4">Siguenos para novedades y actualizaciones</p>
+            <p className="text-gray-500 text-sm mb-4">Síguenos para novedades y actualizaciones</p>
             <div className="flex justify-center gap-3">
               <a
                 href="https://twitter.com/nodo360"
@@ -211,19 +211,19 @@ export default function BetaAccessPage() {
 
           {/* Contacto */}
           <p className="text-center text-gray-500 text-sm mb-4">
-            ¿Preguntas? Escribenos a{' '}
+            ¿Preguntas? Escríbenos a{' '}
             <a href="mailto:soporte@nodo360.com" className="text-brand hover:underline">
               soporte@nodo360.com
             </a>
           </p>
 
-          {/* Cerrar sesion */}
+          {/* Cerrar sesión */}
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-white transition text-sm"
           >
             <LogOut className="w-4 h-4" />
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
 
