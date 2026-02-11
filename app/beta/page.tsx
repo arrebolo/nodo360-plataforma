@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  Lock,
-  Bell,
   CheckCircle,
+  Bell,
   LogOut,
   Twitter,
   MessageCircle,
-  Send
+  Send,
+  Shield,
+  Users
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -77,36 +78,61 @@ export default function BetaAccessPage() {
             </Link>
           </div>
 
-          {/* Icono */}
+          {/* Icono de éxito */}
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-brand/20 to-brand/5 rounded-full flex items-center justify-center border border-brand/30">
-              <Lock className="w-10 h-10 text-brand" />
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-green-500/5 rounded-full flex items-center justify-center border border-green-500/30">
+              <CheckCircle className="w-10 h-10 text-green-400" />
             </div>
           </div>
 
           {/* Titulo */}
           <h1 className="text-2xl font-bold text-white text-center mb-2">
-            Acceso Beta Privada
+            Tu cuenta esta activa
           </h1>
 
-          <p className="text-gray-400 text-center mb-8">
-            Tu cuenta esta registrada. Estamos activando accesos gradualmente para garantizar la mejor experiencia.
+          <p className="text-gray-300 text-center mb-4">
+            Ya puedes acceder a los cursos gratuitos. El contenido premium se habilitara progresivamente durante la beta.
           </p>
 
-          {/* Cuadro principal - Notificarme */}
-          <div className="bg-white/5 rounded-xl p-6 mb-6 border border-white/10">
+          {/* Seccion ¿Por que beta? */}
+          <div className="bg-white/5 rounded-xl p-5 mb-6 border border-white/10">
+            <h2 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4 text-brand" />
+              ¿Por que beta?
+            </h2>
+            <p className="text-sm text-gray-400 leading-relaxed mb-4">
+              Nodo360 esta en fase beta porque preferimos crecer de forma responsable, escuchar a los primeros usuarios y asegurar una experiencia solida antes de escalar.
+            </p>
+            <div className="flex items-start gap-2 text-sm text-gray-400">
+              <Shield className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-white">Transparencia total:</strong> no recopilamos datos innecesarios ni compartimos tu informacion.
+              </span>
+            </div>
+          </div>
+
+          {/* Acceso a cursos gratuitos */}
+          <Link
+            href="/cursos"
+            className="block w-full py-4 px-6 bg-gradient-to-r from-brand-light to-brand text-white rounded-xl hover:shadow-lg hover:shadow-brand/30 transition font-semibold text-center mb-4"
+          >
+            Explorar cursos gratuitos
+          </Link>
+
+          {/* Cuadro secundario - Notificarme para premium */}
+          <div className="bg-white/5 rounded-xl p-5 mb-6 border border-white/10">
             {!notifySubmitted ? (
               <>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-brand/20 to-brand/5 rounded-xl flex items-center justify-center border border-brand/30">
-                    <Bell className="w-6 h-6 text-brand" />
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-brand/20 to-brand/5 rounded-lg flex items-center justify-center border border-brand/30">
+                    <Bell className="w-5 h-5 text-brand" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-white">
-                      ¿Quieres que te avisemos?
+                    <h2 className="text-sm font-semibold text-white">
+                      Contenido premium
                     </h2>
-                    <p className="text-sm text-gray-400">
-                      Te enviaremos un email cuando tu acceso este listo
+                    <p className="text-xs text-gray-400">
+                      Te avisamos cuando se habilite el acceso completo
                     </p>
                   </div>
                 </div>
@@ -114,31 +140,29 @@ export default function BetaAccessPage() {
                 <button
                   onClick={handleNotify}
                   disabled={isSubmitting}
-                  className="w-full py-3 px-4 bg-brand text-white rounded-xl hover:bg-brand-dark transition disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-white/10 text-white rounded-lg hover:bg-white/15 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Registrando...
                     </>
                   ) : (
                     <>
-                      <Bell className="w-5 h-5" />
-                      Notificarme cuando mi acceso este listo
+                      <Bell className="w-4 h-4" />
+                      Notificarme
                     </>
                   )}
                 </button>
               </>
             ) : (
-              <div className="text-center py-4">
-                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-400" />
+              <div className="text-center py-2">
+                <div className="flex items-center justify-center gap-2 text-green-400 mb-1">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="font-medium">Registrado</span>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  ¡Registrado correctamente!
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  Te enviaremos un email a tu correo registrado cuando tu acceso este habilitado.
+                <p className="text-gray-400 text-xs">
+                  Te enviaremos un email cuando el acceso premium este listo.
                 </p>
               </div>
             )}

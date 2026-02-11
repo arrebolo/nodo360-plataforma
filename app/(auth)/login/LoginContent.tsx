@@ -26,6 +26,7 @@ export default function LoginContent() {
   const [loadingOAuth, setLoadingOAuth] = useState<OAuthProvider | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
 
   // Leer parámetros de URL
   const redirectTo = searchParams.get('redirect')
@@ -104,13 +105,34 @@ export default function LoginContent() {
     }
   }
 
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return 'La contraseña debe tener al menos 8 caracteres'
+    }
+    if (password.length > 72) {
+      return 'La contraseña no puede superar los 72 caracteres'
+    }
+    return null
+  }
+
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsRegistering(true)
     setError(null)
+    setPasswordError(null)
 
     try {
       const formData = new FormData(e.currentTarget)
+      const password = formData.get('password') as string
+
+      // Validar contraseña antes de enviar
+      const passwordValidationError = validatePassword(password)
+      if (passwordValidationError) {
+        setPasswordError(passwordValidationError)
+        setIsRegistering(false)
+        return
+      }
+
       const result = await signUp(formData)
 
       if (result.success) {
@@ -473,9 +495,25 @@ export default function LoginContent() {
                     name="password"
                     type="password"
                     required
-                    placeholder="Mínimo 6 caracteres"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition"
+                    minLength={8}
+                    maxLength={72}
+                    placeholder="Entre 8 y 72 caracteres"
+                    onChange={() => setPasswordError(null)}
+                    className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition ${
+                      passwordError ? 'border-red-500/50' : 'border-white/20'
+                    }`}
                   />
+                  {/* Reglas de contraseña siempre visibles */}
+                  <p className="mt-1.5 text-xs text-white/50">
+                    La contraseña debe tener entre 8 y 72 caracteres
+                  </p>
+                  {/* Error específico de contraseña */}
+                  {passwordError && (
+                    <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {passwordError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Aceptación de términos */}
