@@ -32,10 +32,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Handle the courses join result - it's a single object, not an array
   const courseData = lesson.courses as unknown as { title: string; slug: string } | null
   const courseTitle = courseData?.title || slug
+  const courseSlug = courseData?.slug || slug
 
   return {
     title: `${lesson.title} | ${courseTitle} | Nodo360`,
     description: `Leccion: ${lesson.title}`,
+    alternates: {
+      canonical: `/cursos/${courseSlug}/${lessonSlug}`,
+    },
   }
 }
 

@@ -56,6 +56,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // SEO: Sin trailing slash para URLs canónicas consistentes
+  trailingSlash: false,
+
   // Optimización de imágenes
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -114,6 +117,16 @@ const nextConfig: NextConfig = {
   // Redirects 301 para URLs antiguas de WordPress (SEO)
   async redirects() {
     return [
+      // ========================================
+      // Canonical: www → sin www (dominio oficial: nodo360.com)
+      // ========================================
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.nodo360.com' }],
+        destination: 'https://nodo360.com/:path*',
+        permanent: true,
+      },
+
       // ========================================
       // Páginas principales antiguas de WordPress
       // ========================================

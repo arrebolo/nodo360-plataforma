@@ -6,7 +6,7 @@ import { GoogleAnalytics } from "@/components/analytics";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com"),
+  metadataBase: new URL("https://nodo360.com"),
   title: {
     default: "Nodo360 - Formación profesional en Bitcoin, Blockchain y Web3",
     template: "%s | Nodo360",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com",
+    canonical: "https://nodo360.com",
   },
 };
 

@@ -20,6 +20,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: path ? `${path.name} | Rutas | Nodo360` : 'Ruta no encontrada',
     description: path?.short_description || 'Ruta de aprendizaje en Nodo360',
+    alternates: {
+      canonical: `/rutas/${slug}`,
+    },
   }
 }
 
