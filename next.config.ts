@@ -169,8 +169,7 @@ const nextConfig: NextConfig = {
       { source: '/categoria/:slug/', destination: '/blog', permanent: true },
       { source: '/index.php/category/:slug', destination: '/blog', permanent: true },
       { source: '/index.php/category/:slug/', destination: '/blog', permanent: true },
-      { source: '/tag/:slug', destination: '/blog', permanent: true },
-      { source: '/tag/:slug/', destination: '/blog', permanent: true },
+      // /tag/* ahora devuelve 404 via app/tag/page.tsx para purgar de Google
       { source: '/etiqueta/:slug', destination: '/blog', permanent: true },
       { source: '/etiqueta/:slug/', destination: '/blog', permanent: true },
 
