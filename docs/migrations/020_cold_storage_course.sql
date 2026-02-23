@@ -19,17 +19,13 @@ BEGIN
   -- 1. LEARNING PATH: Seguridad Avanzada
   -- =====================================================
   INSERT INTO public.learning_paths (
-    slug, title, description, icon, difficulty, estimated_hours, order_index, color_from, color_to, is_active
+    slug, name, short_description, emoji, position, is_active
   ) VALUES (
     'seguridad-avanzada',
     'Seguridad Avanzada',
     'Aprende a proteger tus fondos con técnicas avanzadas de custodia y seguridad.',
     '🔐',
-    'intermediate',
-    20,
     4,
-    'red-500',
-    'orange-500',
     true
   )
   ON CONFLICT (slug) DO NOTHING
@@ -450,8 +446,8 @@ BEGIN
   -- =====================================================
   -- 6. VINCULAR CURSO A RUTA DE APRENDIZAJE
   -- =====================================================
-  INSERT INTO public.path_courses (path_id, course_id, order_index, is_required)
+  INSERT INTO public.learning_path_courses (learning_path_id, course_id, position, is_required)
   VALUES (v_path_id, v_course_id, 1, true)
-  ON CONFLICT (path_id, course_id) DO NOTHING;
+  ON CONFLICT (learning_path_id, course_id) DO NOTHING;
 
 END $$;
