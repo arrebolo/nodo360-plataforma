@@ -35,6 +35,7 @@
 - [ ] Arreglar colisión de `position` entre rutas Seguridad Avanzada y Trading Básico
 - [ ] Definir secuencia (`position`) dentro de las rutas legacy (hoy todas en 0)
 - [ ] Documentar `is_admin` en una migración del repo (existe en la DB con parámetro `check_user_id`, pero no está en ninguna migración — una reconstrucción desde cero no la crearía)
+- [ ] Documentar el esquema real de `learning_paths` (columnas: id, slug, name, emoji, short_description…) — el error `lp.title` en lugar de `lp.name` ha aparecido ya tres veces (migraciones 008, 020 y rama `feature/instructores-mentores`)
 
 ## Tier 3 — Construcción nueva (por orden)
 
