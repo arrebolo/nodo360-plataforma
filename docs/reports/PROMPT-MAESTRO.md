@@ -599,6 +599,61 @@ className="bg-gradient-to-r from-brand-light to-brand"
 
 ---
 
+## CONVENCIONES DE IDIOMA
+
+Todo el contenido de cara al usuario (lecciones, quizzes, paginas, correos,
+mensajes de interfaz) se escribe en **espanol neutro**, valido tanto para Espana
+como para Latinoamerica.
+
+### Reglas
+
+| Regla | Detalle |
+|-------|---------|
+| Espanol neutro | Ni peninsular ni de una region concreta de America |
+| Persona | Escribir en **impersonal** o en **segunda persona del singular**. Asi no hay que elegir entre "vosotros" y "ustedes" |
+| Si hace falta plural | Usar **"ustedes"**, nunca "vosotros" |
+| Sin voseo | Nada de "tenes", "podes", "queres", "sos", "sumate" |
+| Sin localismos | Ni de Espana ni de America |
+
+### Pares marcados a evitar
+
+| No usar | Usar |
+|---------|------|
+| ordenador / computadora | **equipo**, **dispositivo**, **maquina** |
+| movil / celular | **telefono** |
+| fichero | **archivo** |
+| coger | **tomar**, **usar**, **elegir** |
+| aca / alla | **aqui** / **alli** |
+| merece la pena | **vale la pena** |
+| pegas | **inconvenientes**, **limitaciones** |
+| disgustos | **problemas** |
+| vale (asentimiento) | **de acuerdo** |
+| plata (dinero) | **dinero** |
+| financiamiento / financiacion | **fondos** |
+
+### Anglicismos
+
+Preferir el equivalente neutro cuando existe y es natural:
+
+- `feedback` -> **retroalimentacion** (o "comentarios", segun contexto)
+- `performance` -> **rendimiento**
+- `bug` -> **error**
+- `testing` -> **pruebas**
+
+Los terminos tecnicos establecidos NO se traducen: hash, blockchain, nodo,
+timestamp, UTXO, soft fork, full node, SSD, RPC, Tor, seed phrase.
+
+### Verificacion rapida
+
+Antes de publicar contenido, buscar estos marcadores:
+
+```
+ordenador|computadora|movil|celular|coger|fichero|merece la pena|pegas|
+vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
+```
+
+---
+
 ## REGLAS CRITICAS
 
 ### NUNCA HACER
