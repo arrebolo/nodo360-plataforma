@@ -42,6 +42,8 @@
 - [ ] Documentar el esquema real de `learning_paths` (columnas: id, slug, name, emoji, short_description…) — el error `lp.title` en lugar de `lp.name` ha aparecido ya tres veces (migraciones 008, 020 y rama `feature/instructores-mentores`)
 - [ ] Integrar `lib/quiz/validateQuizSubmission.ts` en `/api/quiz/submit` — hoy el endpoint corrige las respuestas pero no valida que los `question_id` pertenezcan al módulo del curso
 - [ ] Los grants por columna de `quiz_questions` no cubren columnas futuras: al añadir una columna nueva hay que concederla explícitamente a `authenticated` o las consultas con lista explícita empezarán a fallar
+- [ ] La página de lección (`app/cursos/[slug]/[lessonSlug]/page.tsx`) filtra solo por slug, sin comprobar `course.status`: el contenido de cursos en draft es accesible por URL directa a cualquier usuario autenticado. El quiz final sí exige `status = 'published'` — incoherencia a resolver
+- [ ] Registrar qué contenido contiene datos que caducan (tamaños de blockchain, versiones de software, requisitos de hardware, tiempos de sincronización) y cuándo se revisó por última vez. Debe cubrir **`lessons` y también `quiz_questions`**: el quiz de Nodos Bitcoin ya afirma «aproximadamente 1 TB recomendado» de almacenamiento y «entre 2 y 7 días» de sincronización inicial, datos que envejecen igual que los del cuerpo de la lección. Los comentarios HTML `<!-- REVISAR -->` no sirven como registro: no sobreviven a una edición desde TipTap, y en `quiz_questions` no hay ningún sitio donde ponerlos
 
 ## Tier 3 — Construcción nueva (por orden)
 
