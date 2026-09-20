@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Filtrar solo lecciones de cursos publicados
     const publishedLessons = lessons?.filter(
-      (lesson: any) => lesson.module?.course?.status === 'published'
+      (lesson: any) => lesson?.module?.course?.status === 'published'
     ) || []
 
     // Obtener rutas de aprendizaje
@@ -180,12 +180,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })) || []
 
     // URLs de lecciones
-    const lessonPages: MetadataRoute.Sitemap = publishedLessons.map((lesson: any) => ({
-      url: `${baseUrl}/cursos/${lesson.module.course.slug}/${lesson.slug}`,
-      lastModified: new Date(lesson.updated_at),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    }))
+    // Descarta las que tengan datos incompletos (modulo huerfano, curso borrado,
+    // sin updated_at): sin este filtro un solo registro roto revienta todo el sitemap.
+    const lessonPages: MetadataRoute.Sitemap = publishedLessons
+      .filter(
+        (lesson: any) =>
+          lesson?.slug && lesson?.module?.course?.slug && lesson?.updated_at
+      )
+      .map((lesson: any) => ({
+        url: `${baseUrl}/cursos/${lesson.module.course.slug}/${lesson.slug}`,
+        lastModified: new Date(lesson.updated_at),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }))
 
     return [...staticPages, ...glossaryPages, ...blogPages, ...pathPages, ...coursePages, ...lessonPages]
 
