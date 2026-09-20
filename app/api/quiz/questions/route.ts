@@ -63,7 +63,9 @@ export async function GET(request: NextRequest) {
     // Obtener preguntas
     const { data: questions, error: questionsError } = await admin
       .from('quiz_questions')
-      .select('id, module_id, question, explanation, options, correct_answer, order_index, difficulty, points')
+      // correct_answer y explanation NO se envian al cliente: la correccion es
+      // server-side en /api/quiz/submit, que devuelve el resultado.
+      .select('id, module_id, question, options, order_index, difficulty, points')
       .in('module_id', moduleIds)
       .order('order_index', { ascending: true })
 

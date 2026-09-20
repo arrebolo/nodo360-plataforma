@@ -9,13 +9,16 @@ import { broadcastCourseCompleted } from '@/lib/notifications'
 import { sendCourseCompletedEmail } from '@/lib/email/course-completed'
 import { sendBadgeEarnedEmail } from '@/lib/email/badge-earned'
 
+// El cliente solo envia el curso y sus respuestas.
+// score, passed y user_id se determinan en el servidor: aceptarlos del cuerpo
+// permitia emitir certificados sin responder el quiz.
 interface SubmitQuizRequest {
   course_id: string
-  user_id: string
-  score: number
-  passed: boolean
   answers: Record<string, number>
 }
+
+// Umbral de aprobado. Vive en el servidor, no en el componente.
+const PASS_THRESHOLD = 70
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,26 +26,28 @@ export async function POST(request: NextRequest) {
     const rateLimitResponse = await checkRateLimit(request, 'api')
     if (rateLimitResponse) return rateLimitResponse
     const body: SubmitQuizRequest = await request.json()
-    const { course_id, user_id, score, passed, answers } = body
+    const { course_id, answers } = body
 
     // Validar campos requeridos
-    if (!course_id || !user_id || typeof score !== 'number') {
+    if (!course_id || typeof answers !== 'object' || answers === null) {
       return NextResponse.json(
-        { error: 'Campos requeridos: course_id, user_id, score' },
+        { error: 'Campos requeridos: course_id, answers' },
         { status: 400 }
       )
     }
 
-    // Verificar autenticacion
+    // Verificar autenticacion. El usuario sale de la sesion, nunca del cuerpo.
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user || user.id !== user_id) {
+    if (!user) {
       return NextResponse.json(
         { error: 'No autorizado' },
         { status: 401 }
       )
     }
+
+    const user_id = user.id
 
     const admin = createAdminClient()
 
@@ -71,32 +76,60 @@ export async function POST(request: NextRequest) {
 
     const moduleIds = (allModules || []).map(m => m.id)
 
-    const { data: questions } = await admin
+    const { data: questions, error: questionsError } = await admin
       .from('quiz_questions')
-      .select('id, correct_answer')
+      .select('id, correct_answer, points')
       .in('module_id', moduleIds)
 
-    // Calcular respuestas correctas
-    let correctAnswers = 0
-    const totalQuestions = questions?.length || Object.keys(answers).length
-
-    if (questions && questions.length > 0) {
-      questions.forEach((q) => {
-        const userAnswer = answers[q.id]
-        if (userAnswer !== undefined && userAnswer === q.correct_answer) {
-          correctAnswers++
-        }
-      })
-    } else {
-      // Si no hay preguntas en BD, usar el score enviado
-      correctAnswers = Math.round((score / 100) * totalQuestions)
+    if (questionsError) {
+      console.error('[quiz/submit] Error obteniendo preguntas:', questionsError)
+      return NextResponse.json(
+        { error: 'Error al obtener preguntas del quiz' },
+        { status: 500 }
+      )
     }
+
+    // Sin preguntas en BD no se puede corregir: es un error de configuracion,
+    // no un aprobado. Antes se confiaba en el score enviado por el cliente.
+    if (!questions || questions.length === 0) {
+      console.error('[quiz/submit] Curso sin preguntas de quiz:', course_id)
+      return NextResponse.json(
+        { error: 'El curso no tiene preguntas de quiz configuradas' },
+        { status: 409 }
+      )
+    }
+
+    // Correccion server-side: correct_answer no sale nunca de esta funcion.
+    const correctAnswersMap = new Map(
+      questions.map(q => [q.id, { correct: q.correct_answer, points: q.points || 1 }])
+    )
+
+    let correctAnswers = 0
+    let earnedPoints = 0
+    let totalPoints = 0
+
+    for (const q of questions) {
+      const entry = correctAnswersMap.get(q.id)!
+      totalPoints += entry.points
+
+      const userAnswer = answers[q.id]
+      if (userAnswer !== undefined && userAnswer === entry.correct) {
+        correctAnswers++
+        earnedPoints += entry.points
+      }
+    }
+
+    const totalQuestions = questions.length
+    const score = totalPoints > 0
+      ? Math.round((earnedPoints / totalPoints) * 100)
+      : 0
+    const passed = score >= PASS_THRESHOLD
 
     // Formatear answers para JSONB
     const formattedAnswers = Object.entries(answers).map(([questionId, selectedAnswer]) => ({
       question_id: questionId,
       selected_answer: selectedAnswer,
-      correct: questions?.find(q => q.id === questionId)?.correct_answer === selectedAnswer
+      correct: correctAnswersMap.get(questionId)?.correct === selectedAnswer
     }))
 
     // Insertar intento de quiz
@@ -105,8 +138,8 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id,
         module_id: firstModule.id, // Usamos primer modulo como referencia
-        score: Math.round(score),
-        total_questions: totalQuestions > 0 ? totalQuestions : 1,
+        score,
+        total_questions: totalQuestions,
         correct_answers: correctAnswers,
         passed,
         answers: formattedAnswers,
@@ -324,6 +357,12 @@ export async function POST(request: NextRequest) {
       passed,
       correct_answers: correctAnswers,
       total_questions: totalQuestions,
+      // Desglose por pregunta: si se acerto o no. NO incluye la respuesta
+      // correcta, solo el veredicto, para que el cliente pinte el resumen.
+      results: formattedAnswers.map(a => ({
+        question_id: a.question_id,
+        correct: a.correct,
+      })),
       xp_awarded: xpAwarded,
       certificate: certificate,
       awarded_badges: awardedBadges,
