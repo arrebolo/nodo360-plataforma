@@ -59,9 +59,12 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
   let questions: QuizQuestion[] = []
 
   if (moduleIds.length > 0) {
+    // Lista explicita de columnas: correct_answer y explanation se quedan en el
+    // servidor. Un select('*') las serializaria en el payload RSC, donde son
+    // legibles desde el navegador.
     const { data: questionData } = await supabase
       .from('quiz_questions')
-      .select('*')
+      .select('id, module_id, question, options, order_index, difficulty, points')
       .in('module_id', moduleIds)
       .order('order_index', { ascending: true })
 
@@ -109,7 +112,6 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
           courseId={course.id}
           courseTitle={course.title}
           questions={questions}
-          userId={user.id}
           redirectTo="/dashboard/certificados"
           fallbackUrl={`/cursos/${course.slug}`}
         />

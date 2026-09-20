@@ -10,7 +10,6 @@ interface CourseFinalQuizProps {
   courseId: string
   courseTitle: string
   questions: QuizQuestion[]
-  userId: string
   redirectTo: string
   fallbackUrl: string
 }
@@ -23,13 +22,15 @@ interface QuizResult {
   passed: boolean
   submitted: boolean
   certificate?: { id: string; certificate_number: string } | null
+  // Veredicto por pregunta que devuelve el servidor. No contiene la respuesta
+  // correcta, solo si se acerto.
+  results?: Record<string, boolean>
 }
 
 export function CourseFinalQuiz({
   courseId,
   courseTitle,
   questions,
-  userId,
   redirectTo,
   fallbackUrl,
 }: CourseFinalQuizProps) {
@@ -40,36 +41,14 @@ export function CourseFinalQuiz({
   const [showResults, setShowResults] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const hasSubmittedRef = useRef(false)
 
   const currentQuestion = questions[currentIndex]
   const totalQuestions = questions.length
 
-  // Calcular score
-  const calculateScore = () => {
-    let correct = 0
-    let totalPoints = 0
-    let earnedPoints = 0
-
-    questions.forEach((q) => {
-      totalPoints += q.points || 1
-      if (answers[q.id] === q.correct_answer) {
-        correct++
-        earnedPoints += q.points || 1
-      }
-    })
-
-    const percentage = Math.round((correct / totalQuestions) * 100)
-
-    return {
-      correct,
-      total: totalQuestions,
-      percentage,
-      earnedPoints,
-      totalPoints,
-      passed: percentage >= 70,
-    }
-  }
+  // La correccion la hace el servidor en /api/quiz/submit. El cliente no
+  // conoce las respuestas correctas ni decide si se aprueba.
 
   // Auto-submit cuando se muestran resultados
   useEffect(() => {
@@ -81,18 +60,7 @@ export function CourseFinalQuiz({
 
   const submitQuiz = async () => {
     setIsSubmitting(true)
-    const score = calculateScore()
-
-    // Guardar resultado local inmediatamente
-    setQuizResult({
-      score: score.percentage,
-      correct: score.correct,
-      total: score.total,
-      percentage: score.percentage,
-      passed: score.passed,
-      submitted: false,
-      certificate: null,
-    })
+    setSubmitError(null)
 
     try {
       const response = await fetch('/api/quiz/submit', {
@@ -100,9 +68,6 @@ export function CourseFinalQuiz({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           course_id: courseId,
-          user_id: userId,
-          score: score.percentage,
-          passed: score.passed,
           answers: answers,
         }),
       })
@@ -111,17 +76,25 @@ export function CourseFinalQuiz({
 
       if (!response.ok) {
         console.error('Error al guardar resultado:', data.error)
+        setSubmitError(data.error || 'No se pudo corregir el quiz. Intentalo de nuevo.')
+        return
       }
 
-      // Actualizar resultado con datos del servidor
+      // El resultado viene del servidor: score, passed y el desglose.
+      const resultsMap: Record<string, boolean> = {}
+      for (const r of (data.results || [])) {
+        resultsMap[r.question_id] = r.correct
+      }
+
       setQuizResult({
-        score: score.percentage,
-        correct: score.correct,
-        total: score.total,
-        percentage: score.percentage,
-        passed: score.passed,
+        score: data.score,
+        correct: data.correct_answers,
+        total: data.total_questions,
+        percentage: data.score,
+        passed: data.passed,
         submitted: true,
         certificate: data.certificate || null,
+        results: resultsMap,
       })
 
       // Mostrar badges ganados
@@ -130,7 +103,7 @@ export function CourseFinalQuiz({
       }
 
       // Auto-redirect si aprobó (con delay para ver resultado)
-      if (score.passed) {
+      if (data.passed) {
         setTimeout(() => {
           router.push(redirectTo)
         }, 2500) // 2.5 segundos para ver el resultado
@@ -138,8 +111,7 @@ export function CourseFinalQuiz({
 
     } catch (error) {
       console.error('Error submitting quiz:', error)
-      // Marcar como enviado aunque falle
-      setQuizResult(prev => prev ? { ...prev, submitted: true } : null)
+      setSubmitError('No se pudo conectar con el servidor. Intentalo de nuevo.')
     } finally {
       setIsSubmitting(false)
     }
@@ -195,8 +167,16 @@ export function CourseFinalQuiz({
 
   // Mostrar resultados
   if (showResults) {
-    const score = quizResult || calculateScore()
-    const passed = score.passed ?? score.percentage >= 70
+    // Mientras el servidor corrige, quizResult es null: se muestra el estado de
+    // carga. El cliente ya no calcula ningun resultado provisional.
+    const score = quizResult || {
+      correct: 0,
+      total: totalQuestions,
+      percentage: 0,
+      passed: false,
+      results: undefined as Record<string, boolean> | undefined,
+    }
+    const passed = score.passed
 
     return (
       <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
@@ -234,12 +214,15 @@ export function CourseFinalQuiz({
           </h3>
           <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
             {questions.map((q, index) => {
-              const isCorrect = answers[q.id] === q.correct_answer
+              // El veredicto lo da el servidor; el cliente no sabe la respuesta.
+              const isCorrect = score.results?.[q.id]
               return (
                 <div
                   key={q.id}
                   className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
-                    isCorrect
+                    isCorrect === undefined
+                      ? 'bg-white/5 text-white/40 border border-white/10'
+                      : isCorrect
                       ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                       : 'bg-red-500/20 text-red-400 border border-red-500/30'
                   }`}
@@ -250,6 +233,19 @@ export function CourseFinalQuiz({
             })}
           </div>
         </div>
+
+        {/* Error de correccion server-side */}
+        {submitError && !isSubmitting && (
+          <div className="mb-8 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center">
+            <p className="text-red-400 font-medium mb-3">{submitError}</p>
+            <button
+              onClick={() => { hasSubmittedRef.current = true; submitQuiz() }}
+              className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
 
         {/* Mensaje según estado */}
         {isSubmitting ? (
