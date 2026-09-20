@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { MessageSquare, Calendar, Globe, User } from 'lucide-react'
 
 export const metadata = {
-  title: 'Feedback Beta | Admin Nodo360'
+  title: 'Comentarios Beta | Admin Nodo360'
 }
 
 export default async function AdminFeedbackPage() {
@@ -32,7 +32,7 @@ export default async function AdminFeedbackPage() {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
         <MessageSquare className="w-7 h-7 text-[#f7931a]" />
-        Feedback de Beta
+        Comentarios de Beta
       </h1>
 
       {feedbacks && feedbacks.length > 0 ? (
@@ -63,7 +63,7 @@ export default async function AdminFeedbackPage() {
       ) : (
         <div className="text-center py-12 text-gray-400">
           <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No hay feedback todavia</p>
+          <p>No hay comentarios todavia</p>
         </div>
       )}
     </div>

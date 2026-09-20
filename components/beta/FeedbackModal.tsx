@@ -69,7 +69,7 @@ export default function FeedbackModal({ isOpen, onClose, userEmail, userId }: Fe
       <div className="relative w-full max-w-md bg-[#0d1117] border border-white/10 rounded-2xl shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <h2 className="text-lg font-semibold text-white">Enviar Feedback</h2>
+          <h2 className="text-lg font-semibold text-white">Enviar comentarios</h2>
           <button
             onClick={onClose}
             className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/10"
@@ -85,7 +85,7 @@ export default function FeedbackModal({ isOpen, onClose, userEmail, userId }: Fe
               <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-green-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Gracias por tu feedback!</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Gracias por tus comentarios!</h3>
               <p className="text-gray-400 text-sm">Tu opinion nos ayuda a mejorar Nodo360.</p>
             </div>
           ) : (
@@ -135,7 +135,7 @@ export default function FeedbackModal({ isOpen, onClose, userEmail, userId }: Fe
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    Enviar Feedback
+                    Enviar comentarios
                   </>
                 )}
               </button>
@@ -146,7 +146,7 @@ export default function FeedbackModal({ isOpen, onClose, userEmail, userId }: Fe
         {/* Footer */}
         <div className="p-4 border-t border-white/10">
           <p className="text-xs text-gray-500 text-center">
-            Tu feedback es anonimo y nos ayuda a construir una mejor plataforma.
+            Tus comentarios son anonimos y nos ayudan a construir una mejor plataforma.
           </p>
         </div>
       </div>

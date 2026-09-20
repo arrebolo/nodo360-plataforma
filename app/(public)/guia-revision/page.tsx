@@ -80,7 +80,7 @@ const tips = [
   'Revisa la ortografia y gramatica de todo el contenido',
   'Usa ejemplos reales y casos de uso practicos',
   'Añade recursos descargables (PDFs, checklists, etc.)',
-  'Pide feedback a colegas antes de enviar a revision',
+  'Pide comentarios a colegas antes de enviar a revision',
   'Verifica que todos los links y recursos funcionen',
 ]
 
