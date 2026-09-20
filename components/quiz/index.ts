@@ -1,13 +1,15 @@
 // Quiz system components
-export { QuizEditor } from './QuizEditor'
-export { QuestionEditor } from './QuestionEditor'
-export { QuizPlayer } from './QuizPlayer'
-export { QuizResultsDisplay } from './QuizResultsDisplay'
+//
+// Los componentes del esquema antiguo (QuizEditor, QuestionEditor, QuizPlayer,
+// QuizResultsDisplay) se eliminaron: operaban sobre las tablas quizzes,
+// quiz_answers y quiz_options, que no existen en la base de datos.
+// El esquema vigente es quiz_questions + quiz_attempts.
 
-// Re-export from existing components
+export { CourseFinalQuiz } from './CourseFinalQuiz'
+
+// Sin uso actualmente, conservados a la espera de decision:
 export { QuizInterface } from './QuizInterface'
 export { QuizResults } from './QuizResults'
 export { QuizStartCard } from './QuizStartCard'
 export { QuizStartWrapper } from './QuizStartWrapper'
 export { ModuleQuiz } from './ModuleQuiz'
-export { CourseFinalQuiz } from './CourseFinalQuiz'
