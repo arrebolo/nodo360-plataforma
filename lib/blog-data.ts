@@ -72,7 +72,7 @@ export const blogPosts: BlogPost[] = [
 
 Bitcoin es la primera criptomoneda descentralizada del mundo, creada en 2009 por una persona o grupo bajo el seudónimo de **Satoshi Nakamoto**. Representa una revolución en la forma en que entendemos y usamos el dinero.
 
-A diferencia del dinero tradicional controlado por bancos centrales, Bitcoin opera en una red descentralizada de computadoras (nodos) que verifican y registran todas las transacciones en un libro público llamado **blockchain**.
+A diferencia del dinero tradicional controlado por bancos centrales, Bitcoin opera en una red descentralizada de equipos (nodos) que verifican y registran todas las transacciones en un libro público llamado **blockchain**.
 
 ## ¿Por qué se creó Bitcoin?
 
@@ -92,11 +92,11 @@ La blockchain es un registro público e inmutable de todas las transacciones de 
 
 1. **Es público**: Cualquiera puede ver todas las transacciones
 2. **Es inmutable**: Una vez registrada, una transacción no puede modificarse
-3. **Es descentralizado**: No hay un servidor central; miles de computadoras mantienen copias idénticas
+3. **Es descentralizado**: No hay un servidor central; miles de equipos mantienen copias idénticas
 
 ### La Minería
 
-Los mineros son computadoras especializadas que:
+Los mineros son equipos especializados que:
 
 - Verifican que las transacciones sean válidas
 - Agrupan transacciones en bloques
@@ -378,7 +378,7 @@ Comprar Bitcoin en España es un proceso sencillo si sigues los pasos correctos.
 
 Blockchain (cadena de bloques) es una tecnología de registro distribuido que permite almacenar información de forma transparente, segura e inmutable. Piensa en ella como un libro contable digital que:
 
-- Es compartido por miles de computadoras
+- Es compartido por miles de equipos
 - Registra información en bloques encadenados
 - No puede ser alterado una vez escrito
 - No necesita una autoridad central
@@ -414,7 +414,7 @@ Los bloques se conectan mediante sus hashes. Si alguien modifica un bloque antig
 
 ### 3. Red de Nodos
 
-Miles de computadoras (nodos) mantienen copias idénticas de la blockchain:
+Miles de equipos (nodos) mantienen copias idénticas de la blockchain:
 - Verifican nuevas transacciones
 - Rechazan datos inválidos
 - Mantienen la red descentralizada
@@ -660,7 +660,7 @@ Tu seed phrase (12-24 palabras) es la llave maestra de tus fondos:
 - Tener copias en ubicaciones separadas
 
 **Qué NO hacer:**
-- Guardarla en el teléfono o computadora
+- Guardarla en el teléfono o el equipo
 - Tomarle foto
 - Enviarla por email o mensaje
 - Compartirla con nadie
@@ -894,7 +894,7 @@ Bloquear tokens para asegurar la red y ganar recompensas.
 ## Riesgos en DeFi
 
 ### 1. Smart Contract Risk
-- El código puede tener bugs
+- El código puede tener errores
 - Los hacks son comunes
 - Millones se han perdido por exploits
 
@@ -1008,7 +1008,7 @@ La clave es educarte antes de actuar, empezar con poco, y nunca dejar de aprende
 
 Ethereum es una plataforma blockchain descentralizada que permite crear y ejecutar aplicaciones descentralizadas (dApps) y contratos inteligentes (smart contracts). Lanzada en 2015 por Vitalik Buterin y su equipo, Ethereum ha revolucionado el mundo de las criptomonedas al ir más allá de ser simplemente dinero digital.
 
-Mientras Bitcoin fue diseñado principalmente como una reserva de valor y sistema de pagos, Ethereum fue concebido como una "computadora mundial" donde cualquier desarrollador puede crear aplicaciones que funcionan sin intermediarios, censura ni tiempo de inactividad.
+Mientras Bitcoin fue diseñado principalmente como una reserva de valor y sistema de pagos, Ethereum fue concebido como una "world computer" (plataforma de cómputo global) donde cualquier desarrollador puede crear aplicaciones que funcionan sin intermediarios, censura ni tiempo de inactividad.
 
 La criptomoneda nativa de Ethereum se llama **Ether (ETH)** y es la segunda criptomoneda más grande por capitalización de mercado, solo detrás de Bitcoin.
 
@@ -1133,7 +1133,7 @@ Puedes comprar ETH en exchanges centralizados como Binance, Kraken o Coinbase. P
 
 ## Riesgos y consideraciones
 
-El precio de ETH puede variar drásticamente. Los smart contracts pueden tener bugs incluso si están auditados. Hay preocupaciones sobre centralización del staking y competencia de otras blockchains.
+El precio de ETH puede variar drásticamente. Los smart contracts pueden tener errores incluso si están auditados. Hay preocupaciones sobre centralización del staking y competencia de otras blockchains.
 
 ## Conclusión
 
@@ -1232,7 +1232,7 @@ Almacenan las llaves privadas offline, sin conexión a Internet. Son la opción 
 
 1. **Hardware wallets**: Dispositivos físicos especializados (Ledger, Trezor, Coldcard, BitBox)
 2. **Paper wallets**: Llaves impresas en papel (obsoletas)
-3. **Air-gapped devices**: Ordenadores que nunca se conectan a Internet
+3. **Air-gapped devices**: Equipos que nunca se conectan a Internet
 
 ## Custodial vs Non-Custodial
 
@@ -1281,7 +1281,7 @@ La seed phrase (frase semilla) es una lista de 12-24 palabras que permite recupe
 - Verifica que esté bien escrita
 
 **Qué NO hacer:**
-- Guardarla en el móvil o ordenador
+- Guardarla en el teléfono o el equipo
 - Tomarle foto
 - Enviarla por email o chat
 - Compartirla con NADIE
@@ -1365,7 +1365,7 @@ Elegir la wallet correcta es fundamental para tu seguridad cripto. Para cantidad
     content: `
 ## ¿Qué es la Minería de Bitcoin?
 
-La minería de Bitcoin es el proceso mediante el cual se verifican las transacciones y se añaden nuevos bloques a la blockchain de Bitcoin. Los mineros son computadoras especializadas que compiten por resolver un problema matemático complejo, y el ganador recibe bitcoins como recompensa.
+La minería de Bitcoin es el proceso mediante el cual se verifican las transacciones y se añaden nuevos bloques a la blockchain de Bitcoin. Los mineros son equipos especializados que compiten por resolver un problema matemático complejo, y el ganador recibe bitcoins como recompensa.
 
 Este proceso cumple dos funciones fundamentales: seguridad (hace extremadamente costoso atacar la red) y emisión (es la única forma de crear nuevos bitcoins). La minería es el corazón del sistema de consenso de Bitcoin llamado **Proof of Work**.
 
@@ -1838,7 +1838,7 @@ Aunque ganes recompensas, si el precio de la criptomoneda cae significativamente
 
 ### 4. Riesgo de smart contract
 
-Especialmente en staking líquido o DeFi, hay riesgo de bugs o exploits en los contratos.
+Especialmente en staking líquido o DeFi, hay riesgo de errores o exploits en los contratos.
 
 ### 5. Riesgo de plataforma
 
@@ -2122,7 +2122,7 @@ Los exploits aprovechan vulnerabilidades en software desactualizado.
 **Navegación:**
 - Considera un navegador dedicado para crypto (Brave)
 - Usa extensiones de seguridad (uBlock Origin)
-- Evita hacer operaciones crypto en ordenadores públicos
+- Evita hacer operaciones crypto en equipos públicos
 
 ## Estafas Comunes a Evitar
 
@@ -2383,7 +2383,7 @@ Bitcoin nació en 2009 como respuesta a la crisis financiera. En su corta vida:
 ### Bitcoin
 
 - Mercado 24/7, 365 días
-- Compra desde el móvil en minutos
+- Compra desde el teléfono en minutos
 - Alta liquidez en exchanges principales
 - Almacenamiento prácticamente gratis (self-custody)
 

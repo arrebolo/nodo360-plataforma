@@ -31,7 +31,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-bitcoin',
     question: '¿Que es Bitcoin y como funciona?',
-    answer: 'Bitcoin es la primera criptomoneda descentralizada del mundo, creada en 2009 por Satoshi Nakamoto. Funciona como dinero digital que puede enviarse directamente entre personas sin necesidad de bancos u otros intermediarios. Las transacciones se verifican mediante una red global de computadoras (nodos) y se registran en un libro publico llamado blockchain. Bitcoin utiliza criptografia avanzada para garantizar la seguridad y tiene un suministro limitado de 21 millones de unidades, lo que lo convierte en un activo escaso similar al oro digital.',
+    answer: 'Bitcoin es la primera criptomoneda descentralizada del mundo, creada en 2009 por Satoshi Nakamoto. Funciona como dinero digital que puede enviarse directamente entre personas sin necesidad de bancos u otros intermediarios. Las transacciones se verifican mediante una red global de equipos (nodos) y se registran en un libro publico llamado blockchain. Bitcoin utiliza criptografia avanzada para garantizar la seguridad y tiene un suministro limitado de 21 millones de unidades, lo que lo convierte en un activo escaso similar al oro digital.',
     category: 'bitcoin',
     links: [
       { text: 'Guia completa de Bitcoin', url: '/blog/que-es-bitcoin-guia-completa' },
@@ -104,7 +104,7 @@ const faqs: FAQ[] = [
   {
     id: 'se-puede-hackear-blockchain',
     question: '¿Se puede hackear una blockchain?',
-    answer: 'Las blockchains maduras como Bitcoin son practicamente imposibles de hackear. Para alterar transacciones pasadas, un atacante necesitaria controlar mas del 51% del poder computacional de la red (ataque 51%), lo cual es economicamente inviable en redes grandes. Lo que si se hackea frecuentemente son: exchanges centralizados, wallets mal protegidas, contratos inteligentes con bugs, y usuarios mediante phishing. Los hackeos que ves en noticias suelen ser a plataformas que custodian criptomonedas, no a las blockchains en si.',
+    answer: 'Las blockchains maduras como Bitcoin son practicamente imposibles de hackear. Para alterar transacciones pasadas, un atacante necesitaria controlar mas del 51% del poder computacional de la red (ataque 51%), lo cual es economicamente inviable en redes grandes. Lo que si se hackea frecuentemente son: exchanges centralizados, wallets mal protegidas, contratos inteligentes con errores, y usuarios mediante phishing. Los hackeos que ves en noticias suelen ser a plataformas que custodian criptomonedas, no a las blockchains en si.',
     category: 'blockchain',
     links: [
       { text: 'Ataque 51% en el glosario', url: '/glosario/ataque-51' },
@@ -176,7 +176,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-defi',
     question: '¿Que es DeFi (finanzas descentralizadas)?',
-    answer: 'DeFi (Decentralized Finance) es un ecosistema de aplicaciones financieras construidas sobre blockchains, principalmente Ethereum. Permite acceder a servicios como prestamos, intercambios, ahorro y derivados sin bancos ni intermediarios. Todo funciona mediante smart contracts: codigo que ejecuta operaciones automaticamente. Ventajas: acceso global sin KYC, transparencia total, control de tus fondos. Riesgos: bugs en contratos, volatilidad extrema, estafas. Es un campo experimental que ofrece innovacion pero requiere precaucion.',
+    answer: 'DeFi (Decentralized Finance) es un ecosistema de aplicaciones financieras construidas sobre blockchains, principalmente Ethereum. Permite acceder a servicios como prestamos, intercambios, ahorro y derivados sin bancos ni intermediarios. Todo funciona mediante smart contracts: codigo que ejecuta operaciones automaticamente. Ventajas: acceso global sin KYC, transparencia total, control de tus fondos. Riesgos: errores en contratos, volatilidad extrema, estafas. Es un campo experimental que ofrece innovacion pero requiere precaucion.',
     category: 'defi',
     links: [
       { text: 'DeFi para principiantes', url: '/blog/defi-para-principiantes' },

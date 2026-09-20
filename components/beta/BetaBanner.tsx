@@ -27,7 +27,7 @@ export default function BetaBanner({ userEmail, userId }: BetaBannerProps) {
             <p className="text-sm text-gray-300">
               <span className="sm:hidden font-medium text-[#f7931a]">BETA · </span>
               Estas usando la version beta de Nodo360.{' '}
-              <span className="hidden sm:inline text-gray-400">Tu feedback es clave para mejorar.</span>
+              <span className="hidden sm:inline text-gray-400">Tus comentarios son clave para mejorar.</span>
             </p>
           </div>
 
@@ -37,8 +37,8 @@ export default function BetaBanner({ userEmail, userId }: BetaBannerProps) {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f7931a] text-white text-sm font-medium rounded-lg hover:bg-[#f7931a]/90 transition"
             >
               <MessageSquarePlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Enviar feedback</span>
-              <span className="sm:hidden">Feedback</span>
+              <span className="hidden sm:inline">Enviar comentarios</span>
+              <span className="sm:hidden">Comentarios</span>
             </button>
 
             <button

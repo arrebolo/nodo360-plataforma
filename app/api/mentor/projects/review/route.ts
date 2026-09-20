@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     if (vote === 'request_changes' && (!feedback || feedback.trim().length < 10)) {
       return NextResponse.json(
-        { error: 'El feedback es obligatorio al solicitar cambios (mínimo 10 caracteres)' },
+        { error: 'La retroalimentacion es obligatoria al solicitar cambios (mínimo 10 caracteres)' },
         { status: 400 }
       )
     }

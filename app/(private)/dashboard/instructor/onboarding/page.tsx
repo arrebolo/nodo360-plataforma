@@ -118,7 +118,7 @@ export default function InstructorOnboardingPage() {
         {
           id: 4,
           title: 'Envia a revision',
-          description: 'Un mentor certificado revisara tu curso y te dara feedback.',
+          description: 'Un mentor certificado revisara tu curso y te dara sus comentarios.',
           icon: Send,
           link: '/guia-revision',
           linkText: 'Ver guia de revision',

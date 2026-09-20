@@ -40,7 +40,7 @@ export const glossaryTerms: GlossaryTerm[] = [
     term: 'Bitcoin',
     slug: 'bitcoin',
     definition: 'La primera criptomoneda descentralizada del mundo, creada en 2009 por Satoshi Nakamoto.',
-    explanation: `Bitcoin (BTC) es un sistema de dinero electrónico peer-to-peer que permite realizar pagos directamente entre personas sin necesidad de intermediarios como bancos. Funciona sobre una red descentralizada de computadoras que verifican y registran todas las transacciones en un libro público llamado blockchain.
+    explanation: `Bitcoin (BTC) es un sistema de dinero electrónico peer-to-peer que permite realizar pagos directamente entre personas sin necesidad de intermediarios como bancos. Funciona sobre una red descentralizada de equipos que verifican y registran todas las transacciones en un libro público llamado blockchain.
 
 A diferencia del dinero tradicional, Bitcoin tiene un suministro limitado de 21 millones de unidades, lo que lo convierte en un activo deflacionario. Esta escasez programada, junto con su naturaleza descentralizada, ha llevado a muchos a considerarlo como "oro digital" y una reserva de valor alternativa.
 
@@ -124,8 +124,8 @@ En períodos de alta demanda, el mempool puede congestionarse con miles de trans
   {
     term: 'Nodo',
     slug: 'nodo',
-    definition: 'Computadora que ejecuta el software de Bitcoin y mantiene una copia completa de la blockchain.',
-    explanation: `Un nodo de Bitcoin es una computadora que ejecuta el software Bitcoin Core (o compatible) y participa en la red validando transacciones y bloques. Los nodos completos descargan y verifican toda la blockchain desde el bloque génesis hasta el presente.
+    definition: 'Equipo que ejecuta el software de Bitcoin y mantiene una copia completa de la blockchain.',
+    explanation: `Un nodo de Bitcoin es un equipo que ejecuta el software Bitcoin Core (o compatible) y participa en la red validando transacciones y bloques. Los nodos completos descargan y verifican toda la blockchain desde el bloque génesis hasta el presente.
 
 Ejecutar tu propio nodo te da soberanía total sobre tus transacciones. No necesitas confiar en terceros para verificar que tus pagos son válidos o que tus bitcoins existen. Además, contribuyes a la descentralización y seguridad de la red.
 
@@ -329,7 +329,7 @@ La inmutabilidad proporciona confianza: puedes verificar que las transacciones p
 
 Los protocolos DeFi funcionan mediante smart contracts: código que ejecuta operaciones financieras automáticamente cuando se cumplen ciertas condiciones. Cualquiera con conexión a Internet puede acceder a estos servicios, sin verificación de identidad ni aprobación de un tercero.
 
-El ecosistema DeFi incluye exchanges descentralizados (Uniswap), plataformas de préstamos (Aave, Compound), stablecoins (DAI), derivados, y más. Aunque ofrece mayor acceso y transparencia, también conlleva riesgos como bugs en smart contracts y volatilidad extrema.`,
+El ecosistema DeFi incluye exchanges descentralizados (Uniswap), plataformas de préstamos (Aave, Compound), stablecoins (DAI), derivados, y más. Aunque ofrece mayor acceso y transparencia, también conlleva riesgos como errores en smart contracts y volatilidad extrema.`,
     category: 'defi',
     relatedTerms: ['smart-contract', 'dex', 'liquidity-pool', 'yield-farming'],
     relatedArticle: 'defi-para-principiantes',
@@ -355,7 +355,7 @@ Por ejemplo, un pool ETH/USDC permite intercambiar entre estos dos tokens. Los p
 
 Los rendimientos pueden provenir de varias fuentes: comisiones de trading en liquidity pools, intereses por préstamos, recompensas de tokens de gobernanza, o combinaciones de todo lo anterior. Algunos protocolos ofrecen APYs de cientos o miles de por ciento durante períodos promocionales.
 
-Sin embargo, yield farming conlleva riesgos significativos: impermanent loss, bugs en smart contracts, rug pulls, y la posibilidad de que los tokens de recompensa pierdan valor. La complejidad y los costos de gas también pueden erosionar ganancias para cantidades pequeñas.`,
+Sin embargo, yield farming conlleva riesgos significativos: impermanent loss, errores en smart contracts, rug pulls, y la posibilidad de que los tokens de recompensa pierdan valor. La complejidad y los costos de gas también pueden erosionar ganancias para cantidades pequeñas.`,
     category: 'defi',
     relatedTerms: ['liquidity-pool', 'staking', 'apy', 'impermanent-loss'],
     relatedArticle: 'defi-para-principiantes',
@@ -634,7 +634,7 @@ Mientras que la clave privada debe mantenerse secreta, la clave pública está d
 
 Las ventajas de las hot wallets son su conveniencia: puedes enviar y recibir crypto en segundos, interactuar con aplicaciones DeFi, y acceder a tus fondos desde cualquier lugar. Son ideales para cantidades pequeñas de uso diario.
 
-El riesgo principal es que al estar conectadas a Internet, son vulnerables a hackeos, malware, y phishing. Si tu computadora o teléfono se compromete, un atacante podría robar tus fondos. Por eso se recomienda mantener solo pequeñas cantidades en hot wallets y el grueso del patrimonio en cold storage.`,
+El riesgo principal es que al estar conectadas a Internet, son vulnerables a hackeos, malware, y phishing. Si tu equipo o teléfono se compromete, un atacante podría robar tus fondos. Por eso se recomienda mantener solo pequeñas cantidades en hot wallets y el grueso del patrimonio en cold storage.`,
     category: 'wallets',
     relatedTerms: ['cold-wallet', 'wallet', 'seguridad', 'metamask'],
   },
@@ -657,7 +657,7 @@ Las cold wallets son esenciales para cantidades significativas de criptomonedas.
     definition: 'Dispositivo físico especializado para almacenar claves privadas de forma segura.',
     explanation: `Una hardware wallet es un dispositivo electrónico diseñado específicamente para almacenar claves privadas de criptomonedas. Marcas populares incluyen Ledger (Nano S, Nano X), Trezor (One, Model T), Coldcard, y BitBox.
 
-Estos dispositivos mantienen las claves privadas en un chip seguro que es resistente a extracción. Incluso si conectas la wallet a una computadora infectada, el malware no puede robar tus claves. Las transacciones se verifican y firman directamente en el dispositivo usando su pantalla y botones físicos.
+Estos dispositivos mantienen las claves privadas en un chip seguro que es resistente a extracción. Incluso si conectas la wallet a un equipo infectado, el malware no puede robar tus claves. Las transacciones se verifican y firman directamente en el dispositivo usando su pantalla y botones físicos.
 
 La seguridad de una hardware wallet depende de: comprar solo de vendedores oficiales (evitar dispositivos usados o de terceros), verificar que el empaque esté sellado, generar tu propia seed phrase (no usar una preconfigurada), y mantener la seed phrase segura y separada del dispositivo.`,
     category: 'wallets',
@@ -860,7 +860,7 @@ Redes Proof of Stake tienen el equivalente: atacar requeriría controlar más de
     term: 'Minería',
     slug: 'mineria',
     definition: 'Proceso de validar transacciones y añadir nuevos bloques a una blockchain Proof of Work.',
-    explanation: `La minería de criptomonedas es el proceso mediante el cual computadoras especializadas compiten para resolver puzzles matemáticos complejos. El primero en encontrar la solución puede añadir el siguiente bloque de transacciones a la blockchain y recibe una recompensa en nuevas monedas.
+    explanation: `La minería de criptomonedas es el proceso mediante el cual equipos especializados compiten para resolver puzzles matemáticos complejos. El primero en encontrar la solución puede añadir el siguiente bloque de transacciones a la blockchain y recibe una recompensa en nuevas monedas.
 
 En Bitcoin, los mineros buscan un hash que cumpla con la dificultad actual de la red (que empiece con cierto número de ceros). Esto requiere trillones de intentos por segundo globalmente. Este proceso, llamado Proof of Work, asegura la red contra ataques.
 
