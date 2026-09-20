@@ -19,6 +19,10 @@
 - [ ] Revisar y cerrar PR #1 (Claude/claude md) — rescatar mejoras de `sitemap.ts` y metadata antes de cerrar
 - [x] Commitear `docs/content/` (69 KB sin subir a git: guiones de Cold Storage, Nodos Bitcoin, guía de slides) *(20/09/2026: PR #103)*
 - [ ] Configurar CI en PRs (typecheck + lint + build) — hoy no hay ninguna verificación automática antes de mergear
+- [x] Corregir validación de quiz server-side (`/api/quiz/submit` aceptaba `score` y `passed` del cliente: se podía emitir un certificado sin responder) — rama `fix/rls-quiz-security`
+- [x] Dejar de exponer `correct_answer` al navegador (API, payload RSC y corrección en cliente)
+- [ ] Aplicar migración 021 en Supabase (RLS en `course_final_quiz_attempts` y `quiz_questions` + REVOKE de `correct_answer`)
+- [ ] Decidir qué hacer con los 13 certificados emitidos antes del fix: no es posible verificar retroactivamente cuáles se ganaron respondiendo el quiz. Decisión de producto pendiente (Principio #4)
 
 ## Tier 1 — Ganancias rápidas de contenido
 
