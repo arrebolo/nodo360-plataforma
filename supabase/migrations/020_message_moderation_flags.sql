@@ -49,16 +49,7 @@ COMMENT ON COLUMN message_flags.evidence_meta IS 'Metadata sin contenido sensibl
 -- RLS
 ALTER TABLE message_flags ENABLE ROW LEVEL SECURITY;
 
--- Función helper para verificar si es admin
-CREATE OR REPLACE FUNCTION is_admin(user_id UUID)
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN EXISTS (
-        SELECT 1 FROM users
-        WHERE id = user_id AND role = 'admin'
-    );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- is_admin(uuid) already exists from a previous migration — do not recreate
 
 -- Solo admins pueden ver flags
 DROP POLICY IF EXISTS "Admins can view all flags" ON message_flags;
