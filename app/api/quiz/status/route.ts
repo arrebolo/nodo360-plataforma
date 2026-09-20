@@ -5,7 +5,8 @@ import { checkRateLimit } from '@/lib/ratelimit'
 
 /**
  * GET /api/quiz/status?course_id=xxx
- * Obtiene el estado del quiz para el usuario actual
+ * Obtiene el estado del quiz para el usuario actual.
+ * Requiere sesion: devuelve 401 si no hay usuario autenticado.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -14,6 +15,16 @@ export async function GET(request: NextRequest) {
     if (rateLimitResponse) return rateLimitResponse
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+
+    // Exigir sesion. Sin ella la consulta corre como 'anon', que no tiene
+    // privilegios sobre quiz_questions: el conteo saldria 0 y la respuesta
+    // diria hasQuiz: false en vez de indicar que falta autenticacion.
+    if (!user) {
+      return NextResponse.json(
+        { error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
 
     const { searchParams } = new URL(request.url)
     const courseId = searchParams.get('course_id')
@@ -25,7 +36,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const status = await getCourseQuizStatus(courseId, user?.id)
+    const status = await getCourseQuizStatus(courseId, user.id)
 
     return NextResponse.json(status)
   } catch (error) {
