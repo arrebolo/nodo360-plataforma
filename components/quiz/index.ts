@@ -1,15 +1,18 @@
 // Quiz system components
 //
-// Los componentes del esquema antiguo (QuizEditor, QuestionEditor, QuizPlayer,
-// QuizResultsDisplay) se eliminaron: operaban sobre las tablas quizzes,
-// quiz_answers y quiz_options, que no existen en la base de datos.
-// El esquema vigente es quiz_questions + quiz_attempts.
+// Solo queda CourseFinalQuiz, el unico componente de quiz que renderiza una
+// pagina (app/cursos/[slug]/quiz-final/page.tsx).
+//
+// Se eliminaron dos grupos de codigo muerto (20/09/2026):
+//   - Esquema inexistente: QuizEditor, QuestionEditor, QuizPlayer,
+//     QuizResultsDisplay. Operaban sobre quizzes, quiz_answers y quiz_options,
+//     tablas que no existen en la base de datos.
+//   - Sin uso: ModuleQuiz, QuizInterface, QuizResults, QuizStartCard,
+//     QuizStartWrapper. Seguian el esquema actual pero no los renderizaba
+//     nadie; QuizResults ademas corregia en el navegador comparando contra
+//     correct_answer, justo lo que se elimino en fix/rls-quiz-security.
+//
+// El esquema vigente es quiz_questions + quiz_attempts. El editor del panel
+// admin vive aparte, en components/admin/CourseQuizEditor.tsx.
 
 export { CourseFinalQuiz } from './CourseFinalQuiz'
-
-// Sin uso actualmente, conservados a la espera de decision:
-export { QuizInterface } from './QuizInterface'
-export { QuizResults } from './QuizResults'
-export { QuizStartCard } from './QuizStartCard'
-export { QuizStartWrapper } from './QuizStartWrapper'
-export { ModuleQuiz } from './ModuleQuiz'
