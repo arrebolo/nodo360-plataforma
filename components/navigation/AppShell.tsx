@@ -25,7 +25,7 @@ export function AppShell({ children }: AppShellProps) {
       <Sidebar />
 
       {/* Main content area with sidebar padding */}
-      <div className="lg:pl-16 min-h-screen pb-20 lg:pb-0 flex flex-col">
+      <div className="lg:pl-16 min-h-screen pb-24 lg:pb-0 flex flex-col">
         {/* Page content */}
         <main className="flex-1">
           {children}
