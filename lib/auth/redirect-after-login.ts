@@ -25,45 +25,15 @@ export async function redirectAfterLogin(next?: string) {
 
   console.log('[redirectAfterLogin] Usuario autenticado:', user.id.substring(0, 8) + '...')
 
-  // INTENTAR LEER DE TABLA 'users' PRIMERO
-  console.log('🔍 [redirectAfterLogin] Intentando leer de tabla "users"...')
-
-  const { data: userProfile, error: userError } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('users')
     .select('role, full_name')
     .eq('id', user.id)
     .single()
 
-  console.log('📊 [redirectAfterLogin] Resultado de tabla "users":')
-  console.log('   - Data:', userProfile)
-  console.log('   - Error:', userError)
-
-  // SI FALLA, INTENTAR CON TABLA 'profiles'
-  let profile = userProfile
-  let profileError = userError
-
-  if (userError) {
-    console.log('🔍 [redirectAfterLogin] Intentando leer de tabla "profiles"...')
-
-    const { data: profileData, error: profileErr } = await supabase
-      .from('profiles')
-      .select('role, full_name')
-      .eq('user_id', user.id)
-      .single()
-
-    console.log('📊 [redirectAfterLogin] Resultado de tabla "profiles":')
-    console.log('   - Data:', profileData)
-    console.log('   - Error:', profileErr)
-
-    profile = profileData
-    profileError = profileErr
-  }
-
-  // SI AMBAS FALLAN, MOSTRAR ERROR EVIDENTE
   if (profileError || !profile) {
-    console.error('❌❌❌ [redirectAfterLogin] NO SE PUDO LEER EL PERFIL')
-    console.error('   - Error users:', userError)
-    console.error('   - Error profiles:', profileError)
+    console.error('❌ [redirectAfterLogin] NO SE PUDO LEER EL PERFIL')
+    console.error('   - Error:', profileError)
     console.error('   - Verifica RLS en Supabase!')
 
     // Redirigir a login con error visible

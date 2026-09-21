@@ -70,13 +70,6 @@ export default async function MentorProfilePage({
     notFound()
   }
 
-  // Obtener perfil de mentor (si existe tabla mentors)
-  const { data: mentorProfile } = await supabase
-    .from('mentors')
-    .select('*')
-    .eq('user_id', id)
-    .maybeSingle()
-
   // Obtener puntos totales
   const { data: points } = await supabase
     .from('mentor_points')
@@ -104,8 +97,8 @@ export default async function MentorProfilePage({
       issued_at,
       learning_paths (
         id,
-        title,
-        icon
+        name,
+        emoji
       )
     `)
     .eq('user_id', id)
@@ -114,19 +107,19 @@ export default async function MentorProfilePage({
 
   // Obtener últimos votos en propuestas de gobernanza
   const { data: recentVotes } = await supabase
-    .from('proposal_votes')
+    .from('governance_votes')
     .select(`
       id,
-      vote_type,
+      vote,
       created_at,
-      proposals (
+      governance_proposals (
         id,
         title,
         slug,
         status
       )
     `)
-    .eq('user_id', id)
+    .eq('voter_id', id)
     .order('created_at', { ascending: false })
     .limit(5)
 
@@ -135,8 +128,9 @@ export default async function MentorProfilePage({
   const now = new Date()
   const monthsAsMentor = Math.floor((now.getTime() - mentorSince.getTime()) / (1000 * 60 * 60 * 24 * 30))
 
-  // Disponibilidad (por defecto true, o desde mentorProfile)
-  const isAvailable = mentorProfile?.accepts_messages ?? true
+  // No existe tabla de perfiles de mentor: la disponibilidad se asume activa
+  // mientras el rol de mentor siga vigente en user_roles.
+  const isAvailable = true
 
   return (
     <div className="min-h-screen bg-dark">
@@ -244,7 +238,7 @@ export default async function MentorProfilePage({
             <section className="rounded-2xl bg-white/5 border border-white/10 p-6">
               <h2 className="text-lg font-semibold text-white mb-4">Acerca de</h2>
               <p className="text-gray-400 whitespace-pre-line">
-                {mentorProfile?.bio || user.bio || 'Este mentor aún no ha agregado una descripción.'}
+                {user.bio || 'Este mentor aún no ha agregado una descripción.'}
               </p>
             </section>
 
@@ -260,15 +254,15 @@ export default async function MentorProfilePage({
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {instructorCerts.map((cert: any) => {
-                    const lp = cert.learning_paths as { id: string; title: string; icon: string }
+                    const lp = cert.learning_paths as { id: string; name: string; emoji: string }
                     return (
                       <div
                         key={cert.id}
                         className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-xl">{lp?.icon}</span>
-                          <span className="font-medium text-white">{lp?.title}</span>
+                          <span className="text-xl">{lp?.emoji}</span>
+                          <span className="font-medium text-white">{lp?.name}</span>
                         </div>
                       </div>
                     )
@@ -288,7 +282,7 @@ export default async function MentorProfilePage({
               ) : (
                 <div className="space-y-3">
                   {recentVotes.map((vote: any) => {
-                    const proposal = vote.proposals as { id: string; title: string; slug: string; status: string } | null
+                    const proposal = vote.governance_proposals as { id: string; title: string; slug: string; status: string } | null
                     if (!proposal) return null
 
                     return (
@@ -298,12 +292,12 @@ export default async function MentorProfilePage({
                         className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-colors group"
                       >
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          vote.vote_type === 'yes' ? 'bg-green-500/20' :
-                          vote.vote_type === 'no' ? 'bg-red-500/20' : 'bg-gray-500/20'
+                          vote.vote === 'for' ? 'bg-green-500/20' :
+                          vote.vote === 'against' ? 'bg-red-500/20' : 'bg-gray-500/20'
                         }`}>
-                          {vote.vote_type === 'yes' ? (
+                          {vote.vote === 'for' ? (
                             <CheckCircle className="w-4 h-4 text-green-400" />
-                          ) : vote.vote_type === 'no' ? (
+                          ) : vote.vote === 'against' ? (
                             <XCircle className="w-4 h-4 text-red-400" />
                           ) : (
                             <Clock className="w-4 h-4 text-gray-400" />
@@ -314,7 +308,7 @@ export default async function MentorProfilePage({
                             {proposal.title}
                           </p>
                           <p className="text-xs text-gray-500">
-                            Votó {vote.vote_type === 'yes' ? 'a favor' : vote.vote_type === 'no' ? 'en contra' : 'abstención'} · {new Date(vote.created_at).toLocaleDateString('es-ES')}
+                            Votó {vote.vote === 'for' ? 'a favor' : vote.vote === 'against' ? 'en contra' : 'abstención'} · {new Date(vote.created_at).toLocaleDateString('es-ES')}
                           </p>
                         </div>
                       </Link>
@@ -371,15 +365,15 @@ export default async function MentorProfilePage({
                 </h2>
                 <div className="space-y-3">
                   {instructorCerts.map((cert: any) => {
-                    const lp = cert.learning_paths as { id: string; title: string; icon: string }
+                    const lp = cert.learning_paths as { id: string; name: string; emoji: string }
                     return (
                       <div
                         key={cert.id}
                         className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20"
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg">{lp?.icon}</span>
-                          <span className="font-medium text-white text-sm">{lp?.title}</span>
+                          <span className="text-lg">{lp?.emoji}</span>
+                          <span className="font-medium text-white text-sm">{lp?.name}</span>
                         </div>
                         <div className="text-xs text-gray-400">
                           <p>N.° {cert.certification_number}</p>
