@@ -147,8 +147,15 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
  * Validar y consumir código de invitación (server-side)
  * NOTA: Función reservada para uso futuro con cursos premium
  * Ya no se usa para registro (beta abierta)
+ *
+ * ⚠️ NO FUNCIONA TAL CUAL. Desde el endurecimiento de /api/invites/consume, el
+ * endpoint toma el usuario de la sesión y ya no acepta un userId del cuerpo.
+ * Este fetch de servidor a servidor no reenvía las cookies, así que recibiría
+ * un 401. Al revivir el flujo de invitación, lo correcto es extraer la lógica
+ * del endpoint a un módulo de lib/ y llamarla directamente desde aquí, en vez
+ * de que el servidor se llame a sí mismo por HTTP.
  */
-async function validateAndConsumeInvite(code: string, userId: string): Promise<{ valid: boolean; error?: string }> {
+async function validateAndConsumeInvite(code: string): Promise<{ valid: boolean; error?: string }> {
   if (!code) return { valid: false, error: 'Código de invitación requerido' }
 
   try {
@@ -156,7 +163,7 @@ async function validateAndConsumeInvite(code: string, userId: string): Promise<{
     const res = await fetch(`${baseUrl}/api/invites/consume`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: code.toUpperCase(), userId }),
+      body: JSON.stringify({ code: code.toUpperCase() }),
     })
 
     const data = await res.json()
