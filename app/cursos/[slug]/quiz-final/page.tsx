@@ -6,6 +6,7 @@ import { CourseFinalQuiz } from '@/components/quiz/CourseFinalQuiz'
 import type { QuizQuestion } from '@/types/database'
 import { resolveCourseAccess } from '@/lib/courses/access'
 import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
+import { CourseUnavailable } from '@/components/course/CourseUnavailable'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -48,8 +49,16 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
   // instructor del curso; el resto, 404. Ver lib/courses/access.ts
   const { canView, isPreview } = await resolveCourseAccess(course, user?.id)
 
+  // Mismo trato que en la ficha: quien no puede ver el curso no ve el examen,
+  // pero tampoco un 404 seco.
   if (!canView) {
-    notFound()
+    return (
+      <CourseUnavailable
+        courseId={course.id}
+        courseTitle={course.title}
+        status={course.status}
+      />
+    )
   }
 
   // Si no hay usuario, redirigir a login
