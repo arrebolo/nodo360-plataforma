@@ -10,6 +10,8 @@ import { Footer } from '@/components/navigation/Footer'
 import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import { CourseJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
+import { resolveCourseAccess } from '@/lib/courses/access'
+import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
 import { tokens, cx } from '@/lib/design/tokens'
 import { ChevronRight, Lock } from 'lucide-react'
 import type { Metadata } from 'next'
@@ -28,14 +30,29 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 
   const { data: course } = await supabase
     .from('courses')
-    .select('title, description, thumbnail_url, level')
+    .select('title, description, thumbnail_url, level, status, instructor_id')
     .eq('slug', slug)
-    .eq('status', 'published')
     .single()
 
   if (!course) {
     return {
       title: 'Curso no encontrado',
+    }
+  }
+
+  const { canView, isPreview } = await resolveCourseAccess(course)
+
+  if (!canView) {
+    return {
+      title: 'Curso no encontrado',
+    }
+  }
+
+  // Un borrador no se indexa aunque su instructor o un admin pueda abrirlo
+  if (isPreview) {
+    return {
+      title: `${course.title} (vista previa)`,
+      robots: { index: false, follow: false },
     }
   }
 
@@ -102,10 +119,17 @@ export default async function CoursePage({ params }: CoursePageProps) {
       )
     `)
     .eq('slug', slug)
-    .eq('status', 'published')
     .single()
 
   if (courseError || !course) {
+    notFound()
+  }
+
+  // Regla unica de visibilidad: publicado -> todos; borrador -> admin e
+  // instructor del curso; el resto, 404. Ver lib/courses/access.ts
+  const { canView, isPreview } = await resolveCourseAccess(course)
+
+  if (!canView) {
     notFound()
   }
 
@@ -200,6 +224,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   return (
     <div className="min-h-screen bg-dark">
+      {isPreview && <CoursePreviewBanner />}
+
       {/* Structured Data */}
       <CourseJsonLd
         title={course.title}
