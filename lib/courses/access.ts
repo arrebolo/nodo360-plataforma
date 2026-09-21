@@ -6,9 +6,14 @@ import { createClient } from '@/lib/supabase/server'
  * Regla unica para todas las rutas que sirven contenido de un curso
  * (ficha, lecciones, examen final):
  *
- *   - Curso publicado        -> lo ve cualquiera
- *   - Curso no publicado     -> solo el admin y el instructor del curso
- *   - Cualquier otro usuario -> 404
+ *   - Curso publicado           -> lo ve cualquiera
+ *   - Curso no publicado        -> el admin y el instructor del curso
+ *   - Curso en 'pending_review' -> ademas, cualquier mentor activo
+ *   - Cualquier otro usuario    -> 404
+ *
+ * El mentor entra SOLO en 'pending_review', que es el estado en el que se le
+ * pide revisar. No ve 'draft' (aun en preparacion) ni 'changes_requested'
+ * (devuelto al instructor), que son estados de trabajo del autor.
  *
  * Antes cada pagina lo resolvia a su manera: la ficha filtraba por
  * status = 'published' en la propia consulta (y por eso el boton "Vista previa"
@@ -76,6 +81,20 @@ export async function resolveCourseAccess(
     .single()
 
   if (profile?.role === 'admin') return PREVIEW
+
+  // Los mentores ven los cursos que tienen que revisar, y solo esos.
+  // El rol se lee de user_roles, que es la fuente que usa el listado publico
+  // /mentores, no de users.role.
+  if (course.status === 'pending_review') {
+    const { count } = await supabase
+      .from('user_roles')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('role', 'mentor')
+      .eq('is_active', true)
+
+    if ((count ?? 0) > 0) return PREVIEW
+  }
 
   return DENY
 }

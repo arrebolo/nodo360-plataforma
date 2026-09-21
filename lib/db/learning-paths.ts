@@ -91,14 +91,18 @@ export async function getCoursesByLearningPathSlug(
   }
 
   // Get courses through learning_path_courses junction table
+  // Mismo filtro que getAllCourses: un listado publico no anuncia cursos que
+  // todavia no existen para el visitante. Sin esto, /rutas/[slug] mostraba
+  // titulo y descripcion de los borradores y al pulsar se iba a un 404.
   const { data, error } = await supabase
     .from('learning_path_courses')
     .select(`
       position,
       is_required,
-      course:course_id (*)
+      course:course_id!inner (*)
     `)
     .eq('learning_path_id', path.id)
+    .in('course.status', ['published', 'coming_soon'])
     .order('position', { ascending: true })
 
   if (error) {
