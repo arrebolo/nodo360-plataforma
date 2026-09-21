@@ -276,7 +276,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
           }}
           isEnrolled={isEnrolled}
           progressPct={courseProgress?.globalProgress?.percentage ?? null}
-          hrefCourse={`/cursos/${course.slug}`}
           hrefContinue={hasPremiumAccess ? `/api/continue?courseSlug=${course.slug}` : undefined}
           hrefEnroll={hasPremiumAccess ? `/api/enroll?courseId=${course.id}` : undefined}
           hrefDashboard="/dashboard"

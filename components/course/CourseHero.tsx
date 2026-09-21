@@ -45,7 +45,6 @@ export type CourseHeroProps = {
   isEnrolled?: boolean
   progressPct?: number | null
   hasFreePreview?: boolean
-  hrefCourse?: string
   hrefContinue?: string
   hrefEnroll?: string
   hrefPreview?: string
@@ -114,7 +113,6 @@ export default function CourseHero({
   isEnrolled = false,
   progressPct,
   hasFreePreview = false,
-  hrefCourse,
   hrefContinue,
   hrefEnroll,
   hrefPreview,
@@ -126,8 +124,13 @@ export default function CourseHero({
   const published = course.status === 'published'
   const instructorPreview = useInstructorPreview()
 
-  const courseUrl = hrefCourse ?? `/cursos/${course.slug}`
-  const canContinue = isEnrolled && (pct ?? 0) > 0 && !!hrefContinue
+  // Quien ya esta inscrito entra por /api/continue, que resuelve la leccion
+  // destino: la ultima visitada si hay progreso, y la primera si no lo hay.
+  // Antes esto exigia ademas progreso > 0, de modo que un recien inscrito caia
+  // en un boton que enlazaba a esta misma pagina y no hacia nada.
+  const canContinue = isEnrolled && !!hrefContinue
+  const continueLabel = (pct ?? 0) > 0 ? 'Continuar' : 'Empezar el curso'
+
 
   const duration = formatDuration(course.total_duration_minutes)
 
@@ -261,11 +264,7 @@ export default function CourseHero({
               {published ? (
                 canContinue ? (
                   <Button href={hrefContinue!} size="lg" variant="primary">
-                    Continuar
-                  </Button>
-                ) : isEnrolled ? (
-                  <Button href={courseUrl} size="lg" variant="primary">
-                    Entrar al curso
+                    {continueLabel}
                   </Button>
                 ) : hrefEnroll ? (
                   <Button href={hrefEnroll} size="lg" variant="primary">
@@ -281,8 +280,11 @@ export default function CourseHero({
                     {course.is_free ? 'Empezar gratis' : 'Inscribirme'}
                   </Button>
                 ) : (
-                  <Button href={courseUrl} size="lg" variant="primary">
-                    {course.is_free ? 'Empezar gratis' : 'Ver detalles'}
+                  /* Unico caso sin via de entrada: curso premium y usuario sin
+                     entitlement. La pagina lo explica debajo; aqui no se ofrece
+                     un enlace que no lleva a ninguna parte. */
+                  <Button size="lg" variant="secondary" disabled>
+                    Acceso premium requerido
                   </Button>
                 )
               ) : (
