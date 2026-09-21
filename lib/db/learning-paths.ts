@@ -142,3 +142,40 @@ export async function getLearningPathWithCourses(
 }
 
 
+
+
+/**
+ * Rutas activas que tienen al menos un curso publicado.
+ *
+ * Se usa para dos cosas: filtrar el listado /rutas (una ruta sin nada que
+ * estudiar no se anuncia) y sugerir alternativas a quien llega a una ruta
+ * vacia. Nunca devuelve una ruta que lleve a otra pagina de "en preparacion".
+ */
+export async function getPathsWithPublishedCourses(
+  excludeSlug?: string,
+  limit?: number
+): Promise<LearningPath[]> {
+  const supabase = await createClient()
+
+  const { data: paths } = await supabase
+    .from('learning_paths')
+    .select('*')
+    .eq('is_active', true)
+    .order('position', { ascending: true })
+
+  if (!paths?.length) return []
+
+  // Una sola consulta para todas las rutas, en vez de una por ruta
+  const { data: enlaces } = await supabase
+    .from('learning_path_courses')
+    .select('learning_path_id, course:course_id!inner (id)')
+    .eq('course.status', 'published')
+
+  const conCursos = new Set((enlaces || []).map((e) => e.learning_path_id))
+
+  const resultado = paths.filter(
+    (p) => conCursos.has(p.id) && p.slug !== excludeSlug
+  )
+
+  return typeof limit === 'number' ? resultado.slice(0, limit) : resultado
+}

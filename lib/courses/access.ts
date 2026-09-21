@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
 
 /**
  * Quien puede ver un curso segun su estado.
@@ -74,13 +75,7 @@ export async function resolveCourseAccess(
   // El instructor del curso ve su propio borrador
   if (course.instructor_id && course.instructor_id === userId) return PREVIEW
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', userId)
-    .single()
-
-  if (profile?.role === 'admin') return PREVIEW
+  if (await isCurrentUserAdmin(userId)) return PREVIEW
 
   // Los mentores ven los cursos que tienen que revisar, y solo esos.
   // El rol se lee de user_roles, que es la fuente que usa el listado publico
