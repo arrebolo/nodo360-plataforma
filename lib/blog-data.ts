@@ -1957,13 +1957,13 @@ Un 5% anual sobre un activo que pierde el 60% de su valor sigue siendo una pérd
 | Lending | Medio-alto | Medio | Media |
 | Yield Farming | Alto | Alto | Alta |
 
-El staking es generalmente la opción más segura para generar rendimientos pasivos en cripto.
+Las tres columnas se mueven juntas: los métodos con mayor rendimiento potencial son también los que concentran más riesgo y exigen más conocimiento técnico para entender a qué se está expuesto. Ninguna de las tres filas describe una opción sin riesgo.
 
 ## Conclusión
 
 El staking es una forma accesible de generar ingresos pasivos con tus criptomonedas mientras contribuyes a la seguridad de las redes blockchain. Aunque no está libre de riesgos, es menos complejo que otras estrategias DeFi.
 
-Empieza con cantidades pequeñas, entiende los riesgos, y considera el staking como una estrategia de largo plazo, no de ganancias rápidas.
+Para valorar lo que supone el staking hacen falta cuatro respuestas: durante cuánto tiempo quedan bloqueados los fondos y en qué condiciones se recuperan; quién custodia las monedas en cada modalidad; de dónde sale la recompensa y en qué moneda se paga; y qué pasa con el capital depositado si el validador es penalizado o el contrato falla. Un APY, por sí solo, no dice nada mientras esas cuatro preguntas sigan abiertas.
 
 ¿Quieres aprender más sobre DeFi y estrategias de ingresos pasivos en cripto? Explora nuestros cursos en Nodo360.
 `
