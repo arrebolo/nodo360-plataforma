@@ -15,7 +15,7 @@ export const COMUNIDAD_BENEFITS: Array<{
   {
     iconKey: 'messageSquare',
     title: 'Discord Activo',
-    description: 'Comunidad 24/7 con +2,500 estudiantes'
+    description: 'Canal abierto para dudas y conversación sobre Bitcoin y Web3'
   },
   {
     iconKey: 'calendar',

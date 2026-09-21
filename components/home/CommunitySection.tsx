@@ -54,7 +54,7 @@ export function CommunitySection() {
               {/* Contador */}
               <div className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-white/5 rounded-lg">
                 <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                <span className="text-white/50 text-sm">+500 activos</span>
+                <span className="text-white/50 text-sm">Comunidad abierta</span>
               </div>
             </div>
           </div>

@@ -56,7 +56,7 @@ export default function SobreNosotrosPage() {
                 En 2023, un grupo de desarrolladores, educadores y entusiastas de Bitcoin decidimos cambiar esto. Creamos Nodo360 con una misión simple pero ambiciosa: <span className="text-white font-semibold">hacer que la educación en blockchain sea accesible para todos los hispanohablantes</span>, sin importar su nivel de experiencia o ubicación.
               </p>
               <p>
-                Lo que comenzó como cursos básicos ha evolucionado en una plataforma completa con <span className="text-brand-light font-semibold">cursos gratuitos y premium, comunidad activa, mentoría personalizada y proyectos innovadores</span>. Hoy, más de 2,300 estudiantes de 50+ países confían en Nodo360 para su educación en crypto.
+                Hoy Nodo360 ofrece <span className="text-brand-light font-semibold">cursos gratuitos en español, organizados en rutas de aprendizaje de Bitcoin, seguridad y Web3</span>, con certificado verificable al completarlos y una comunidad abierta donde resolver dudas.
               </p>
               <p>
                 Pero esto es solo el comienzo. Nuestro objetivo es convertirnos en <span className="text-white font-semibold">la plataforma educativa de referencia en español para todo lo relacionado con Bitcoin, Blockchain y Web3</span>.

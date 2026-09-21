@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: "%s | Nodo360",
   },
   description:
-    "Aprende Bitcoin, Blockchain, DeFi y desarrollo Web3 desde cero. Más de 5,000 estudiantes y 25+ cursos profesionales.",
+    "Aprende Bitcoin, Blockchain y Web3 desde cero, en español. Cursos gratuitos organizados en rutas de aprendizaje, con certificado verificable al completarlos.",
   keywords: ["bitcoin", "blockchain", "criptomonedas", "web3", "educación", "cursos", "español", "DeFi", "crypto"],
   authors: [{ name: "Nodo360" }],
   creator: "Nodo360",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com",
     siteName: "Nodo360",
     title: "Nodo360 - Aprende Bitcoin y Blockchain",
-    description: "La plataforma educativa más completa en español para aprender Bitcoin, Blockchain y Web3",
+    description: "Cursos gratuitos de Bitcoin, Blockchain y Web3 en español, con certificado verificable al completarlos",
     images: [{ url: "/imagenes/og-nodo360.png", width: 1200, height: 630, alt: "Nodo360" }],
   },
   twitter: {
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     site: "@nodo360",
     creator: "@nodo360",
     title: "Nodo360 - Aprende Bitcoin y Blockchain",
-    description: "La plataforma educativa más completa en español para aprender Bitcoin, Blockchain y Web3",
+    description: "Cursos gratuitos de Bitcoin, Blockchain y Web3 en español, con certificado verificable al completarlos",
     images: ["/imagenes/og-nodo360.png"],
   },
   robots: {
