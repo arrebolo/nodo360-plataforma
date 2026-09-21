@@ -110,7 +110,7 @@ export default async function MentorPage() {
   let mentorProfile: any = null
 
   if (isMentor) {
-    // Stats del mes actual
+    // Stats del mes actual. La columna del periodo es period_month, no month.
     const now = new Date()
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
@@ -118,19 +118,47 @@ export default async function MentorPage() {
       .from('mentor_monthly_stats')
       .select('*')
       .eq('user_id', user.id)
-      .eq('month', currentMonth)
+      .eq('period_month', currentMonth)
       .maybeSingle()
 
     monthlyStats = stats
 
-    // Perfil de mentor
-    const { data: mProfile } = await supabase
-      .from('mentors')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle()
+    // No existe tabla 'mentors'. El perfil se compone de las tablas reales,
+    // igual que en /mentores y /mentores/[id]:
+    //   - antiguedad  -> user_roles (rol de mentor vigente)
+    //   - puntos      -> suma de mentor_points.points
+    //   - sesiones    -> suma de mentor_monthly_stats.mentoring_sessions
+    //   - avisos      -> recuento de mentor_warnings activos
+    const [{ data: mentorRole }, { data: allPoints }, { data: allStats }, { count: warningCount }] =
+      await Promise.all([
+        supabase
+          .from('user_roles')
+          .select('created_at')
+          .eq('user_id', user.id)
+          .eq('role', 'mentor')
+          .eq('is_active', true)
+          .maybeSingle(),
+        supabase
+          .from('mentor_points')
+          .select('points')
+          .eq('user_id', user.id),
+        supabase
+          .from('mentor_monthly_stats')
+          .select('mentoring_sessions')
+          .eq('user_id', user.id),
+        supabase
+          .from('mentor_warnings')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_active', true),
+      ])
 
-    mentorProfile = mProfile
+    mentorProfile = {
+      created_at: mentorRole?.created_at ?? null,
+      total_points: (allPoints || []).reduce((sum, p) => sum + (p.points || 0), 0),
+      total_sessions: (allStats || []).reduce((sum, st) => sum + (st.mentoring_sessions || 0), 0),
+      warnings: warningCount || 0,
+    }
   }
 
   // Elegibilidad (para no-mentores)
@@ -146,13 +174,15 @@ export default async function MentorPage() {
       .rpc('can_apply_mentor', { p_user_id: user.id })
     eligibility = result
 
-    // Obtener puntos de mérito
+    // Obtener puntos de mérito. mentor_points guarda una fila por concesión,
+    // con la columna 'points'; no hay ningún total_points que leer. Sumar aquí
+    // da el mismo número que get_mentor_points() en la base de datos, que es
+    // SUM(points) sobre esta misma tabla y lo que usa can_apply_mentor().
     const { data: points } = await supabase
       .from('mentor_points')
-      .select('total_points')
+      .select('points')
       .eq('user_id', user.id)
-      .maybeSingle()
-    meritPoints = points?.total_points || 0
+    meritPoints = (points || []).reduce((sum, p) => sum + (p.points || 0), 0)
 
     // Verificar si tiene certificación de instructor
     const { data: certs } = await supabase
@@ -170,11 +200,13 @@ export default async function MentorPage() {
       accountAge = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24 * 30))
     }
 
-    // Contar mentores activos
+    // Contar mentores activos. No hay tabla 'mentors': el rol vive en
+    // user_roles, que es de donde tambien lo lee el listado publico /mentores.
     const { count } = await supabase
-      .from('mentors')
+      .from('user_roles')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'active')
+      .eq('role', 'mentor')
+      .eq('is_active', true)
     totalMentors = count || 0
   }
 

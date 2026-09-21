@@ -20,7 +20,7 @@ export async function getAdminStats() {
     supabase.from('modules').select('*', { count: 'exact', head: true }),
     supabase.from('lessons').select('*', { count: 'exact', head: true }),
     supabase.from('users').select('*', { count: 'exact', head: true }),
-    supabase.from('enrollments').select('*', { count: 'exact', head: true }),
+    supabase.from('course_enrollments').select('*', { count: 'exact', head: true }),
     supabase.from('badges').select('*', { count: 'exact', head: true }),
   ])
 
@@ -52,8 +52,9 @@ export async function getAdminStats() {
 
   // Lecciones completadas hoy
   const { count: lessonsCompletedToday } = await supabase
-    .from('lesson_completions')
+    .from('user_progress')
     .select('*', { count: 'exact', head: true })
+    .eq('is_completed', true)
     .gte('completed_at', today.toISOString())
 
   return {
