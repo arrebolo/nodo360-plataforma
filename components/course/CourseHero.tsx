@@ -54,13 +54,29 @@ export type CourseHeroProps = {
   enrolling?: boolean
 }
 
+/**
+ * Duracion como estimacion, no como promesa.
+ *
+ * El valor sale de courses.total_duration_minutes, que desde la migracion 029
+ * se calcula a partir del texto de las lecciones a 1.000 caracteres por minuto.
+ * Es una estimacion de lectura, asi que no se presenta con precision al minuto
+ * cuando es larga: por debajo de 45 minutos se dan los minutos, y por encima se
+ * redondea a media hora y se marca con "~" y "de lectura" para que se lea como
+ * lo que es.
+ */
 function formatDuration(minutes?: number | null) {
   if (!minutes || minutes <= 0) return null
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h <= 0) return `${m} min`
-  if (m === 0) return `${h} h`
-  return `${h} h ${m} min`
+
+  if (minutes < 45) return `${minutes} min`
+
+  // Redondeo al multiplo de media hora mas cercano
+  const medias = Math.round(minutes / 30)
+  const h = Math.floor(medias / 2)
+  const media = medias % 2 === 1
+
+  if (h === 0) return '~30 min de lectura'
+  if (!media) return `~${h} h de lectura`
+  return `~${h} h 30 min de lectura`
 }
 
 function levelLabel(level: CourseLevel) {
