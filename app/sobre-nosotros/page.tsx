@@ -1,4 +1,4 @@
-import { Target, Eye, Heart, Users, Zap, Shield, Globe, TrendingUp, Award, BookOpen, MessageCircle } from 'lucide-react'
+import { Target, Eye, Heart, Users, Zap, Shield, Globe, Award, BookOpen, MessageCircle } from 'lucide-react'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Footer } from '@/components/navigation/Footer'
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: 'Conoce la historia de Nodo360, nuestra misión de democratizar la educación en Bitcoin y Blockchain, y el equipo detrás de la plataforma.',
   openGraph: {
     title: 'Sobre Nodo360',
-    description: 'La plataforma educativa #1 en español para Bitcoin y Blockchain',
+    description: 'Quiénes estamos detrás de Nodo360 y por qué hacemos educación abierta sobre Bitcoin y Blockchain',
   },
 }
 
@@ -56,7 +56,7 @@ export default function SobreNosotrosPage() {
                 En 2023, un grupo de desarrolladores, educadores y entusiastas de Bitcoin decidimos cambiar esto. Creamos Nodo360 con una misión simple pero ambiciosa: <span className="text-white font-semibold">hacer que la educación en blockchain sea accesible para todos los hispanohablantes</span>, sin importar su nivel de experiencia o ubicación.
               </p>
               <p>
-                Lo que comenzó como cursos básicos ha evolucionado en una plataforma completa con <span className="text-brand-light font-semibold">cursos gratuitos y premium, comunidad activa, mentoría personalizada y proyectos innovadores</span>. Hoy, más de 2,300 estudiantes de 50+ países confían en Nodo360 para su educación en crypto.
+                Hoy Nodo360 ofrece <span className="text-brand-light font-semibold">cursos gratuitos en español, organizados en rutas de aprendizaje de Bitcoin, seguridad y Web3</span>, con certificado verificable al completarlos y una comunidad abierta donde resolver dudas.
               </p>
               <p>
                 Pero esto es solo el comienzo. Nuestro objetivo es convertirnos en <span className="text-white font-semibold">la plataforma educativa de referencia en español para todo lo relacionado con Bitcoin, Blockchain y Web3</span>.
@@ -152,123 +152,9 @@ export default function SobreNosotrosPage() {
         </div>
       </section>
 
-      {/* Timeline */}
-      <section className="py-24 bg-gradient-to-b from-dark-surface to-dark-soft">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Nuestro Camino
-            </h2>
-            <p className="text-xl text-white/70">
-              Los hitos más importantes de Nodo360
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            {[
-              {
-                year: '2023',
-                quarter: 'Q1',
-                title: 'Fundación de Nodo360',
-                desc: 'Lanzamiento oficial con los primeros 3 cursos gratuitos sobre Bitcoin básico.'
-              },
-              {
-                year: '2023',
-                quarter: 'Q2',
-                title: 'Lanzamiento de Comunidad',
-                desc: 'Creación de Discord y Telegram. Primeros 500 miembros.'
-              },
-              {
-                year: '2023',
-                quarter: 'Q3',
-                title: 'Cursos Premium',
-                desc: 'Introducción de cursos premium con certificación. Primer curso de Solidity.'
-              },
-              {
-                year: '2023',
-                quarter: 'Q4',
-                title: 'Programa de Mentoría',
-                desc: 'Lanzamiento del programa de mentoría 1-on-1. Primeros 50 estudiantes.'
-              },
-              {
-                year: '2024',
-                quarter: 'Q1',
-                title: '1000+ Estudiantes',
-                desc: 'Alcanzamos los 1000 estudiantes activos y expandimos a 30+ países.'
-              },
-              {
-                year: '2024',
-                quarter: 'Q2',
-                title: 'Proyectos Comunitarios',
-                desc: 'Inicio de proyectos impulsados por la comunidad. Primera DAO en desarrollo.'
-              },
-              {
-                year: '2024',
-                quarter: 'Q3',
-                title: 'Certificados NFT',
-                desc: 'Implementación de certificados en blockchain como NFTs verificables.'
-              },
-              {
-                year: '2024',
-                quarter: 'Q4',
-                title: '2300+ Miembros',
-                desc: 'Superamos los 2300 miembros activos. Presencia en 50+ países.'
-              },
-            ].map((milestone, i) => (
-              <div key={i} className="relative pl-8 pb-8 border-l-2 border-brand-light/30 last:border-l-0 last:pb-0">
-                <div className="absolute left-0 top-0 w-4 h-4 bg-gradient-to-br from-brand-light to-gold rounded-full -translate-x-[9px] ring-4 ring-dark-soft" />
-                <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10 hover:border-brand-light/50 transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="px-3 py-1 bg-gradient-to-r from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-full text-sm font-bold text-brand-light">
-                      {milestone.year} {milestone.quarter}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{milestone.title}</h3>
-                  <p className="text-white/70">{milestone.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-24 bg-dark-soft">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Nodo360 en Números
-            </h2>
-            <p className="text-xl text-white/70">
-              El impacto que hemos logrado juntos
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { icon: Users, value: '2,300+', label: 'Estudiantes Activos' },
-              { icon: Globe, value: '50+', label: 'Países' },
-              { icon: BookOpen, value: '25+', label: 'Cursos Disponibles' },
-              { icon: Award, value: '500+', label: 'Certificados Emitidos' },
-              { icon: MessageCircle, value: '10k+', label: 'Mensajes en Discord' },
-              { icon: TrendingUp, value: '95%', label: 'Tasa de Satisfacción' },
-              { icon: Target, value: '200+', label: 'Estudiantes Empleados' },
-              { icon: Zap, value: '24/7', label: 'Soporte Comunitario' },
-            ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-brand-light/20 to-gold/20 border border-brand-light/30 rounded-2xl mb-4">
-                  <stat.icon className="w-8 h-8 text-brand-light" />
-                </div>
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-white/60 text-sm">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Team Section */}
-      <section className="py-24 bg-gradient-to-b from-dark-soft to-dark-surface">
+      <section className="py-24 bg-dark-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -331,7 +217,7 @@ export default function SobreNosotrosPage() {
               Sé Parte de Nuestra Historia
             </h2>
             <p className="text-xl text-white/70 mb-8">
-              Únete a miles de estudiantes que ya están construyendo su futuro en Web3
+              Empieza por el primer curso y avanza a tu ritmo. Todos son gratuitos.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

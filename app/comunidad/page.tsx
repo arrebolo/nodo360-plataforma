@@ -1,12 +1,12 @@
 import { BenefitsGrid } from '@/components/benefits/BenefitsGrid'
 import { COMUNIDAD_BENEFITS } from '@/lib/constants/comunidad-benefits'
-import { MessageCircle, Users } from 'lucide-react'
+import { MessageCircle } from 'lucide-react'
 import { Metadata } from 'next'
 import { Footer } from '@/components/navigation/Footer'
 
 export const metadata: Metadata = {
   title: 'Comunidad Nodo360 - Conecta con Expertos en Bitcoin y Blockchain',
-  description: 'Únete a más de 2,500+ estudiantes y profesionales en Discord y Telegram. Networking, soporte 24/7, eventos y recursos exclusivos.',
+  description: 'Comunidad abierta de Nodo360 en Discord y Telegram: dudas, conversación y grupos de estudio sobre Bitcoin, Blockchain y Web3.',
   openGraph: {
     title: 'Comunidad Nodo360',
     description: 'La comunidad más activa de Bitcoin y Blockchain en español',
@@ -19,7 +19,7 @@ export default function ComunidadPage() {
       {/* Hero + Benefits Grid */}
       <BenefitsGrid
         title="Únete a la Comunidad Nodo360"
-        subtitle="Conecta con 2,500+ estudiantes y profesionales de Bitcoin y Blockchain de todo el mundo"
+        subtitle="Espacios abiertos para resolver dudas y estudiar en compañía, en español"
         benefits={COMUNIDAD_BENEFITS}
       />
 
@@ -121,28 +121,6 @@ export default function ComunidadPage() {
                 Unirse a Telegram
               </a>
             </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-white/10">
-            {[
-              { icon: Users, label: 'Miembros activos', value: '2,500+' },
-              { icon: MessageCircle, label: 'Conversaciones diarias', value: '100+' },
-              { icon: '🌍', label: 'Países', value: '50+' },
-              { icon: '⏰', label: 'Soporte', value: '24/7' },
-            ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-brand-light/20 to-brand/20 border border-brand-light/30 rounded-2xl mb-4">
-                  {typeof stat.icon === 'string' ? (
-                    <span className="text-2xl">{stat.icon}</span>
-                  ) : (
-                    <stat.icon className="w-8 h-8 text-brand-light" />
-                  )}
-                </div>
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-white/60 text-sm">{stat.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

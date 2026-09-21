@@ -135,7 +135,10 @@ export default function CourseHero({
   if (course.total_modules != null) metrics.push({ label: 'Módulos', value: String(course.total_modules) })
   if (course.total_lessons != null) metrics.push({ label: 'Lecciones', value: String(course.total_lessons) })
   if (duration) metrics.push({ label: 'Duración', value: duration })
-  if (course.enrolled_count != null) metrics.push({ label: 'Alumnos', value: String(course.enrolled_count) })
+  // 'Alumnos' se retiró: courses.enrolled_count está a 0 en todos los cursos
+  // porque ningún trigger lo mantiene, mientras course_enrollments sí tiene
+  // inscripciones reales. Mostraba "Alumnos: 0" de forma permanente. Para
+  // recuperarlo hay que contar desde course_enrollments, no leer esta columna.
 
   return (
     <>

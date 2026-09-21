@@ -136,25 +136,6 @@ export default function MentoriaPage() {
           </div>
         </section>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
-          <div className="rounded-xl bg-white/5 border border-white/10 p-5 text-center">
-            <div className="text-3xl font-bold text-white mb-1">100+</div>
-            <div className="text-sm text-gray-400">Cursos disponibles</div>
-          </div>
-          <div className="rounded-xl bg-white/5 border border-white/10 p-5 text-center">
-            <div className="text-3xl font-bold text-white mb-1">50+</div>
-            <div className="text-sm text-gray-400">Instructores certificados</div>
-          </div>
-          <div className="rounded-xl bg-white/5 border border-white/10 p-5 text-center">
-            <div className="text-3xl font-bold text-white mb-1">20+</div>
-            <div className="text-sm text-gray-400">Mentores activos</div>
-          </div>
-          <div className="rounded-xl bg-white/5 border border-white/10 p-5 text-center">
-            <div className="text-3xl font-bold text-white mb-1">5000+</div>
-            <div className="text-sm text-gray-400">Estudiantes</div>
-          </div>
-        </div>
       </div>
 
       <Footer />

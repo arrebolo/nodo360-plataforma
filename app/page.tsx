@@ -285,10 +285,10 @@ export default function HomePage() {
                   </div>
                   {/* Floating badges */}
                   <div className="absolute -top-4 -right-4 px-3 py-1.5 rounded-full bg-success/20 border border-success/30 text-success text-sm font-medium">
-                    +500 estudiantes
+                    Cursos gratuitos
                   </div>
                   <div className="absolute -bottom-2 -left-4 px-3 py-1.5 rounded-full bg-warning/20 border border-warning/30 text-warning text-sm font-medium">
-                    4.8 rating
+                    Certificado verificable
                   </div>
                 </div>
               </div>
