@@ -174,13 +174,15 @@ export default async function MentorPage() {
       .rpc('can_apply_mentor', { p_user_id: user.id })
     eligibility = result
 
-    // Obtener puntos de mérito
+    // Obtener puntos de mérito. mentor_points guarda una fila por concesión,
+    // con la columna 'points'; no hay ningún total_points que leer. Sumar aquí
+    // da el mismo número que get_mentor_points() en la base de datos, que es
+    // SUM(points) sobre esta misma tabla y lo que usa can_apply_mentor().
     const { data: points } = await supabase
       .from('mentor_points')
-      .select('total_points')
+      .select('points')
       .eq('user_id', user.id)
-      .maybeSingle()
-    meritPoints = points?.total_points || 0
+    meritPoints = (points || []).reduce((sum, p) => sum + (p.points || 0), 0)
 
     // Verificar si tiene certificación de instructor
     const { data: certs } = await supabase
