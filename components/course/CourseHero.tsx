@@ -5,6 +5,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import { BookOpen } from 'lucide-react'
 import { InstructorPreviewModal, useInstructorPreview } from '@/components/instructor/InstructorPreviewModal'
 
 type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
@@ -42,6 +43,12 @@ export type CourseHeroCourse = {
 
 export type CourseHeroProps = {
   course: CourseHeroCourse
+  /**
+   * Si quien mira puede gestionar el curso: admin, su instructor, o un mentor
+   * revisandolo. Solo con esto se muestran avisos de gestion, como el de que
+   * falta la imagen. Un visitante nunca debe leer instrucciones de backoffice.
+   */
+  canManage?: boolean
   isEnrolled?: boolean
   progressPct?: number | null
   hasFreePreview?: boolean
@@ -135,6 +142,7 @@ export default function CourseHero({
   hrefDashboard = '/dashboard',
   onEnrollClick,
   enrolling = false,
+  canManage = false,
 }: CourseHeroProps) {
   const pct = clampPct(progressPct)
   const published = course.status === 'published'
@@ -343,10 +351,25 @@ export default function CourseHero({
                   loading="lazy"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center px-6 text-center">
-                  <p className="text-sm text-muted">
-                    Añade un banner o thumbnail para reforzar la identidad visual del curso.
-                  </p>
+                /* Sin imagen: marcador neutro para cualquiera. El aviso de que
+                   falta subirla solo lo ve quien puede subirla. */
+                <div
+                  className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center"
+                  role="img"
+                  aria-label={`${course.title} — sin imagen de portada`}
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-light/20 to-gold/20 border border-brand-light/20">
+                    <BookOpen className="h-7 w-7 text-brand-light" aria-hidden="true" />
+                  </div>
+                  <span className="text-sm font-medium text-white/50">
+                    {levelLabel(course.level)}
+                  </span>
+
+                  {canManage && (
+                    <p className="mt-1 text-xs text-amber-300/80">
+                      Falta la imagen de portada de este curso.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
