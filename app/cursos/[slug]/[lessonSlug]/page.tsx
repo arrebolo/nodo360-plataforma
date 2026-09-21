@@ -6,6 +6,8 @@ import { hasEntitlement } from "@/lib/billing/entitlements"
 import LessonPlayer from "@/components/lesson/LessonPlayer"
 import { getCourseQuizStatus } from "@/lib/quiz/checkCourseQuiz"
 import type { LessonPlayerProps, ModuleWithLessons, LessonNavigation, LessonProgress, QuizStatus } from "@/types/lesson-player"
+import { resolveCourseAccess } from "@/lib/courses/access"
+import { CoursePreviewBanner } from "@/components/course/CoursePreviewBanner"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -20,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: lesson } = await supabase
     .from("lessons")
-    .select("title, courses!inner(title, slug)")
+    .select("title, courses!inner(title, slug, status)")
     .eq("slug", lessonSlug)
     .eq("courses.slug", slug)
     .single()
@@ -30,8 +32,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // Handle the courses join result - it's a single object, not an array
-  const courseData = lesson.courses as unknown as { title: string; slug: string } | null
+  const courseData = lesson.courses as unknown as { title: string; slug: string; status: string | null } | null
   const courseTitle = courseData?.title || slug
+
+  // Un curso sin publicar no se indexa aunque su instructor o un admin pueda
+  // abrir la leccion. Quien no tenga permiso recibe un 404 en la propia pagina.
+  if (courseData?.status !== 'published') {
+    return {
+      title: `${lesson.title} | ${courseTitle} | Nodo360`,
+      description: `Leccion: ${lesson.title}`,
+      robots: { index: false, follow: false },
+    }
+  }
 
   return {
     title: `${lesson.title} | ${courseTitle} | Nodo360`,
@@ -60,6 +72,7 @@ export default async function LessonPage({ params }: PageProps) {
       id,
       slug,
       title,
+      status,
       is_premium,
       instructor_id,
       modules (
@@ -80,6 +93,16 @@ export default async function LessonPage({ params }: PageProps) {
 
   if (courseError || !course) {
     console.error("❌ [LessonPage] Error cargando curso:", courseError?.message)
+    notFound()
+  }
+
+  // Regla unica de visibilidad: publicado -> todos; borrador -> admin e
+  // instructor del curso; el resto, 404. Ver lib/courses/access.ts
+  // Antes esta pagina no miraba el estado del curso, asi que cualquier usuario
+  // autenticado podia leer lecciones de borradores por URL directa.
+  const { canView, isPreview } = await resolveCourseAccess(course, userId)
+
+  if (!canView) {
     notFound()
   }
 
@@ -234,5 +257,10 @@ export default async function LessonPage({ params }: PageProps) {
     userRole,
   }
 
-  return <LessonPlayer {...playerProps} />
+  return (
+    <>
+      {isPreview && <CoursePreviewBanner />}
+      <LessonPlayer {...playerProps} />
+    </>
+  )
 }
