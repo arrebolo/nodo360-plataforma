@@ -24,8 +24,12 @@ type Props = {
   status?: string | null
 }
 
-/** Estados en los que el curso todavia se esta construyendo */
-const EN_PREPARACION = ['draft', 'pending_review', 'changes_requested']
+/**
+ * Estados en los que el curso todavia no ha llegado al catalogo.
+ * 'coming_soon' entra aqui: un curso anunciado como proximo no esta retirado,
+ * esta por llegar.
+ */
+const EN_PREPARACION = ['draft', 'pending_review', 'changes_requested', 'coming_soon']
 
 /** Estados en los que el curso se retiro */
 const RETIRADO = ['archived', 'rejected']
@@ -38,9 +42,14 @@ export async function CourseUnavailable({ courseId, courseTitle, status }: Props
 
   const Icono = enPreparacion ? Hammer : Archive
 
+  // Tres casos, cada uno con su titulo y su cuerpo. El tercero es la red de
+  // seguridad para un estado que no conozcamos: no afirma que se haya retirado
+  // ni promete que vaya a llegar.
   const titulo = enPreparacion
     ? 'Este curso está en preparación'
-    : 'Este curso ya no está disponible'
+    : retirado
+      ? 'Este curso ya no está disponible'
+      : 'Este curso no está disponible'
 
   const cuerpo = enPreparacion
     ? `El curso «${courseTitle}» todavía no está publicado. Aparecerá en el catálogo cuando el contenido esté terminado y revisado. No damos fechas: preferimos publicarlo bien a publicarlo pronto.`
