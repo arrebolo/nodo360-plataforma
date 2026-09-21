@@ -74,7 +74,7 @@ GRANT ALL ON public.quiz_questions TO service_role;
 
 
 -- ============================================================================
--- PENDIENTE DE DECISION: la vista quiz_questions_public
+-- LA VISTA quiz_questions_public - RESUELTO EN LA 027
 -- ============================================================================
 --
 -- docs/migrations/021 creo public.quiz_questions_public con
@@ -82,21 +82,16 @@ GRANT ALL ON public.quiz_questions TO service_role;
 -- idea de que fuera la via publica para leer preguntas sin la respuesta.
 --
 -- Con security_invoker = on la vista se ejecuta con los privilegios de quien
--- consulta, asi que al revocar el acceso de anon a la tabla base la vista dejo
--- de servirle. Comprobado el 21/09/2026:
+-- consulta, asi que al revocar aqui el acceso de anon a la tabla base la vista
+-- dejo de servirle. Comprobado el 21/09/2026:
 --
 --   anon GET /rest/v1/quiz_questions_public?select=*
 --     -> 401 42501: permission denied for table quiz_questions
 --
--- Hoy no se rompe nada porque nadie la consume: las preguntas se sirven desde
+-- No se rompe nada porque nadie la consume: las preguntas se sirven desde
 -- /api/quiz/questions con service_role y lista explicita de columnas. Pero la
--- vista y su GRANT siguen ahi y sugieren un acceso que no existe.
+-- vista y su GRANT seguian ahi sugiriendo un acceso que no existe.
 --
--- Hay dos salidas, y es una decision de producto:
---   a) Borrar la vista y su GRANT, y dejar /api/quiz/questions como unica via.
---   b) Pasarla a security_invoker = off (se ejecuta con los privilegios de su
---      propietario) para que anon pueda leer preguntas sin la respuesta.
---      Ojo: eso reabre el acceso anonimo al enunciado de todas las preguntas,
---      incluidas las de cursos no publicados, porque saltaria la RLS de la 024.
---
--- No se toca aqui: este archivo solo documenta lo ya aplicado.
+-- Se elimina en 027_drop_quiz_questions_public.sql. La alternativa, pasarla a
+-- security_invoker = off, habria saltado tambien la RLS de la 024 y expuesto
+-- las preguntas de cursos sin publicar.
