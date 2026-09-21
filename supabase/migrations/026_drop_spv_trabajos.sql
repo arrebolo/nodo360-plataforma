@@ -1,0 +1,72 @@
+-- ============================================================================
+-- MIGRACION 026: retirada de las tablas de SPV Trabajos
+--
+-- *** YA APLICADA EN PRODUCCION ENTRE EL 20 Y EL 21 DE SEPTIEMBRE DE 2026 ***
+--
+-- Se versiona aqui a posteriori. No existia ningun archivo en el repo: todo el
+-- cierre se ejecuto a mano en el SQL Editor durante el incidente.
+--
+-- QUE PASO
+-- El proyecto Supabase de Nodo360 (gcahtbecfidroepelcuw) contenia dos tablas
+-- que no pertenecen a esta plataforma, sino a SPV Trabajos, una aplicacion
+-- distinta con su propio proyecto Supabase (zbyz...):
+--
+--   public.spv_trabajos       196 filas con datos reales de terceros
+--   public.push_subscriptions   1 fila
+--
+-- Eran una copia huerfana anterior a la migracion de SPV Trabajos a su propio
+-- proyecto, documentada en el 003_new_project_schema.sql de aquel repositorio.
+-- Los datos se escribieron entre el 13 de abril y el 12 de agosto de 2026; el
+-- repositorio de SPV Trabajos arranca el 18 de agosto de 2026.
+--
+-- Estaban sin RLS y sin REVOKE, es decir, legibles con la clave anonima de
+-- Nodo360, que es publica por definicion (viaja en el navegador).
+--
+-- QUE SE HIZO, EN ESTE ORDEN
+--   1. 20/09/2026 - ALTER TABLE ... ENABLE ROW LEVEL SECURITY sin politicas, y
+--      REVOKE ALL a anon y authenticated. Verificado: la clave anonima pasaba a
+--      devolver 42501.
+--   2. Comparacion con el proyecto de SPV Trabajos antes de borrar nada:
+--      196/196 identificadores coincidentes, 196 updated_at identicos, 0 filas
+--      que existieran solo en Nodo360, 0 ediciones pendientes de propagar.
+--      Es decir, no se perdia nada que no estuviera ya en el proyecto correcto.
+--   3. Respaldo completo fuera de ambos repositorios, en
+--      C:\\Users\\alber\\respaldo-tablas-spv-en-proyecto-nodo360-20260921.json
+--      (192,2 KB, sha256 5a7be25d4741765f59c8939c8787c4d5...).
+--   4. 21/09/2026 - DROP de ambas tablas.
+--
+-- ESTADO VERIFICADO EL 21/09/2026
+--   anon         GET /rest/v1/spv_trabajos       -> 404 PGRST205 (no existe)
+--   service_role GET /rest/v1/spv_trabajos       -> 404 PGRST205 (no existe)
+--   anon         GET /rest/v1/push_subscriptions -> 404 PGRST205 (no existe)
+--   service_role GET /rest/v1/push_subscriptions -> 404 PGRST205 (no existe)
+--
+-- Ninguna tabla es referenciada por el codigo de Nodo360: no hay un solo
+-- .from('spv_trabajos') ni .from('push_subscriptions') en app/, lib/,
+-- components/ ni scripts/.
+--
+-- Este archivo reproduce el estado final. Es idempotente y, sobre una base de
+-- datos donde las tablas ya no estan, no hace nada.
+-- ============================================================================
+
+DROP TABLE IF EXISTS public.spv_trabajos CASCADE;
+DROP TABLE IF EXISTS public.push_subscriptions CASCADE;
+
+
+-- ============================================================================
+-- COMPROBACION (solo lectura, ejecutar aparte)
+-- ============================================================================
+-- select table_name
+-- from information_schema.tables
+-- where table_schema = 'public'
+--   and table_name in ('spv_trabajos','push_subscriptions');
+-- No debe devolver ninguna fila.
+
+
+-- ============================================================================
+-- PENDIENTE RELACIONADO
+-- ============================================================================
+-- Queda por decidir que se hace con el esquema backup_nodo360, que contiene una
+-- copia de users con datos personales y no esta expuesto por PostgREST, por lo
+-- que no se puede inspeccionar desde fuera del SQL Editor.
+-- Anotado en docs/PLAN-REFORMA.md (Tier 2).
