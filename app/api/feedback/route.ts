@@ -23,13 +23,16 @@ export async function POST(request: Request) {
   if (rateLimitResponse) return rateLimitResponse
 
   try {
-    const { userId, userEmail, pageUrl, message } = await request.json()
-    console.log('[Feedback API] Recibido:', { userId, userEmail, pageUrl, messageLength: message?.length })
+    // La identidad NO se acepta del cuerpo: userId y userEmail salen de la
+    // sesion mas abajo. Aceptarlos permitia atribuir un comentario a otra
+    // cuenta y a cualquier correo.
+    const { pageUrl, message } = await request.json()
+    console.log('[Feedback API] Recibido:', { pageUrl, messageLength: message?.length })
 
-    if (!message || !userEmail) {
+    if (!message) {
       console.log('[Feedback API] Datos incompletos')
       return NextResponse.json(
-        { error: 'Mensaje y email son requeridos' },
+        { error: 'El mensaje es requerido' },
         { status: 400 }
       )
     }
@@ -57,6 +60,17 @@ export async function POST(request: Request) {
 
     console.log('[Feedback API] Usuario autenticado:', user.id)
 
+    // beta_feedback.user_email es NOT NULL y user.email es opcional en Supabase
+    // (una cuenta puede crearse por telefono o por un proveedor sin correo).
+    const userEmail = user.email
+    if (!userEmail) {
+      console.log('[Feedback API] La cuenta no tiene email asociado')
+      return NextResponse.json(
+        { error: 'Tu cuenta no tiene un email asociado' },
+        { status: 400 }
+      )
+    }
+
     // Usar admin client para bypass RLS
     let supabaseAdmin
     try {
@@ -73,7 +87,7 @@ export async function POST(request: Request) {
 
     // Datos a insertar
     const feedbackData = {
-      user_id: userId || user.id,
+      user_id: user.id,
       user_email: userEmail,
       page_url: pageUrl || null,
       message: message,
