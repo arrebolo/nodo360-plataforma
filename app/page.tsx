@@ -288,7 +288,7 @@ export default function HomePage() {
                     Cursos gratuitos
                   </div>
                   <div className="absolute -bottom-2 -left-4 px-3 py-1.5 rounded-full bg-warning/20 border border-warning/30 text-warning text-sm font-medium">
-                    4.8 rating
+                    Certificado verificable
                   </div>
                 </div>
               </div>

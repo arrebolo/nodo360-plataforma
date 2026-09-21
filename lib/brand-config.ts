@@ -12,7 +12,7 @@ export const brandConfig = {
   },
   name: 'Nodo360',
   tagline: 'Domina Bitcoin y Blockchain',
-  description: 'La plataforma educativa más completa en español para aprender Bitcoin, Blockchain y Web3',
+  description: 'Cursos gratuitos de Bitcoin, Blockchain y Web3 en español',
   colors: {
     primary: '#ff6b35',
     primaryLight: '#f7931a',

@@ -336,7 +336,7 @@ export default function GuiaRevisionPage() {
               ¿Listo para crear tu curso?
             </h2>
             <p className="text-white/60 mb-6 max-w-md mx-auto">
-              Comienza ahora y comparte tu conocimiento con miles de estudiantes
+              Comienza ahora y comparte lo que sabes con quienes estudian en la plataforma
             </p>
             <div className="flex items-center justify-center gap-4 flex-wrap">
               <Link
