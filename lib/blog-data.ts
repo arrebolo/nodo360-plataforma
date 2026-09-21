@@ -38,7 +38,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: 'que-es-bitcoin-guia-completa',
     title: 'Qué es Bitcoin: Guía Completa para Principiantes 2025',
-    description: 'Aprende qué es Bitcoin, cómo funciona, por qué es importante y cómo empezar. La guía más completa en español para entender la primera criptomoneda.',
+    description: 'Aprende qué es Bitcoin, cómo funciona, por qué es importante y cómo empezar. Guía completa en español para entender la primera criptomoneda.',
     category: 'bitcoin',
     author: 'Equipo Nodo360',
     authorRole: 'Educadores Bitcoin',
@@ -2245,7 +2245,7 @@ Bitcoin nació en 2009 como respuesta a la crisis financiera. En su corta vida:
 - Ha pasado de valer centavos a decenas de miles de dólares
 - Ha sobrevivido múltiples "muertes" declaradas por medios
 - Ha sido adoptado por instituciones y países
-- Se ha convertido en la mejor inversión de la última década
+- Ha registrado una revalorización muy alta en ese periodo, acompañada de una volatilidad igual de alta y de caídas superiores al 70% en varias ocasiones
 
 **Argumento**: Aunque joven, Bitcoin ha demostrado resiliencia y adopción creciente.
 
