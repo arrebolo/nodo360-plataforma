@@ -179,6 +179,21 @@ export default async function CoursePage({ params }: CoursePageProps) {
     ? await hasEntitlement(user.id, course.id)
     : true // cursos no-premium no requieren entitlement
 
+  // Quien puede gestionar el curso ve los avisos de gestion (por ejemplo, que
+  // falta la imagen de portada). Un visitante no debe leerlos nunca.
+  // isPreview solo cubre los cursos sin publicar; estos tres estan publicados,
+  // asi que hace falta comprobar el rol tambien aqui.
+  const { data: perfil } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const canManage =
+    isPreview ||
+    perfil?.role === 'admin' ||
+    course.instructor_id === user.id
+
   // 5. Verificar inscripción
   const { data: enrollment } = await supabase
     .from('course_enrollments')
@@ -274,6 +289,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             instructor_id: course.instructor_id ?? null,
             instructor: course.instructor as unknown as { id: string; full_name: string | null; avatar_url: string | null; role: string | null } | null,
           }}
+          canManage={canManage}
           isEnrolled={isEnrolled}
           progressPct={courseProgress?.globalProgress?.percentage ?? null}
           hrefContinue={hasPremiumAccess ? `/api/continue?courseSlug=${course.slug}` : undefined}
