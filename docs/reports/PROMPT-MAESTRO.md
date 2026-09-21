@@ -246,9 +246,31 @@ Otras L1/L2 e Interoperabilidad.
 **Una leccion de nivel intermedio son 8.000-12.000 caracteres.** La referencia es
 *Nodos Bitcoin 1.1 — El Rol de los Nodos en Bitcoin*: 12.371 caracteres.
 
-Distancia respecto al catalogo actual: la mediana de una leccion publicada es de
-**1.748 caracteres**, es decir, entre una quinta y una septima parte del
-estandar. Solo 6 de 78 lecciones lo cumplen, y las seis estan en borrador.
+**El rango es orientativo, no un limite.** Marca el orden de magnitud de una
+leccion intermedia, no una horquilla que haya que cumplir. Las lecciones que
+concentran el material mas denso de un curso pueden superarlo si el contenido lo
+sostiene: es normal que una o dos por curso carguen con lo que las demas
+presuponen.
+
+Lo que no se admite son las dos formas de forzar la cifra:
+
+- **Rellenar para llegar al minimo.** Alargar con repeticiones, parrafos de
+  transicion vacios o recapitulaciones que no aportan. Si un tema se agota en
+  6.000 caracteres bien escritos, la leccion son 6.000 caracteres.
+- **Trocear para no pasarse.** Partir una explicacion en dos lecciones solo para
+  que ninguna exceda el rango, dejando media idea en cada una. Si el material
+  pide 14.000 caracteres seguidos, se escriben.
+
+La prueba no es la cifra, es si cada bloque responde a algo que el alumno
+necesita saber ahi. Cuando una leccion se pasa de largo, la pregunta correcta no
+es «como la recorto» sino «sobra algo». Si no sobra nada, se queda como esta y
+se anota por que.
+
+Distancia respecto al catalogo actual (21/09/2026): la mediana de una leccion
+publicada es de **1.785 caracteres**, es decir, alrededor de una sexta parte de
+la referencia. De 78 lecciones, **12 llegan a 8.000** y solo **3 pasan de
+12.000**; la mas larga son 14.243. El problema del catalogo no es que algunas
+lecciones se pasen: es que la mayoria se queda muy corta.
 
 **El cuello de botella no es generar el texto, es verificarlo.** Escribir una
 leccion de 10.000 caracteres es rapido; comprobar cada dato que contiene no lo
