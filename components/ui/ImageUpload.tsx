@@ -20,7 +20,7 @@ interface ImageUploadProps {
   label: string
   /** Texto de ayuda */
   hint?: string
-  /** Tamaño maximo en MB */
+  /** Tamaño máximo en MB */
   maxSizeMB?: number
   /** Deshabilitado */
   disabled?: boolean
@@ -60,7 +60,7 @@ export function ImageUpload({
       return
     }
 
-    // Validar tamano
+    // Validar tamaño
     const maxBytes = maxSizeMB * 1024 * 1024
     if (file.size > maxBytes) {
       setError(`La imagen no puede superar ${maxSizeMB}MB`)
@@ -78,7 +78,7 @@ export function ImageUpload({
     try {
       const supabase = createClient()
 
-      // Verificar autenticacion
+      // Verificar autenticación
       const { data: { user }, error: authError } = await supabase.auth.getUser()
 
       if (authError) {
@@ -87,11 +87,11 @@ export function ImageUpload({
           status: authError.status,
           name: authError.name,
         })
-        throw new Error('Error de autenticacion. Por favor, recarga la pagina.')
+        throw new Error('Error de autenticación. Por favor, recarga la página.')
       }
 
       if (!user) {
-        throw new Error('Debes iniciar sesion para subir imagenes')
+        throw new Error('Debes iniciar sesión para subir imagenes')
       }
 
       // Generar nombre unico
@@ -101,7 +101,7 @@ export function ImageUpload({
       const fileName = `${timestamp}-${randomId}.${ext}`
       const filePath = folder ? `${folder}/${fileName}` : fileName
 
-      // Log de la operacion de upload
+      // Log de la operación de upload
       console.log('[ImageUpload] Iniciando upload:', {
         bucket,
         filePath,
@@ -130,7 +130,7 @@ export function ImageUpload({
           // @ts-expect-error - error may exist on StorageError
           error: uploadError.error,
         })
-        console.error('[ImageUpload] Detalles de la operacion:', {
+        console.error('[ImageUpload] Detalles de la operación:', {
           bucket,
           filePath,
           fileType: file.type,
@@ -140,7 +140,7 @@ export function ImageUpload({
         console.error('[ImageUpload] Error completo:', uploadError)
         console.error('[ImageUpload] ==================')
 
-        // Mapear errores comunes a mensajes en espanol
+        // Mapear errores comunes a mensajes en español
         const errorMessage = uploadError.message.toLowerCase()
 
         if (errorMessage.includes('bucket') && errorMessage.includes('not found')) {

@@ -59,7 +59,7 @@ export function ModulesSortable({
     new Set(modules.map(m => m.id)) // Todos expandidos por defecto
   )
 
-  // Toggle expandir/colapsar modulo
+  // Toggle expandir/colapsar módulo
   const toggleModule = useCallback((moduleId: string) => {
     setExpandedModules(prev => {
       const next = new Set(prev)
@@ -72,13 +72,13 @@ export function ModulesSortable({
     })
   }, [])
 
-  // Guardar nuevo orden de modulos en BD
+  // Guardar nuevo orden de módulos en BD
   const saveModulesOrder = useCallback(async (newModules: Module[]) => {
     setSavingOrder(true)
     const supabase = createClient()
 
     try {
-      // Actualizar order_index de cada modulo
+      // Actualizar order_index de cada módulo
       const updates = newModules.map((module, index) => ({
         id: module.id,
         order_index: index
@@ -101,7 +101,7 @@ export function ModulesSortable({
     }
   }, [])
 
-  // Handler para reordenar modulos
+  // Handler para reordenar módulos
   const handleModulesReorder = useCallback((newModules: Module[]) => {
     // Actualizar order_index localmente
     const updatedModules = newModules.map((m, index) => ({
@@ -113,7 +113,7 @@ export function ModulesSortable({
     saveModulesOrder(updatedModules)
   }, [onModulesChange, saveModulesOrder])
 
-  // Handler para reordenar lecciones dentro de un modulo
+  // Handler para reordenar lecciones dentro de un módulo
   const handleLessonsReorder = useCallback(async (moduleId: string, newLessons: Lesson[]) => {
     // Actualizar estado local
     const updatedModules = modules.map(m => {
@@ -204,7 +204,7 @@ export function ModulesSortable({
                   type="button"
                   onClick={() => onEditModule(module)}
                   className="p-2 hover:bg-white/10 rounded-lg transition text-white/60 hover:text-white"
-                  title="Editar modulo"
+                  title="Editar módulo"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -216,7 +216,7 @@ export function ModulesSortable({
                   type="button"
                   onClick={() => onDeleteModule(module)}
                   className="p-2 hover:bg-error/20 rounded-lg transition text-white/60 hover:text-error"
-                  title="Eliminar modulo"
+                  title="Eliminar módulo"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -241,11 +241,11 @@ export function ModulesSortable({
               />
             ) : (
               <div className="text-center py-6 text-white/40 text-sm">
-                No hay lecciones en este modulo
+                No hay lecciones en este módulo
               </div>
             )}
 
-            {/* Boton anadir leccion */}
+            {/* Boton añadir lección */}
             {onAddLesson && !disabled && (
               <Button
                 type="button"
@@ -254,7 +254,7 @@ export function ModulesSortable({
                 onClick={() => onAddLesson(module.id)}
                 className="w-full mt-3 border border-dashed border-white/20 hover:border-white/40"
               >
-                + Anadir leccion
+                + Añadir lección
               </Button>
             )}
           </div>
@@ -284,9 +284,9 @@ export function ModulesSortable({
     return (
       <div className="text-center py-12 bg-dark-surface border border-white/10 rounded-2xl">
         <div className="text-4xl mb-3">📦</div>
-        <h3 className="text-lg font-semibold text-white mb-2">Sin modulos</h3>
+        <h3 className="text-lg font-semibold text-white mb-2">Sin módulos</h3>
         <p className="text-white/60 text-sm mb-4">
-          Anade modulos para organizar el contenido del curso
+          Añade módulos para organizar el contenido del curso
         </p>
       </div>
     )

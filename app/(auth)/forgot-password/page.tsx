@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
         return
       }
 
-      console.log('[Forgot Password] Email de recuperacion enviado exitosamente')
+      console.log('[Forgot Password] Email de recuperación enviado exitosamente')
       setSuccess(true)
     } catch (err: unknown) {
       // Log completo del error para debugging
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
               Revisa tu correo
             </h1>
             <p className="text-white/60 mb-2">
-              Hemos enviado un enlace de recuperacion a:
+              Hemos enviado un enlace de recuperación a:
             </p>
             <p className="text-brand font-medium mb-6">
               {email}
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
                 href="/login"
                 className="block w-full px-6 py-3 rounded-xl bg-brand text-white font-medium hover:bg-brand-dark transition-colors text-center"
               >
-                Volver al inicio de sesion
+                Volver al inicio de sesión
               </Link>
             </div>
           </div>
@@ -146,10 +146,10 @@ export default function ForgotPasswordPage() {
             <span className="text-xl font-bold text-white">Nodo360</span>
           </Link>
           <h1 className="text-2xl font-bold text-white mb-2">
-            Recuperar contrasena
+            Recuperar contraseña
           </h1>
           <p className="text-white/60">
-            Te enviaremos un enlace para restablecer tu contrasena
+            Te enviaremos un enlace para restablecer tu contraseña
           </p>
         </div>
 
@@ -200,7 +200,7 @@ export default function ForgotPasswordPage() {
               ) : (
                 <>
                   <Mail className="w-5 h-5" />
-                  Enviar enlace de recuperacion
+                  Enviar enlace de recuperación
                 </>
               )}
             </button>
@@ -213,7 +213,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center text-sm text-white/40">
             <p>
               Recibiras un email con instrucciones para
-              crear una nueva contrasena.
+              crear una nueva contraseña.
             </p>
           </div>
         </div>
@@ -225,7 +225,7 @@ export default function ForgotPasswordPage() {
             className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver al inicio de sesion
+            Volver al inicio de sesión
           </Link>
         </div>
       </div>

@@ -31,7 +31,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-bitcoin',
     question: '¿Que es Bitcoin y como funciona?',
-    answer: 'Bitcoin es la primera criptomoneda descentralizada del mundo, creada en 2009 por Satoshi Nakamoto. Funciona como dinero digital que puede enviarse directamente entre personas sin necesidad de bancos u otros intermediarios. Las transacciones se verifican mediante una red global de equipos (nodos) y se registran en un libro publico llamado blockchain. Bitcoin utiliza criptografia avanzada para garantizar la seguridad y tiene un suministro limitado de 21 millones de unidades, lo que lo convierte en un activo escaso similar al oro digital.',
+    answer: 'Bitcoin es la primera criptomoneda descentralizada del mundo, creada en 2009 por Satoshi Nakamoto. Funciona como dinero digital que puede enviarse directamente entre personas sin necesidad de bancos u otros intermediarios. Las transacciones se verifican mediante una red global de equipos (nodos) y se registran en un libro público llamado blockchain. Bitcoin utiliza criptografia avanzada para garantizar la seguridad y tiene un suministro limitado de 21 millones de unidades, lo que lo convierte en un activo escaso similar al oro digital.',
     category: 'bitcoin',
     links: [
       { text: 'Guia completa de Bitcoin', url: '/blog/que-es-bitcoin-guia-completa' },
@@ -41,7 +41,7 @@ const faqs: FAQ[] = [
   {
     id: 'es-seguro-invertir-bitcoin',
     question: '¿Es seguro invertir en Bitcoin?',
-    answer: 'Bitcoin es una inversion de alto riesgo debido a su volatilidad. El precio puede subir o bajar significativamente en cortos periodos. Sin embargo, la tecnologia subyacente es extremadamente segura: la red Bitcoin nunca ha sido hackeada en sus mas de 15 años de existencia. Los riesgos principales vienen de: 1) Volatilidad del precio, 2) Perdida de claves privadas por descuido, 3) Estafas y phishing. La recomendacion es invertir solo lo que puedas permitirte perder, educarte antes de invertir, y usar almacenamiento seguro (hardware wallets) para cantidades significativas.',
+    answer: 'Bitcoin es una inversión de alto riesgo debido a su volatilidad. El precio puede subir o bajar significativamente en cortos periodos. Sin embargo, la tecnologia subyacente es extremadamente segura: la red Bitcoin nunca ha sido hackeada en sus más de 15 años de existencia. Los riesgos principales vienen de: 1) Volatilidad del precio, 2) Pérdida de claves privadas por descuido, 3) Estafas y phishing. La recomendacion es invertir solo lo que puedas permitirte perder, educarte antes de invertir, y usar almacenamiento seguro (hardware wallets) para cantidades significativas.',
     category: 'bitcoin',
     links: [
       { text: 'Soberania financiera con Bitcoin', url: '/blog/soberania-financiera-bitcoin' },
@@ -50,7 +50,7 @@ const faqs: FAQ[] = [
   {
     id: 'como-comprar-bitcoin-espana',
     question: '¿Como puedo comprar Bitcoin en España?',
-    answer: 'En España puedes comprar Bitcoin de varias formas: 1) Exchanges centralizados como Binance, Kraken, Coinbase o Bit2Me, que permiten comprar con transferencia bancaria o tarjeta. 2) Exchanges P2P como Bisq o HodlHodl para comprar directamente a otras personas. 3) Cajeros Bitcoin distribuidos por ciudades españolas. 4) Apps como Relai o Pocket para compras recurrentes. Lo importante es verificar que la plataforma este registrada en el Banco de España, usar autenticacion de dos factores (2FA), y transferir tus bitcoins a una wallet propia tras la compra.',
+    answer: 'En España puedes comprar Bitcoin de varias formas: 1) Exchanges centralizados como Binance, Kraken, Coinbase o Bit2Me, que permiten comprar con transferencia bancaria o tarjeta. 2) Exchanges P2P como Bisq o HodlHodl para comprar directamente a otras personas. 3) Cajeros Bitcoin distribuidos por ciudades españolas. 4) Apps como Relai o Pocket para compras recurrentes. Lo importante es verificar que la plataforma este registrada en el Banco de España, usar autenticación de dos factores (2FA), y transferir tus bitcoins a una wallet propia tras la compra.',
     category: 'bitcoin',
     links: [
       { text: 'Guia para comprar Bitcoin en España', url: '/blog/como-comprar-bitcoin-espana' },
@@ -59,7 +59,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-halving-bitcoin',
     question: '¿Que es el halving de Bitcoin?',
-    answer: 'El halving es un evento programado que reduce a la mitad la recompensa que reciben los mineros por añadir nuevos bloques a la blockchain de Bitcoin. Ocurre cada 210,000 bloques (aproximadamente cada 4 años). Empezo con 50 BTC por bloque en 2009, bajo a 25 BTC en 2012, a 12.5 BTC en 2016, a 6.25 BTC en 2020, y a 3.125 BTC en 2024. Este mecanismo controla la emision de nuevos bitcoins y crea escasez programada. Historicamente, los halvings han precedido periodos de aumento de precio, aunque no hay garantia de que esto continue.',
+    answer: 'El halving es un evento programado que reduce a la mitad la recompensa que reciben los mineros por añadir nuevos bloques a la blockchain de Bitcoin. Ocurre cada 210,000 bloques (aproximadamente cada 4 años). Empezo con 50 BTC por bloque en 2009, bajo a 25 BTC en 2012, a 12.5 BTC en 2016, a 6.25 BTC en 2020, y a 3.125 BTC en 2024. Este mecanismo controla la emisión de nuevos bitcoins y crea escasez programada. Historicamente, los halvings han precedido periodos de aumento de precio, aunque no hay garantia de que esto continue.',
     category: 'bitcoin',
     links: [
       { text: 'Halving en el glosario', url: '/glosario/halving' },
@@ -68,7 +68,7 @@ const faqs: FAQ[] = [
   {
     id: 'cuantos-bitcoin-existen',
     question: '¿Cuantos Bitcoin existen?',
-    answer: 'El protocolo de Bitcoin establece un limite maximo de 21 millones de bitcoins que existiran jamas. Actualmente hay aproximadamente 19.5 millones en circulacion (minados). Los restantes se minaran gradualmente hasta aproximadamente el año 2140. Se estima que entre 3 y 4 millones de bitcoins se han perdido permanentemente (claves privadas olvidadas, wallets inaccesibles). Cada bitcoin puede dividirse en 100 millones de unidades mas pequeñas llamadas satoshis, permitiendo transacciones de cualquier tamaño.',
+    answer: 'El protocolo de Bitcoin establece un limite máximo de 21 millones de bitcoins que existiran jamas. Actualmente hay aproximadamente 19.5 millones en circulacion (minados). Los restantes se minaran gradualmente hasta aproximadamente el año 2140. Se estima que entre 3 y 4 millones de bitcoins se han perdido permanentemente (claves privadas olvidadas, wallets inaccesibles). Cada bitcoin puede dividirse en 100 millones de unidades mas pequeñas llamadas satoshis, permitiendo transacciones de cualquier tamaño.',
     category: 'bitcoin',
     links: [
       { text: 'Satoshi en el glosario', url: '/glosario/satoshi' },
@@ -77,7 +77,7 @@ const faqs: FAQ[] = [
   {
     id: 'bitcoin-legal-espana',
     question: '¿Bitcoin es legal en España?',
-    answer: 'Si, Bitcoin es completamente legal en España. Puedes comprar, vender, poseer y usar Bitcoin sin restricciones. Sin embargo, existen obligaciones fiscales: las ganancias por venta de criptomonedas tributan como ganancias patrimoniales en el IRPF (19-28% segun tramos). Los exchanges que operan en España deben registrarse en el Banco de España. Desde 2024, existe obligacion de declarar tenencias de criptomonedas superiores a 50,000 euros. Es recomendable mantener registros de todas las operaciones para la declaracion de la renta.',
+    answer: 'Si, Bitcoin es completamente legal en España. Puedes comprar, vender, poseer y usar Bitcoin sin restricciones. Sin embargo, existen obligaciones fiscales: las ganancias por venta de criptomonedas tributan como ganancias patrimoniales en el IRPF (19-28% según tramos). Los exchanges que operan en España deben registrarse en el Banco de España. Desde 2024, existe obligacion de declarar tenencias de criptomonedas superiores a 50,000 euros. Es recomendable mantener registros de todas las operaciones para la declaracion de la renta.',
     category: 'bitcoin',
   },
 
@@ -95,7 +95,7 @@ const faqs: FAQ[] = [
   {
     id: 'diferencia-bitcoin-blockchain',
     question: '¿Cual es la diferencia entre Bitcoin y blockchain?',
-    answer: 'Bitcoin es una criptomoneda, mientras que blockchain es la tecnologia subyacente que la hace funcionar. Piensa en blockchain como el motor y Bitcoin como el coche. Bitcoin fue la primera aplicacion exitosa de blockchain, pero la tecnologia tiene muchos otros usos. Ethereum usa blockchain para contratos inteligentes, otras empresas la usan para trazabilidad de productos, gobiernos la exploran para registros publicos. Todas las criptomonedas usan alguna forma de blockchain, pero no todas las blockchains tienen criptomonedas.',
+    answer: 'Bitcoin es una criptomoneda, mientras que blockchain es la tecnologia subyacente que la hace funcionar. Piensa en blockchain como el motor y Bitcoin como el coche. Bitcoin fue la primera aplicación exitosa de blockchain, pero la tecnologia tiene muchos otros usos. Ethereum usa blockchain para contratos inteligentes, otras empresas la usan para trazabilidad de productos, gobiernos la exploran para registros publicos. Todas las criptomonedas usan alguna forma de blockchain, pero no todas las blockchains tienen criptomonedas.',
     category: 'blockchain',
     links: [
       { text: 'Bitcoin en el glosario', url: '/glosario/bitcoin' },
@@ -146,7 +146,7 @@ const faqs: FAQ[] = [
   {
     id: 'perder-seed-phrase',
     question: '¿Que pasa si pierdo mi seed phrase?',
-    answer: 'Si pierdes tu seed phrase (las 12-24 palabras de recuperacion) y tambien pierdes acceso a tu wallet, tus criptomonedas se pierden PERMANENTEMENTE. No hay servicio de atencion al cliente, no hay "recuperar contraseña", nadie puede ayudarte. Por eso es critico: 1) Escribir la seed phrase en papel o metal (nunca digital), 2) Guardar copias en multiples ubicaciones seguras, 3) Nunca compartirla con nadie, 4) Nunca introducirla en sitios web. Tu seed phrase es el unico respaldo de tus fondos.',
+    answer: 'Si pierdes tu seed phrase (las 12-24 palabras de recuperación) y también pierdes acceso a tu wallet, tus criptomonedas se pierden PERMANENTEMENTE. No hay servicio de atención al cliente, no hay "recuperar contraseña", nadie puede ayudarte. Por eso es critico: 1) Escribir la seed phrase en papel o metal (nunca digital), 2) Guardar copias en multiples ubicaciones seguras, 3) Nunca compartirla con nadie, 4) Nunca introducirla en sitios web. Tu seed phrase es el único respaldo de tus fondos.',
     category: 'wallets',
     links: [
       { text: 'Seed Phrase en el glosario', url: '/glosario/seed-phrase' },
@@ -164,7 +164,7 @@ const faqs: FAQ[] = [
   {
     id: 'proteger-criptomonedas-hackers',
     question: '¿Como protejo mis criptomonedas de hackers?',
-    answer: 'Medidas esenciales: 1) Usa hardware wallet para cantidades significativas, 2) Activa 2FA en todos los servicios (preferiblemente app, no SMS), 3) Nunca compartas tu seed phrase, 4) Verifica URLs antes de conectar tu wallet, 5) Desconfia de ofertas demasiado buenas, 6) No hagas clic en links de correos sospechosos, 7) Usa contraseñas unicas para cada servicio, 8) Mantén software actualizado, 9) Considera usar un dispositivo dedicado solo para crypto. El 90% de los hackeos son por phishing o errores del usuario, no por fallos tecnologicos.',
+    answer: 'Medidas esenciales: 1) Usa hardware wallet para cantidades significativas, 2) Activa 2FA en todos los servicios (preferiblemente app, no SMS), 3) Nunca compartas tu seed phrase, 4) Verifica URLs antes de conectar tu wallet, 5) Desconfia de ofertas demasiado buenas, 6) No hagas clic en links de correos sospechosos, 7) Usa contraseñas únicas para cada servicio, 8) Mantén software actualizado, 9) Considera usar un dispositivo dedicado solo para crypto. El 90% de los hackeos son por phishing o errores del usuario, no por fallos tecnologicos.',
     category: 'wallets',
     links: [
       { text: 'Phishing explicado', url: '/glosario/phishing' },
@@ -176,7 +176,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-defi',
     question: '¿Que es DeFi (finanzas descentralizadas)?',
-    answer: 'DeFi (Decentralized Finance) es un ecosistema de aplicaciones financieras construidas sobre blockchains, principalmente Ethereum. Permite acceder a servicios como prestamos, intercambios, ahorro y derivados sin bancos ni intermediarios. Todo funciona mediante smart contracts: codigo que ejecuta operaciones automaticamente. Ventajas: acceso global sin KYC, transparencia total, control de tus fondos. Riesgos: errores en contratos, volatilidad extrema, estafas. Es un campo experimental que ofrece innovacion pero requiere precaucion.',
+    answer: 'DeFi (Decentralized Finance) es un ecosistema de aplicaciones financieras construidas sobre blockchains, principalmente Ethereum. Permite acceder a servicios como prestamos, intercambios, ahorro y derivados sin bancos ni intermediarios. Todo funciona mediante smart contracts: código que ejecuta operaciones automaticamente. Ventajas: acceso global sin KYC, transparencia total, control de tus fondos. Riesgos: errores en contratos, volatilidad extrema, estafas. Es un campo experimental que ofrece innovacion pero requiere precaucion.',
     category: 'defi',
     links: [
       { text: 'DeFi para principiantes', url: '/blog/defi-para-principiantes' },
@@ -186,7 +186,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-staking',
     question: '¿Que es el staking y como funciona?',
-    answer: 'Staking es el proceso de bloquear criptomonedas en una red Proof of Stake para ayudar a validar transacciones y asegurar la red. A cambio, recibes recompensas en forma de mas criptomonedas. Es similar a recibir intereses por un deposito bancario. Por ejemplo, Ethereum permite stakear ETH para convertirte en validador. Puedes hacer staking directo (requiere cantidad minima, conocimientos tecnicos) o mediante servicios como Lido que lo hacen accesible a cualquier cantidad. Los rendimientos tipicos van del 3% al 15% anual dependiendo de la red.',
+    answer: 'Staking es el proceso de bloquear criptomonedas en una red Proof of Stake para ayudar a validar transacciones y asegurar la red. A cambio, recibes recompensas en forma de mas criptomonedas. Es similar a recibir intereses por un deposito bancario. Por ejemplo, Ethereum permite stakear ETH para convertirte en validador. Puedes hacer staking directo (requiere cantidad minima, conocimientos técnicos) o mediante servicios como Lido que lo hacen accesible a cualquier cantidad. Los rendimientos tipicos van del 3% al 15% anual dependiendo de la red.',
     category: 'defi',
     links: [
       { text: 'Staking en el glosario', url: '/glosario/staking' },
@@ -195,7 +195,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-son-nfts',
     question: '¿Que son los NFTs?',
-    answer: 'NFT (Non-Fungible Token) es un activo digital unico registrado en blockchain. A diferencia de Bitcoin donde cada unidad es igual a otra, cada NFT es distinguible y puede representar propiedad de arte digital, coleccionables, musica, acceso a comunidades, items de videojuegos, y mas. Funcionan mediante smart contracts que certifican autenticidad y propiedad. El mercado de NFTs tuvo un boom en 2021 pero ha caido significativamente desde entonces. Su valor real esta en casos de uso practicos mas alla de JPEGs especulativos.',
+    answer: 'NFT (Non-Fungible Token) es un activo digital único registrado en blockchain. A diferencia de Bitcoin donde cada unidad es igual a otra, cada NFT es distinguible y puede representar propiedad de arte digital, coleccionables, música, acceso a comunidades, items de videojuegos, y más. Funcionan mediante smart contracts que certifican autenticidad y propiedad. El mercado de NFTs tuvo un boom en 2021 pero ha caído significativamente desde entonces. Su valor real esta en casos de uso prácticos más allá de JPEGs especulativos.',
     category: 'defi',
     links: [
       { text: 'NFT en el glosario', url: '/glosario/nft' },
@@ -213,7 +213,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-smart-contract',
     question: '¿Que es un smart contract?',
-    answer: 'Un smart contract (contrato inteligente) es un programa almacenado en blockchain que se ejecuta automaticamente cuando se cumplen condiciones predefinidas. Funciona como un contrato tradicional pero sin necesidad de intermediarios: el codigo garantiza el cumplimiento. Ejemplo: un smart contract de crowdfunding puede devolver automaticamente el dinero si no se alcanza la meta, o liberarlo al creador si se cumple. Ethereum fue la primera blockchain diseñada para smart contracts. Son la base de DeFi, NFTs, DAOs y la mayoria de innovaciones en Web3.',
+    answer: 'Un smart contract (contrato inteligente) es un programa almacenado en blockchain que se ejecuta automaticamente cuando se cumplen condiciones predefinidas. Funciona como un contrato tradicional pero sin necesidad de intermediarios: el código garantiza el cumplimiento. Ejemplo: un smart contract de crowdfunding puede devolver automaticamente el dinero si no se alcanza la meta, o liberarlo al creador si se cumple. Ethereum fue la primera blockchain diseñada para smart contracts. Son la base de DeFi, NFTs, DAOs y la mayoria de innovaciones en Web3.',
     category: 'defi',
     links: [
       { text: 'Smart Contract en el glosario', url: '/glosario/smart-contract' },
@@ -224,7 +224,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-nodo360',
     question: '¿Que es Nodo360?',
-    answer: 'Nodo360 es una plataforma educativa en español especializada en Bitcoin, blockchain, criptomonedas y Web3. Ofrecemos cursos estructurados que te llevan de principiante a experto, con rutas de aprendizaje claras, ejercicios practicos y certificados verificables. Nuestro enfoque es educacion real sin humo: explicamos tanto las oportunidades como los riesgos del ecosistema crypto. La plataforma incluye cursos gratuitos para empezar, comunidad de estudiantes, mentoria, y contenido actualizado constantemente.',
+    answer: 'Nodo360 es una plataforma educativa en español especializada en Bitcoin, blockchain, criptomonedas y Web3. Ofrecemos cursos estructurados que te llevan de principiante a experto, con rutas de aprendizaje claras, ejercicios prácticos y certificados verificables. Nuestro enfoque es educación real sin humo: explicamos tanto las oportunidades como los riesgos del ecosistema crypto. La plataforma incluye cursos gratuitos para empezar, comunidad de estudiantes, mentoría, y contenido actualizado constantemente.',
     category: 'nodo360',
     links: [
       { text: 'Explorar cursos', url: '/cursos' },
@@ -234,7 +234,7 @@ const faqs: FAQ[] = [
   {
     id: 'cursos-nodo360-gratuitos',
     question: '¿Los cursos de Nodo360 son gratuitos?',
-    answer: 'Nodo360 ofrece contenido tanto gratuito como premium. Los cursos introductorios y mucho contenido educativo (blog, glosario, recursos) son completamente gratuitos. Los cursos avanzados y especializados, mentoria personalizada, y certificaciones premium tienen costo. Nuestra filosofia es que cualquiera pueda empezar a aprender sobre Bitcoin y crypto sin barreras economicas. Los cursos de pago ofrecen contenido mas profundo, soporte directo, y certificados reconocidos.',
+    answer: 'Nodo360 ofrece contenido tanto gratuito como premium. Los cursos introductorios y mucho contenido educativo (blog, glosario, recursos) son completamente gratuitos. Los cursos avanzados y especializados, mentoría personalizada, y certificaciones premium tienen costo. Nuestra filosofía es que cualquiera pueda empezar a aprender sobre Bitcoin y crypto sin barreras económicas. Los cursos de pago ofrecen contenido más profundo, soporte directo, y certificados reconocidos.',
     category: 'nodo360',
     links: [
       { text: 'Ver cursos gratuitos', url: '/cursos' },
@@ -303,7 +303,7 @@ function FAQItem({ faq, isExpanded, onToggle }: {
 
           {faq.links && faq.links.length > 0 && (
             <div className="mt-4 pt-4 border-t border-white/5">
-              <p className="text-xs text-white/50 mb-2">Aprende mas:</p>
+              <p className="text-xs text-white/50 mb-2">Aprende más:</p>
               <div className="flex flex-wrap gap-2">
                 {faq.links.map((link) => (
                   <Link
@@ -539,7 +539,7 @@ export default function FAQPage() {
             ¿No encontraste tu respuesta?
           </h2>
           <p className="text-white/70 mb-6 max-w-xl mx-auto">
-            Explora nuestro glosario con mas de 50 terminos explicados, o comienza
+            Explora nuestro glosario con más de 50 terminos explicados, o comienza
             un curso para aprender de forma estructurada.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

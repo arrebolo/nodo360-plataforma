@@ -64,7 +64,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
     .eq('id', cert.user_id)
     .single()
 
-  // Obtener datos del modulo si aplica
+  // Obtener datos del módulo si aplica
   let moduleTitle: string | null = null
   if (cert.module_id) {
     const { data: mod } = await supabase
@@ -100,7 +100,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
             </div>
             <span className="font-bold text-white">Nodo360</span>
           </Link>
-          <span className="text-sm text-white/50">Verificacion de Certificado</span>
+          <span className="text-sm text-white/50">Verificación de Certificado</span>
         </div>
       </div>
 
@@ -161,7 +161,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 {/* Curso */}
                 <div>
                   <p className="text-xs text-white/40 uppercase tracking-wider mb-2">
-                    {cert.type === 'module' ? 'Modulo del curso' : 'Curso completado'}
+                    {cert.type === 'module' ? 'Módulo del curso' : 'Curso completado'}
                   </p>
                   <p className="text-lg text-white font-medium">{courseTitle}</p>
                   {courseDescription && (
@@ -173,7 +173,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 <div className="flex flex-wrap gap-6">
                   {issuedAt && (
                     <div>
-                      <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Fecha de emision</p>
+                      <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Fecha de emisión</p>
                       <p className="text-white/80">{issuedAt}</p>
                     </div>
                   )}
@@ -202,7 +202,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 <p className="text-xs text-white/40 uppercase tracking-wider mb-4">Escanea para verificar</p>
                 <CertificateQR verificationUrl={verificationUrl} size={140} />
                 <p className="text-xs text-white/40 mt-4 text-center max-w-[160px]">
-                  Este codigo QR enlaza a la verificacion oficial
+                  Este código QR enlaza a la verificación oficial
                 </p>
               </div>
             </div>
@@ -240,9 +240,9 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">Verificacion segura</h3>
+                <h3 className="font-medium text-white mb-1">Verificación segura</h3>
                 <p className="text-sm text-white/50">
-                  Este certificado ha sido verificado. El codigo QR y el numero unico garantizan su autenticidad.
+                  Este certificado ha sido verificado. El código QR y el número único garantizan su autenticidad.
                 </p>
               </div>
             </div>
@@ -258,7 +258,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
               <div>
                 <h3 className="font-medium text-white mb-1">Sobre Nodo360</h3>
                 <p className="text-sm text-white/50">
-                  Plataforma educativa especializada en Bitcoin, Blockchain y Web3. Formacion de calidad en espanol.
+                  Plataforma educativa especializada en Bitcoin, Blockchain y Web3. Formación de calidad en español.
                 </p>
               </div>
             </div>
@@ -267,7 +267,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-white/30">
-          {new Date().getFullYear()} Nodo360 - Verificacion publica de certificados
+          {new Date().getFullYear()} Nodo360 - Verificación pública de certificados
         </div>
       </div>
     </div>
@@ -286,11 +286,11 @@ function CertificateNotFound({ verificationCode }: { verificationCode: string })
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">Certificado no encontrado</h1>
         <p className="text-white/60 mb-2">
-          No pudimos encontrar un certificado con el numero:
+          No pudimos encontrar un certificado con el número:
         </p>
         <p className="text-brand-light font-mono text-sm mb-6 break-all">{verificationCode}</p>
         <p className="text-white/40 text-sm mb-6">
-          Verifica que el numero sea correcto o contacta con soporte si crees que es un error.
+          Verifica que el número sea correcto o contacta con soporte si crees que es un error.
         </p>
         <Link
           href="/cursos"

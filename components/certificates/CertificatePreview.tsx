@@ -76,7 +76,7 @@ export function CertificatePreview({
         '1. Descarga el PDF\n' +
         '2. Perfil → Licencias y certificaciones\n' +
         '3. Sube el PDF\n' +
-        '4. Publica'
+        '4. Pública'
     )
   }
 

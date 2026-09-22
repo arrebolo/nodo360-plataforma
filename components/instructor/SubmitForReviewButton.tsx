@@ -44,7 +44,7 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
     return (
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-white/60">¿Enviar a revision?</span>
+          <span className="text-sm text-white/60">¿Enviar a revisión?</span>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
@@ -70,7 +70,7 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
           className="inline-flex items-center gap-1 text-xs text-brand-light hover:text-brand transition-colors"
         >
           <ExternalLink className="w-3 h-3" />
-          Ver guia de revision antes de enviar
+          Ver guia de revisión antes de enviar
         </Link>
       </div>
     )

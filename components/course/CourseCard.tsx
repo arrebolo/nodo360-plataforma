@@ -103,7 +103,7 @@ export function CourseCard({
           ) : (
             <Route className="h-3 w-3" />
           )}
-          <span className="max-w-[120px] truncate">{learningPath.name}</span>
+          <span>{learningPath.name}</span>
         </Link>
       )}
 

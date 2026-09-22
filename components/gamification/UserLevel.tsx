@@ -76,14 +76,14 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
   }
 
   // Calcular progreso usando el sistema centralizado
-  // El numero, el nombre y la barra salen TODOS de getXPProgress(total_xp).
-  // Antes el numero venia de stats.current_level (base de datos, formula
-  // lineal), el nombre de getLevelName(ese numero) —que con un 47 no encuentra
+  // El número, el nombre y la barra salen TODOS de getXPProgress(total_xp).
+  // Antes el número venia de stats.current_level (base de datos, formula
+  // lineal), el nombre de getLevelName(ese número) —que con un 47 no encuentra
   // nada y caia al fallback 'Novato'— y la barra se recalculaba con umbrales.
   // Tres respuestas distintas en el mismo widget.
   const levelProgress = getXPProgress(stats.total_xp)
   const xpInCurrentLevel = levelProgress.xpInLevel
-  const xpForCurrentLevel = levelProgress.xpForNextLevel || 1 // Evitar division por 0
+  const xpForCurrentLevel = levelProgress.xpForNextLevel || 1 // Evitar división por 0
   const progressPercentage = levelProgress.progress
   const nivel = levelProgress.currentLevel
   const levelName = levelProgress.levelName

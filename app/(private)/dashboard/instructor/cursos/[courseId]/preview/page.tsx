@@ -175,7 +175,7 @@ export default async function CoursePreviewPage({ params }: PreviewPageProps) {
                   Este curso aún no tiene módulos
                 </p>
                 <Button
-                  href={`/dashboard/instructor/cursos/${courseId}/modulos`}
+                  href={`/dashboard/instructor/cursos/${courseId}/módulos`}
                   variant="primary"
                 >
                   Agregar módulos

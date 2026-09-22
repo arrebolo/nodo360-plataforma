@@ -201,7 +201,7 @@ export default async function MentorPage() {
     }
 
     // Contar mentores activos. No hay tabla 'mentors': el rol vive en
-    // user_roles, que es de donde tambien lo lee el listado publico /mentores.
+    // user_roles, que es de donde también lo lee el listado público /mentores.
     const { count } = await supabase
       .from('user_roles')
       .select('*', { count: 'exact', head: true })

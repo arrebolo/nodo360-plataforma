@@ -75,31 +75,31 @@ const rejectionReasons = [
 
 const tips = [
   'Graba videos con buena iluminacion y audio limpio',
-  'Estructura tu curso de lo basico a lo avanzado',
-  'Incluye ejercicios practicos en cada modulo',
+  'Estructura tu curso de lo básico a lo avanzado',
+  'Incluye ejercicios prácticos en cada módulo',
   'Revisa la ortografia y gramatica de todo el contenido',
-  'Usa ejemplos reales y casos de uso practicos',
+  'Usa ejemplos reales y casos de uso prácticos',
   'Añade recursos descargables (PDFs, checklists, etc.)',
-  'Pide comentarios a colegas antes de enviar a revision',
+  'Pide comentarios a colegas antes de enviar a revisión',
   'Verifica que todos los links y recursos funcionen',
 ]
 
 const faqs = [
   {
-    question: '¿Cuanto tiempo tarda la revision?',
-    answer: 'La revision inicial toma entre 24-48 horas habiles. Si tu curso requiere cambios, tendras 24 horas adicionales despues de hacer las correcciones.',
+    question: '¿Cuanto tiempo tarda la revisión?',
+    answer: 'La revisión inicial toma entre 24-48 horas habiles. Si tu curso requiere cambios, tendras 24 horas adicionales después de hacer las correcciones.',
   },
   {
     question: '¿Quien revisa los cursos?',
-    answer: 'Los cursos son revisados por mentores certificados de Nodo360 con experiencia en educacion y conocimiento profundo de Bitcoin y blockchain.',
+    answer: 'Los cursos son revisados por mentores certificados de Nodo360 con experiencia en educación y conocimiento profundo de Bitcoin y blockchain.',
   },
   {
     question: '¿Que pasa si mi curso es rechazado?',
-    answer: 'Recibiras un email detallado con los motivos del rechazo y recomendaciones para mejorar. Podras hacer los cambios y volver a enviar sin limite de intentos.',
+    answer: 'Recibiras un email detallado con los motivos del rechazo y recomendaciones para mejorar. Podrás hacer los cambios y volver a enviar sin limite de intentos.',
   },
   {
-    question: '¿Puedo editar mi curso despues de publicado?',
-    answer: 'Si, pero los cambios significativos requeriran una nueva revision para mantener la calidad de la plataforma.',
+    question: '¿Puedo editar mi curso después de publicado?',
+    answer: 'Si, pero los cambios significativos requeriran una nueva revisión para mantener la calidad de la plataforma.',
   },
   {
     question: '¿Como funcionan las comisiones?',
@@ -121,7 +121,7 @@ export default function GuiaRevisionPage() {
             href="/login"
             className="px-4 py-2 rounded-lg bg-brand/20 text-brand hover:bg-brand/30 transition-colors text-sm font-medium"
           >
-            Iniciar sesion
+            Iniciar sesión
           </Link>
         </div>
       </header>
@@ -134,7 +134,7 @@ export default function GuiaRevisionPage() {
             Guia para instructores
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Guia de Revision de Cursos
+            Guia de Revisión de Cursos
           </h1>
           <p className="text-xl text-white/60 max-w-2xl mx-auto">
             Todo lo que necesitas saber para que tu curso sea aprobado y publicado en Nodo360
@@ -147,7 +147,7 @@ export default function GuiaRevisionPage() {
             <div className="p-2 rounded-lg bg-brand-light/20">
               <FileSearch className="w-5 h-5 text-brand-light" />
             </div>
-            ¿Como funciona la revision?
+            ¿Como funciona la revisión?
           </h2>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
             <div className="grid md:grid-cols-3 gap-6">
@@ -157,7 +157,7 @@ export default function GuiaRevisionPage() {
                 </div>
                 <h3 className="font-semibold text-white mb-2">Envias tu curso</h3>
                 <p className="text-sm text-white/60">
-                  Completa todos los campos requeridos y haz clic en "Enviar a revision"
+                  Completa todos los campos requeridos y haz clic en "Enviar a revisión"
                 </p>
               </div>
               <div className="text-center">
@@ -184,7 +184,7 @@ export default function GuiaRevisionPage() {
               <div className="flex items-center gap-3 text-white/70">
                 <Users className="w-5 h-5 text-brand-light" />
                 <span>
-                  <strong className="text-white">Revision colaborativa:</strong> Tu curso es evaluado por dos revisores (mentores o instructores especializados) para garantizar calidad y objetividad.
+                  <strong className="text-white">Revisión colaborativa:</strong> Tu curso es evaluado por dos revisores (mentores o instructores especializados) para garantizar calidad y objetividad.
                 </span>
               </div>
             </div>
@@ -235,9 +235,9 @@ export default function GuiaRevisionPage() {
                   <Clock className="w-6 h-6 text-brand-light" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white mb-1">Revision inicial</h3>
+                  <h3 className="font-semibold text-white mb-1">Revisión inicial</h3>
                   <p className="text-2xl font-bold text-brand-light">24-48 horas</p>
-                  <p className="text-sm text-white/60 mt-1">Dias habiles</p>
+                  <p className="text-sm text-white/60 mt-1">Días habiles</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -247,7 +247,7 @@ export default function GuiaRevisionPage() {
                 <div>
                   <h3 className="font-semibold text-white mb-1">Tras correcciones</h3>
                   <p className="text-2xl font-bold text-warning">+24 horas</p>
-                  <p className="text-sm text-white/60 mt-1">Despues de enviar cambios</p>
+                  <p className="text-sm text-white/60 mt-1">Después de enviar cambios</p>
                 </div>
               </div>
             </div>

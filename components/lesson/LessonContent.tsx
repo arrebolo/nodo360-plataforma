@@ -151,14 +151,14 @@ export function LessonContent({ lesson, userId, courseSlug, onTabChange, request
     onTabChange?.('content')
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Robustez: si cambias de leccion y ya no existe el tab activo, elegir el correcto
+  // Robustez: si cambias de lección y ya no existe el tab activo, elegir el correcto
   useEffect(() => {
     if (activeTab === 'resources' && !hasResources) {
       setActiveTab('content')
     }
   }, [lesson.id, hasResources, activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Al cambiar de leccion, resetear al tab contenido
+  // Al cambiar de lección, resetear al tab contenido
   useEffect(() => {
     setActiveTab('content')
   }, [lesson.id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -226,7 +226,7 @@ export function LessonContent({ lesson, userId, courseSlug, onTabChange, request
             {!hasContent && !lesson.description && (
               <div className="text-center py-8">
                 <BookOpen className="h-8 w-8 text-white/20 mx-auto mb-3" />
-                <p className="text-white/40">Esta leccion no tiene contenido adicional.</p>
+                <p className="text-white/40">Esta lección no tiene contenido adicional.</p>
                 <p className="text-sm text-white/30 mt-1">
                   Revisa el video o toma notas mientras estudias.
                 </p>

@@ -16,7 +16,7 @@ type Props = {
 
 /**
  * LessonHeroFallback - Barra compacta para lecciones sin video
- * Solo muestra tipo de contenido, duracion y accesos rapidos
+ * Solo muestra tipo de contenido, duración y accesos rapidos
  */
 export function LessonHeroFallback({
   hasSlides,

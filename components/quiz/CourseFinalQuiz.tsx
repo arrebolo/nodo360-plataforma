@@ -49,8 +49,8 @@ export function CourseFinalQuiz({
   const totalQuestions = questions.length
 
   // Cambiar de pregunta o pasar a los resultados NO cambia de ruta: es estado,
-  // asi que ScrollToTopOnNavigate no se entera. Sin esto, al responder una
-  // pregunta larga la siguiente aparece con la vista a media pagina.
+  // así que ScrollToTopOnNavigate no se entera. Sin esto, al responder una
+  // pregunta larga la siguiente aparece con la vista a media página.
   useScrollToTop(showResults ? 'resultados' : currentIndex)
 
   // La correccion la hace el servidor en /api/quiz/submit. El cliente no
@@ -174,7 +174,7 @@ export function CourseFinalQuiz({
   // Mostrar resultados
   if (showResults) {
     // Mientras el servidor corrige, quizResult es null: se muestra el estado de
-    // carga. El cliente ya no calcula ningun resultado provisional.
+    // carga. El cliente ya no calcula ningún resultado provisional.
     const score = quizResult || {
       correct: 0,
       total: totalQuestions,

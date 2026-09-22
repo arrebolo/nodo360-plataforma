@@ -82,7 +82,7 @@ export function DownloadPDFButton({
       doc.setFont('helvetica', 'normal')
       doc.text('Educacion Bitcoin & Blockchain', 25, 34)
 
-      // Numero de certificado
+      // Número de certificado
       doc.setFontSize(8)
       doc.setTextColor(150, 150, 150)
       doc.text('No de certificado', pageWidth - 25, 26, { align: 'right' })
@@ -100,7 +100,7 @@ export function DownloadPDFButton({
       doc.text('✓', pageWidth / 2 - 2.5, 55)
 
       // Tipo de certificado
-      const certType = certificate.type === 'module' ? 'CERTIFICADO DE MODULO' : 'CERTIFICADO DE FINALIZACION'
+      const certType = certificate.type === 'module' ? 'CERTIFICADO DE Módulo' : 'CERTIFICADO DE FINALIZACION'
       doc.setFontSize(11)
       doc.setTextColor(180, 180, 180)
       doc.setFont('helvetica', 'normal')
@@ -132,14 +132,14 @@ export function DownloadPDFButton({
       doc.setFontSize(20)
       doc.setTextColor(247, 147, 26)
       doc.setFont('helvetica', 'bold')
-      // Truncar titulo si es muy largo
+      // Truncar título si es muy largo
       let courseTitle = certificate.courseTitle
       if (courseTitle.length > 50) {
         courseTitle = courseTitle.substring(0, 47) + '...'
       }
       doc.text(courseTitle, pageWidth / 2, 135, { align: 'center' })
 
-      // Descripcion del curso (si existe)
+      // Descripción del curso (si existe)
       let yPosition = 147
       if (certificate.courseDescription) {
         doc.setFontSize(9)
@@ -159,7 +159,7 @@ export function DownloadPDFButton({
         doc.text(`Puntuacion: ${certificate.score}%`, pageWidth / 2, yPosition + 8, { align: 'center' })
       }
 
-      // Fecha de emision
+      // Fecha de emisión
       const formattedDate = new Date(certificate.issuedAt).toLocaleDateString('es-ES', {
         day: 'numeric',
         month: 'long',
@@ -171,7 +171,7 @@ export function DownloadPDFButton({
       doc.setFont('helvetica', 'normal')
       doc.text(`Emitido el ${formattedDate}`, pageWidth / 2, 178, { align: 'center' })
 
-      // URL de verificacion
+      // URL de verificación
       doc.setFontSize(8)
       doc.setTextColor(120, 120, 120)
       doc.text('Verifica este certificado en:', pageWidth / 2, 190, { align: 'center' })

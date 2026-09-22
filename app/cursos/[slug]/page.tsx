@@ -15,6 +15,7 @@ import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
 import { tokens, cx } from '@/lib/design/tokens'
 import { ChevronRight, Lock } from 'lucide-react'
 import type { Metadata } from 'next'
+import { CourseAlreadyCompleted } from '@/components/course/CourseAlreadyCompleted'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -87,7 +88,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const supabase = await createClient()
 
-  // 1. Obtener información del curso CON modulos y lecciones para conteo preciso
+  // 1. Obtener información del curso CON módulos y lecciones para conteo preciso
   const { data: course, error: courseError } = await supabase
     .from('courses')
     .select(`
@@ -161,7 +162,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </p>
               <div className="pt-4">
                 <Button variant="primary" href={`/login?redirect=/cursos/${slug}`}>
-                  Iniciar sesion para ver el curso
+                  Iniciar sesión para ver el curso
                   <span aria-hidden className="text-white/80">→</span>
                 </Button>
               </div>
@@ -179,10 +180,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
     ? await hasEntitlement(user.id, course.id)
     : true // cursos no-premium no requieren entitlement
 
-  // Quien puede gestionar el curso ve los avisos de gestion (por ejemplo, que
+  // Quien puede gestionar el curso ve los avisos de gestión (por ejemplo, que
   // falta la imagen de portada). Un visitante no debe leerlos nunca.
-  // isPreview solo cubre los cursos sin publicar; estos tres estan publicados,
-  // asi que hace falta comprobar el rol tambien aqui.
+  // isPreview solo cubre los cursos sin publicar; estos tres están publicados,
+  // así que hace falta comprobar el rol también aquí.
   const { data: perfil } = await supabase
     .from('users')
     .select('role')
@@ -197,12 +198,27 @@ export default async function CoursePage({ params }: CoursePageProps) {
   // 5. Verificar inscripción
   const { data: enrollment } = await supabase
     .from('course_enrollments')
-    .select('id')
+    .select('id, completed_at, progress_percentage')
     .eq('user_id', user.id)
     .eq('course_id', course.id)
     .maybeSingle()
 
   const isEnrolled = !!enrollment
+
+  // Curso ya terminado: por fecha de finalizacion o por progreso al 100 %.
+  const yaCompletado =
+    !!enrollment?.completed_at || (enrollment?.progress_percentage ?? 0) >= 100
+
+  // Su certificado, para enlazarlo desde el aviso
+  const { data: certificado } = yaCompletado
+    ? await supabase
+        .from('certificates')
+        .select('id, certificate_number, issued_at')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .eq('type', 'course')
+        .maybeSingle()
+    : { data: null }
 
   // 6. Obtener progreso completo
   const courseProgress = isEnrolled
@@ -268,6 +284,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <ChevronRight className="h-4 w-4" />
           <span className="text-white/70">{course.title}</span>
         </nav>
+
+        {yaCompletado && (
+          <div className="mb-6">
+            <CourseAlreadyCompleted
+              completedAt={enrollment?.completed_at ?? certificado?.issued_at ?? null}
+              certificateId={certificado?.id ?? null}
+              certificateNumber={certificado?.certificate_number ?? null}
+            />
+          </div>
+        )}
 
         {/* HERO DEL CURSO */}
         <CourseHero
@@ -349,7 +375,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     Contenido del curso
                   </h3>
                   <p className="text-white/60 mb-6 max-w-sm mx-auto">
-                    Inscribete en el curso para acceder a todo el contenido
+                    Inscríbete en el curso para acceder a todo el contenido
                   </p>
 
                   <div className="max-w-xs mx-auto">

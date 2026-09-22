@@ -98,7 +98,7 @@ function ModuleItem({ module, defaultOpen = false }: { module: Module; defaultOp
                   <span className="text-xs px-2 py-0.5 rounded bg-white/10 text-white/60">
                     {getLessonTypeLabel(lesson)}
                   </span>
-                  {lesson.video_duration_minutes && (
+                  {(lesson.video_duration_minutes ?? 0) > 0 && (
                     <span className="text-xs text-white/40">
                       {lesson.video_duration_minutes} min
                     </span>

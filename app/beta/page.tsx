@@ -199,7 +199,7 @@ export default function BetaAccessPage() {
             className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-white transition text-sm"
           >
             <LogOut className="w-4 h-4" />
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
 

@@ -83,7 +83,7 @@ export function ResetCourseSection({ userId }: ResetCourseSectionProps) {
         setResult({ type: 'error', message: data.error || 'Error al reiniciar' })
       }
     } catch (err) {
-      setResult({ type: 'error', message: 'Error de conexion' })
+      setResult({ type: 'error', message: 'Error de conexión' })
     } finally {
       setResetting(false)
     }
@@ -112,7 +112,7 @@ export function ResetCourseSection({ userId }: ResetCourseSectionProps) {
             </div>
           ) : courses.length === 0 ? (
             <div className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white/50 text-sm">
-              El usuario no esta inscrito en ningun curso
+              El usuario no esta inscrito en ningún curso
             </div>
           ) : (
             <select
@@ -184,7 +184,7 @@ export function ResetCourseSection({ userId }: ResetCourseSectionProps) {
             <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
               <p className="text-warning text-sm font-medium mb-1 flex items-center gap-1">
                 <AlertTriangle className="w-4 h-4" />
-                Esta accion eliminara:
+                Esta acción eliminara:
               </p>
               <ul className="text-warning/80 text-xs space-y-0.5 ml-5 list-disc">
                 <li>{selectedCourse.lessonsCompleted} lecciones completadas</li>

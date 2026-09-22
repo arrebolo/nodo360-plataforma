@@ -26,7 +26,7 @@ export default function BetaBanner({ userEmail, userId }: BetaBannerProps) {
             </span>
             <p className="text-sm text-gray-300">
               <span className="sm:hidden font-medium text-[#f7931a]">BETA · </span>
-              Estas usando la version beta de Nodo360.{' '}
+              Estas usando la versión beta de Nodo360.{' '}
               <span className="hidden sm:inline text-gray-400">Tus comentarios son clave para mejorar.</span>
             </p>
           </div>

@@ -199,7 +199,7 @@ export function PublishChecklist({
       <div className="p-4 border-b border-white/10">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-white">
-            Checklist de publicacion
+            Checklist de publicación
           </h3>
           <div className="flex items-center gap-2">
             <span className={`text-sm font-medium ${allRequiredPassed ? 'text-success' : 'text-brand-light'}`}>
@@ -322,7 +322,7 @@ export function PublishChecklist({
                 )}
               </Button>
               <p className="text-xs text-white/40 text-center mt-2">
-                El curso sera visible para todos los estudiantes
+                El curso será visible para todos los estudiantes
               </p>
             </>
           ) : (

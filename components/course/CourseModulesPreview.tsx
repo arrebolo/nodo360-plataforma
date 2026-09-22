@@ -127,7 +127,7 @@ export default function CourseModulesPreview({ courseSlug, modules }: Props) {
                     <span className="flex-1 text-sm text-neutral-900">
                       {lessonIndex + 1}. {lesson.title}
                     </span>
-                    {lesson.video_duration_minutes && (
+                    {(lesson.video_duration_minutes ?? 0) > 0 && (
                       <span className="text-xs text-neutral-400 flex-shrink-0">
                         {lesson.video_duration_minutes} min
                       </span>

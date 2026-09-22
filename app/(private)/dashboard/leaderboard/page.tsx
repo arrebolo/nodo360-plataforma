@@ -49,10 +49,10 @@ export default async function LeaderboardPage() {
     .select('id, full_name, avatar_url, email')
     .in('id', userIds.length > 0 ? userIds : ['no-users'])
 
-  // Crear mapa de usuarios para acceso rapido
+  // Crear mapa de usuarios para acceso rápido
   const usersMap = new Map(usersData?.map(u => [u.id, u]) || [])
 
-  // Encontrar posicion del usuario actual
+  // Encontrar posición del usuario actual
   const myPosition = leaderboard?.findIndex(l => l.user_id === user.id) ?? -1
 
   // Asegurar valores positivos para stats del usuario (fix XP negativos)

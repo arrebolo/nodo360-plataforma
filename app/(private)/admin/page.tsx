@@ -149,7 +149,7 @@ export default async function AdminDashboardPage() {
         >
           <div className="flex items-center justify-between mb-3">
             <Clock className="w-6 h-6 text-orange-400" />
-            {pendingCoursesCount && pendingCoursesCount > 0 && (
+            {(pendingCoursesCount ?? 0) > 0 && (
               <span className="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded-full">
                 {pendingCoursesCount}
               </span>

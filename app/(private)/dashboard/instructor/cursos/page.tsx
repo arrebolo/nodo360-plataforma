@@ -192,7 +192,7 @@ export default async function InstructorCoursesPage({
           </h1>
           <p className="text-white/60 mt-1">
             Gestiona tus cursos, edita contenido y controla su estado de
-            publicacion.
+            publicación.
           </p>
         </div>
 

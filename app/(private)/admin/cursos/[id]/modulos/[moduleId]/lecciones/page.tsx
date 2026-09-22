@@ -155,7 +155,7 @@ export default async function LessonListPage({ params }: PageProps) {
                         <BookOpen className="w-4 h-4" />
                         {lesson.slug}
                       </span>
-                      {lesson.video_duration_minutes && (
+                      {lesson.video_duration_minutes > 0 && (
                         <span className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
                           {lesson.video_duration_minutes} min

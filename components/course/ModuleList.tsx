@@ -29,7 +29,7 @@ export default function ModuleList({ courseSlug, modules }: Props) {
   if (modules.length === 0) {
     return (
       <div className="bg-dark-surface border border-white/10 rounded-2xl p-8 text-center">
-        <p className="text-white/50">No hay modulos disponibles</p>
+        <p className="text-white/50">No hay módulos disponibles</p>
       </div>
     )
   }
@@ -127,7 +127,7 @@ export default function ModuleList({ courseSlug, modules }: Props) {
               <div className="px-4 sm:px-5 pb-4">
                 <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-sm text-white/60">
                   <Lock className="w-4 h-4 inline mr-2" />
-                  Completa el modulo anterior para desbloquear este contenido
+                  Completa el módulo anterior para desbloquear este contenido
                 </div>
               </div>
             )}
@@ -162,7 +162,7 @@ export default function ModuleList({ courseSlug, modules }: Props) {
                         <span className="flex-1 text-sm text-white/80">
                           {lessonIndex + 1}. {lesson.title}
                         </span>
-                        {lesson.video_duration_minutes && (
+                        {(lesson.video_duration_minutes ?? 0) > 0 && (
                           <span className="text-xs text-white/40 flex-shrink-0">
                             {lesson.video_duration_minutes} min
                           </span>

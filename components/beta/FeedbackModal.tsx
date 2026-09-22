@@ -41,7 +41,7 @@ export default function FeedbackModal({ isOpen, onClose, userEmail, userId }: Fe
       if (res.ok) {
         setSubmitStatus('success')
         setMessage('')
-        // Cerrar modal despues de 2 segundos
+        // Cerrar modal después de 2 segundos
         setTimeout(() => {
           onClose()
           setSubmitStatus('idle')
@@ -106,7 +106,7 @@ export default function FeedbackModal({ isOpen, onClose, userEmail, userId }: Fe
                   id="feedback"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Cuentanos que podemos mejorar, si encontraste algun problema, o cualquier sugerencia..."
+                  placeholder="Cuentanos que podemos mejorar, si encontraste algún problema, o cualquier sugerencia..."
                   rows={4}
                   className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f7931a] focus:border-transparent resize-none"
                   required
