@@ -1,31 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { MessageCircle } from 'lucide-react'
+import { useVisiblePolling } from '@/hooks/useVisiblePolling'
 
 export default function MessageBell() {
   const [unreadCount, setUnreadCount] = useState(0)
 
-  useEffect(() => {
-    const fetchUnread = async () => {
-      try {
-        const res = await fetch('/api/messages/unread')
-        if (res.ok) {
-          const data = await res.json()
-          setUnreadCount(data.unreadCount || 0)
-        }
-      } catch (error) {
-        console.error('Error fetching unread messages:', error)
+  const fetchUnread = useCallback(async () => {
+    try {
+      const res = await fetch('/api/messages/unread')
+      if (res.ok) {
+        const data = await res.json()
+        setUnreadCount(data.unreadCount || 0)
       }
+    } catch (error) {
+      console.error('Error fetching unread messages:', error)
     }
-
-    fetchUnread()
-
-    // Poll every 30 seconds
-    const interval = setInterval(fetchUnread, 30000)
-    return () => clearInterval(interval)
   }, [])
+
+  // Cada 60 s, solo mientras la pestana este visible
+  useVisiblePolling(fetchUnread, 60000, 5000)
 
   return (
     <Link
