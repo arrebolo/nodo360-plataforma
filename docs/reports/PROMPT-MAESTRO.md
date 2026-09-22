@@ -1,16 +1,24 @@
 # PROMPT MAESTRO - PROYECTO NODO360
 
-**Version:** 4.0
-**Fecha:** 21/09/2026
-**Sustituye a:** v3.0 (06/02/2026)
+**Version:** 5.0
+**Fecha:** 22/09/2026
+**Sustituye a:** v4.0 (21/09/2026)
 
-> **Por que existe esta version.** La v3.0 describia un proyecto mas sano del que
-> habia: daba por completados sistemas que no tenian interfaz, contaba tablas que
-> el codigo esperaba en vez de las que existen, y arrastraba cifras redondeadas
-> que nadie habia vuelto a comprobar. Planificamos sobre esos supuestos y se
-> perdio trabajo. Todas las cifras de este documento estan verificadas contra el
-> repositorio, la base de datos de Supabase y Vercel el 21/09/2026. Cuando un
-> dato no se ha podido verificar, se dice.
+> **Por que existe esta version.** La v4.0 fue la primera con las cifras
+> verificadas una a una, y ese criterio se mantiene. Lo que cambia es el estado:
+> en un solo dia se cerro una cadena de agujeros de seguridad en las funciones de
+> la base de datos, se unifico la formula de nivel, se corrigio la concesion
+> duplicada de puntos y se paso una revision ortografica al contenido y a la
+> interfaz. Varias cosas que la v4.0 daba por buenas no lo eran, y eso es lo mas
+> importante que documenta esta version.
+>
+> Todas las cifras estan verificadas contra el repositorio, la base de datos y
+> Vercel el 22/09/2026. Cuando un dato no se ha podido verificar, se dice.
+>
+> **La leccion de esta tanda**: el repositorio NO describe la base de datos. Tres
+> veces seguidas el cuerpo vivo de una funcion resulto ser distinto del que
+> figuraba en `supabase/migrations/`. Antes de tocar nada en la base de datos hay
+> que leer `pg_get_functiondef`, no el repo.
 
 ---
 
@@ -59,9 +67,10 @@ afirmacion mas ambiciosa tiene que salir de la base de datos antes de publicarse
 
 ---
 
-## METRICAS REALES (21/09/2026)
+## METRICAS REALES (22/09/2026)
 
-Todas contadas, no estimadas. Entre parentesis, lo que decia la v3.0.
+Todas contadas, no estimadas. Entre parentesis, lo que decia la version anterior
+cuando el dato ha cambiado.
 
 ### Codigo
 
@@ -70,7 +79,7 @@ Todas contadas, no estimadas. Entre parentesis, lo que decia la v3.0.
 | Paginas (`page.tsx`) | **106** | `find app -name page.tsx` (v3.0 decia "100+") |
 | Layouts | 6 | `find app -name layout.tsx` |
 | Endpoints API (`route.ts`) | **94** | de ellos **33** bajo `/api/admin` (v3.0: 79 y 29) |
-| Componentes `.tsx` | **173** | en 25 carpetas bajo `components/` (v3.0: "61+") |
+| Componentes `.tsx` | **175** | en 25 carpetas bajo `components/` (v4.0: 173) |
 | Modulos `lib/` | **95** archivos `.ts` | en 26 subcarpetas (v3.0: "15+") |
 | Archivos de tipos | 9 | `types/*.ts` |
 | Commits en `main` | 147 | |
@@ -86,7 +95,7 @@ codigo espera encontrar.
 | Tablas existentes | **80** (v3.0 decia "38+ tablas core") |
 | Vistas | 2 (`instructor_referral_stats`, `message_flags_summary`) + `user_incident_summary` |
 | Funciones RPC expuestas | **65** (v3.0 decia "27+") |
-| Migraciones en `supabase/migrations/` | **23** |
+| Migraciones en `supabase/migrations/` | **34** (v4.0: 23) |
 | Migraciones en `docs/migrations/` | **6** (carpeta paralela, ver Deuda) |
 
 ### Contenido
@@ -94,12 +103,14 @@ codigo espera encontrar.
 | Metrica | Valor |
 |---------|-------|
 | Cursos totales | **13** |
-| — publicados | **11** (todos `beginner`, todos gratuitos) |
-| — en borrador | **2** (`intermediate`: Cold Storage, Nodos Bitcoin) |
+| — publicados | **13** (v4.0: 11; Cold Storage y Nodos Bitcoin ya estan publicados) |
+| — en borrador | **0** |
+| — gratuitos / premium | 13 / 0 |
 | Modulos | 26 |
 | Lecciones | **78** (ninguna vacia) |
 | Preguntas de quiz | 91 |
 | Rutas de aprendizaje | **6** activas (el objetivo son 8, ver Roadmap) |
+| — con subtitulo y descripcion larga | **6 de 6** tras la migracion 041 (antes 4) |
 | Articulos de blog | 15 |
 | Terminos de glosario | 72 |
 
@@ -123,14 +134,14 @@ codigo espera encontrar.
 | — suspendidos | 0 |
 | Inscripciones (`course_enrollments`) | **28**, de ellas 13 completadas |
 | Lecciones completadas (`user_progress`) | 91 |
-| Certificados emitidos (`certificates`) | **13** |
+| Certificados emitidos (`certificates`) | **16** (v4.0: 13) |
 | Intentos de examen final | **0** |
 | Entitlements (acceso premium) | **0** |
 | Suscripciones | 1 |
 | Compras de curso | 0 |
 | Mensajes / conversaciones | 12 / 1 |
 | Comentarios en lecciones | **0** |
-| Propuestas de gobernanza / votos | 1 / 1 |
+| Propuestas de gobernanza / votos | 1 / 1 — **la unica propuesta esta `cancelled` desde 11/2025**, por eso /gobernanza muestra el estado vacio |
 | Aplicaciones a mentor | 0 |
 | Invitaciones | 0 |
 | Feedback de beta | 6 |
@@ -150,7 +161,7 @@ codigo espera encontrar.
 | Node / npm locales | v24.11.0 / 11.6.1 |
 | `next` / `react` | ^16.3.5 / 19.2.0 |
 | Dependencias | 30 de produccion, 13 de desarrollo |
-| `npm audit --omit=dev` | **0 criticas**, 2 altas (`undici`, `ws`), 5 moderadas |
+| `npm audit --omit=dev` | **0 criticas**, **2 altas**, **5 moderadas** (sin cambios desde la v4.0: siguen sin resolverse) |
 
 ---
 
@@ -290,21 +301,32 @@ es. Por eso:
 ## DEUDA CONOCIDA
 
 El inventario vive en **`docs/PLAN-REFORMA.md`**, organizado en Tier 0-3. No se
-duplica aqui. Resumen de por donde va:
+duplica aqui. Resumen de por donde va, al 22/09/2026:
 
-- **Tier 0 (parar la sangria)**: CI en las PRs (hoy no hay ninguna verificacion
-  automatica antes de mergear), cerrar 4 PRs muertas, y decidir que se hace con
-  los 13 certificados emitidos antes del arreglo del quiz.
-- **Tier 1 (contenido rapido)**: publicar los dos borradores, fusionar los cursos
-  duplicados.
+- **Tier 0 (parar la sangria)**: CI en las PRs (sigue sin haber ninguna
+  verificacion automatica antes de mergear), y decidir que se hace con los
+  certificados emitidos antes del arreglo del quiz.
+- **Tier 1 (contenido)**: fusionar los cursos duplicados. Los dos borradores ya
+  estan publicados.
 - **Tier 2 (estructural)**: unificar las dos carpetas de migraciones (hay numeros
   duplicados con contenidos distintos: 015, 016, 019, 020 y 021), decidir sobre
-  `user_lesson_progress` (0 filas) frente a `user_progress` (91), documentar
-  `is_admin` (existe en la BD pero **no esta en ninguna migracion del repo**),
-  resolver el acceso por URL a lecciones de cursos en borrador, decidir sobre el
-  esquema `backup_nodo360` (contiene una copia de `users` con datos personales),
-  y montar el registro de datos que caducan.
+  `user_lesson_progress` (0 filas) frente a `user_progress`, resolver el acceso
+  por URL a lecciones de cursos en borrador, y decidir sobre el esquema
+  `backup_nodo360` (contiene una copia de `users` con datos personales, y desde
+  el 22/09 tambien los respaldos de las limpiezas 038 y 041).
 - **Tier 3 (construccion)**: los seis cursos que faltan para cubrir Web3.
+
+### Lo que esta tanda dejo abierto
+
+| Deuda | Estado |
+|---|---|
+| **7 vulnerabilidades de produccion** (2 altas, 5 moderadas) | Sin resolver desde la v4.0. `npm audit fix` las arregla pero nadie lo ha ejecutado |
+| **569 de 588 eventos de XP sin fuente** | La limpieza de la 038 dejo 210 eventos; los que siguen sin `related_id` no se pueden auditar ni proteger con el indice unico |
+| **`lib/supabase/types.ts` desfasado** | Declara 15 de las 65 RPC. El 77% de las llamadas a RPC del proyecto no estan tipadas |
+| **Los umbrales de nivel viven en dos sitios** | La tabla `level_thresholds` manda y el array de `lib/gamification/levels.ts` es el espejo. La comprobacion 10 de `039-comprobar.sql` vigila que no se separen |
+| **`UserLevel.tsx` es codigo muerto** | No lo monta nadie. Se arreglo igualmente porque estaba en el repo |
+| **Cinco usuarios bajaron de nivel** | Efecto de unificar la formula. Ninguno perdio insignias: no hay ninguna que dependa del nivel |
+| **Fugas de lectura sin rastro** | Las funciones `SECURITY DEFINER` estuvieron abiertas a `anon` hasta el 22/09. Las escrituras no dejaron rastro (17 de 19 comprobaciones forenses a cero), pero las **lecturas** no dejan ninguno: nunca se sabra si alguien las consulto |
 
 ---
 
@@ -537,6 +559,86 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
 9. **Espanol neutro**, valido para Espana y Latinoamerica (ver seccion propia).
 10. **Nada de juicios de inversion ni promesas de rentabilidad** (Principio #1).
     Describir lo que ha ocurrido, no recomendar que hacer con ello.
+11. **El texto que se sube a la base de datos se escribe en un archivo, no
+    dentro de un script.** Toda la carga de contenido se redacta en un `.html`,
+    `.md`, `.json` o `.sql` en UTF-8, y el script se limita a leerlo y subirlo.
+    Nunca se teclea el texto como literal dentro del `.py`, y menos dentro de un
+    heredoc de bash.
+
+    **Por que.** El 21/09/2026 se subieron 36 preguntas de quiz sin una sola
+    tilde ni ene. No hubo ninguna transformacion tecnica que las quitara: el
+    script era **ASCII puro** y se escribieron ya mal. Las 12 lecciones de esos
+    mismos cursos, que venian de archivos `.html`, conservaron sus 1.594
+    caracteres acentuados intactos.
+
+    **Comprobacion obligatoria**: `file <archivo>` no debe decir "ASCII text"
+    cuando el contenido es castellano, y despues de subir hay que contar en la
+    base de datos los caracteres acentuados y los signos de apertura.
+
+### Base de datos
+
+12. **El repositorio NO describe la base de datos. Leer siempre el objeto
+    vivo.** Antes de tocar una funcion, un trigger o una vista, sacar su cuerpo
+    real con `pg_get_functiondef` y su definicion con `pg_get_viewdef`.
+
+    **Por que.** El 22/09/2026 paso tres veces seguidas:
+    `award_xp_on_lesson_complete` escribia en `metadata` y no en `related_id`,
+    al reves de lo que decia la migracion 004; `calculate_xp_to_next_level` se
+    invocaba con un argumento y el repo la declara con dos; y
+    `save_lesson_progress` sumaba XP por su cuenta sin que nada lo documentara.
+
+13. **Toda funcion `SECURITY DEFINER` nace con `SET search_path` y con
+    `REVOKE ALL ... FROM PUBLIC`.** En la misma migracion, no despues.
+
+    **Por que.** Postgres concede `EXECUTE` a `PUBLIC` en toda funcion nueva, y
+    `anon` y `authenticated` heredan de `PUBLIC`: revocar solo a esos dos roles
+    no sirve de nada. El 22/09/2026, **72 de las 73 funciones SECURITY DEFINER**
+    de `public` las podia ejecutar `anon`, y 44 no tenian `search_path`. Con la
+    clave anon —que viaja en el paquete del navegador— se leian los ingresos de
+    cualquier instructor.
+
+14. **La identidad sale de `auth.uid()`, nunca de un parametro.** Una funcion
+    que recibe `p_user_id` y se fia de el permite actuar en nombre de otro, por
+    mucho que la ruta de la aplicacion compruebe quien llama: PostgREST es
+    alcanzable directamente y la clave anon es publica.
+
+    **Por que.** `vote_mentor_application` comprobaba que el votante fuese
+    mentor activo... sobre el `p_voter_id` que le pasaban.
+    `track_referral_conversion` recibia el importe Y el porcentaje de comision.
+    `get_or_create_conversation` creaba conversaciones entre dos usuarios
+    arbitrarios.
+
+15. **Una recompensa, una fuente, una vez.** Toda concesion de puntos,
+    insignias o certificados registra de donde viene y se protege con una
+    restriccion unica en la base de datos, no solo con una comprobacion en el
+    codigo.
+
+    **Por que.** `awardXP()` recibia el contexto y solo lo usaba para redactar
+    la descripcion: 569 de 588 filas de `xp_events` no registraban ninguna
+    fuente. Y habia **tres** vias concediendo XP por leccion a la vez.
+
+16. **Una sola formula para cada calculo, y que se pueda comprobar.**
+
+    **Por que.** El nivel se calculaba de **tres** maneras: lineal en la base de
+    datos, progresiva en una funcion huerfana y por umbrales en TypeScript.
+    Ningun usuario veia un nivel coherente: con 4.693 XP se veia "Nivel 47" y el
+    nombre "Novato", porque el numero salia de una formula y el nombre de otra.
+
+17. **El editor SQL de Supabase no conserva las tablas temporales entre
+    sentencias.** Un script que crea una `TEMP TABLE` y la usa mas abajo falla
+    con "relation does not exist". Para guardar estado entre pasos, usar una
+    tabla real en `backup_nodo360`, que ademas deja un respaldo con el que
+    revertir.
+
+### Interfaz
+
+18. **En JSX, `{numero && <algo/>}` pinta un `0`.** Usar siempre
+    `{numero > 0 && ...}`. Con cadenas no se nota, porque una cadena vacia no se
+    ve; con numeros si.
+
+    **Por que.** Producia un "0" suelto en el temario publico y el chip
+    "Pendientes0" del panel. El segundo parecia protegido —
+    `{n && n > 0 && ...}`— pero la primera condicion ya devuelve `0`.
 
 ### Codigo
 
@@ -550,6 +652,48 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
 ---
 
 ## HISTORIAL DE SESIONES
+
+### 22/09/2026 — Cierre de funciones, XP y niveles
+
+El dia mas denso hasta ahora. Diez migraciones, de la 032 a la 041.
+
+**Seguridad (032-034).** `create_notification` era `SECURITY DEFINER` y
+ejecutable por `anon`: comprobado con la clave publica, llegaba hasta el
+`INSERT` y solo fallaba por la clave ajena. Como `NotificationBell` hace
+`router.push(notification.link)`, era una primitiva de phishing completa dentro
+de la sesion del usuario. De ahi se tiro del hilo: 72 de 73 funciones
+`SECURITY DEFINER` abiertas a `anon`, 44 sin `search_path`. La 033 cerro por
+defecto saltando las funciones de extension —revocarles `EXECUTE` a `PUBLIC`
+habria roto los `DEFAULT uuid_generate_v4()`— y la 034 hizo que 12 funciones
+exijan `auth.uid()`.
+
+Una consulta forense de 19 comprobaciones no encontro rastro de explotacion: 17
+a cero, y las dos con hallazgos eran benignas. Pero eso solo cubre lo que
+escribe: las fugas de lectura no dejan ninguna huella y nunca se sabra si
+alguien las consulto.
+
+**XP y niveles (037-040).** Repetir un curso volvia a sumar puntos. La causa
+resulto ser mayor: `awardXP()` nunca guardaba la fuente, y habia tres vias
+concediendo XP por leccion a la vez, asi que cada leccion daba 60 puntos en
+lugar de 50. La limpieza retiro 378 eventos duplicados y 4.540 XP; cinco
+personas bajaron de nivel. De paso aparecio que el nivel se calculaba de tres
+formas distintas; la 039 dejo los umbrales con nombre como unica formula.
+
+**Contenido e interfaz (035, 041 y la rama de pulido).** Una palabra truncada en
+un quiz —`interne` por `internet`— que ningun corrector detecta, porque
+"interne" es forma valida de *internar*: se encontro comparando frecuencias en
+el propio corpus, donde aparecia 1 vez frente a 45. 261 tildes corregidas en la
+interfaz, en dos pasadas. Y el "0" suelto del temario, que resulto ser el mismo
+bug que el chip "Pendientes0".
+
+**Errores propios de esta sesion, anotados para no repetirlos.** Anuncie un
+archivo que no llegue a escribir. Dije que `calculateLevel()` usaba la formula
+lineal basandome en el diff de un PR sin releer el archivo de hoy, cuando el PR
+siguiente ya la habia revertido. Descarte `interne` como falso positivo teniendo
+la prueba delante en mi propia salida. Y en la 038 alinee
+`recalculate_user_stats` con la formula lineal "para que coincidiera con el
+trigger", sin mirar que usaba la interfaz: propague el problema que luego hubo
+que deshacer en la 039.
 
 ### 20-21/09/2026 — Auditoria y saneamiento
 
@@ -589,6 +733,6 @@ describe estados que ya no son ciertos.
 
 ---
 
-**Ultima actualizacion:** 21/09/2026
+**Ultima actualizacion:** 22/09/2026
 **Proyecto:** Nodo360 Plataforma Educativa
-**Version:** 4.0
+**Version:** 5.0
