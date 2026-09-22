@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, ArrowRight, Trophy, RotateCcw, Loader2 } from 'lucide-react'
 import type { QuizQuestion } from '@/types/database'
@@ -46,6 +47,11 @@ export function CourseFinalQuiz({
 
   const currentQuestion = questions[currentIndex]
   const totalQuestions = questions.length
+
+  // Cambiar de pregunta o pasar a los resultados NO cambia de ruta: es estado,
+  // asi que ScrollToTopOnNavigate no se entera. Sin esto, al responder una
+  // pregunta larga la siguiente aparece con la vista a media pagina.
+  useScrollToTop(showResults ? 'resultados' : currentIndex)
 
   // La correccion la hace el servidor en /api/quiz/submit. El cliente no
   // conoce las respuestas correctas ni decide si se aprueba.

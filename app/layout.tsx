@@ -4,6 +4,7 @@ import SiteHeaderServer from "@/components/navigation/SiteHeader/SiteHeaderServe
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics";
 import "./globals.css";
+import { ScrollToTopOnNavigate } from '@/components/navigation/ScrollToTopOnNavigate';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com"),
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Saltar al contenido principal
         </a>
+        <ScrollToTopOnNavigate />
         <SiteHeaderServer />
         <main id="main-content" role="main">
           <Providers>{children}</Providers>
