@@ -25,7 +25,7 @@ export function SlugField({ value, onChange, error }: SlugFieldProps) {
         onChange={(e) => onChange(e.target.value)}
         required
         className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
-        placeholder="Ej: introduccion-bitcoin-principiantes"
+        placeholder="Ej: introducción-bitcoin-principiantes"
       />
       <p className="mt-2 text-sm text-white/50">
         URL: /cursos/{value || 'slug-del-curso'}

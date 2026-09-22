@@ -4,6 +4,9 @@ import { ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { CourseFinalQuiz } from '@/components/quiz/CourseFinalQuiz'
 import type { QuizQuestion } from '@/types/database'
+import { resolveCourseAccess } from '@/lib/courses/access'
+import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
+import { CourseUnavailable } from '@/components/course/CourseUnavailable'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -27,6 +30,7 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
       title,
       slug,
       status,
+      instructor_id,
       owner:users!courses_owner_id_fkey (
         id,
         full_name,
@@ -37,8 +41,24 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
     .eq('slug', slug)
     .single()
 
-  if (courseError || !course || course.status !== 'published') {
+  if (courseError || !course) {
     notFound()
+  }
+
+  // Regla única de visibilidad: publicado -> todos; borrador -> admin e
+  // instructor del curso; el resto, 404. Ver lib/courses/access.ts
+  const { canView, isPreview } = await resolveCourseAccess(course, user?.id)
+
+  // Mismo trato que en la ficha: quien no puede ver el curso no ve el examen,
+  // pero tampoco un 404 seco.
+  if (!canView) {
+    return (
+      <CourseUnavailable
+        courseId={course.id}
+        courseTitle={course.title}
+        status={course.status}
+      />
+    )
   }
 
   // Si no hay usuario, redirigir a login
@@ -75,6 +95,7 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
+      {isPreview && <CoursePreviewBanner />}
       {/* Header */}
       <header className="border-b border-white/10 bg-dark-surface/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

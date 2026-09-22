@@ -45,7 +45,7 @@ export default function LessonPlayer({
 
   const isCompleted = completedIds.includes(lesson.id)
 
-  // Detectar si es la ultima leccion del curso
+  // Detectar si es la última lección del curso
   const isLastLesson = useMemo(() => {
     return navigation.nextLesson === null
   }, [navigation.nextLesson])

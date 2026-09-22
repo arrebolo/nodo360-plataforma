@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { calculateLevel } from '@/lib/gamification/levels'
+import { getXPProgress } from '@/lib/gamification/levels'
 import { DEFAULT_LEVEL_RULES } from '@/lib/settings/defaults'
 import { checkRateLimit } from '@/lib/ratelimit'
 
@@ -206,7 +206,7 @@ export async function POST(
           : currentStats.certificates_earned
 
         // Recalcular nivel basado en nuevo XP
-        const { level: newLevel, xpToNextLevel } = calculateLevel(newTotalXp, DEFAULT_LEVEL_RULES)
+        const { currentLevel: newLevel, xpToNextLevel } = getXPProgress(newTotalXp)
 
         await admin
           .from('user_gamification_stats')

@@ -124,7 +124,7 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
       })
 
       if (res.ok) {
-        // Recargar la pagina para ver el nuevo curso
+        // Recargar la página para ver el nuevo curso
         window.location.reload()
       } else {
         alert('Error al duplicar el curso')
@@ -168,7 +168,7 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
           <BookOpen className="w-4 h-4" />
           {course.total_modules || 0} modulos · {course.total_lessons || 0} lecciones
         </span>
-        {durationHours && (
+        {(durationHours ?? 0) > 0 && (
           <span className="flex items-center gap-1.5">
             <Clock className="w-4 h-4" />
             {durationHours}h

@@ -1,5 +1,6 @@
 import { Users, Lightbulb, MessageCircle, Hammer, Search, GitBranch, Handshake, Eye } from 'lucide-react'
 import { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Espacio de Proyectos - Nodo360',
@@ -208,13 +209,13 @@ export default function ProyectosPage() {
                 <MessageCircle className="w-5 h-5" />
                 Unirse a la comunidad
               </a>
-              <a
+              <Link
                 href="/cursos"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-lg rounded-xl hover:border-brand-light/50 transition-all duration-300"
               >
                 <Lightbulb className="w-5 h-5" />
                 Ver los cursos
-              </a>
+              </Link>
             </div>
           </div>
         </div>

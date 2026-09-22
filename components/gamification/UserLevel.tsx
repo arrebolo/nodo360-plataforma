@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Trophy, Zap, Flame } from 'lucide-react'
-import { getXPProgress, getLevelName, MAX_LEVEL } from '@/lib/gamification/levels'
+import { getXPProgress, MAX_LEVEL } from '@/lib/gamification/levels'
 
 interface GamificationStats {
   total_xp: number
@@ -76,11 +76,17 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
   }
 
   // Calcular progreso usando el sistema centralizado
+  // El número, el nombre y la barra salen TODOS de getXPProgress(total_xp).
+  // Antes el número venia de stats.current_level (base de datos, formula
+  // lineal), el nombre de getLevelName(ese número) —que con un 47 no encuentra
+  // nada y caia al fallback 'Novato'— y la barra se recalculaba con umbrales.
+  // Tres respuestas distintas en el mismo widget.
   const levelProgress = getXPProgress(stats.total_xp)
   const xpInCurrentLevel = levelProgress.xpInLevel
-  const xpForCurrentLevel = levelProgress.xpForNextLevel || 1 // Evitar division por 0
+  const xpForCurrentLevel = levelProgress.xpForNextLevel || 1 // Evitar división por 0
   const progressPercentage = levelProgress.progress
-  const levelName = getLevelName(stats.current_level)
+  const nivel = levelProgress.currentLevel
+  const levelName = levelProgress.levelName
 
   // Variante compacta (para header/navbar)
   if (variant === 'compact') {
@@ -89,7 +95,7 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
         {/* Nivel */}
         <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full text-white font-semibold text-sm">
           <Trophy className="w-4 h-4" />
-          <span>Nivel {stats.current_level}</span>
+          <span>Nivel {nivel}</span>
         </div>
 
         {/* XP */}
@@ -121,7 +127,7 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
             </div>
             <div>
               <p className="text-white/80 text-sm">{levelName}</p>
-              <h3 className="text-3xl font-bold">Nivel {stats.current_level}</h3>
+              <h3 className="text-3xl font-bold">Nivel {nivel}</h3>
             </div>
           </div>
 
@@ -191,10 +197,10 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
       {/* Level Badge */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-          {stats.current_level}
+          {nivel}
         </div>
         <div className="flex-1">
-          <h4 className="font-semibold text-white">Nivel {stats.current_level}</h4>
+          <h4 className="font-semibold text-white">Nivel {nivel}</h4>
           <p className="text-sm text-white/40">{stats.total_xp.toLocaleString()} XP total</p>
         </div>
         <Trophy className="w-6 h-6 text-yellow-500" />
@@ -215,7 +221,7 @@ export default function UserLevel({ variant = 'default' }: UserLevelProps) {
         <p className="text-xs text-white/50 mt-1">
           {levelProgress.isMaxLevel
             ? `Nivel máximo alcanzado - ${levelName}`
-            : `${levelProgress.xpToNextLevel.toLocaleString()} XP para nivel ${stats.current_level + 1}`}
+            : `${levelProgress.xpToNextLevel.toLocaleString()} XP para nivel ${nivel + 1}`}
         </p>
       </div>
 

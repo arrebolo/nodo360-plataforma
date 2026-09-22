@@ -1,4 +1,18 @@
 -- ============================================
+-- *** OBSOLETA - NO EJECUTAR ***
+--
+-- Sustituida por supabase/migrations/023_projects_system.sql, que corrige
+-- defectos que habrian roto el sistema o abierto un hueco de seguridad:
+--   - recursion mutua de RLS entre projects y project_collaborators (42P17)
+--   - politica de UPDATE sin WITH CHECK: el autor podia autoaprobarse
+--   - "WHERE project_id = id" ambiguo, que nunca era cierto
+--   - sin REVOKE: anon quedaba con INSERT/UPDATE/DELETE a nivel de tabla
+--
+-- Se conserva como referencia de lo que se penso en febrero de 2026. Nunca
+-- llego a aplicarse: las cuatro tablas no existen en la base de datos.
+-- Marcada el 21 de septiembre de 2026.
+-- ============================================
+--
 -- MIGRATION 019: Projects System (Phase 27)
 -- Fecha: 6 Febrero 2026
 -- Descripción: Sistema de proyectos comunitarios

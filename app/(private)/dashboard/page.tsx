@@ -36,7 +36,7 @@ export default async function DashboardPage() {
         <div className="max-w-5xl mx-auto px-4 py-10 space-y-4">
           <h1 className="text-2xl font-semibold text-white">Dashboard</h1>
           <p className="text-sm text-white/60">
-            Debes iniciar sesion para acceder al dashboard.
+            Debes iniciar sesión para acceder al dashboard.
           </p>
           <Link
             href="/login"
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
               <span className="text-orange-400">🔥 {currentStreak}</span>
-              <span className="text-white/60">dias</span>
+              <span className="text-white/60">días</span>
             </div>
           </div>
         </header>
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
             {/* Card Objetivo */}
             <div className="bg-gradient-to-br from-success/15 to-success/10 border border-success/20 rounded-xl p-5">
               <span className="text-success text-sm font-medium">Objetivo diario</span>
-              <p className="text-white text-lg font-semibold mt-1">Completa 1 leccion</p>
+              <p className="text-white text-lg font-semibold mt-1">Completa 1 lección</p>
               <p className="text-white/60 text-sm mt-1">Manten tu racha activa</p>
             </div>
           </div>

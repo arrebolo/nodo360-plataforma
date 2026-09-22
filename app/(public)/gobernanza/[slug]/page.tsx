@@ -114,9 +114,11 @@ export default async function ProposalDetailPage({ params }: PageProps) {
                 <User className="w-5 h-5" />
               )}
               <span>{proposal.author_name || 'Usuario'}</span>
-              <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs">
-                {proposal.author_gpower} gP
-              </span>
+              {proposal.author_gpower !== null && (
+                <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs">
+                  {proposal.author_gpower} gP
+                </span>
+              )}
             </div>
 
             {/* Fecha */}

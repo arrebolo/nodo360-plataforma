@@ -1,0 +1,70 @@
+-- ============================================================================
+-- MIGRACION 027: eliminar la vista quiz_questions_public
+--
+-- *** PENDIENTE DE APLICAR ***
+--
+-- QUE ES Y DE DONDE SALE
+-- La creo la PARTE 2B de docs/migrations/021_rls_quiz_security.sql como via
+-- publica para que el cliente leyera las preguntas del quiz sin la respuesta:
+-- proyecta id, module_id, question, options, order_index, difficulty y points,
+-- y deja fuera correct_answer y explanation. Se definio con
+-- security_invoker = on y se le dio GRANT SELECT a anon y authenticated.
+--
+-- POR QUE SE ELIMINA
+--
+-- 1. Quedo inservible tras la 025. Con security_invoker = on la vista se
+--    ejecuta con los privilegios de quien consulta, no con los de su
+--    propietario. Al revocar en la 025 el acceso de anon a la tabla base, la
+--    vista dejo de servirle. Comprobado el 21/09/2026:
+--
+--      anon GET /rest/v1/quiz_questions_public?select=*
+--        -> 401 42501: permission denied for table quiz_questions
+--
+--    Es decir, hoy no da acceso a nadie que no lo tuviera ya por otra via.
+--
+-- 2. Arreglarla seria peor que borrarla. La unica forma de que anon pudiera
+--    leerla es pasarla a security_invoker = off, para que se ejecutase con los
+--    privilegios de su propietario. Eso saltaria tambien la RLS que la 024 puso
+--    sobre quiz_questions, cuya politica limita la lectura a preguntas de
+--    modulos de cursos con status = 'published'. Resultado: el enunciado y las
+--    opciones de TODAS las preguntas quedarian accesibles con la clave anonima,
+--    incluidas las de cursos en borrador. Se cambiaria una fuga por otra.
+--
+-- 3. No la consume nadie. Las preguntas se sirven desde /api/quiz/questions,
+--    que usa service_role y una lista explicita de columnas:
+--
+--      .select('id, module_id, question, options, order_index, difficulty, points')
+--
+--    No hay un solo .from('quiz_questions_public') en app/, lib/, components/
+--    ni scripts/. Borrarla no rompe nada.
+--
+-- Mientras siga existiendo, la vista y su GRANT a anon sugieren un camino de
+-- acceso publico que en realidad no funciona, y el dia que alguien intente
+-- "arreglarla" lo natural sera quitarle el security_invoker, que es justo lo
+-- que no hay que hacer.
+--
+-- DECISION DE PRODUCTO SUBYACENTE
+-- La correccion del quiz es server-side (/api/quiz/submit) y la entrega de
+-- preguntas tambien (/api/quiz/questions). El cliente no lee quiz_questions ni
+-- directamente ni a traves de vistas. Esta migracion consolida eso.
+--
+-- Es idempotente: reejecutarla no cambia nada.
+-- ============================================================================
+
+DROP VIEW IF EXISTS public.quiz_questions_public;
+
+
+-- ============================================================================
+-- COMPROBACIONES (solo lectura, ejecutar aparte)
+-- ============================================================================
+-- 1. Que la vista ya no esta:
+--    select table_name from information_schema.views
+--    where table_schema = 'public' and table_name = 'quiz_questions_public';
+--    No debe devolver ninguna fila.
+--
+-- 2. Que el quiz sigue funcionando: abrir el examen final de un curso publicado
+--    con sesion iniciada. Las preguntas se piden a /api/quiz/questions, que no
+--    usa la vista, asi que deben cargarse igual que antes.
+--
+-- 3. Que anon sigue sin ver nada de quiz_questions:
+--    GET /rest/v1/quiz_questions?select=* con la clave anonima -> 401 42501.

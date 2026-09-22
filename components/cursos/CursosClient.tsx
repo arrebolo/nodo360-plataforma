@@ -9,9 +9,11 @@ import { BookOpen } from 'lucide-react'
 
 interface CursosClientProps {
   allCourses: CourseWithInstructor[]
+  /** course_id -> progreso del usuario. Vacio si no hay sesion. */
+  matriculas?: Record<string, { progreso: number; completado: boolean }>
 }
 
-export function CursosClient({ allCourses }: CursosClientProps) {
+export function CursosClient({ allCourses, matriculas = {} }: CursosClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'all' | 'free' | 'premium'>('all')
@@ -100,9 +102,16 @@ export function CursosClient({ allCourses }: CursosClientProps) {
         {/* SECCIÓN CURSOS */}
         <div>
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white">Todos los cursos</h2>
+            <h2 className="text-xl font-semibold text-white">
+              {activeTab === 'free'
+                ? 'Cursos gratuitos'
+                : activeTab === 'premium'
+                  ? 'Cursos premium'
+                  : 'Todos los cursos'}
+            </h2>
             <p className="text-sm text-white/60 mt-1">
-              {filteredCourses.length} cursos disponibles
+              {filteredCourses.length}{' '}
+              {filteredCourses.length === 1 ? 'curso disponible' : 'cursos disponibles'}
             </p>
           </div>
 
@@ -127,9 +136,9 @@ export function CursosClient({ allCourses }: CursosClientProps) {
                     thumbnailUrl={course.thumbnail_url ?? undefined}
                     modulesCount={course.total_modules || 0}
                     lessonsCount={course.total_lessons || 0}
-                    isEnrolled={false}
-                    isCompleted={false}
-                    progressPercent={0}
+                    isEnrolled={!!matriculas[course.id]}
+                    isCompleted={matriculas[course.id]?.completado ?? false}
+                    progressPercent={matriculas[course.id]?.progreso ?? 0}
                     isComingSoon={course.status === 'coming_soon'}
                     learningPath={learningPath}
                     instructor={course.instructor as { id: string; full_name: string | null; avatar_url: string | null; role: string | null } | null}

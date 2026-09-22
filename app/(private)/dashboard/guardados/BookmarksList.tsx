@@ -131,7 +131,7 @@ export function BookmarksList({ initialBookmarks }: BookmarksListProps) {
                     <Clock size={12} />
                     {new Date(bookmark.created_at).toLocaleDateString('es-ES')}
                   </span>
-                  {lesson.video_duration_minutes && (
+                  {(lesson.video_duration_minutes ?? 0) > 0 && (
                     <span>{lesson.video_duration_minutes} min</span>
                   )}
                 </div>

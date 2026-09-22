@@ -18,7 +18,6 @@ Guía completa para llevar Nodo360 a producción de forma segura y optimizada.
 ### 2. Base de Datos 🗄️
 
 - [ ] Ejecutar `sql/schema.sql` en Supabase Production
-- [ ] Ejecutar `sql/create-leads-tables.sql`
 - [ ] Ejecutar `sql/add-course-filters.sql`
 - [ ] Ejecutar `sql/create-user-progress-tables.sql`
 - [ ] Verificar que todos los triggers están activos
@@ -29,9 +28,8 @@ Guía completa para llevar Nodo360 a producción de forma segura y optimizada.
 ```bash
 # Orden de ejecución:
 1. schema.sql (estructura base)
-2. create-leads-tables.sql (leads capture)
-3. add-course-filters.sql (filtros)
-4. create-user-progress-tables.sql (dashboard)
+2. add-course-filters.sql (filtros)
+3. create-user-progress-tables.sql (dashboard)
 ```
 
 ### 3. SEO & Analytics 🔍

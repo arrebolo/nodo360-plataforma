@@ -6,6 +6,7 @@ import { RouteCardWrapper } from '@/components/learning-path/RouteCardWrapper'
 import { Button } from '@/components/ui/Button'
 import { Footer } from '@/components/navigation/Footer'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
 
 /**
  * Obtiene la URL de la primera lección incompleta de una ruta
@@ -127,18 +128,27 @@ export default async function RutasPublicPage() {
     continueUrl = await getNextLessonUrl(supabase, user.id, activePathId)
   }
 
-  const pathsWithCounts = await Promise.all(
+  const esAdmin = await isCurrentUserAdmin(user?.id)
+
+  const pathsConDatos = await Promise.all(
     paths.map(async (path) => {
       const courses = await getCoursesByLearningPathSlug(path.slug)
       const totalLessons = courses.reduce((acc, c) => acc + (c.total_lessons || 0), 0)
       return {
         ...path,
         courseCount: courses.length,
+        publicadosCount: courses.filter((c) => c.status === 'published').length,
         totalLessons,
         isActive: activePathId === path.id,
       }
     })
   )
+
+  // Una ruta sin ningun curso publicado no se anuncia: llevaria a una pagina
+  // "en preparacion". Los admin si las ven, para poder gestionarlas.
+  const pathsWithCounts = esAdmin
+    ? pathsConDatos
+    : pathsConDatos.filter((p) => p.publicadosCount > 0)
 
   const getEducationalHint = (slug: string) => {
     const s = slug.toLowerCase()

@@ -6,6 +6,10 @@ import { hasEntitlement } from "@/lib/billing/entitlements"
 import LessonPlayer from "@/components/lesson/LessonPlayer"
 import { getCourseQuizStatus } from "@/lib/quiz/checkCourseQuiz"
 import type { LessonPlayerProps, ModuleWithLessons, LessonNavigation, LessonProgress, QuizStatus } from "@/types/lesson-player"
+import { resolveCourseAccess } from "@/lib/courses/access"
+import { CoursePreviewBanner } from "@/components/course/CoursePreviewBanner"
+import { CourseAlreadyCompleted } from "@/components/course/CourseAlreadyCompleted"
+import { CourseUnavailable } from "@/components/course/CourseUnavailable"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -20,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: lesson } = await supabase
     .from("lessons")
-    .select("title, courses!inner(title, slug)")
+    .select("title, courses!inner(id, title, slug, status, instructor_id)")
     .eq("slug", lessonSlug)
     .eq("courses.slug", slug)
     .single()
@@ -30,12 +34,41 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // Handle the courses join result - it's a single object, not an array
-  const courseData = lesson.courses as unknown as { title: string; slug: string } | null
+  const courseData = lesson.courses as unknown as {
+    id: string
+    title: string
+    slug: string
+    status: string | null
+    instructor_id: string | null
+  } | null
   const courseTitle = courseData?.title || slug
+
+  // Un curso sin publicar no se indexa aunque su instructor o un admin pueda
+  // abrir la lección.
+  if (courseData?.status !== 'published') {
+    const { canView } = await resolveCourseAccess(courseData)
+
+    // Quien no puede ver el curso vera la pagina de "curso no disponible":
+    // el titulo de la leccion no aparece ni siquiera en la pestana.
+    if (!canView) {
+      return {
+        title: `${courseTitle} | Nodo360`,
+        description: 'Este curso no está disponible en este momento.',
+        robots: { index: false, follow: false },
+      }
+    }
+
+    // Vista previa de admin, instructor o mentor: se ve, pero no se indexa.
+    return {
+      title: `${lesson.title} | ${courseTitle} | Nodo360`,
+      description: `Lección: ${lesson.title}`,
+      robots: { index: false, follow: false },
+    }
+  }
 
   return {
     title: `${lesson.title} | ${courseTitle} | Nodo360`,
-    description: `Leccion: ${lesson.title}`,
+    description: `Lección: ${lesson.title}`,
   }
 }
 
@@ -60,6 +93,7 @@ export default async function LessonPage({ params }: PageProps) {
       id,
       slug,
       title,
+      status,
       is_premium,
       instructor_id,
       modules (
@@ -81,6 +115,24 @@ export default async function LessonPage({ params }: PageProps) {
   if (courseError || !course) {
     console.error("❌ [LessonPage] Error cargando curso:", courseError?.message)
     notFound()
+  }
+
+  // Regla única de visibilidad: publicado -> todos; borrador -> admin e
+  // instructor del curso; el resto, 404. Ver lib/courses/access.ts
+  // Antes esta página no miraba el estado del curso, así que cualquier usuario
+  // autenticado podia leer lecciones de borradores por URL directa.
+  const { canView, isPreview } = await resolveCourseAccess(course, userId)
+
+  // Se resuelve ANTES de cargar la leccion: si el curso no es para esta
+  // persona, no se llega a leer ni una linea de su contenido.
+  if (!canView) {
+    return (
+      <CourseUnavailable
+        courseId={course.id}
+        courseTitle={course.title}
+        status={course.status}
+      />
+    )
   }
 
   // 2b) Verificar entitlement para cursos premium
@@ -234,5 +286,52 @@ export default async function LessonPage({ params }: PageProps) {
     userRole,
   }
 
-  return <LessonPlayer {...playerProps} />
+  // Aviso de curso ya completado, solo en la PRIMERA leccion: repetirlo en
+  // todas seria ruido, y es al entrar cuando hay que decirle al alumno que
+  // repasar no vuelve a sumar experiencia.
+  const esPrimeraLeccion = !navigation.prevLesson
+
+  let yaCompletado = false
+  let matricula: { completed_at: string | null } | null = null
+  let certificado: { id: string; certificate_number: string | null; issued_at: string } | null = null
+
+  if (esPrimeraLeccion && userId) {
+    const { data: e } = await supabase
+      .from('course_enrollments')
+      .select('completed_at, progress_percentage')
+      .eq('user_id', userId)
+      .eq('course_id', course.id)
+      .maybeSingle()
+
+    yaCompletado = !!e?.completed_at || (e?.progress_percentage ?? 0) >= 100
+    matricula = e ? { completed_at: e.completed_at } : null
+
+    if (yaCompletado) {
+      const { data: cert } = await supabase
+        .from('certificates')
+        .select('id, certificate_number, issued_at')
+        .eq('user_id', userId)
+        .eq('course_id', course.id)
+        .eq('type', 'course')
+        .maybeSingle()
+      certificado = cert ?? null
+    }
+  }
+
+  return (
+    <>
+      {isPreview && <CoursePreviewBanner />}
+      {yaCompletado && (
+        <div className="mx-auto max-w-7xl px-4 pt-4 lg:px-6">
+          <CourseAlreadyCompleted
+            contexto="leccion"
+            completedAt={matricula?.completed_at ?? certificado?.issued_at ?? null}
+            certificateId={certificado?.id ?? null}
+            certificateNumber={certificado?.certificate_number ?? null}
+          />
+        </div>
+      )}
+      <LessonPlayer {...playerProps} />
+    </>
+  )
 }

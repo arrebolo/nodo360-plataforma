@@ -252,13 +252,13 @@ export default function HomePage() {
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center">
                       <DollarSign className="w-4 h-4 text-success" />
                     </div>
-                    <span>Comision 35-40% por cada venta</span>
+                    <span>Comisión 35-40% por cada venta</span>
                   </li>
                   <li className="flex items-center gap-3 text-white/80">
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-brand-light/20 flex items-center justify-center">
                       <Wrench className="w-4 h-4 text-brand-light" />
                     </div>
-                    <span>Herramientas de creacion de cursos incluidas</span>
+                    <span>Herramientas de creación de cursos incluidas</span>
                   </li>
                   <li className="flex items-center gap-3 text-white/80">
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-warning/20 flex items-center justify-center">

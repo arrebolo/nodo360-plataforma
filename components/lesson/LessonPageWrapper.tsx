@@ -41,13 +41,13 @@ export function LessonPageWrapper({
   return (
     <div className="p-8 text-center">
       <p className="text-neutral-500">
-        Este componente esta deprecado. Usa la nueva pagina de leccion.
+        Este componente esta deprecado. Usa la nueva página de lección.
       </p>
       <a
         href={`/cursos/${course.slug}/${lesson.slug}`}
         className="text-orange-600 underline"
       >
-        Ir a la leccion
+        Ir a la lección
       </a>
     </div>
   )

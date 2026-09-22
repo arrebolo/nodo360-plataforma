@@ -60,8 +60,6 @@ export async function GET(request: NextRequest) {
       unread_count: unreadCount || 0
     }
 
-    console.log('✅ [notifications] Obtenidas:', notifications?.length, 'Unread:', unreadCount)
-
     return NextResponse.json(response)
 
   } catch (error) {

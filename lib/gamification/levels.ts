@@ -99,21 +99,23 @@ export function getXPProgress(currentXP: number): {
 }
 
 /**
- * Calcula el nivel y XP restante (compatible con la firma anterior)
- * @deprecated Usar getXPProgress() para más información
+ * ELIMINADA: calculateLevel(totalXP, rules) — formula lineal floor(xp/100)+1.
+ *
+ * La introdujo el PR #36 ("Fix/unify level formula", 21/01/2026), que unifico
+ * esta funcion y dejo intactas LEVEL_THRESHOLDS, calculateLevelFromXP,
+ * getLevelName y getXPProgress, en este mismo archivo. Resultado: dos formulas
+ * conviviendo en TypeScript y una tercera en la base de datos.
+ *
+ * Ademas acotaba con rules.max_level, y system_settings.level_rules no trae esa
+ * clave, asi que el `|| 100` la dejaba en 100 en lugar de en 10: de ahi salian
+ * niveles como el 47.
+ *
+ * La unica fuente de verdad son ahora los umbrales: en la base de datos, tabla
+ * level_thresholds (migracion 039), y aqui LEVEL_THRESHOLDS, que debe coincidir
+ * con ella. La comprobacion 039-comprobar.sql verifica que no se separen.
+ *
+ * Quien necesite nivel y XP restante usa getXPProgress(totalXP).
  */
-export function calculateLevel(totalXP: number, rules?: { max_level?: number }) {
-  const safeXP = Number.isFinite(totalXP) ? Math.max(0, totalXP) : 0
-  const maxLevel = rules?.max_level ?? MAX_LEVEL
-
-  const level = Math.min(maxLevel, calculateLevelFromXP(safeXP))
-  const progress = getXPProgress(safeXP)
-
-  return {
-    level,
-    xpToNextLevel: progress.xpToNextLevel
-  }
-}
 
 /**
  * Obtiene el XP mínimo requerido para un nivel

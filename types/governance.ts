@@ -60,7 +60,8 @@ export interface ProposalWithDetails extends GovernanceProposal {
   author_name: string | null
   author_avatar: string | null
   author_role: string
-  author_gpower: number
+  /** null cuando no hay sesion: el gPower solo lo ven usuarios registrados */
+  author_gpower: number | null
   category_name: string | null
   category_icon: string | null
   category_color: string | null

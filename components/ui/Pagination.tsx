@@ -15,25 +15,25 @@ export function Pagination({
 }: PaginationProps) {
   if (totalPages <= 1) return null
 
-  // Generar array de paginas a mostrar
+  // Generar array de páginas a mostrar
   const getPageNumbers = () => {
     const pages: (number | 'ellipsis')[] = []
-    const showPages = 5 // Numero de paginas a mostrar
+    const showPages = 5 // Número de páginas a mostrar
 
     if (totalPages <= showPages + 2) {
-      // Mostrar todas las paginas
+      // Mostrar todas las páginas
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i)
       }
     } else {
-      // Siempre mostrar primera pagina
+      // Siempre mostrar primera página
       pages.push(1)
 
       if (currentPage > 3) {
         pages.push('ellipsis')
       }
 
-      // Paginas alrededor de la actual
+      // Páginas alrededor de la actual
       const start = Math.max(2, currentPage - 1)
       const end = Math.min(totalPages - 1, currentPage + 1)
 

@@ -150,7 +150,7 @@ No todos los nodos son iguales. Dependiendo de cómo los configures y qué funci
 
 Un full node es un nodo que descarga y verifica toda la blockchain desde el primer bloque hasta el último. Mantiene una copia completa y puede verificar cualquier transacción de forma independiente. Es el tipo estándar y el más importante para la red.
 
-Un pruned node (nodo podado) es un full node que, después de verificar toda la blockchain, elimina los bloques antiguos para ahorrar espacio en disco. Sigue verificando todo, pero no guarda el historial completo. Es ideal si tienes poco espacio de almacenamiento — un disco de 20-30 GB es suficiente en vez de los 600+ GB de un full node completo.
+Un pruned node (nodo podado) es un full node que, después de verificar toda la blockchain, elimina los bloques antiguos para ahorrar espacio en disco. Sigue verificando todo, pero no guarda el historial completo. Es ideal si tienes poco espacio de almacenamiento — un disco de 20-30 GB es suficiente en vez de cerca de un terabyte que ocupa hoy la cadena completa.
 
 Un archival node es un full node que además sirve bloques antiguos a otros nodos que se están sincronizando. No todos los nodos necesitan ser archivales, pero son importantes para que nuevos nodos puedan descargar la blockchain.
 
@@ -168,7 +168,7 @@ Para un usuario que quiere soberanía, un full node o un pruned node es más que
 | 2 | Full Node | Definición + diagrama: descarga toda la blockchain, verifica todo, guarda todo | El estándar |
 | 3 | Full Node — Números | Espacio: ~600+ GB · RAM: 2+ GB · Sincronización inicial: 1-3 días | Datos concretos |
 | 4 | Pruned Node | Definición + diagrama: verifica todo, pero descarta bloques antiguos | Mismo nivel de verificación |
-| 5 | Pruned Node — Números | Espacio: ~20-30 GB · Misma seguridad que full node · Ideal para hardware limitado | Alternativa práctica |
+| 5 | Pruned Node — Números | Espacio: ~20-30 GB frente a cerca de 1 TB · Misma seguridad que full node · Ideal para hardware limitado | Alternativa práctica |
 | 6 | Archival Node | Definición: full node + sirve bloques a otros nodos nuevos | Contribución a la red |
 | 7 | Mining Node | Definición: nodo + software minería + ASIC · No necesario para usuarios normales | Mencionar pero no profundizar |
 | 8 | Comparativa | Tabla: Full / Pruned / Archival / Mining → Espacio, Verificación, Contribución, Complejidad | Resumen visual |
@@ -213,9 +213,9 @@ Para un usuario que quiere soberanía, un full node o un pruned node es más que
 
 Montar un nodo Bitcoin no requiere un ordenador potente. De hecho, una de las opciones más populares es una Raspberry Pi — un mini ordenador que cuesta entre 50 y 100 euros.
 
-Para el hardware tienes varias opciones. La más accesible es reutilizar un ordenador viejo que ya tengas. Si tiene al menos 2 GB de RAM y espacio en disco suficiente (1 TB recomendado para un full node, o mucho menos para un pruned node), funciona perfectamente.
+Para el hardware tienes varias opciones. La más accesible es reutilizar un ordenador viejo que ya tengas. Si tiene al menos 2 GB de RAM y espacio en disco suficiente (al menos 2 TB para un full node, o mucho menos para un pruned node), funciona perfectamente.
 
-La opción más popular en la comunidad es una Raspberry Pi 4 o 5 con un disco SSD externo de 1 TB. Es barato, silencioso, consume poca energía, y puede funcionar 24/7 sin problemas. Muchas guías y sistemas están optimizados para este hardware.
+Durante años la opción más popular fue una Raspberry Pi con un SSD externo, pero con el tamaño que tiene hoy la cadena es cada vez menos práctica: la sincronización inicial es mucho más lenta y el disco por USB da problemas. Varios proyectos nacidos sobre esa placa, RaspiBlitz entre ellos, se instalan ya también en mini PC. Un mini PC de segunda mano con un SSD de 2 TB es hoy la opción equilibrada.
 
 También puedes comprar un mini PC o un NUC de segunda mano. Más potente que una Raspberry Pi, pero también más caro y con mayor consumo energético.
 
@@ -232,8 +232,8 @@ No hay una respuesta correcta universal. Lo que importa es elegir un setup que p
 | # | Título del slide | Contenido visual | Notas |
 |---|-----------------|------------------|-------|
 | 1 | No necesitas un superordenador | Foto/icono de Raspberry Pi + texto: "Desde 50 euros" | Romper la barrera de entrada |
-| 2 | Opción 1: Ordenador viejo | Requisitos mínimos: 2 GB RAM, 1 TB disco (o menos si pruned) · Ventaja: gratis si ya lo tienes | Reutilizar |
-| 3 | Opción 2: Raspberry Pi + SSD | Raspberry Pi 4/5 + SSD 1 TB · Barato, silencioso, bajo consumo, 24/7 | La opción más popular |
+| 2 | Opción 1: Equipo que ya tengas | Requisitos mínimos: 2 GB RAM, 2 TB de disco (o mucho menos si pruned) · Ventaja: gratis si ya lo tienes | Reutilizar |
+| 3 | Opción 2: Mini PC + SSD | Mini PC de bajo consumo + SSD de 2 TB · Mejor relación entre coste, rendimiento y mantenimiento | La opción equilibrada |
 | 4 | Opción 3: Mini PC / NUC | Más potente · Más caro · Mayor consumo · Para quien quiera más rendimiento | Opción avanzada |
 | 5 | Comparativa hardware | Tabla: PC viejo / Raspberry Pi / Mini PC → Coste, Potencia, Consumo, Facilidad | Resumen visual |
 | 6 | Software: Bitcoin Core | El software original · Control total · Línea de comandos · Para puristas y técnicos | Camino 1 |
@@ -247,9 +247,9 @@ No hay una respuesta correcta universal. Lo que importa es elegir un setup que p
 **Quiz (3 preguntas):**
 
 **P1:** ¿Cuál es el requisito mínimo de almacenamiento para un full node Bitcoin?
-- A) 10 GB
-- B) 100 GB
-- C) Aproximadamente 1 TB recomendado ✅
+- A) 100 GB
+- B) 500 GB
+- C) Al menos 2 TB ✅
 - D) 10 TB
 
 **P2:** ¿Qué ventaja tienen sistemas como Umbrel o Start9 frente a Bitcoin Core directo?

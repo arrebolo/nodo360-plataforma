@@ -5,6 +5,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import { BookOpen } from 'lucide-react'
 import { InstructorPreviewModal, useInstructorPreview } from '@/components/instructor/InstructorPreviewModal'
 
 type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
@@ -42,10 +43,15 @@ export type CourseHeroCourse = {
 
 export type CourseHeroProps = {
   course: CourseHeroCourse
+  /**
+   * Si quien mira puede gestionar el curso: admin, su instructor, o un mentor
+   * revisandolo. Solo con esto se muestran avisos de gestión, como el de que
+   * falta la imagen. Un visitante nunca debe leer instrucciones de backoffice.
+   */
+  canManage?: boolean
   isEnrolled?: boolean
   progressPct?: number | null
   hasFreePreview?: boolean
-  hrefCourse?: string
   hrefContinue?: string
   hrefEnroll?: string
   hrefPreview?: string
@@ -54,13 +60,29 @@ export type CourseHeroProps = {
   enrolling?: boolean
 }
 
+/**
+ * Duración como estimacion, no como promesa.
+ *
+ * El valor sale de courses.total_duration_minutes, que desde la migracion 029
+ * se calcula a partir del texto de las lecciones a 1.000 caracteres por minuto.
+ * Es una estimacion de lectura, así que no se presenta con precision al minuto
+ * cuando es larga: por debajo de 45 minutos se dan los minutos, y por encima se
+ * redondea a media hora y se marca con "~" y "de lectura" para que se lea como
+ * lo que es.
+ */
 function formatDuration(minutes?: number | null) {
   if (!minutes || minutes <= 0) return null
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h <= 0) return `${m} min`
-  if (m === 0) return `${h} h`
-  return `${h} h ${m} min`
+
+  if (minutes < 45) return `${minutes} min`
+
+  // Redondeo al multiplo de media hora mas cercano
+  const medias = Math.round(minutes / 30)
+  const h = Math.floor(medias / 2)
+  const media = medias % 2 === 1
+
+  if (h === 0) return '~30 min de lectura'
+  if (!media) return `~${h} h de lectura`
+  return `~${h} h 30 min de lectura`
 }
 
 function levelLabel(level: CourseLevel) {
@@ -114,20 +136,25 @@ export default function CourseHero({
   isEnrolled = false,
   progressPct,
   hasFreePreview = false,
-  hrefCourse,
   hrefContinue,
   hrefEnroll,
   hrefPreview,
   hrefDashboard = '/dashboard',
   onEnrollClick,
   enrolling = false,
+  canManage = false,
 }: CourseHeroProps) {
   const pct = clampPct(progressPct)
   const published = course.status === 'published'
   const instructorPreview = useInstructorPreview()
 
-  const courseUrl = hrefCourse ?? `/cursos/${course.slug}`
-  const canContinue = isEnrolled && (pct ?? 0) > 0 && !!hrefContinue
+  // Quien ya esta inscrito entra por /api/continue, que resuelve la lección
+  // destino: la última visitada si hay progreso, y la primera si no lo hay.
+  // Antes esto exigia además progreso > 0, de modo que un recien inscrito caia
+  // en un boton que enlazaba a esta misma página y no hacia nada.
+  const canContinue = isEnrolled && !!hrefContinue
+  const continueLabel = (pct ?? 0) > 0 ? 'Continuar' : 'Empezar el curso'
+
 
   const duration = formatDuration(course.total_duration_minutes)
 
@@ -261,11 +288,7 @@ export default function CourseHero({
               {published ? (
                 canContinue ? (
                   <Button href={hrefContinue!} size="lg" variant="primary">
-                    Continuar
-                  </Button>
-                ) : isEnrolled ? (
-                  <Button href={courseUrl} size="lg" variant="primary">
-                    Entrar al curso
+                    {continueLabel}
                   </Button>
                 ) : hrefEnroll ? (
                   <Button href={hrefEnroll} size="lg" variant="primary">
@@ -281,8 +304,11 @@ export default function CourseHero({
                     {course.is_free ? 'Empezar gratis' : 'Inscribirme'}
                   </Button>
                 ) : (
-                  <Button href={courseUrl} size="lg" variant="primary">
-                    {course.is_free ? 'Empezar gratis' : 'Ver detalles'}
+                  /* Único caso sin via de entrada: curso premium y usuario sin
+                     entitlement. La página lo explica debajo; aquí no se ofrece
+                     un enlace que no lleva a ninguna parte. */
+                  <Button size="lg" variant="secondary" disabled>
+                    Acceso premium requerido
                   </Button>
                 )
               ) : (
@@ -325,10 +351,25 @@ export default function CourseHero({
                   loading="lazy"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center px-6 text-center">
-                  <p className="text-sm text-muted">
-                    Añade un banner o thumbnail para reforzar la identidad visual del curso.
-                  </p>
+                /* Sin imagen: marcador neutro para cualquiera. El aviso de que
+                   falta subirla solo lo ve quien puede subirla. */
+                <div
+                  className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center"
+                  role="img"
+                  aria-label={`${course.title} — sin imagen de portada`}
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-light/20 to-gold/20 border border-brand-light/20">
+                    <BookOpen className="h-7 w-7 text-brand-light" aria-hidden="true" />
+                  </div>
+                  <span className="text-sm font-medium text-white/50">
+                    {levelLabel(course.level)}
+                  </span>
+
+                  {canManage && (
+                    <p className="mt-1 text-xs text-amber-300/80">
+                      Falta la imagen de portada de este curso.
+                    </p>
+                  )}
                 </div>
               )}
             </div>

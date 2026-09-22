@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
@@ -31,8 +32,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const isTablet = /tablet|ipad/i.test(userAgent)
     const deviceType = isTablet ? 'tablet' : isMobile ? 'mobile' : 'desktop'
 
-    // Llamar a la función RPC para trackear el clic
-    const { data: result, error } = await supabase.rpc('track_referral_click', {
+    // service_role, no la sesion del visitante. Esta es una ruta PUBLICA: la
+    // mayoria de quienes siguen un enlace de referido no han iniciado sesion,
+    // asi que la llamada salia como anon. Desde la 033 anon no puede ejecutar
+    // la funcion y los clics dejaban de registrarse en silencio (la ruta solo
+    // lo anotaba en consola y seguia redirigiendo). Con service_role vuelve a
+    // funcionar sin abrirle la funcion a nadie de fuera.
+    const admin = createAdminClient() as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: any; error: any }> }
+
+    const { data: result, error } = await admin.rpc('track_referral_click', {
       p_code: code,
       p_visitor_ip: visitorIp,
       p_user_agent: userAgent.substring(0, 500),

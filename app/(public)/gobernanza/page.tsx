@@ -2,6 +2,7 @@ import { getProposals, getCategories, getGovernanceStats } from '@/lib/governanc
 import { PROPOSAL_STATUS_INFO, getVotePercentage, hasQuorum } from '@/types/governance'
 import Link from 'next/link'
 import { Vote, Users, CheckCircle, Clock, TrendingUp } from 'lucide-react'
+import { GovernanceEmptyState } from '@/components/governance/GovernanceEmptyState'
 
 export const metadata = {
   title: 'Gobernanza | Nodo360',
@@ -88,15 +89,17 @@ export default async function GobernanzaPage() {
           <h2 className="text-2xl font-bold mb-6 text-white">Propuestas en Votación</h2>
 
           {activeProposals.length === 0 ? (
-            <div className="bg-dark-surface rounded-xl p-8 text-center border border-white/10">
-              <p className="text-white/60">No hay propuestas activas en este momento.</p>
-              <Link
-                href="/gobernanza/nueva"
-                className="inline-block mt-4 text-brand-light hover:text-brand transition underline"
-              >
-                ¿Tienes una idea? ¡Crea una propuesta!
-              </Link>
-            </div>
+            <>
+              <GovernanceEmptyState />
+              <div className="mt-8 text-center">
+                <Link
+                  href="/gobernanza/nueva"
+                  className="inline-block text-brand-light hover:text-brand transition underline"
+                >
+                  Presentar una propuesta
+                </Link>
+              </div>
+            </>
           ) : (
             <div className="grid gap-4">
               {activeProposals.map((proposal) => {
@@ -180,9 +183,11 @@ export default async function GobernanzaPage() {
                           />
                         )}
                         <span>{proposal.author_name || 'Usuario'}</span>
-                        <span className="text-xs bg-white/10 px-1.5 py-0.5 rounded">
-                          {proposal.author_gpower} gP
-                        </span>
+                        {proposal.author_gpower !== null && (
+                          <span className="text-xs bg-white/10 px-1.5 py-0.5 rounded">
+                            {proposal.author_gpower} gP
+                          </span>
+                        )}
                       </div>
                       {proposal.seconds_remaining > 0 && (
                         <div className="flex items-center gap-1">

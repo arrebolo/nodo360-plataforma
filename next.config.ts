@@ -40,12 +40,24 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://s.ytimg.com https://*.sentry.io",
+      // www.googletagmanager.com sirve gtag.js (GA4). El propio componente de
+      // @next/third-parties inyecta ademas un script inline para dataLayer,
+      // que ya cubre el 'unsafe-inline' de arriba.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://s.ytimg.com https://*.sentry.io https://www.googletagmanager.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https: http:",
+      // OJO: el 'https:' de esta linea ya permite cualquier imagen servida por
+      // HTTPS, asi que los tres dominios de GA son HOY redundantes. Se listan
+      // a proposito: el pixel de respaldo de GA4 sale por img-src, y cuando se
+      // acote ese 'https: http:' —conviene hacerlo— quedaran a la vista en vez
+      // de romperse en silencio, que es justo lo que acaba de pasar con
+      // script-src. No conceden ningun permiso nuevo.
+      "img-src 'self' data: blob: https: http: https://www.google-analytics.com https://region1.google-analytics.com https://*.analytics.google.com",
       "font-src 'self' https://fonts.gstatic.com",
       "frame-src 'self' https://www.youtube.com https://youtube.com https://docs.google.com https://*.canva.com",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://www.youtube.com",
+      // GA4 envia los hits por aqui: google-analytics.com es el destino
+      // clasico, region1 el regional que usa desde Europa, y *.analytics
+      // .google.com cubre el resto de subdominios del servicio.
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://www.youtube.com https://www.google-analytics.com https://region1.google-analytics.com https://*.analytics.google.com",
       "media-src 'self' https://www.youtube.com",
       "object-src 'none'",
       "base-uri 'self'",

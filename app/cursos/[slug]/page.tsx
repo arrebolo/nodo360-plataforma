@@ -10,9 +10,13 @@ import { Footer } from '@/components/navigation/Footer'
 import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import { CourseJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
+import { resolveCourseAccess } from '@/lib/courses/access'
+import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
+import { CourseUnavailable } from '@/components/course/CourseUnavailable'
 import { tokens, cx } from '@/lib/design/tokens'
 import { ChevronRight, Lock } from 'lucide-react'
 import type { Metadata } from 'next'
+import { CourseAlreadyCompleted } from '@/components/course/CourseAlreadyCompleted'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -28,14 +32,33 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 
   const { data: course } = await supabase
     .from('courses')
-    .select('title, description, thumbnail_url, level')
+    .select('title, description, thumbnail_url, level, status, instructor_id')
     .eq('slug', slug)
-    .eq('status', 'published')
     .single()
 
   if (!course) {
     return {
       title: 'Curso no encontrado',
+    }
+  }
+
+  const { canView, isPreview } = await resolveCourseAccess(course)
+
+  // El curso existe pero esta persona no puede verlo: se le muestra la pagina
+  // de "curso no disponible". Se da el titulo, nunca la descripcion.
+  if (!canView) {
+    return {
+      title: `${course.title} | Nodo360`,
+      description: 'Este curso no está disponible en este momento.',
+      robots: { index: false, follow: false },
+    }
+  }
+
+  // Un borrador no se indexa aunque su instructor o un admin pueda abrirlo
+  if (isPreview) {
+    return {
+      title: `${course.title} (vista previa)`,
+      robots: { index: false, follow: false },
     }
   }
 
@@ -70,7 +93,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const supabase = await createClient()
 
-  // 1. Obtener información del curso CON modulos y lecciones para conteo preciso
+  // 1. Obtener información del curso CON módulos y lecciones para conteo preciso
   const { data: course, error: courseError } = await supabase
     .from('courses')
     .select(`
@@ -102,11 +125,26 @@ export default async function CoursePage({ params }: CoursePageProps) {
       )
     `)
     .eq('slug', slug)
-    .eq('status', 'published')
     .single()
 
   if (courseError || !course) {
     notFound()
+  }
+
+  // Regla unica de visibilidad: publicado -> todos; borrador -> admin e
+  // instructor del curso; el resto, 404. Ver lib/courses/access.ts
+  const { canView, isPreview } = await resolveCourseAccess(course)
+
+  // El curso existe pero no es para esta persona: pagina amable en vez de 404.
+  // El 404 se reserva para cursos que no existen (el notFound de arriba).
+  if (!canView) {
+    return (
+      <CourseUnavailable
+        courseId={course.id}
+        courseTitle={course.title}
+        status={course.status}
+      />
+    )
   }
 
   // Calcular conteos reales desde los datos (no depender de campos stored)
@@ -137,7 +175,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </p>
               <div className="pt-4">
                 <Button variant="primary" href={`/login?redirect=/cursos/${slug}`}>
-                  Iniciar sesion para ver el curso
+                  Iniciar sesión para ver el curso
                   <span aria-hidden className="text-white/80">→</span>
                 </Button>
               </div>
@@ -155,15 +193,45 @@ export default async function CoursePage({ params }: CoursePageProps) {
     ? await hasEntitlement(user.id, course.id)
     : true // cursos no-premium no requieren entitlement
 
+  // Quien puede gestionar el curso ve los avisos de gestión (por ejemplo, que
+  // falta la imagen de portada). Un visitante no debe leerlos nunca.
+  // isPreview solo cubre los cursos sin publicar; estos tres están publicados,
+  // así que hace falta comprobar el rol también aquí.
+  const { data: perfil } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const canManage =
+    isPreview ||
+    perfil?.role === 'admin' ||
+    course.instructor_id === user.id
+
   // 5. Verificar inscripción
   const { data: enrollment } = await supabase
     .from('course_enrollments')
-    .select('id')
+    .select('id, completed_at, progress_percentage')
     .eq('user_id', user.id)
     .eq('course_id', course.id)
     .maybeSingle()
 
   const isEnrolled = !!enrollment
+
+  // Curso ya terminado: por fecha de finalizacion o por progreso al 100 %.
+  const yaCompletado =
+    !!enrollment?.completed_at || (enrollment?.progress_percentage ?? 0) >= 100
+
+  // Su certificado, para enlazarlo desde el aviso
+  const { data: certificado } = yaCompletado
+    ? await supabase
+        .from('certificates')
+        .select('id, certificate_number, issued_at')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .eq('type', 'course')
+        .maybeSingle()
+    : { data: null }
 
   // 6. Obtener progreso completo
   const courseProgress = isEnrolled
@@ -200,6 +268,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   return (
     <div className="min-h-screen bg-dark">
+      {isPreview && <CoursePreviewBanner />}
+
       {/* Structured Data */}
       <CourseJsonLd
         title={course.title}
@@ -228,6 +298,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <span className="text-white/70">{course.title}</span>
         </nav>
 
+        {yaCompletado && (
+          <div className="mb-6">
+            <CourseAlreadyCompleted
+              completedAt={enrollment?.completed_at ?? certificado?.issued_at ?? null}
+              certificateId={certificado?.id ?? null}
+              certificateNumber={certificado?.certificate_number ?? null}
+            />
+          </div>
+        )}
+
         {/* HERO DEL CURSO */}
         <CourseHero
           course={{
@@ -248,9 +328,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
             instructor_id: course.instructor_id ?? null,
             instructor: course.instructor as unknown as { id: string; full_name: string | null; avatar_url: string | null; role: string | null } | null,
           }}
+          canManage={canManage}
           isEnrolled={isEnrolled}
           progressPct={courseProgress?.globalProgress?.percentage ?? null}
-          hrefCourse={`/cursos/${course.slug}`}
           hrefContinue={hasPremiumAccess ? `/api/continue?courseSlug=${course.slug}` : undefined}
           hrefEnroll={hasPremiumAccess ? `/api/enroll?courseId=${course.id}` : undefined}
           hrefDashboard="/dashboard"
@@ -308,7 +388,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     Contenido del curso
                   </h3>
                   <p className="text-white/60 mb-6 max-w-sm mx-auto">
-                    Inscribete en el curso para acceder a todo el contenido
+                    Inscríbete en el curso para acceder a todo el contenido
                   </p>
 
                   <div className="max-w-xs mx-auto">

@@ -110,18 +110,6 @@ export const getLearningPathBySlug = cache(async (slug: string) => {
   return data
 })
 
-// Cache: Gamification settings (rarely changes)
-export const getGamificationSettings = cache(async () => {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from('gamification_settings')
-    .select('*')
-    .single()
-
-  return data
-})
-
 // Cache: Badge definitions
 export const getBadgeDefinitions = cache(async () => {
   const supabase = await createClient()
@@ -131,18 +119,6 @@ export const getBadgeDefinitions = cache(async () => {
     .select('id, name, description, icon_url, requirement_type, requirement_value, xp_reward')
     .eq('is_active', true)
     .order('requirement_value')
-
-  return data || []
-})
-
-// Cache: Level configurations
-export const getLevelConfigs = cache(async () => {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from('level_configs')
-    .select('level, xp_required, title, perks')
-    .order('level')
 
   return data || []
 })

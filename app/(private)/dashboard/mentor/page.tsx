@@ -110,7 +110,7 @@ export default async function MentorPage() {
   let mentorProfile: any = null
 
   if (isMentor) {
-    // Stats del mes actual
+    // Stats del mes actual. La columna del periodo es period_month, no month.
     const now = new Date()
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
@@ -118,19 +118,47 @@ export default async function MentorPage() {
       .from('mentor_monthly_stats')
       .select('*')
       .eq('user_id', user.id)
-      .eq('month', currentMonth)
+      .eq('period_month', currentMonth)
       .maybeSingle()
 
     monthlyStats = stats
 
-    // Perfil de mentor
-    const { data: mProfile } = await supabase
-      .from('mentors')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle()
+    // No existe tabla 'mentors'. El perfil se compone de las tablas reales,
+    // igual que en /mentores y /mentores/[id]:
+    //   - antiguedad  -> user_roles (rol de mentor vigente)
+    //   - puntos      -> suma de mentor_points.points
+    //   - sesiones    -> suma de mentor_monthly_stats.mentoring_sessions
+    //   - avisos      -> recuento de mentor_warnings activos
+    const [{ data: mentorRole }, { data: allPoints }, { data: allStats }, { count: warningCount }] =
+      await Promise.all([
+        supabase
+          .from('user_roles')
+          .select('created_at')
+          .eq('user_id', user.id)
+          .eq('role', 'mentor')
+          .eq('is_active', true)
+          .maybeSingle(),
+        supabase
+          .from('mentor_points')
+          .select('points')
+          .eq('user_id', user.id),
+        supabase
+          .from('mentor_monthly_stats')
+          .select('mentoring_sessions')
+          .eq('user_id', user.id),
+        supabase
+          .from('mentor_warnings')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_active', true),
+      ])
 
-    mentorProfile = mProfile
+    mentorProfile = {
+      created_at: mentorRole?.created_at ?? null,
+      total_points: (allPoints || []).reduce((sum, p) => sum + (p.points || 0), 0),
+      total_sessions: (allStats || []).reduce((sum, st) => sum + (st.mentoring_sessions || 0), 0),
+      warnings: warningCount || 0,
+    }
   }
 
   // Elegibilidad (para no-mentores)
@@ -146,13 +174,23 @@ export default async function MentorPage() {
       .rpc('can_apply_mentor', { p_user_id: user.id })
     eligibility = result
 
-    // Obtener puntos de mérito
-    const { data: points } = await supabase
-      .from('mentor_points')
-      .select('total_points')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    meritPoints = points?.total_points || 0
+    // Puntos de mérito. can_apply_mentor() ya los devuelve en current_points,
+    // calculados con get_mentor_points(), y son los mismos que usa para decidir
+    // la elegibilidad. Tomarlos de ahí evita que la cifra que se enseña y la que
+    // decide salgan de dos sitios distintos y puedan discrepar.
+    if (typeof eligibility?.current_points === 'number') {
+      meritPoints = eligibility.current_points
+    } else {
+      // Respaldo por si la RPC no responde. mentor_points guarda una fila por
+      // concesión, con la columna 'points'; no hay ningún total_points que leer.
+      // Esta suma da el mismo número que get_mentor_points(), que es SUM(points)
+      // sobre esta misma tabla.
+      const { data: points } = await supabase
+        .from('mentor_points')
+        .select('points')
+        .eq('user_id', user.id)
+      meritPoints = (points || []).reduce((sum, p) => sum + (p.points || 0), 0)
+    }
 
     // Verificar si tiene certificación de instructor
     const { data: certs } = await supabase
@@ -170,13 +208,21 @@ export default async function MentorPage() {
       accountAge = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24 * 30))
     }
 
-    // Contar mentores activos
+    // Contar mentores activos. No hay tabla 'mentors': el rol vive en
+    // user_roles, que es de donde también lo lee el listado público /mentores.
     const { count } = await supabase
-      .from('mentors')
+      .from('user_roles')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'active')
+      .eq('role', 'mentor')
+      .eq('is_active', true)
     totalMentors = count || 0
   }
+
+  // El umbral vive en mentor_config.min_points_to_apply y can_apply_mentor() lo
+  // devuelve como min_points. No lo incluye en todas sus respuestas: faltan las
+  // de cooldown, solicitud ya en curso y sin plazas. De ahí el respaldo, que es
+  // el valor sembrado en la migración 009.
+  const minPoints: number = eligibility?.min_points ?? 650
 
   // Aplicaciones propias
   const { data: applications } = await supabase
@@ -393,9 +439,9 @@ export default async function MentorPage() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   {/* Puntos de mérito */}
                   <RequirementItem
-                    passed={meritPoints >= 650}
+                    passed={meritPoints >= minPoints}
                     label="Puntos de mérito mínimos"
-                    detail={`${meritPoints}/650`}
+                    detail={`${meritPoints}/${minPoints}`}
                   />
 
                   {/* Instructor certificado */}
@@ -463,9 +509,9 @@ export default async function MentorPage() {
                     <AlertCircle className="w-4 h-4" />
                     {eligibility?.reason || 'No cumples los requisitos para aplicar.'}
                   </p>
-                  {meritPoints < 650 && (
+                  {meritPoints < minPoints && (
                     <p className="mt-2 text-xs text-gray-500">
-                      Te faltan {650 - meritPoints} puntos de mérito. Completa cursos y participa en la comunidad para ganar puntos.
+                      Te faltan {minPoints - meritPoints} puntos de mérito. Completa cursos y participa en la comunidad para ganar puntos.
                     </p>
                   )}
                 </div>

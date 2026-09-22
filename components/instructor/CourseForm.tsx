@@ -118,7 +118,7 @@ export default function CourseForm({ initial, courseId, isPublished, onSave }: P
           className={inputClasses}
           value={form.slug}
           onChange={(e) => update("slug", e.target.value)}
-          placeholder="introduccion-a-bitcoin"
+          placeholder="introducción-a-bitcoin"
           required
         />
         <p className="text-xs text-white/50">

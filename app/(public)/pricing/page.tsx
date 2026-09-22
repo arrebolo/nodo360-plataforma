@@ -13,7 +13,7 @@ interface PricingPlan {
   description: string | null
 }
 
-// Planes por defecto si no hay conexion a DB
+// Planes por defecto si no hay conexión a DB
 const defaultPlans: PricingPlan[] = [
   { id: '1', plan_type: 'monthly', price_cents: 2300, name: 'Premium Mensual', description: 'Acceso a todos los cursos premium por 1 mes' },
   { id: '2', plan_type: 'annual', price_cents: 23000, name: 'Premium Anual', description: 'Acceso a todos los cursos premium por 1 ano (2 meses gratis)' },
@@ -25,7 +25,7 @@ const planFeatures = {
     'Certificados de cursos gratuitos',
     'Sistema de gamificacion (XP, badges)',
     'Acceso a la comunidad',
-    'Rutas de aprendizaje basicas',
+    'Rutas de aprendizaje básicas',
   ],
   premium: [
     'Todo lo incluido en Free',
@@ -104,7 +104,7 @@ export default function PricingPage() {
             href="/login"
             className="px-4 py-2 rounded-lg bg-brand/20 text-brand hover:bg-brand/30 transition-colors text-sm font-medium"
           >
-            Iniciar sesion
+            Iniciar sesión
           </Link>
         </div>
       </header>
@@ -287,15 +287,15 @@ export default function PricingPage() {
                 Puedo cancelar en cualquier momento?
               </h3>
               <p className="text-white/60 text-sm">
-                Si, puedes cancelar tu suscripcion en cualquier momento. Mantendras el acceso hasta el final del periodo facturado.
+                Si, puedes cancelar tu suscripción en cualquier momento. Mantendras el acceso hasta el final del periodo facturado.
               </p>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/5 p-6">
               <h3 className="font-semibold text-white mb-2">
-                Que metodos de pago aceptan?
+                Que métodos de pago aceptan?
               </h3>
               <p className="text-white/60 text-sm">
-                Aceptaremos tarjetas de credito/debito y PayPal cuando el sistema de pagos este disponible.
+                Aceptaremos tarjetas de crédito/debito y PayPal cuando el sistema de pagos este disponible.
               </p>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/5 p-6">
@@ -303,7 +303,7 @@ export default function PricingPage() {
                 Los certificados son verificables?
               </h3>
               <p className="text-white/60 text-sm">
-                Si, todos los certificados incluyen un codigo QR unico que permite verificar su autenticidad en nuestra plataforma.
+                Si, todos los certificados incluyen un código QR único que permite verificar su autenticidad en nuestra plataforma.
               </p>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/5 p-6">
@@ -311,7 +311,7 @@ export default function PricingPage() {
                 Hay descuentos para estudiantes?
               </h3>
               <p className="text-white/60 text-sm">
-                Estamos trabajando en un programa de descuentos para estudiantes. Contactanos para mas informacion.
+                Estamos trabajando en un programa de descuentos para estudiantes. Contactanos para mas información.
               </p>
             </div>
           </div>

@@ -18,7 +18,6 @@ export { CodeBlock } from './CodeBlock'
 export { InteractiveList } from './InteractiveList'
 
 // Resource components
-export { ResourceUploader } from './ResourceUploader'
 export { LessonResourcesPanel } from './LessonResourcesPanel'
 export { SlidesEmbed } from './SlidesEmbed'
 

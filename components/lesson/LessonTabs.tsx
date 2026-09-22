@@ -65,7 +65,7 @@ export function LessonTabs({
             {description ? (
               <p className="whitespace-pre-wrap">{description}</p>
             ) : (
-              <p className="text-neutral-400">Sin descripcion disponible.</p>
+              <p className="text-neutral-400">Sin descripción disponible.</p>
             )}
           </div>
         )}
@@ -73,7 +73,7 @@ export function LessonTabs({
         {activeTab === 'recursos' && (
           <div className="space-y-2">
             {resources.length === 0 ? (
-              <p className="text-neutral-400 text-sm">No hay recursos para esta leccion.</p>
+              <p className="text-neutral-400 text-sm">No hay recursos para esta lección.</p>
             ) : (
               resources.map((resource) => (
                 <a
