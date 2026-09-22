@@ -254,8 +254,8 @@ export async function awardXP(input: AwardXPInput): Promise<AwardXPResult> {
       return {
         xpAwarded: 0,
         totalXP: safeCurrentXP,
-        level: calculateLevel(safeCurrentXP, levelRules).level,
-        xpToNextLevel: calculateLevel(safeCurrentXP, levelRules).xpToNextLevel
+        level: getXPProgress(safeCurrentXP).currentLevel,
+        xpToNextLevel: getXPProgress(safeCurrentXP).xpToNextLevel
       }
     }
   } else {
