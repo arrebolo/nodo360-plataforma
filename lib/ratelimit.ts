@@ -44,6 +44,85 @@ const RATE_CONFIGS = {
 
 export type RateLimitType = keyof typeof RATE_CONFIGS
 
+/**
+ * Cliente y limitadores a ambito de modulo.
+ *
+ * Antes se construian `new Redis()` y `new Ratelimit()` dentro de cada
+ * peticion. Ademas de rehacer el trabajo cada vez, impedia que
+ * @upstash/ratelimit reutilizase su cache interna entre llamadas.
+ *
+ * Y sobre todo: @upstash/redis reintenta 5 veces por defecto con espera
+ * exponencial (50, 136, 369, 1004, 2730 ms). Cuando la instancia de Upstash
+ * dejo de existir, cada peticion a cualquiera de las 81 rutas que llaman a
+ * checkRateLimit se quedaba ~4,3 s esperando a un DNS que ya no resolvia,
+ * antes de caer al contador en memoria. Aqui se acota a 1 reintento sin
+ * espera y con un corte a 500 ms: un rate limiter que tarda mas de medio
+ * segundo ya no protege, estorba.
+ */
+const UPSTASH_TIMEOUT_MS = 500
+
+let redisClient: Redis | null = null
+let redisUnavailable = false
+
+function getRedis(): Redis | null {
+  if (redisUnavailable) return null
+  if (redisClient) return redisClient
+
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) {
+    redisUnavailable = true
+    return null
+  }
+
+  redisClient = new Redis({
+    url,
+    token,
+    retry: { retries: 1, backoff: () => 0 },
+    signal: () => AbortSignal.timeout(UPSTASH_TIMEOUT_MS),
+  })
+  return redisClient
+}
+
+const limiters = new Map<RateLimitType, Ratelimit>()
+
+/**
+ * Cortacircuitos. Con 1 reintento y corte a 500 ms, un Upstash caido todavia
+ * costaria hasta ~1 s por peticion. Tras un fallo se deja de intentar durante
+ * COOLDOWN_MS y se va directo al contador en memoria, asi que el coste real es
+ * cero salvo un sondeo cada medio minuto. Se rearma solo: cuando crees la
+ * instancia nueva, vuelve a usarla sin tocar nada ni redesplegar.
+ */
+const COOLDOWN_MS = 30_000
+let cooldownUntil = 0
+
+function getRatelimiter(type: RateLimitType): Ratelimit | null {
+  if (Date.now() < cooldownUntil) return null
+
+  const cached = limiters.get(type)
+  if (cached) return cached
+
+  const redis = getRedis()
+  if (!redis) return null
+
+  const limiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(RATE_CONFIGS[type].requests, '1m'),
+    analytics: true,
+  })
+  limiters.set(type, limiter)
+  return limiter
+}
+
+// Un fallo de Upstash no debe llenar los logs con una linea por peticion.
+let lastUpstashLog = 0
+function logUpstashError(error: unknown) {
+  const now = Date.now()
+  if (now - lastUpstashLog < 60_000) return
+  lastUpstashLog = now
+  console.error('[RateLimit] Upstash no responde, usando el contador en memoria:', error)
+}
+
 export async function rateLimit(
   identifier: string,
   type: RateLimitType = 'api'
@@ -56,22 +135,17 @@ export async function rateLimit(
   }
 
   // Produccion: usar Upstash Redis
+  const ratelimit = getRatelimiter(type)
+  if (!ratelimit) {
+    return memoryLimiter.limit(identifier, config.requests, config.windowMs)
+  }
+
   try {
-    const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    })
-
-    const ratelimit = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(config.requests, '1m'),
-      analytics: true,
-    })
-
     const result = await ratelimit.limit(identifier)
     return { success: result.success, remaining: result.remaining }
   } catch (error) {
-    console.error('[RateLimit] Error con Upstash, usando fallback:', error)
+    cooldownUntil = Date.now() + COOLDOWN_MS
+    logUpstashError(error)
     return memoryLimiter.limit(identifier, config.requests, config.windowMs)
   }
 }
