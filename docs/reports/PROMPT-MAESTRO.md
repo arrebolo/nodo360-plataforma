@@ -327,6 +327,9 @@ duplica aqui. Resumen de por donde va, al 22/09/2026:
 | **`UserLevel.tsx` es codigo muerto** | No lo monta nadie. Se arreglo igualmente porque estaba en el repo |
 | **Cinco usuarios bajaron de nivel** | Efecto de unificar la formula. Ninguno perdio insignias: no hay ninguna que dependa del nivel |
 | **Fugas de lectura sin rastro** | Las funciones `SECURITY DEFINER` estuvieron abiertas a `anon` hasta el 22/09. Las escrituras no dejaron rastro (17 de 19 comprobaciones forenses a cero), pero las **lecturas** no dejan ninguno: nunca se sabra si alguien las consulto |
+| **El entorno local va con Node 24 y produccion con Node 22** | `.nvmrc` y `engines.node` ya fijan la 22, pero el aviso `EBADENGINE` seguira saliendo hasta que el entorno de desarrollo cambie. Mientras tanto, todo lockfile generado en local hay que regenerarlo con `npx npm@10` |
+| **`main` llego a no compilar** | Dos ramas tocaron regiones distintas de `awardXP.ts`, git las fusiono sin conflicto y el resultado no pasaba `tsc`. Lo caza el CI nuevo, pero solo en PRs: un push directo a `main` sigue sin verificarse |
+| **1 vulnerabilidad alta en `sharp`** | Es `devDependency` y pide un cambio mayor (0.34 -> 0.35). Por eso el CI audita con `--omit=dev` |
 
 ---
 
@@ -639,6 +642,31 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
     **Por que.** Producia un "0" suelto en el temario publico y el chip
     "Pendientes0" del panel. El segundo parecia protegido —
     `{n && n > 0 && ...}`— pero la primera condicion ya devuelve `0`.
+
+### Dependencias
+
+19. **El lockfile se genera con la misma version de Node que usan el CI y
+    Vercel: la 22.** Nunca con otra. Antes de tocar `package.json` o el
+    lockfile, comprobar `node -v` contra `.nvmrc`.
+
+    **Por que.** El lockfile depende de la version de **npm**, que viene con
+    Node: la 22 trae npm 10 y la 24 trae npm 11. **npm 11 tolera que falten
+    entradas transitivas en el lock y npm 10 las rechaza.** Un lock generado
+    con npm 11 instala sin problemas en local y revienta en CI con
+
+        npm error Missing: @floating-ui/dom@1.8.0 from lock file
+
+    Paso el 22/09/2026 y bloqueo la primera PR con verificacion automatica.
+    Reproducirlo no exige cambiar de Node: `npx npm@10 ci --dry-run` usa npm 10
+    sobre el Node que haya.
+
+    La version esta fijada en tres sitios que deben coincidir, y `.nvmrc` es la
+    fuente: `.nvmrc`, `engines.node` de `package.json` y el
+    `node-version-file` del workflow. Vercel lee `engines.node`.
+
+    **Si el entorno local va con otra version**, el install avisa con
+    `EBADENGINE` y no falla. Ese aviso no es ruido: significa que cualquier
+    lockfile que se genere ahi puede romper el CI.
 
 ### Codigo
 
