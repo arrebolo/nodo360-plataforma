@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSetting } from '@/lib/settings/getSetting'
 import { DEFAULT_LEVEL_RULES, type LevelRules } from '@/lib/settings/defaults'
-import { calculateLevel } from '@/lib/gamification/levels'
+import { getXPProgress } from '@/lib/gamification/levels'
 
 // Types for badge checking
 export type BadgeEventType =
@@ -162,7 +162,7 @@ export async function checkAndAwardBadges(context: BadgeCheckContext): Promise<B
 
         // Leer level_rules para calcular nivel
         const levelRules = await getSetting<LevelRules>('level_rules', DEFAULT_LEVEL_RULES) ?? DEFAULT_LEVEL_RULES
-        const { level, xpToNextLevel } = calculateLevel(newXP, levelRules)
+        const { currentLevel: level, xpToNextLevel } = getXPProgress(newXP)
 
         const now = new Date().toISOString()
         const dateOnly = now.split('T')[0]

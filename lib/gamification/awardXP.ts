@@ -6,7 +6,7 @@ import {
   type XPRules,
   type LevelRules
 } from '@/lib/settings/defaults'
-import { calculateLevel } from '@/lib/gamification/levels'
+import { getXPProgress } from '@/lib/gamification/levels'
 
 export type XPEventType =
   | 'lesson_completed'
@@ -136,7 +136,8 @@ export async function awardXP(input: AwardXPInput): Promise<AwardXPResult> {
   console.log('[awardXP] DEBUG XP calc:', { rawCurrentXP, safeCurrentXP, rawNewXP, newXP })
 
   // Recalcular nivel
-  const { level, xpToNextLevel } = calculateLevel(newXP, levelRules)
+  // Nivel y XP restante salen de los umbrales, la unica fuente de verdad.
+  const { currentLevel: level, xpToNextLevel } = getXPProgress(newXP)
 
   // Validar resultados de calculateLevel
   const safeLevel = (typeof level === 'number' && Number.isFinite(level) && level >= 1) ? level : 1
