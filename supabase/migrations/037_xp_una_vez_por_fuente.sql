@@ -53,21 +53,12 @@ COMMENT ON INDEX public.xp_events_fuente_unica IS
   'Una recompensa por usuario y fuente. related_id es la leccion, el quiz o el curso. Los nulos no chocan: las concesiones sin fuente (ajustes, rachas) pueden repetirse.';
 
 -- ----------------------------------------------------------------------------
--- 2. Un certificado por usuario y curso
---
---    Comprobado: la tabla certificates tiene 16 filas y ninguna repite
---    (user_id, course_id, type), asi que el indice entra limpio. Repetir un
---    curso no emite hoy un segundo certificado, pero nada lo impedia: esto lo
---    garantiza.
---
---    course_certificates esta vacia (0 filas): no se usa. No se toca.
+-- 2. (retirado)
+--    Aqui habia un indice unico sobre certificates (user_id, course_id, type).
+--    Sobraba: 037-leer.sql revelo que la tabla ya tiene TRES indices unicos
+--    para lo mismo (certificates_user_course_unique,
+--    unique_user_course_certificate y certificates_unique_course_user). Un
+--    segundo certificado por curso ya era imposible.
 -- ----------------------------------------------------------------------------
-
-CREATE UNIQUE INDEX IF NOT EXISTS certificates_uno_por_curso
-  ON public.certificates (user_id, course_id, type)
-  WHERE course_id IS NOT NULL;
-
-COMMENT ON INDEX public.certificates_uno_por_curso IS
-  'Un certificado por usuario, curso y tipo. Repetir un curso no emite otro.';
 
 COMMIT;
