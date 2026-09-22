@@ -15,6 +15,7 @@ import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
 import { tokens, cx } from '@/lib/design/tokens'
 import { ChevronRight, Lock } from 'lucide-react'
 import type { Metadata } from 'next'
+import { CourseAlreadyCompleted } from '@/components/course/CourseAlreadyCompleted'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -197,12 +198,27 @@ export default async function CoursePage({ params }: CoursePageProps) {
   // 5. Verificar inscripción
   const { data: enrollment } = await supabase
     .from('course_enrollments')
-    .select('id')
+    .select('id, completed_at, progress_percentage')
     .eq('user_id', user.id)
     .eq('course_id', course.id)
     .maybeSingle()
 
   const isEnrolled = !!enrollment
+
+  // Curso ya terminado: por fecha de finalizacion o por progreso al 100 %.
+  const yaCompletado =
+    !!enrollment?.completed_at || (enrollment?.progress_percentage ?? 0) >= 100
+
+  // Su certificado, para enlazarlo desde el aviso
+  const { data: certificado } = yaCompletado
+    ? await supabase
+        .from('certificates')
+        .select('id, certificate_number, issued_at')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .eq('type', 'course')
+        .maybeSingle()
+    : { data: null }
 
   // 6. Obtener progreso completo
   const courseProgress = isEnrolled
@@ -268,6 +284,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <ChevronRight className="h-4 w-4" />
           <span className="text-white/70">{course.title}</span>
         </nav>
+
+        {yaCompletado && (
+          <div className="mb-6">
+            <CourseAlreadyCompleted
+              completedAt={enrollment?.completed_at ?? certificado?.issued_at ?? null}
+              certificateId={certificado?.id ?? null}
+              certificateNumber={certificado?.certificate_number ?? null}
+            />
+          </div>
+        )}
 
         {/* HERO DEL CURSO */}
         <CourseHero

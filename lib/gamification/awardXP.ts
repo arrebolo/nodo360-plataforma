@@ -172,20 +172,7 @@ export async function awardXP(input: AwardXPInput): Promise<AwardXPResult> {
 
   console.log('[awardXP] Upsert data FINAL:', JSON.stringify(upsertData, null, 2))
 
-  // 5) UPSERT unico - crea si no existe, actualiza si existe
-  const { error: updateError } = await admin
-    .from('user_gamification_stats')
-    .upsert(upsertData, {
-      onConflict: 'user_id',
-      ignoreDuplicates: false
-    })
-
-  if (updateError) {
-    console.error('[awardXP] Error en upsert:', updateError)
-    throw new Error(`awardXP: error actualizando stats (${updateError.message})`)
-  }
-
-  // 6) Insert xp_event (no bloqueante para UX, pero aquí lo tratamos como best effort)
+  // 5) Descripcion del evento
   const description =
     input.description?.trim() ||
     (() => {
@@ -215,20 +202,78 @@ export async function awardXP(input: AwardXPInput): Promise<AwardXPResult> {
       }
     })()
 
-  // Solo insertar evento si hay XP positivo (por constraint CHECK xp_earned > 0)
-  if (xpToAdd > 0) {
-    const { error: eventError } = await admin.from('xp_events').insert({
-      user_id: userId,
-      event_type: eventType,
-      xp_earned: xpToAdd, // Columna correcta es xp_earned, no xp_amount
-      description,
-      created_at: new Date().toISOString()
-    })
+  // 6) La FUENTE del XP. Antes no se guardaba: el context solo servia para
+  //    redactar la descripcion, y xp_events quedaba con related_id, lesson_id y
+  //    course_id a null en 569 de 588 filas. Sin fuente no hay forma de saber
+  //    si una recompensa ya se concedio, y repetir un curso volvia a sumarla.
+  const relatedId =
+    eventType === 'lesson_completed'
+      ? input.context?.lessonId ?? null
+      : eventType === 'quiz_passed' || eventType === 'perfect_score'
+        ? input.context?.quizId ?? input.context?.courseId ?? null
+        : eventType === 'course_completed'
+          ? input.context?.courseId ?? null
+          : null
+
+  // 7) El evento se inserta ANTES de tocar las stats, y de forma idempotente.
+  //    El orden importa: si primero se sumase el XP y luego el insert chocara
+  //    con el indice unico, el total quedaria inflado igualmente. Asi, un
+  //    duplicado no suma nada y se devuelve xpAwarded: 0.
+  //
+  //    El indice unico (user_id, event_type, related_id) lo crea la migracion
+  //    037. Con related_id nulo no hay conflicto posible —en Postgres los nulos
+  //    no chocan entre si—, asi que las concesiones sin fuente (ajustes de
+  //    admin, rachas) siguen pudiendo repetirse, que es lo correcto.
+  if (xpToAdd <= 0) {
+    return { xpAwarded: 0, totalXP: safeCurrentXP, level: safeLevel, xpToNextLevel: safeXpToNextLevel }
+  }
+
+  const evento = {
+    user_id: userId,
+    event_type: eventType,
+    xp_earned: xpToAdd,
+    related_id: relatedId,
+    description,
+    created_at: new Date().toISOString()
+  }
+
+  if (relatedId) {
+    const { data: insertado, error: eventError } = await admin
+      .from('xp_events')
+      .upsert(evento, { onConflict: 'user_id,event_type,related_id', ignoreDuplicates: true })
+      .select('id')
 
     if (eventError) {
-      // No rompemos el XP ya aplicado. Solo trazamos.
       console.error('[awardXP] Error insert xp_event:', eventError)
+      throw new Error(`awardXP: error registrando el evento (${eventError.message})`)
     }
+
+    if (!insertado || insertado.length === 0) {
+      // Ya se concedio antes por esta misma fuente. No se suma nada.
+      console.log('[awardXP] Ya concedido, no se repite:', { eventType, relatedId })
+      return {
+        xpAwarded: 0,
+        totalXP: safeCurrentXP,
+        level: calculateLevel(safeCurrentXP, levelRules).level,
+        xpToNextLevel: calculateLevel(safeCurrentXP, levelRules).xpToNextLevel
+      }
+    }
+  } else {
+    const { error: eventError } = await admin.from('xp_events').insert(evento)
+    if (eventError) {
+      console.error('[awardXP] Error insert xp_event:', eventError)
+      throw new Error(`awardXP: error registrando el evento (${eventError.message})`)
+    }
+  }
+
+  // 8) Ahora si: actualizar las stats
+  const { error: updateError } = await admin
+    .from('user_gamification_stats')
+    .upsert(upsertData, { onConflict: 'user_id', ignoreDuplicates: false })
+
+  if (updateError) {
+    console.error('[awardXP] Error en upsert:', updateError)
+    throw new Error(`awardXP: error actualizando stats (${updateError.message})`)
   }
 
   return {
