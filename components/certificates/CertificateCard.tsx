@@ -72,7 +72,7 @@ export function CertificateCard({
             </div>
             <div>
               <p className="text-[10px] text-white/50 uppercase tracking-wider font-medium">
-                {type === 'module' ? 'Certificado de Modulo' : 'Certificado de Curso'}
+                {type === 'module' ? 'Certificado de Módulo' : 'Certificado de Curso'}
               </p>
               <p className="text-brand-light font-mono text-sm">
                 {certificateNumber}
@@ -81,7 +81,7 @@ export function CertificateCard({
           </div>
 
           {/* Score badge */}
-          {score && (
+          {(score ?? 0) > 0 && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-success/20 border border-success/30 rounded-lg">
               <svg className="w-3.5 h-3.5 text-success" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -192,7 +192,7 @@ export function CertificateCard({
                     ? 'bg-success/20 text-success'
                     : 'bg-white/10 text-white/70 hover:bg-white/15'
                 }`}
-                title="Copiar enlace de verificacion"
+                title="Copiar enlace de verificación"
               >
                 {copied ? (
                   <>

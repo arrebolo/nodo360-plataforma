@@ -18,7 +18,7 @@ export default function ResetPasswordPage() {
   const [sessionChecked, setSessionChecked] = useState(false)
   const [hasSession, setHasSession] = useState(false)
 
-  // Verificar que hay sesion activa (usuario llego via email de recovery)
+  // Verificar que hay sesión activa (usuario llego via email de recovery)
   useEffect(() => {
     async function checkSession() {
       const supabase = createClient()
@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
 
       setSuccess(true)
 
-      // Redirigir al dashboard despues de 3 segundos
+      // Redirigir al dashboard después de 3 segundos
       setTimeout(() => {
         router.push('/dashboard')
       }, 3000)
@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
     )
   }
 
-  // Si no hay sesion, mostrar mensaje de error
+  // Si no hay sesión, mostrar mensaje de error
   if (!hasSession) {
     return (
       <div className="min-h-screen bg-dark-primary flex items-center justify-center px-4">
@@ -111,7 +111,7 @@ export default function ResetPasswordPage() {
               Enlace expirado
             </h1>
             <p className="text-white/60 mb-6">
-              El enlace para restablecer tu contrasena ha expirado o no es valido.
+              El enlace para restablecer tu contraseña ha expirado o no es valido.
               Por favor, solicita un nuevo enlace.
             </p>
             <Link
@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand text-white font-medium hover:bg-brand-dark transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Volver al inicio de sesion
+              Volver al inicio de sesión
             </Link>
           </div>
         </div>
@@ -137,10 +137,10 @@ export default function ResetPasswordPage() {
               <CheckCircle className="w-8 h-8 text-green-400" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-3">
-              Contrasena actualizada
+              Contraseña actualizada
             </h1>
             <p className="text-white/60 mb-6">
-              Tu contrasena ha sido cambiada exitosamente.
+              Tu contraseña ha sido cambiada exitosamente.
               Seras redirigido al dashboard en unos segundos...
             </p>
             <Link
@@ -165,10 +165,10 @@ export default function ResetPasswordPage() {
             <span className="text-xl font-bold text-white">Nodo360</span>
           </Link>
           <h1 className="text-2xl font-bold text-white mb-2">
-            Crear nueva contrasena
+            Crear nueva contraseña
           </h1>
           <p className="text-white/60">
-            Introduce tu nueva contrasena para acceder a tu cuenta
+            Introduce tu nueva contraseña para acceder a tu cuenta
           </p>
         </div>
 
@@ -178,7 +178,7 @@ export default function ResetPasswordPage() {
             {/* Nueva contrasena */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-white/80 mb-2">
-                Nueva contrasena
+                Nueva contraseña
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -189,7 +189,7 @@ export default function ResetPasswordPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimo 8 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   className="w-full pl-10 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand/50 transition-all"
                   required
                 />
@@ -219,7 +219,7 @@ export default function ResetPasswordPage() {
                   </div>
                   <div className={`flex items-center gap-1.5 ${passwordChecks.number ? 'text-green-400' : 'text-white/40'}`}>
                     {passwordChecks.number ? <CheckCircle className="w-3.5 h-3.5" /> : <div className="w-3.5 h-3.5 rounded-full border border-current" />}
-                    Un numero
+                    Un número
                   </div>
                 </div>
               )}
@@ -228,7 +228,7 @@ export default function ResetPasswordPage() {
             {/* Confirmar contrasena */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-white/80 mb-2">
-                Confirmar contrasena
+                Confirmar contraseña
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -239,7 +239,7 @@ export default function ResetPasswordPage() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repite tu contrasena"
+                  placeholder="Repite tu contraseña"
                   className={`w-full pl-10 pr-10 py-3 rounded-xl bg-white/5 border text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand/50 transition-all ${
                     confirmPassword.length > 0
                       ? passwordsMatch
@@ -258,7 +258,7 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
               {confirmPassword.length > 0 && !passwordsMatch && (
-                <p className="mt-2 text-sm text-red-400">Las contrasenas no coinciden</p>
+                <p className="mt-2 text-sm text-red-400">Las contraseñas no coinciden</p>
               )}
             </div>
 
@@ -284,7 +284,7 @@ export default function ResetPasswordPage() {
               ) : (
                 <>
                   <KeyRound className="w-5 h-5" />
-                  Actualizar contrasena
+                  Actualizar contraseña
                 </>
               )}
             </button>
@@ -298,7 +298,7 @@ export default function ResetPasswordPage() {
             className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver al inicio de sesion
+            Volver al inicio de sesión
           </Link>
         </div>
       </div>

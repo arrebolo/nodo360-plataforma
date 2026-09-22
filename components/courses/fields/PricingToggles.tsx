@@ -73,7 +73,7 @@ export function PricingToggles({
             placeholder="Ej: 49.99"
           />
           <p className="mt-2 text-sm text-white/50">
-            Tu comision: ${price ? (price * 0.35).toFixed(2) : '0.00'} - ${price ? (price * 0.40).toFixed(2) : '0.00'} por venta
+            Tu comisión: ${price ? (price * 0.35).toFixed(2) : '0.00'} - ${price ? (price * 0.40).toFixed(2) : '0.00'} por venta
           </p>
           {errors?.price && <p className="mt-2 text-sm text-red-400">{errors.price}</p>}
         </div>

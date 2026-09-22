@@ -318,7 +318,7 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
                               <li key={lesson.id} className="flex items-center gap-2 text-sm text-white/60">
                                 <BookOpen className="w-3 h-3" />
                                 <span>{lesson.title}</span>
-                                {lesson.video_duration_minutes && (
+                                {lesson.video_duration_minutes > 0 && (
                                   <span className="text-white/40">
                                     ({lesson.video_duration_minutes} min)
                                   </span>

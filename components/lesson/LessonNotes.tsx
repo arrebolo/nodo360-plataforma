@@ -24,7 +24,7 @@ export function LessonNotes({ lessonId, userId, initialContent = '' }: LessonNot
   const [status, setStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  const lastCloudValueRef = useRef<string>('') // ultimo valor confirmado en servidor
+  const lastCloudValueRef = useRef<string>('') // último valor confirmado en servidor
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const mountedRef = useRef<boolean>(false)
@@ -47,7 +47,7 @@ export function LessonNotes({ lessonId, userId, initialContent = '' }: LessonNot
     if (draft != null) setValue(draft)
 
     if (!idsReady) {
-      // si no hay sesion, seguimos en modo local
+      // si no hay sesión, seguimos en modo local
       lastCloudValueRef.current = draft ?? ''
       return
     }

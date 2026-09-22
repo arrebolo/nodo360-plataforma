@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { SupabaseClient } from '@supabase/supabase-js'
 
 /**
- * Obtiene la URL de la primera leccion incompleta de una ruta
+ * Obtiene la URL de la primera lección incompleta de una ruta
  */
 async function getNextLessonUrl(
   supabase: SupabaseClient,
@@ -79,14 +79,14 @@ async function getNextLessonUrl(
     (progress || []).filter((p: any) => p.is_completed).map((p: any) => p.lesson_id)
   )
 
-  // 4. Encontrar primera leccion incompleta
+  // 4. Encontrar primera lección incompleta
   for (const lesson of allLessons) {
     if (!completedIds.has(lesson.lessonId)) {
       return `/cursos/${lesson.courseSlug}/${lesson.lessonSlug}`
     }
   }
 
-  // 5. Si todas estan completas, devolver la primera para "repasar"
+  // 5. Si todas están completas, devolver la primera para "repasar"
   return `/cursos/${allLessons[0].courseSlug}/${allLessons[0].lessonSlug}`
 }
 

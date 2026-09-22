@@ -170,7 +170,7 @@ export default async function AdminCoursesPage({
           >
             <Clock className="w-4 h-4" />
             Pendientes
-            {pendingCount && pendingCount > 0 && (
+            {(pendingCount ?? 0) > 0 && (
               <span className="px-1.5 py-0.5 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
                 {pendingCount}
               </span>

@@ -101,10 +101,10 @@ export function LessonResourcesPanel({ lesson }: LessonResourcesPanelProps) {
                   <p className="text-sm font-medium text-white truncate">{attachment.name}</p>
                   <div className="flex items-center gap-2 text-xs text-white/50">
                     <span className="capitalize">{attachment.type || 'Archivo'}</span>
-                    {attachment.size && (
+                    {(attachment.size ?? 0) > 0 && (
                       <>
                         <span>•</span>
-                        <span>{formatFileSize(attachment.size)}</span>
+                        <span>{formatFileSize(attachment.size ?? 0)}</span>
                       </>
                     )}
                   </div>

@@ -180,7 +180,7 @@ export default async function RutaDetallePage({
               <SelectPathButton pathSlug={path.slug} isActive={isActive} />
             ) : (
               <Button variant="primary" href={`/login?redirect=/dashboard/rutas/${path.slug}`}>
-                Iniciar sesion
+                Iniciar sesión
                 <span aria-hidden className="text-white/80">→</span>
               </Button>
             )}

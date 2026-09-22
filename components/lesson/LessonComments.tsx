@@ -214,7 +214,7 @@ export default function LessonComments({
       {!isLoading && comments.length === 0 && (
         <div className="text-center py-8">
           <MessageCircle className="w-12 h-12 text-white/20 mx-auto mb-3" />
-          <p className="text-white/50">Se el primero en comentar</p>
+          <p className="text-white/50">Sé el primero en comentar</p>
         </div>
       )}
 
@@ -266,7 +266,7 @@ export default function LessonComments({
                       {comment.is_answer && (
                         <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/20 text-green-400 flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" />
-                          Respuesta util
+                          Respuesta útil
                         </span>
                       )}
                       <span className="text-xs text-white/40">

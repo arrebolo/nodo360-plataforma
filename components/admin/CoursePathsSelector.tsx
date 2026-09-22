@@ -120,7 +120,7 @@ export function CoursePathsSelector({ courseId }: CoursePathsSelectorProps) {
           Rutas de Aprendizaje
         </h3>
         <p className="text-sm text-white/50 mt-1">
-          Asigna este curso a una o mas rutas de aprendizaje
+          Asigna este curso a una o más rutas de aprendizaje
         </p>
       </div>
 

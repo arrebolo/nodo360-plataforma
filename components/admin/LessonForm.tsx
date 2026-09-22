@@ -68,7 +68,7 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
       }
       console.error('Error al guardar:', error)
       const errorMessage = translateError(error?.message || 'Error desconocido')
-      alert('Error al guardar la leccion: ' + errorMessage)
+      alert('Error al guardar la lección: ' + errorMessage)
       setIsSubmitting(false)
     }
   }
@@ -79,11 +79,11 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
         {/* Título */}
         <div className="mb-6">
           <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
-            Titulo de la Leccion *
+            Título de la Lección *
             <span className="group relative">
               <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
               <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                Un titulo claro que indique el tema de la leccion
+                Un título claro que indique el tema de la lección
               </span>
             </span>
           </label>
@@ -105,7 +105,7 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
             <span className="group relative">
               <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
               <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                Se genera automaticamente del titulo. Solo letras, numeros y guiones
+                Se genera automaticamente del título. Solo letras, números y guiones
               </span>
             </span>
           </label>
@@ -123,7 +123,7 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
         {/* Descripción */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-white mb-2">
-            Descripcion
+            Descripción
           </label>
           <textarea
             name="description"
@@ -137,21 +137,21 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
         {/* Contenido (editor WYSIWYG) */}
         <div className="mb-6">
           <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
-            Contenido de la leccion
+            Contenido de la lección
             <span className="group relative">
               <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
               <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                Usa el editor para dar formato. Puedes incluir codigo, listas, enlaces, imagenes y videos
+                Usa el editor para dar formato. Puedes incluir código, listas, enlaces, imagenes y videos
               </span>
             </span>
           </label>
           <RichTextEditor
             content={content}
             onChange={setContent}
-            placeholder="Escribe el contenido de la leccion. Usa la barra de herramientas para dar formato..."
+            placeholder="Escribe el contenido de la lección. Usa la barra de herramientas para dar formato..."
           />
           <p className="mt-2 text-xs text-white/50">
-            Soporta Markdown, bloques de codigo, imagenes y videos de YouTube
+            Soporta Markdown, bloques de código, imagenes y videos de YouTube
           </p>
         </div>
 
@@ -178,11 +178,11 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
         {/* Duración del video */}
         <div className="mb-6">
           <label className="flex items-center gap-2 text-sm font-medium text-white mb-2">
-            Duracion del Video (minutos)
+            Duración del Video (minutos)
             <span className="group relative">
               <HelpCircle className="w-4 h-4 text-white/40 hover:text-white/60 cursor-help" />
               <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-dark-tertiary border border-white/20 rounded-lg shadow-xl max-w-xs whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                Duracion estimada en minutos. Ayuda a los estudiantes a planificar su tiempo
+                Duración estimada en minutos. Ayuda a los estudiantes a planificar su tiempo
               </span>
             </span>
           </label>

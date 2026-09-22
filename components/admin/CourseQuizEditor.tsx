@@ -249,9 +249,9 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
     return (
       <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
         <HelpCircle className="w-12 h-12 text-white/20 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-white mb-2">Sin modulos</h3>
+        <h3 className="text-lg font-medium text-white mb-2">Sin módulos</h3>
         <p className="text-white/60 text-sm">
-          Este curso necesita al menos un modulo para agregar preguntas de quiz.
+          Este curso necesita al menos un módulo para agregar preguntas de quiz.
         </p>
       </div>
     )
@@ -332,7 +332,7 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
           {questions.map((question, index) => {
             const isExpanded = expandedQuestion === index
             const isNew = !question.id
-            const moduleName = modules.find(m => m.id === question.module_id)?.title || 'Modulo'
+            const moduleName = modules.find(m => m.id === question.module_id)?.title || 'Módulo'
 
             return (
               <div
@@ -397,7 +397,7 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
                     {/* Module selector */}
                     <div>
                       <label className="block text-sm font-medium text-white/70 mb-2">
-                        Modulo
+                        Módulo
                       </label>
                       <select
                         value={question.module_id}
@@ -462,7 +462,7 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
                     {/* Explanation */}
                     <div>
                       <label className="block text-sm font-medium text-white/70 mb-2">
-                        Explicacion (opcional)
+                        Explicación (opcional)
                       </label>
                       <textarea
                         value={question.explanation || ''}
@@ -484,9 +484,9 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
                           onChange={(e) => handleUpdateQuestion(index, 'difficulty', e.target.value)}
                           className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-brand-light/50"
                         >
-                          <option value="easy" className="bg-dark">Facil</option>
+                          <option value="easy" className="bg-dark">Fácil</option>
                           <option value="medium" className="bg-dark">Media</option>
-                          <option value="hard" className="bg-dark">Dificil</option>
+                          <option value="hard" className="bg-dark">Difícil</option>
                         </select>
                       </div>
                       <div>
@@ -527,8 +527,8 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
       {/* Help text */}
       {questions.length > 0 && (
         <div className="text-sm text-white/40 bg-white/5 border border-white/10 rounded-lg p-4">
-          <strong className="text-white/60">Nota:</strong> Los usuarios veran todas las preguntas en el quiz final.
-          El quiz se considera aprobado con 70% o mas de respuestas correctas.
+          <strong className="text-white/60">Nota:</strong> Los usuarios verán todas las preguntas en el quiz final.
+          El quiz se considera aprobado con 70% o más de respuestas correctas.
         </div>
       )}
     </div>

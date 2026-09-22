@@ -70,7 +70,7 @@ export function LessonFooter({
         await onMarkComplete()
       }
 
-      // 2. Navegar a siguiente leccion
+      // 2. Navegar a siguiente lección
       if (hasNext) {
         onNext()
       }
@@ -81,7 +81,7 @@ export function LessonFooter({
     }
   }
 
-  // Handler para finalizar curso (ultima leccion)
+  // Handler para finalizar curso (última lección)
   const handleFinishAndComplete = async () => {
     if (!userId) {
       onLogin()
@@ -127,7 +127,7 @@ export function LessonFooter({
         <div className="flex-shrink-0">
           {!userId ? (
             <span className="text-sm text-white/40">
-              Inicia sesion para guardar progreso
+              Inicia sesión para guardar progreso
             </span>
           ) : isCompleted ? (
             <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-success/20 text-success text-sm font-medium">

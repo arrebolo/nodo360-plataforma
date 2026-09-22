@@ -162,7 +162,7 @@ export default function MentorRequirementsPage() {
         <section>
           <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
             <TrendingUp className="w-6 h-6 text-green-400" />
-            Proceso de aplicacion
+            Proceso de aplicación
           </h2>
           <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
             <ol className="space-y-6">
@@ -182,7 +182,7 @@ export default function MentorRequirementsPage() {
                   <span className="text-sm font-bold text-purple-400">2</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">Envia tu aplicacion</h3>
+                  <h3 className="font-semibold text-white">Envia tu aplicación</h3>
                   <p className="text-sm text-gray-400 mt-1">
                     Completa el formulario explicando tu motivacion y experiencia en el ecosistema.
                   </p>
@@ -193,9 +193,9 @@ export default function MentorRequirementsPage() {
                   <span className="text-sm font-bold text-purple-400">3</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">Votacion del consejo</h3>
+                  <h3 className="font-semibold text-white">Votación del consejo</h3>
                   <p className="text-sm text-gray-400 mt-1">
-                    Los mentores actuales revisan tu aplicacion y votan. Necesitas minimo 3 votos a favor.
+                    Los mentores actuales revisan tu aplicación y votan. Necesitas mínimo 3 votos a favor.
                   </p>
                 </div>
               </li>
@@ -244,7 +244,7 @@ export default function MentorRequirementsPage() {
         <section className="rounded-2xl bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/20 p-8 text-center">
           <h2 className="text-2xl font-bold text-white mb-4">¿Listo para aplicar?</h2>
           <p className="text-gray-400 max-w-xl mx-auto mb-6">
-            Si cumples con los requisitos, inicia sesion y envia tu aplicacion desde el panel de mentor.
+            Si cumples con los requisitos, inicia sesión y envia tu aplicación desde el panel de mentor.
           </p>
           <Link
             href="/dashboard/mentor"

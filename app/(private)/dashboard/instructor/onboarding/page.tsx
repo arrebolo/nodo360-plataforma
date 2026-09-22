@@ -302,7 +302,7 @@ export default function InstructorOnboardingPage() {
             ¿Necesitas ayuda?
           </h3>
           <p className="text-white/60 text-sm mb-4">
-            Consulta nuestra guia de revision o contacta con un mentor
+            Consulta nuestra guia de revisión o contacta con un mentor
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link
@@ -310,7 +310,7 @@ export default function InstructorOnboardingPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-white font-medium text-sm hover:bg-white/15 transition-colors"
             >
               <BookOpen className="w-4 h-4" />
-              Guia de revision
+              Guia de revisión
             </Link>
             <Link
               href="/dashboard/mensajes"

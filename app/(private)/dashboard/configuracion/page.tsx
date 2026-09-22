@@ -23,7 +23,7 @@ export default function ConfiguracionPage() {
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
 
-  // Preferencias (por ahora solo UI, se pueden conectar a DB despues)
+  // Preferencias (por ahora solo UI, se pueden conectar a DB después)
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [darkMode, setDarkMode] = useState(true)
   const [language, setLanguage] = useState('es')
@@ -70,7 +70,7 @@ export default function ConfiguracionPage() {
         </Link>
         <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
           <Settings className="w-6 h-6" />
-          Configuracion
+          Configuración
         </h1>
         <p className="text-sm text-white/60 mt-1">
           Administra tus preferencias y cuenta
@@ -145,7 +145,7 @@ export default function ConfiguracionPage() {
             onChange={(e) => setLanguage(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-brand-light/50 transition"
           >
-            <option value="es" className="bg-dark-surface">Espanol</option>
+            <option value="es" className="bg-dark-surface">Español</option>
             <option value="en" className="bg-dark-surface">English (coming soon)</option>
           </select>
         </div>
@@ -166,7 +166,7 @@ export default function ConfiguracionPage() {
                 href="/reset-password"
                 className="text-sm text-brand-light hover:underline"
               >
-                Cambiar contrasena
+                Cambiar contraseña
               </Link>
             </div>
           </div>
@@ -176,16 +176,16 @@ export default function ConfiguracionPage() {
         <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6">
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <LogOut className="w-5 h-5 text-red-400" />
-            Sesion
+            Sesión
           </h2>
           <p className="text-sm text-white/60 mb-4">
-            Cierra tu sesion en este dispositivo.
+            Cierra tu sesión en este dispositivo.
           </p>
           <button
             onClick={handleSignOut}
             className="px-6 py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 font-medium hover:bg-red-500/30 transition"
           >
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
       </div>

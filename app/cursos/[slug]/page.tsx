@@ -87,7 +87,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const supabase = await createClient()
 
-  // 1. Obtener información del curso CON modulos y lecciones para conteo preciso
+  // 1. Obtener información del curso CON módulos y lecciones para conteo preciso
   const { data: course, error: courseError } = await supabase
     .from('courses')
     .select(`
@@ -161,7 +161,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </p>
               <div className="pt-4">
                 <Button variant="primary" href={`/login?redirect=/cursos/${slug}`}>
-                  Iniciar sesion para ver el curso
+                  Iniciar sesión para ver el curso
                   <span aria-hidden className="text-white/80">→</span>
                 </Button>
               </div>
@@ -179,10 +179,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
     ? await hasEntitlement(user.id, course.id)
     : true // cursos no-premium no requieren entitlement
 
-  // Quien puede gestionar el curso ve los avisos de gestion (por ejemplo, que
+  // Quien puede gestionar el curso ve los avisos de gestión (por ejemplo, que
   // falta la imagen de portada). Un visitante no debe leerlos nunca.
-  // isPreview solo cubre los cursos sin publicar; estos tres estan publicados,
-  // asi que hace falta comprobar el rol tambien aqui.
+  // isPreview solo cubre los cursos sin publicar; estos tres están publicados,
+  // así que hace falta comprobar el rol también aquí.
   const { data: perfil } = await supabase
     .from('users')
     .select('role')
@@ -349,7 +349,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     Contenido del curso
                   </h3>
                   <p className="text-white/60 mb-6 max-w-sm mx-auto">
-                    Inscribete en el curso para acceder a todo el contenido
+                    Inscríbete en el curso para acceder a todo el contenido
                   </p>
 
                   <div className="max-w-xs mx-auto">

@@ -64,7 +64,7 @@ export function LessonsSortable({
             {lesson.title}
           </p>
           <div className="flex items-center gap-2 mt-0.5">
-            {lesson.video_duration_minutes && (
+            {(lesson.video_duration_minutes ?? 0) > 0 && (
               <span className="text-xs text-white/50">
                 {lesson.video_duration_minutes} min
               </span>
@@ -88,7 +88,7 @@ export function LessonsSortable({
                   onEditLesson(lesson)
                 }}
                 className="p-1.5 hover:bg-white/10 rounded-lg transition text-white/60 hover:text-white"
-                title="Editar leccion"
+                title="Editar lección"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -103,7 +103,7 @@ export function LessonsSortable({
                   onDeleteLesson(lesson)
                 }}
                 className="p-1.5 hover:bg-error/20 rounded-lg transition text-white/60 hover:text-error"
-                title="Eliminar leccion"
+                title="Eliminar lección"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
