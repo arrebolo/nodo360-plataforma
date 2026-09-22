@@ -174,15 +174,23 @@ export default async function MentorPage() {
       .rpc('can_apply_mentor', { p_user_id: user.id })
     eligibility = result
 
-    // Obtener puntos de mérito. mentor_points guarda una fila por concesión,
-    // con la columna 'points'; no hay ningún total_points que leer. Sumar aquí
-    // da el mismo número que get_mentor_points() en la base de datos, que es
-    // SUM(points) sobre esta misma tabla y lo que usa can_apply_mentor().
-    const { data: points } = await supabase
-      .from('mentor_points')
-      .select('points')
-      .eq('user_id', user.id)
-    meritPoints = (points || []).reduce((sum, p) => sum + (p.points || 0), 0)
+    // Puntos de mérito. can_apply_mentor() ya los devuelve en current_points,
+    // calculados con get_mentor_points(), y son los mismos que usa para decidir
+    // la elegibilidad. Tomarlos de ahí evita que la cifra que se enseña y la que
+    // decide salgan de dos sitios distintos y puedan discrepar.
+    if (typeof eligibility?.current_points === 'number') {
+      meritPoints = eligibility.current_points
+    } else {
+      // Respaldo por si la RPC no responde. mentor_points guarda una fila por
+      // concesión, con la columna 'points'; no hay ningún total_points que leer.
+      // Esta suma da el mismo número que get_mentor_points(), que es SUM(points)
+      // sobre esta misma tabla.
+      const { data: points } = await supabase
+        .from('mentor_points')
+        .select('points')
+        .eq('user_id', user.id)
+      meritPoints = (points || []).reduce((sum, p) => sum + (p.points || 0), 0)
+    }
 
     // Verificar si tiene certificación de instructor
     const { data: certs } = await supabase
@@ -209,6 +217,12 @@ export default async function MentorPage() {
       .eq('is_active', true)
     totalMentors = count || 0
   }
+
+  // El umbral vive en mentor_config.min_points_to_apply y can_apply_mentor() lo
+  // devuelve como min_points. No lo incluye en todas sus respuestas: faltan las
+  // de cooldown, solicitud ya en curso y sin plazas. De ahí el respaldo, que es
+  // el valor sembrado en la migración 009.
+  const minPoints: number = eligibility?.min_points ?? 650
 
   // Aplicaciones propias
   const { data: applications } = await supabase
@@ -425,9 +439,9 @@ export default async function MentorPage() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   {/* Puntos de mérito */}
                   <RequirementItem
-                    passed={meritPoints >= 650}
+                    passed={meritPoints >= minPoints}
                     label="Puntos de mérito mínimos"
-                    detail={`${meritPoints}/650`}
+                    detail={`${meritPoints}/${minPoints}`}
                   />
 
                   {/* Instructor certificado */}
@@ -495,9 +509,9 @@ export default async function MentorPage() {
                     <AlertCircle className="w-4 h-4" />
                     {eligibility?.reason || 'No cumples los requisitos para aplicar.'}
                   </p>
-                  {meritPoints < 650 && (
+                  {meritPoints < minPoints && (
                     <p className="mt-2 text-xs text-gray-500">
-                      Te faltan {650 - meritPoints} puntos de mérito. Completa cursos y participa en la comunidad para ganar puntos.
+                      Te faltan {minPoints - meritPoints} puntos de mérito. Completa cursos y participa en la comunidad para ganar puntos.
                     </p>
                   )}
                 </div>
