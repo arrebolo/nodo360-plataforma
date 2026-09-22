@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Bell, CheckCheck, ExternalLink } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useVisiblePolling } from '@/hooks/useVisiblePolling'
 import type { Notification, NotificationsResponse } from '@/types/database'
 
 // Iconos y colores por tipo de notificación
@@ -108,12 +109,8 @@ export default function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Cargar al montar y cada 30 segundos
-  useEffect(() => {
-    fetchNotifications()
-    const interval = setInterval(fetchNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  // Cargar al montar y cada 60 s, solo mientras la pestana este visible
+  useVisiblePolling(fetchNotifications, 60000, 5000)
 
   return (
     <div className="relative" ref={dropdownRef}>
