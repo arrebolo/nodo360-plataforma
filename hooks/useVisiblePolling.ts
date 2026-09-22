@@ -24,8 +24,14 @@ export function useVisiblePolling(
 ) {
   // Se guarda en una ref para que cambiar la identidad del callback entre
   // renders no reinicie el temporizador.
+  //
+  // La asignacion va dentro de un efecto, no en el cuerpo del componente:
+  // escribir una ref durante el render rompe las reglas de React y puede
+  // dejar el valor desincronizado. Es lo que marcaba react-hooks/refs.
   const callbackRef = useRef(callback)
-  callbackRef.current = callback
+  useEffect(() => {
+    callbackRef.current = callback
+  }, [callback])
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null

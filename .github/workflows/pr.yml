@@ -1,0 +1,48 @@
+name: Verificación de PR
+
+# Solo en pull requests hacia main. No corre en push directo: produccion se
+# despliega desde main via PR (regla 7), asi que ahi es donde tiene que mirar.
+on:
+  pull_request:
+    branches: [main]
+
+# Si se empuja otra vez a la misma PR, se cancela la tanda anterior.
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # La misma que Vercel: el proyecto tiene nodeVersion 22.x. Compilar
+          # aqui con otra version no demostraria que el deploy va a funcionar.
+          node-version: '22'
+          # Cachea ~/.npm usando package-lock.json como clave.
+          cache: 'npm'
+
+      # npm ci, no npm install: instala exactamente lo que dice el lockfile y
+      # falla si package.json y el lock no cuadran. La PR #118 paso el build en
+      # local y reventó en Vercel justo por eso (regla 6).
+      - run: npm ci
+
+      - run: npx tsc --noEmit
+
+      - run: npm run lint
+
+      - run: npm run build
+
+      # Falla solo con criticas o altas. Las moderadas se ven en el registro
+      # pero no bloquean: hoy hay una alta en sharp que necesita un cambio
+      # mayor, y es de desarrollo, por eso el --omit=dev.
+      - run: npm audit --omit=dev --audit-level=high
+
+      # Los umbrales de nivel viven en dos sitios a proposito. Esto comprueba
+      # que no se separen, sin tocar la base de datos.
+      - run: node scripts/check-level-thresholds.mjs
