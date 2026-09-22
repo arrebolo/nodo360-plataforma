@@ -12,6 +12,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import { CourseJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { resolveCourseAccess } from '@/lib/courses/access'
 import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
+import { CourseUnavailable } from '@/components/course/CourseUnavailable'
 import { tokens, cx } from '@/lib/design/tokens'
 import { ChevronRight, Lock } from 'lucide-react'
 import type { Metadata } from 'next'
@@ -43,9 +44,13 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 
   const { canView, isPreview } = await resolveCourseAccess(course)
 
+  // El curso existe pero esta persona no puede verlo: se le muestra la pagina
+  // de "curso no disponible". Se da el titulo, nunca la descripcion.
   if (!canView) {
     return {
-      title: 'Curso no encontrado',
+      title: `${course.title} | Nodo360`,
+      description: 'Este curso no está disponible en este momento.',
+      robots: { index: false, follow: false },
     }
   }
 
@@ -130,8 +135,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
   // instructor del curso; el resto, 404. Ver lib/courses/access.ts
   const { canView, isPreview } = await resolveCourseAccess(course)
 
+  // El curso existe pero no es para esta persona: pagina amable en vez de 404.
+  // El 404 se reserva para cursos que no existen (el notFound de arriba).
   if (!canView) {
-    notFound()
+    return (
+      <CourseUnavailable
+        courseId={course.id}
+        courseTitle={course.title}
+        status={course.status}
+      />
+    )
   }
 
   // Calcular conteos reales desde los datos (no depender de campos stored)

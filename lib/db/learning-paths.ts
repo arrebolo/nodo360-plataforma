@@ -91,14 +91,18 @@ export async function getCoursesByLearningPathSlug(
   }
 
   // Get courses through learning_path_courses junction table
+  // Mismo filtro que getAllCourses: un listado publico no anuncia cursos que
+  // todavia no existen para el visitante. Sin esto, /rutas/[slug] mostraba
+  // titulo y descripcion de los borradores y al pulsar se iba a un 404.
   const { data, error } = await supabase
     .from('learning_path_courses')
     .select(`
       position,
       is_required,
-      course:course_id (*)
+      course:course_id!inner (*)
     `)
     .eq('learning_path_id', path.id)
+    .in('course.status', ['published', 'coming_soon'])
     .order('position', { ascending: true })
 
   if (error) {
@@ -138,3 +142,40 @@ export async function getLearningPathWithCourses(
 }
 
 
+
+
+/**
+ * Rutas activas que tienen al menos un curso publicado.
+ *
+ * Se usa para dos cosas: filtrar el listado /rutas (una ruta sin nada que
+ * estudiar no se anuncia) y sugerir alternativas a quien llega a una ruta
+ * vacia. Nunca devuelve una ruta que lleve a otra pagina de "en preparacion".
+ */
+export async function getPathsWithPublishedCourses(
+  excludeSlug?: string,
+  limit?: number
+): Promise<LearningPath[]> {
+  const supabase = await createClient()
+
+  const { data: paths } = await supabase
+    .from('learning_paths')
+    .select('*')
+    .eq('is_active', true)
+    .order('position', { ascending: true })
+
+  if (!paths?.length) return []
+
+  // Una sola consulta para todas las rutas, en vez de una por ruta
+  const { data: enlaces } = await supabase
+    .from('learning_path_courses')
+    .select('learning_path_id, course:course_id!inner (id)')
+    .eq('course.status', 'published')
+
+  const conCursos = new Set((enlaces || []).map((e) => e.learning_path_id))
+
+  const resultado = paths.filter(
+    (p) => conCursos.has(p.id) && p.slug !== excludeSlug
+  )
+
+  return typeof limit === 'number' ? resultado.slice(0, limit) : resultado
+}

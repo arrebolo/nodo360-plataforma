@@ -5,6 +5,9 @@ import { ChevronRight, BookOpen, Layers } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getLearningPathBySlug, getCoursesByLearningPathSlug } from '@/lib/db/learning-paths'
 import { Footer } from '@/components/navigation/Footer'
+import { PathUnavailable } from '@/components/learning-path/PathUnavailable'
+import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
+import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -17,9 +20,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params
   const path = await getLearningPathBySlug(slug)
 
+  if (!path) {
+    return { title: 'Ruta no encontrada' }
+  }
+
+  // Una ruta sin cursos publicados no se indexa: lo unico que hay que ver es la
+  // pagina de "en preparacion".
+  const courses = await getCoursesByLearningPathSlug(slug)
+  const hayPublicados = courses.some((c) => c.status === 'published')
+
   return {
-    title: path ? `${path.name} | Rutas | Nodo360` : 'Ruta no encontrada',
-    description: path?.short_description || 'Ruta de aprendizaje en Nodo360',
+    title: `${path.name} | Rutas | Nodo360`,
+    description: path.short_description || 'Ruta de aprendizaje en Nodo360',
+    ...(hayPublicados ? {} : { robots: { index: false, follow: false } }),
   }
 }
 
@@ -44,6 +57,15 @@ export default async function RutaDetallePage({ params }: PageProps) {
   const courses = await getCoursesByLearningPathSlug(slug)
   const totalLessons = courses.reduce((acc, c) => acc + (c.total_lessons || 0), 0)
 
+  // Una ruta sin ningun curso publicado no tiene nada que ofrecer todavia.
+  // Los admin si la ven, vacia, para poder gestionarla.
+  const hayPublicados = courses.some((c) => c.status === 'published')
+  const esAdmin = await isCurrentUserAdmin(user.id)
+
+  if (!hayPublicados && !esAdmin) {
+    return <PathUnavailable pathName={path.name} pathSlug={slug} />
+  }
+
   // Verificar si el usuario tiene esta ruta activa
   const { data: userData } = await supabase
     .from('users')
@@ -55,6 +77,9 @@ export default async function RutaDetallePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-dark">
+      {!hayPublicados && (
+        <CoursePreviewBanner message="esta ruta no tiene cursos publicados y no aparece en el listado." />
+      )}
       <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-white/60">

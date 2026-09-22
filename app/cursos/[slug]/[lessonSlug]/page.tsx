@@ -9,6 +9,7 @@ import type { LessonPlayerProps, ModuleWithLessons, LessonNavigation, LessonProg
 import { resolveCourseAccess } from "@/lib/courses/access"
 import { CoursePreviewBanner } from "@/components/course/CoursePreviewBanner"
 import { CourseAlreadyCompleted } from "@/components/course/CourseAlreadyCompleted"
+import { CourseUnavailable } from "@/components/course/CourseUnavailable"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: lesson } = await supabase
     .from("lessons")
-    .select("title, courses!inner(title, slug, status)")
+    .select("title, courses!inner(id, title, slug, status, instructor_id)")
     .eq("slug", lessonSlug)
     .eq("courses.slug", slug)
     .single()
@@ -33,12 +34,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // Handle the courses join result - it's a single object, not an array
-  const courseData = lesson.courses as unknown as { title: string; slug: string; status: string | null } | null
+  const courseData = lesson.courses as unknown as {
+    id: string
+    title: string
+    slug: string
+    status: string | null
+    instructor_id: string | null
+  } | null
   const courseTitle = courseData?.title || slug
 
   // Un curso sin publicar no se indexa aunque su instructor o un admin pueda
-  // abrir la lección. Quien no tenga permiso recibe un 404 en la propia página.
+  // abrir la lección.
   if (courseData?.status !== 'published') {
+    const { canView } = await resolveCourseAccess(courseData)
+
+    // Quien no puede ver el curso vera la pagina de "curso no disponible":
+    // el titulo de la leccion no aparece ni siquiera en la pestana.
+    if (!canView) {
+      return {
+        title: `${courseTitle} | Nodo360`,
+        description: 'Este curso no está disponible en este momento.',
+        robots: { index: false, follow: false },
+      }
+    }
+
+    // Vista previa de admin, instructor o mentor: se ve, pero no se indexa.
     return {
       title: `${lesson.title} | ${courseTitle} | Nodo360`,
       description: `Lección: ${lesson.title}`,
@@ -103,8 +123,16 @@ export default async function LessonPage({ params }: PageProps) {
   // autenticado podia leer lecciones de borradores por URL directa.
   const { canView, isPreview } = await resolveCourseAccess(course, userId)
 
+  // Se resuelve ANTES de cargar la leccion: si el curso no es para esta
+  // persona, no se llega a leer ni una linea de su contenido.
   if (!canView) {
-    notFound()
+    return (
+      <CourseUnavailable
+        courseId={course.id}
+        courseTitle={course.title}
+        status={course.status}
+      />
+    )
   }
 
   // 2b) Verificar entitlement para cursos premium

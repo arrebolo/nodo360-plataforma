@@ -5,9 +5,18 @@ import { Eye } from 'lucide-react'
  *
  * Se renderiza arriba del todo en la ficha del curso, en la leccion y en el
  * examen final. Quien lo ve es porque resolveCourseAccess() devolvio
- * isPreview = true; el resto de usuarios recibe un 404 y nunca llega aqui.
+ * isPreview = true; el resto de usuarios ve la pagina de "curso no disponible"
+ * y nunca llega aqui.
+ *
+ * Con `message` sirve tambien para otros avisos de vista previa, como el de una
+ * ruta de aprendizaje sin cursos publicados.
  */
-export function CoursePreviewBanner() {
+type Props = {
+  /** Texto tras "Vista previa —". Por defecto, el del curso sin publicar. */
+  message?: string
+}
+
+export function CoursePreviewBanner({ message }: Props = {}) {
   return (
     <div
       role="status"
@@ -21,7 +30,7 @@ export function CoursePreviewBanner() {
         <p className="text-sm text-amber-100">
           <span className="font-semibold">Vista previa</span>
           {' — '}
-          este curso no está publicado.
+          {message ?? 'este curso no está publicado.'}
         </p>
       </div>
     </div>
