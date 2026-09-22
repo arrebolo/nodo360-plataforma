@@ -21,9 +21,11 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          # La misma que Vercel: el proyecto tiene nodeVersion 22.x. Compilar
-          # aqui con otra version no demostraria que el deploy va a funcionar.
-          node-version: '22'
+          # La version sale de .nvmrc, que es la unica fuente: la misma que
+          # usan Vercel (nodeVersion 22.x) y engines.node de package.json.
+          # Compilar aqui con otra no demostraria que el deploy va a funcionar,
+          # y ademas el lockfile depende de la version de npm que trae Node.
+          node-version-file: '.nvmrc'
           # Cachea ~/.npm usando package-lock.json como clave.
           cache: 'npm'
 
