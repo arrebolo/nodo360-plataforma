@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { enrollUserInCourse, unenrollUser } from '@/lib/db/enrollments'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { rateLimit, getClientIP, rateLimitExceeded } from '@/lib/ratelimit'
 
 /**
  * Trackea conversión de referido si existe cookie de atribución
  */
 async function trackReferralConversion(
-  supabase: any,
   userId: string,
   courseId: string,
   isFree: boolean,
@@ -29,15 +29,21 @@ async function trackReferralConversion(
       return
     }
 
-    // Llamar a la función RPC para trackear conversión
-    const { data: result, error } = await supabase.rpc('track_referral_conversion', {
+    // service_role, no la sesion del usuario: esta RPC registra la comision
+    // del instructor. Yendo por la sesion del usuario, cualquiera podia
+    // llamarla contra PostgREST y fabricarse una conversion. Desde la 034 la
+    // funcion exige auth.uid() IS NULL, o sea service_role.
+    const admin = createAdminClient() as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: any; error: any }> }
+
+    // p_commission_rate ya no se envia: la tasa la lee la funcion de
+    // system_settings. Antes la elegia quien llamaba.
+    const { data: result, error } = await admin.rpc('track_referral_conversion', {
       p_link_id: link_id,
       p_user_id: userId,
       p_course_id: courseId,
       p_conversion_type: isFree ? 'enrollment' : 'purchase',
       p_revenue_cents: isFree ? 0 : priceCents,
       p_click_id: click_id || null,
-      p_commission_rate: 0.30, // 30% comisión
     })
 
     if (error) {
@@ -160,7 +166,7 @@ export async function GET(request: NextRequest) {
 
       // Trackear conversión de referido si aplica
       const priceCents = course.price ? Math.round(course.price * 100) : 0
-      await trackReferralConversion(supabase, user.id, courseId, course.is_free, priceCents)
+      await trackReferralConversion(user.id, courseId, course.is_free, priceCents)
     }
   } else {
     console.log('ℹ️ [API GET /enroll] Usuario ya inscrito:', { userId: user.id, courseId })
@@ -271,7 +277,7 @@ export async function POST(request: NextRequest) {
 
     // Trackear conversión de referido si aplica
     const priceCents = course.price ? Math.round(course.price * 100) : 0
-    await trackReferralConversion(supabase, user.id, courseId, course.is_free, priceCents)
+    await trackReferralConversion(user.id, courseId, course.is_free, priceCents)
 
     console.log('✅ [API POST /enroll] Inscripción exitosa')
     return NextResponse.json(
