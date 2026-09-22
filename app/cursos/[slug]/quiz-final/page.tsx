@@ -44,7 +44,7 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
     notFound()
   }
 
-  // Regla unica de visibilidad: publicado -> todos; borrador -> admin e
+  // Regla única de visibilidad: publicado -> todos; borrador -> admin e
   // instructor del curso; el resto, 404. Ver lib/courses/access.ts
   const { canView, isPreview } = await resolveCourseAccess(course, user?.id)
 

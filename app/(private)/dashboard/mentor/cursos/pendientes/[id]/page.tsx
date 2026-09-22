@@ -361,7 +361,7 @@ export default async function MentorReviewCoursePage({ params }: ReviewCoursePag
                                   <BookOpen className="w-3 h-3" />
                                 )}
                                 <span>{lesson.title}</span>
-                                {lesson.video_duration_minutes && (
+                                {lesson.video_duration_minutes > 0 && (
                                   <span className="text-white/40">
                                     ({lesson.video_duration_minutes} min)
                                   </span>

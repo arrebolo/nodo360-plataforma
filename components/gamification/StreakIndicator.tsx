@@ -111,7 +111,7 @@ export function StreakCard({
         </div>
         {!isActive && currentStreak > 0 && (
           <span className="text-xs text-orange-400/80 bg-orange-500/10 px-2 py-0.5 rounded">
-            Perdida
+            Pérdida
           </span>
         )}
       </div>

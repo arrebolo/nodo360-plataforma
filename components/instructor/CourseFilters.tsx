@@ -63,7 +63,7 @@ export default function CourseFilters({ totalCourses, filteredCount }: CourseFil
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
         <input
           type="text"
-          placeholder="Buscar por titulo o slug..."
+          placeholder="Buscar por título o slug..."
           value={searchValue}
           onChange={(e) => handleSearch(e.target.value)}
           className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f7931a]/50 focus:border-transparent transition-all"
@@ -132,8 +132,8 @@ export default function CourseFilters({ totalCourses, filteredCount }: CourseFil
         >
           <option value="recent">Mas recientes</option>
           <option value="oldest">Mas antiguos</option>
-          <option value="title">Titulo A-Z</option>
-          <option value="title_desc">Titulo Z-A</option>
+          <option value="title">Título A-Z</option>
+          <option value="title_desc">Título Z-A</option>
           <option value="students">Mas alumnos</option>
         </select>
 

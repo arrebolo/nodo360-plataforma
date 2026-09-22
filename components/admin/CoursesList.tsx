@@ -108,7 +108,7 @@ export function CoursesList({ courses, isLoading }: CoursesListProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="font-semibold text-white group-hover:text-brand-light transition truncate">
+                    <h3 className="font-semibold text-white group-hover:text-brand-light transition break-words">
                       {course.title}
                     </h3>
                     <p className="text-sm text-white/50 mt-0.5 truncate">
@@ -165,7 +165,7 @@ export function CoursesList({ courses, isLoading }: CoursesListProps) {
                 <Link
                   href={`/admin/cursos/${course.id}/modulos`}
                   className="p-2 hover:bg-white/10 rounded-lg transition text-white/60 hover:text-white"
-                  title="Gestionar modulos"
+                  title="Gestionar módulos"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -176,7 +176,7 @@ export function CoursesList({ courses, isLoading }: CoursesListProps) {
                     href={`/cursos/${course.slug}`}
                     target="_blank"
                     className="p-2 hover:bg-white/10 rounded-lg transition text-white/60 hover:text-white"
-                    title="Ver pagina publica"
+                    title="Ver página pública"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

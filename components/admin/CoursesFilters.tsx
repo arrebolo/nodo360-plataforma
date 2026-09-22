@@ -56,7 +56,7 @@ export function CoursesFilters({
               type="text"
               value={filters.search}
               onChange={(e) => updateFilter('search', e.target.value)}
-              placeholder="Buscar por titulo o slug..."
+              placeholder="Buscar por título o slug..."
               className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-brand-light/50 focus:ring-1 focus:ring-brand-light/50 transition"
             />
             {filters.search && (

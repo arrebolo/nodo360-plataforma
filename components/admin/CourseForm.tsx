@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Save } from 'lucide-react'
+import ImageUpload from '@/components/ui/ImageUpload'
 
 interface CourseFormProps {
   action: (formData: FormData) => Promise<void>
@@ -14,6 +15,8 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
   const [title, setTitle] = useState(initialData?.title || '')
   const [slug, setSlug] = useState(initialData?.slug || '')
   const [isFree, setIsFree] = useState(initialData?.is_free ?? true)
+  const [thumbnailUrl, setThumbnailUrl] = useState(initialData?.thumbnail_url || '')
+  const [bannerUrl, setBannerUrl] = useState(initialData?.banner_url || '')
 
   // Auto-generar slug desde título
   const generateSlug = (text: string) => {
@@ -203,33 +206,37 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
           )}
         </div>
 
-        {/* URLs de Imágenes */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              URL Thumbnail
-            </label>
-            <input
-              type="url"
-              name="thumbnail_url"
-              defaultValue={initialData?.thumbnail_url}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
-              placeholder="https://..."
-            />
-          </div>
+        {/* Imagenes del curso: el mismo uploader que usa Crear curso.
+            Antes eran dos campos de URL a pelo, asi que habia que subir la
+            imagen por otro lado y pegar el enlace. Los inputs ocultos
+            mantienen el envio por FormData, que es como funciona este
+            formulario. */}
+        <div className="space-y-6">
+          <h3 className="text-lg font-semibold text-white">Imágenes del curso</h3>
 
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              URL Banner
-            </label>
-            <input
-              type="url"
-              name="banner_url"
-              defaultValue={initialData?.banner_url}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/70 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
-              placeholder="https://..."
-            />
-          </div>
+          <ImageUpload
+            bucket="course-images"
+            folder={`courses/${slug || initialData?.slug || 'curso'}/thumbnails`}
+            currentUrl={thumbnailUrl || null}
+            onUpload={(url) => setThumbnailUrl(url)}
+            aspectRatio="video"
+            label="Miniatura del curso"
+            hint="Es la imagen de la tarjeta en el catálogo. Recomendado: 1280x720 px (16:9)"
+            maxSizeMB={2}
+          />
+          <input type="hidden" name="thumbnail_url" value={thumbnailUrl} />
+
+          <ImageUpload
+            bucket="course-images"
+            folder={`courses/${slug || initialData?.slug || 'curso'}/banners`}
+            currentUrl={bannerUrl || null}
+            onUpload={(url) => setBannerUrl(url)}
+            aspectRatio="banner"
+            label="Banner del curso"
+            hint="Cabecera de la página del curso. Recomendado: 1920x640 px (3:1)"
+            maxSizeMB={3}
+          />
+          <input type="hidden" name="banner_url" value={bannerUrl} />
         </div>
       </div>
 

@@ -45,7 +45,7 @@ export type CourseHeroProps = {
   course: CourseHeroCourse
   /**
    * Si quien mira puede gestionar el curso: admin, su instructor, o un mentor
-   * revisandolo. Solo con esto se muestran avisos de gestion, como el de que
+   * revisandolo. Solo con esto se muestran avisos de gestión, como el de que
    * falta la imagen. Un visitante nunca debe leer instrucciones de backoffice.
    */
   canManage?: boolean
@@ -61,11 +61,11 @@ export type CourseHeroProps = {
 }
 
 /**
- * Duracion como estimacion, no como promesa.
+ * Duración como estimacion, no como promesa.
  *
  * El valor sale de courses.total_duration_minutes, que desde la migracion 029
  * se calcula a partir del texto de las lecciones a 1.000 caracteres por minuto.
- * Es una estimacion de lectura, asi que no se presenta con precision al minuto
+ * Es una estimacion de lectura, así que no se presenta con precision al minuto
  * cuando es larga: por debajo de 45 minutos se dan los minutos, y por encima se
  * redondea a media hora y se marca con "~" y "de lectura" para que se lea como
  * lo que es.
@@ -148,10 +148,10 @@ export default function CourseHero({
   const published = course.status === 'published'
   const instructorPreview = useInstructorPreview()
 
-  // Quien ya esta inscrito entra por /api/continue, que resuelve la leccion
-  // destino: la ultima visitada si hay progreso, y la primera si no lo hay.
-  // Antes esto exigia ademas progreso > 0, de modo que un recien inscrito caia
-  // en un boton que enlazaba a esta misma pagina y no hacia nada.
+  // Quien ya esta inscrito entra por /api/continue, que resuelve la lección
+  // destino: la última visitada si hay progreso, y la primera si no lo hay.
+  // Antes esto exigia además progreso > 0, de modo que un recien inscrito caia
+  // en un boton que enlazaba a esta misma página y no hacia nada.
   const canContinue = isEnrolled && !!hrefContinue
   const continueLabel = (pct ?? 0) > 0 ? 'Continuar' : 'Empezar el curso'
 
@@ -304,8 +304,8 @@ export default function CourseHero({
                     {course.is_free ? 'Empezar gratis' : 'Inscribirme'}
                   </Button>
                 ) : (
-                  /* Unico caso sin via de entrada: curso premium y usuario sin
-                     entitlement. La pagina lo explica debajo; aqui no se ofrece
+                  /* Único caso sin via de entrada: curso premium y usuario sin
+                     entitlement. La página lo explica debajo; aquí no se ofrece
                      un enlace que no lleva a ninguna parte. */
                   <Button size="lg" variant="secondary" disabled>
                     Acceso premium requerido

@@ -133,14 +133,14 @@ export function RichTextEditor({
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
               active={editor.isActive('heading', { level: 2 })}
-              title="Titulo H2"
+              title="Título H2"
             >
               H2
             </ToolbarButton>
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
               active={editor.isActive('heading', { level: 3 })}
-              title="Titulo H3"
+              title="Título H3"
             >
               H3
             </ToolbarButton>
@@ -201,7 +201,7 @@ export function RichTextEditor({
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleCodeBlock().run()}
               active={editor.isActive('codeBlock')}
-              title="Bloque de codigo"
+              title="Bloque de código"
             >
               <CodeIcon />
             </ToolbarButton>

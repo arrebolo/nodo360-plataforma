@@ -36,18 +36,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const courseTitle = courseData?.title || slug
 
   // Un curso sin publicar no se indexa aunque su instructor o un admin pueda
-  // abrir la leccion. Quien no tenga permiso recibe un 404 en la propia pagina.
+  // abrir la lección. Quien no tenga permiso recibe un 404 en la propia página.
   if (courseData?.status !== 'published') {
     return {
       title: `${lesson.title} | ${courseTitle} | Nodo360`,
-      description: `Leccion: ${lesson.title}`,
+      description: `Lección: ${lesson.title}`,
       robots: { index: false, follow: false },
     }
   }
 
   return {
     title: `${lesson.title} | ${courseTitle} | Nodo360`,
-    description: `Leccion: ${lesson.title}`,
+    description: `Lección: ${lesson.title}`,
   }
 }
 
@@ -96,9 +96,9 @@ export default async function LessonPage({ params }: PageProps) {
     notFound()
   }
 
-  // Regla unica de visibilidad: publicado -> todos; borrador -> admin e
+  // Regla única de visibilidad: publicado -> todos; borrador -> admin e
   // instructor del curso; el resto, 404. Ver lib/courses/access.ts
-  // Antes esta pagina no miraba el estado del curso, asi que cualquier usuario
+  // Antes esta página no miraba el estado del curso, así que cualquier usuario
   // autenticado podia leer lecciones de borradores por URL directa.
   const { canView, isPreview } = await resolveCourseAccess(course, userId)
 

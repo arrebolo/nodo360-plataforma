@@ -170,7 +170,7 @@ export default async function InstructoresPage({
                     : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
                 }`}
               >
-                Calificacion
+                Calificación
               </Link>
               <Link
                 href={`/instructores?orden=estudiantes${ruta ? `&ruta=${ruta}` : ''}`}

@@ -9,7 +9,7 @@ export const metadata = {
   description: 'Todos tus badges y logros desbloqueados'
 }
 
-// Mapeo de iconos por defecto segun categoria/nombre
+// Mapeo de iconos por defecto según categoria/nombre
 function getDefaultIcon(badge: any): string {
   const name = (badge?.title || badge?.name || '').toLowerCase()
   const category = badge?.category?.toLowerCase() || ''

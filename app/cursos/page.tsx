@@ -1,6 +1,7 @@
 import { getAllCourses } from '@/lib/db/courses-queries'
 import { CursosClient } from '@/components/cursos/CursosClient'
 import type { Metadata } from 'next'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'Cursos de Bitcoin y Blockchain | Nodo360',
@@ -20,14 +21,35 @@ export const metadata: Metadata = {
 }
 
 export default async function CursosPage() {
-  console.log('🚀 [CursosPage] Renderizando página de cursos...')
-
-  // Fetch courses server-side
   const courses = await getAllCourses()
 
-  console.log(`📊 [CursosPage] ${courses.length} cursos obtenidos`)
+  // Matriculas del usuario, para que la tarjeta diga "Continuar" o "Repasar"
+  // en lugar de tratar a todo el mundo como si no estuviera inscrito. Si no
+  // hay sesion, el mapa queda vacio y las tarjetas se comportan como antes.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  return <CursosClient allCourses={courses} />
+  const matriculas = new Map<string, { progreso: number; completado: boolean }>()
+  if (user) {
+    const { data } = await supabase
+      .from('course_enrollments')
+      .select('course_id, progress_percentage, completed_at')
+      .eq('user_id', user.id)
+
+    for (const m of data ?? []) {
+      matriculas.set(m.course_id, {
+        progreso: m.progress_percentage ?? 0,
+        completado: !!m.completed_at || (m.progress_percentage ?? 0) >= 100,
+      })
+    }
+  }
+
+  return (
+    <CursosClient
+      allCourses={courses}
+      matriculas={Object.fromEntries(matriculas)}
+    />
+  )
 }
 
 
