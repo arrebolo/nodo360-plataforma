@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserRoles } from '@/lib/roles/getUserRoles'
 import { UserRole } from '@/types/roles'
@@ -64,6 +66,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
 
+    // Las funciones admin_* se invocan con service_role, no con la sesion del
+    // usuario. Antes iban por `supabase` (rol authenticated), lo que obligaba a
+    // que authenticated tuviese EXECUTE sobre ellas, y eso las dejaba
+    // alcanzables directamente contra PostgREST con la clave anon: se saltaba
+    // el isAdmin de arriba y se pasaba el p_admin_id que se quisiera.
+    // El portero sigue siendo el isAdmin de esta ruta. Lo que desaparece es la
+    // puerta trasera.
+    // El tipo Database de lib/supabase/types esta desfasado: solo declara 15 de
+    // las 65 RPC que existen, y las admin_* no estan entre ellas. El cliente de
+    // servidor no lleva generico, asi que estas llamadas nunca estuvieron
+    // tipadas; el de servicio si lo lleva y por eso ahora saltan. Se acota aqui
+    // en lugar de inventar firmas: lo que toca es regenerar los tipos.
+    const admin = createAdminClient() as unknown as SupabaseClient
+
     const body = await request.json()
     const { user_id, role, notes, bio, headline } = body as {
       user_id: string
@@ -82,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     // Usar funciones SQL para instructor y mentor (crean registros asociados)
     if (role === 'instructor') {
-      const { data, error } = await supabase.rpc('admin_assign_instructor', {
+      const { data, error } = await admin.rpc('admin_assign_instructor', {
         p_user_id: user_id,
         p_admin_id: user.id,
         p_bio: bio || 'Instructor designado por administración',
@@ -102,7 +118,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (role === 'mentor') {
-      const { data, error } = await supabase.rpc('admin_assign_mentor', {
+      const { data, error } = await admin.rpc('admin_assign_mentor', {
         p_user_id: user_id,
         p_admin_id: user.id,
         p_reason: notes || 'Designado por admin'
@@ -159,6 +175,20 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
 
+    // Las funciones admin_* se invocan con service_role, no con la sesion del
+    // usuario. Antes iban por `supabase` (rol authenticated), lo que obligaba a
+    // que authenticated tuviese EXECUTE sobre ellas, y eso las dejaba
+    // alcanzables directamente contra PostgREST con la clave anon: se saltaba
+    // el isAdmin de arriba y se pasaba el p_admin_id que se quisiera.
+    // El portero sigue siendo el isAdmin de esta ruta. Lo que desaparece es la
+    // puerta trasera.
+    // El tipo Database de lib/supabase/types esta desfasado: solo declara 15 de
+    // las 65 RPC que existen, y las admin_* no estan entre ellas. El cliente de
+    // servidor no lleva generico, asi que estas llamadas nunca estuvieron
+    // tipadas; el de servicio si lo lleva y por eso ahora saltan. Se acota aqui
+    // en lugar de inventar firmas: lo que toca es regenerar los tipos.
+    const admin = createAdminClient() as unknown as SupabaseClient
+
     const body = await request.json()
     const { user_id, role, reason, apply_cooldown } = body as {
       user_id: string
@@ -184,7 +214,7 @@ export async function DELETE(request: NextRequest) {
 
     // Usar funciones SQL para instructor y mentor (desactivan registros asociados)
     if (role === 'instructor') {
-      const { data, error } = await supabase.rpc('admin_revoke_instructor', {
+      const { data, error } = await admin.rpc('admin_revoke_instructor', {
         p_user_id: user_id,
         p_admin_id: user.id,
         p_reason: reason || 'Revocado por admin'
@@ -202,7 +232,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (role === 'mentor') {
-      const { data, error } = await supabase.rpc('admin_revoke_mentor', {
+      const { data, error } = await admin.rpc('admin_revoke_mentor', {
         p_user_id: user_id,
         p_admin_id: user.id,
         p_reason: reason || 'Revocado por admin',
