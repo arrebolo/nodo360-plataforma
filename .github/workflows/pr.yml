@@ -17,9 +17,9 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # La misma que Vercel: el proyecto tiene nodeVersion 22.x. Compilar
           # aqui con otra version no demostraria que el deploy va a funcionar.
