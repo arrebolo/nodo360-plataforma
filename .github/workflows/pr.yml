@@ -36,7 +36,20 @@ jobs:
 
       - run: npm run lint
 
+      # lib/env.ts valida en arranque y lanza si falta una de las tres. Aqui
+      # van de relleno, no reales: el build no consulta la base de datos —todas
+      # las paginas que la tocan son force-dynamic— y solo necesita que no
+      # esten vacias. Comprobado en local quitando .env.local.
+      #
+      # Tampoco tendria sentido meterlas como secretos: NEXT_PUBLIC_SUPABASE_URL
+      # y NEXT_PUBLIC_SUPABASE_ANON_KEY son publicas por diseno, viajan en el
+      # paquete que se sirve al navegador. Y las PRs desde un fork no reciben
+      # secretos, asi que el paso fallaria siempre para quien venga de fuera.
       - run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://nodo360.com
+          NEXT_PUBLIC_SUPABASE_URL: https://ejemplo.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: clave-de-relleno-para-ci
 
       # Falla solo con criticas o altas. Las moderadas se ven en el registro
       # pero no bloquean: hoy hay una alta en sharp que necesita un cambio
