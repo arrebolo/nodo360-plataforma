@@ -37,12 +37,13 @@ export function GovernanceEmptyState() {
     <div className="space-y-8">
       <div className="rounded-xl border border-white/10 bg-white/5 p-6 sm:p-8">
         <h2 className="text-xl font-semibold text-white">
-          Todavía no hay ninguna propuesta
+          No hay ninguna propuesta en votación
         </h2>
         <p className="mt-3 max-w-2xl text-white/70">
           La gobernanza de Nodo360 es el mecanismo por el que la comunidad decide
-          cómo evoluciona la plataforma. Está construida y funcionando, pero aún
-          no se ha presentado ninguna propuesta, así que no hay nada que mostrar.
+          cómo evoluciona la plataforma. Está construida y funcionando, pero
+          todavía no se ha llevado ninguna propuesta a votación, así que no hay
+          nada que mostrar aquí.
         </p>
         <p className="mt-3 max-w-2xl text-sm text-white/50">
           Cuando alguien presente la primera, aparecerá aquí con su discusión y su
