@@ -8,6 +8,7 @@ import { getCourseQuizStatus } from "@/lib/quiz/checkCourseQuiz"
 import type { LessonPlayerProps, ModuleWithLessons, LessonNavigation, LessonProgress, QuizStatus } from "@/types/lesson-player"
 import { resolveCourseAccess } from "@/lib/courses/access"
 import { CoursePreviewBanner } from "@/components/course/CoursePreviewBanner"
+import { CourseAlreadyCompleted } from "@/components/course/CourseAlreadyCompleted"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -257,9 +258,51 @@ export default async function LessonPage({ params }: PageProps) {
     userRole,
   }
 
+  // Aviso de curso ya completado, solo en la PRIMERA leccion: repetirlo en
+  // todas seria ruido, y es al entrar cuando hay que decirle al alumno que
+  // repasar no vuelve a sumar experiencia.
+  const esPrimeraLeccion = !navigation.prevLesson
+
+  let yaCompletado = false
+  let matricula: { completed_at: string | null } | null = null
+  let certificado: { id: string; certificate_number: string | null; issued_at: string } | null = null
+
+  if (esPrimeraLeccion && userId) {
+    const { data: e } = await supabase
+      .from('course_enrollments')
+      .select('completed_at, progress_percentage')
+      .eq('user_id', userId)
+      .eq('course_id', course.id)
+      .maybeSingle()
+
+    yaCompletado = !!e?.completed_at || (e?.progress_percentage ?? 0) >= 100
+    matricula = e ? { completed_at: e.completed_at } : null
+
+    if (yaCompletado) {
+      const { data: cert } = await supabase
+        .from('certificates')
+        .select('id, certificate_number, issued_at')
+        .eq('user_id', userId)
+        .eq('course_id', course.id)
+        .eq('type', 'course')
+        .maybeSingle()
+      certificado = cert ?? null
+    }
+  }
+
   return (
     <>
       {isPreview && <CoursePreviewBanner />}
+      {yaCompletado && (
+        <div className="mx-auto max-w-7xl px-4 pt-4 lg:px-6">
+          <CourseAlreadyCompleted
+            contexto="leccion"
+            completedAt={matricula?.completed_at ?? certificado?.issued_at ?? null}
+            certificateId={certificado?.id ?? null}
+            certificateNumber={certificado?.certificate_number ?? null}
+          />
+        </div>
+      )}
       <LessonPlayer {...playerProps} />
     </>
   )
