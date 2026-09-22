@@ -180,9 +180,11 @@ export default async function GobernanzaPage() {
                           />
                         )}
                         <span>{proposal.author_name || 'Usuario'}</span>
-                        <span className="text-xs bg-white/10 px-1.5 py-0.5 rounded">
-                          {proposal.author_gpower} gP
-                        </span>
+                        {proposal.author_gpower !== null && (
+                          <span className="text-xs bg-white/10 px-1.5 py-0.5 rounded">
+                            {proposal.author_gpower} gP
+                          </span>
+                        )}
                       </div>
                       {proposal.seconds_remaining > 0 && (
                         <div className="flex items-center gap-1">

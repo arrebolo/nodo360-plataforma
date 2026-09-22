@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { getProposals } from '@/lib/governance/queries'
+import type { ProposalStatus, ProposalLevel } from '@/types/governance'
 
 // GET - Listar propuestas
 export async function GET(request: NextRequest) {
@@ -15,6 +17,32 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const level = searchParams.get('level')
     const category = searchParams.get('category')
+
+    // El gPower solo lo ven los usuarios registrados (decision del 22/09/2026).
+    //
+    // proposals_with_details es una vista security_invoker que incluye
+    // author_gpower, calculado con calculate_gpower(). Desde la 036, anon no
+    // tiene EXECUTE sobre esa funcion, y en Postgres el permiso se comprueba al
+    // preparar la consulta: no basta con no pedir la columna ni con un CASE que
+    // no llegue a ejecutarse. Consultar la vista sin sesion fallaria entera.
+    //
+    // Por eso, sin sesion se sirve la misma consulta con joins que usan las
+    // paginas publicas (getProposals), que nunca ha calculado el gPower y
+    // devuelve author_gpower a null.
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      // Los parametros vienen de la query string, asi que son string. Se
+      // acotan aqui: el nivel solo admite 1 o 2, y cualquier otro valor se
+      // ignora en lugar de colarse en la consulta.
+      const nivel = level ? parseInt(level, 10) : undefined
+      const proposals = await getProposals({
+        status: (status as ProposalStatus) || undefined,
+        level: nivel === 1 || nivel === 2 ? (nivel as ProposalLevel) : undefined,
+        categoryId: category || undefined,
+      })
+      return NextResponse.json({ data: proposals })
+    }
 
     let query = supabase
       .from('proposals_with_details')

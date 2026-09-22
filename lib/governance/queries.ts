@@ -108,7 +108,9 @@ export async function getProposals(options?: {
       author_name: proposal.author?.full_name || null,
       author_avatar: proposal.author?.avatar_url || null,
       author_role: proposal.author?.role || 'student',
-      author_gpower: 0, // No calculamos gPower en listados por performance
+      // null, no 0: el listado nunca ha calculado el gPower por rendimiento,
+      // y pintar un 0 es afirmar algo falso. Con null, la insignia no se pinta.
+      author_gpower: null,
       category_name: proposal.category?.name || null,
       category_icon: proposal.category?.icon || null,
       category_color: proposal.category?.color || null,
@@ -153,15 +155,21 @@ export async function getProposalBySlug(slug: string): Promise<ProposalWithDetai
 
   if (!proposal) return null
 
-  // Calcular gPower del autor
-  let authorGPower = 0
-  try {
-    const { data: gpower } = await supabase.rpc('calculate_gpower', {
+  // El gPower solo lo ven los usuarios registrados. Desde la 036,
+  // calculate_gpower exige auth.uid() IS NOT NULL y anon no tiene EXECUTE, asi
+  // que para un visitante sin sesion la llamada fallaria: se omite en lugar de
+  // gastar un viaje de ida y vuelta y ensuciar los registros.
+  let authorGPower: number | null = null
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: gpower, error: gpowerError } = await supabase.rpc('calculate_gpower', {
       p_user_id: proposal.author_id
     })
-    authorGPower = gpower || 0
-  } catch (e) {
-    console.log('ℹ️ [getProposalBySlug] No se pudo calcular gPower')
+    if (gpowerError) {
+      console.log('ℹ️ [getProposalBySlug] No se pudo calcular gPower:', gpowerError.message)
+    } else {
+      authorGPower = gpower ?? 0
+    }
   }
 
   // Calcular segundos restantes
