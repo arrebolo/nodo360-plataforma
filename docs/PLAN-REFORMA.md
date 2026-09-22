@@ -17,6 +17,7 @@
 - [ ] Cerrar PR #7 (Integrate/route groups auth sidebar) — no mergeable
 - [ ] Cerrar PR #6 (Fix RSC CVE) — ya resuelto en `main`
 - [ ] Revisar y cerrar PR #1 (Claude/claude md) — rescatar mejoras de `sitemap.ts` y metadata antes de cerrar
+- [ ] Validar la contraseña en el registro: exigir 8 caracteres como mínimo. Hoy no se comprueba en cliente y solo queda el mínimo de Supabase. El cambio estaba en `feature/lesson-comments`, que se borra porque su función principal ya está en `main`; conviene rehacerlo aparte y revisar de paso el formulario de cambio de contraseña
 - [x] Commitear `docs/content/` (69 KB sin subir a git: guiones de Cold Storage, Nodos Bitcoin, guía de slides) *(20/09/2026: PR #103)*
 - [ ] Configurar CI en PRs (typecheck + lint + build) — hoy no hay ninguna verificación automática antes de mergear
 - [x] Corregir validación de quiz server-side (`/api/quiz/submit` aceptaba `score` y `passed` del cliente: se podía emitir un certificado sin responder) — rama `fix/rls-quiz-security`
