@@ -6,6 +6,7 @@ import { Calendar, Clock, ArrowLeft, ArrowRight, User, BookOpen } from 'lucide-r
 import { Footer } from '@/components/navigation/Footer'
 import { getPostBySlug, getRelatedPosts, blogCategories, getAllPosts, type InlineImage } from '@/lib/blog-data'
 import { JsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
+import { BlogDisclaimer } from '@/components/blog/BlogDisclaimer'
 import type { Metadata } from 'next'
 
 interface BlogPostPageProps {
@@ -426,6 +427,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             ))}
           </div>
         </div>
+
+        <BlogDisclaimer />
       </article>
 
       {/* CTA */}

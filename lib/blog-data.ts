@@ -1925,13 +1925,29 @@ Desde "The Merge" en 2022, Ethereum usa Proof of Stake. Las opciones son:
 3. Recibe stETH
 4. Usa stETH en DeFi o simplemente holdea
 
-## Consejos para Maximizar Rendimientos
+## Los Riesgos de Cada Método
 
-1. **Compara comisiones**: Los pools y plataformas cobran diferentes fees
-2. **Diversifica validadores**: No pongas todo con un solo validador
-3. **Reinvierte recompensas**: El compounding aumenta tus ganancias
-4. **Considera los lock-ups**: Asegúrate de no necesitar los fondos
-5. **Monitorea rendimientos**: Los APYs cambian, ajusta si es necesario
+Antes que el rendimiento conviene entender qué puede salir mal. Cada forma de hacer staking no elimina el riesgo: lo traslada a un sitio distinto.
+
+**Bloqueo de fondos**
+
+Muchos protocolos inmovilizan el capital durante un periodo que va de unos días a varias semanas. Mientras dura, no se puede vender ni mover nada, pase lo que pase con el precio. En Ethereum, salir de un validador implica además una cola de retirada cuya duración depende de cuánta gente esté saliendo a la vez.
+
+**Slashing**
+
+Las redes de prueba de participación penalizan a los validadores que se comportan mal: firmar dos bloques distintos a la misma altura, o permanecer fuera de línea de forma prolongada. La penalización se descuenta del capital depositado, no solo de las recompensas acumuladas. Quien delega en un validador ajeno asume ese riesgo sin controlar cómo se opera el nodo.
+
+**Riesgo de contrato inteligente**
+
+El staking líquido y el yield farming funcionan sobre contratos que custodian los fondos. Un fallo en ese código, o en el de otro contrato con el que interactúa, puede vaciar el pool entero. Una auditoría reduce la probabilidad, no la elimina: varios protocolos auditados han sido explotados igualmente.
+
+**Riesgo de contraparte**
+
+Hacer staking desde un exchange centralizado significa que las monedas están a nombre del exchange, no de quien las deposita. Si quiebra, suspende los retiros o sufre un robo, el saldo que aparece en pantalla es un apunte contable y su titular pasa a ser un acreedor más. Ha ocurrido con varias plataformas que ofrecían programas de rendimiento.
+
+**Riesgo de tipo de cambio**
+
+Un 5% anual sobre un activo que pierde el 60% de su valor sigue siendo una pérdida. El rendimiento se paga en la propia moneda depositada, no en euros ni en dólares.
 
 ## Staking vs Lending vs Yield Farming
 
@@ -1941,13 +1957,13 @@ Desde "The Merge" en 2022, Ethereum usa Proof of Stake. Las opciones son:
 | Lending | Medio-alto | Medio | Media |
 | Yield Farming | Alto | Alto | Alta |
 
-El staking es generalmente la opción más segura para generar rendimientos pasivos en cripto.
+Las tres columnas se mueven juntas: los métodos con mayor rendimiento potencial son también los que concentran más riesgo y exigen más conocimiento técnico para entender a qué se está expuesto. Ninguna de las tres filas describe una opción sin riesgo.
 
 ## Conclusión
 
 El staking es una forma accesible de generar ingresos pasivos con tus criptomonedas mientras contribuyes a la seguridad de las redes blockchain. Aunque no está libre de riesgos, es menos complejo que otras estrategias DeFi.
 
-Empieza con cantidades pequeñas, entiende los riesgos, y considera el staking como una estrategia de largo plazo, no de ganancias rápidas.
+Para valorar lo que supone el staking hacen falta cuatro respuestas: durante cuánto tiempo quedan bloqueados los fondos y en qué condiciones se recuperan; quién custodia las monedas en cada modalidad; de dónde sale la recompensa y en qué moneda se paga; y qué pasa con el capital depositado si el validador es penalizado o el contrato falla. Un APY, por sí solo, no dice nada mientras esas cuatro preguntas sigan abiertas.
 
 ¿Quieres aprender más sobre DeFi y estrategias de ingresos pasivos en cripto? Explora nuestros cursos en Nodo360.
 `
@@ -2225,7 +2241,7 @@ La buena noticia: siguiendo estas prácticas, puedes operar con confianza y prot
 
 Bitcoin ha sido llamado "oro digital" desde sus primeros días. Pero, ¿es una comparación justa? ¿Puede Bitcoin realmente competir con un activo que ha sido reserva de valor durante 5.000 años?
 
-En este artículo analizamos ambos activos en profundidad para que puedas tomar decisiones informadas sobre cómo proteger y crecer tu patrimonio.
+En este artículo comparamos ambos activos en profundidad: de dónde viene el valor de cada uno, en qué se parecen, en qué no, y qué limitaciones tiene la propia comparación.
 
 ## Historia como Reserva de Valor
 
@@ -3114,23 +3130,30 @@ Los mineros solo recibirán fees de transacciones. Esto incentiva que Bitcoin ma
 
 Bitcoin ya es más "duro" que el oro en términos de escasez relativa.
 
-## Estrategias de Inversión Alrededor del Halving
+## Qué Ha Ocurrido Históricamente Tras los Halvings
 
-### DCA (Dollar Cost Averaging)
+A los cuatro halvings ocurridos hasta ahora les siguieron subidas de precio, con los máximos del ciclo entre doce y dieciocho meses después del evento. Los datos concretos están en la sección de historia de este mismo artículo. De ese patrón nació la idea del "ciclo de cuatro años", que se repite en foros, medios y material promocional.
 
-Compra cantidades fijas regularmente sin intentar timing del mercado. Funciona antes, durante y después del halving.
+### Por qué cuatro casos no permiten predecir el quinto
 
-### Acumulación pre-halving
+Cuatro observaciones son una muestra demasiado pequeña para sostener una regla, y hay motivos concretos para desconfiar de la extrapolación:
 
-Históricamente, comprar 6-12 meses antes del halving ha sido rentable. Pero no hay garantías.
+- **El contexto nunca se repite.** El halving de 2012 ocurrió con Bitcoin en torno a 12 dólares y un mercado de aficionados. El de 2020 coincidió con la mayor expansión monetaria en décadas tras el inicio de la pandemia. El de 2024 llegó tres meses después de que se aprobaran los primeros ETF al contado en Estados Unidos. Atribuir el movimiento del precio al halving obliga a descartar todo lo demás que estaba pasando a la vez, y eso no se ha hecho.
+- **Cada halving pesa menos que el anterior.** El recorte de la emisión siempre es del 50%, pero se aplica sobre una proporción cada vez más pequeña de los bitcoins ya existentes. En 2024 la inflación anual bajó del 1,7% al 0,85%; en 2028 pasará de 0,85% a algo más de 0,4%. El efecto sobre la oferta total se reduce a la mitad en cada evento.
+- **La fecha se conoce de antemano.** El calendario de emisión es público desde 2009 y cualquiera puede calcular el bloque exacto. Un acontecimiento anunciado con años de antelación y conocido por todos los participantes es justo el tipo de información que un mercado tiende a incorporar al precio antes de que llegue.
+- **Coincidir no es causar.** Que dos cosas hayan sucedido juntas cuatro veces no demuestra que una provoque la otra, y menos cuando ambas pueden responder a una causa común, como los ciclos de liquidez de la economía global.
 
-### Tomar profits post-halving
+### Por qué prometer rentabilidad ligada al halving es una señal de alarma
 
-Si crees en los ciclos, considera tomar profits parciales 12-18 meses después del halving cerca de máximos.
+Nadie sabe qué hará el precio después del próximo halving. Quien asegure lo contrario está vendiendo algo. Conviene desconfiar en cuanto aparezca cualquiera de estas señales:
 
-### HODL
+- Cifras concretas con fecha, del tipo "tantos dólares antes de tal mes"
+- Urgencia apoyada en el calendario: "quedan X días para el halving"
+- Gráficos que prolongan los ciclos pasados hacia el futuro y los presentan como una previsión
+- Productos que ofrecen rendimiento garantizado "aprovechando el ciclo"
+- Cualquier variante de "esta vez es seguro porque siempre ha pasado"
 
-Simplemente holdear a largo plazo sin preocuparse por ciclos. Ha funcionado para quien tuvo paciencia de múltiples años.
+El halving es un hecho verificable del protocolo: cada 210.000 bloques la recompensa se divide entre dos, y eso se puede comprobar en el código y en la cadena. Todo lo que se afirme sobre lo que hará el precio a partir de ahí es una opinión, por muy elaborado que sea el gráfico que la acompañe.
 
 **Importante**: No inviertas más de lo que puedas perder. El pasado no garantiza el futuro.
 
