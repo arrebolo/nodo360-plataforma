@@ -205,6 +205,54 @@ const nextConfig: NextConfig = {
       { source: '/cursos/avanzado/', destination: '/cursos', permanent: true },
       { source: '/curso/:slug', destination: '/cursos', permanent: true },
       { source: '/curso/:slug/', destination: '/cursos', permanent: true },
+
+      // ========================================
+      // Lecciones retiradas por la reescritura de
+      // "Como funciona Bitcoin" (migracion 043)
+      // ========================================
+      // Las lecciones entran en el sitemap (ver app/sitemap.ts), con la ruta
+      // /cursos/{slug-curso}/{slug-leccion}. La reescritura conservo cuatro de
+      // los seis slugs reasignandolos a la leccion que trata ese mismo tema,
+      // pero estos dos quedaron sin equivalente y hoy devuelven 404.
+      //
+      // Van con statusCode: 301 y no con permanent: true a proposito.
+      // permanent: true emite un 308, que los buscadores tratan igual pero no
+      // es lo que dice la mayoria de la documentacion de SEO ni lo que se
+      // espera al revisar la cabecera. 301 es lo pedido y lo explicito.
+      //
+      // Las variantes con barra final no llegan a dispararse: Next normaliza
+      // antes quitando la barra, asi que /vieja/ pasa por dos saltos. Se dejan
+      // por coherencia con el resto del archivo y por si cambiara esa opcion.
+
+      // "Seguridad y confianza en Bitcoin" trataba en que se apoya la confianza
+      // sin intermediarios y si Bitcoin es seguro al 100%. Ese contenido vive
+      // ahora en la ultima leccion, que separa lo que el diseno protege de lo
+      // que no.
+      {
+        source: '/cursos/como-funciona-bitcoin-nivel-basico/seguridad-y-confianza-en-bitcoin',
+        destination: '/cursos/como-funciona-bitcoin-nivel-basico/descentralizacion-que-significa-realmente',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/como-funciona-bitcoin-nivel-basico/seguridad-y-confianza-en-bitcoin/',
+        destination: '/cursos/como-funciona-bitcoin-nivel-basico/descentralizacion-que-significa-realmente',
+        statusCode: 301,
+      },
+
+      // "Que puedes aprender despues" era orientacion, no contenido: ninguna
+      // leccion nueva tiene ese tema. La orientacion paso a ser el cierre de la
+      // ultima leccion, pero quien llega buscando por donde seguir encaja mejor
+      // en la ficha del curso, que es la que ofrece el recorrido completo.
+      {
+        source: '/cursos/como-funciona-bitcoin-nivel-basico/que-puedes-aprender-despues-de-entender-como-funciona-bitcoin',
+        destination: '/cursos/como-funciona-bitcoin-nivel-basico',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/como-funciona-bitcoin-nivel-basico/que-puedes-aprender-despues-de-entender-como-funciona-bitcoin/',
+        destination: '/cursos/como-funciona-bitcoin-nivel-basico',
+        statusCode: 301,
+      },
       { source: '/courses/:slug', destination: '/cursos', permanent: true },
       { source: '/courses/:slug/', destination: '/cursos', permanent: true },
 
