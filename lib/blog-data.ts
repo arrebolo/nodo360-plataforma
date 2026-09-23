@@ -3200,7 +3200,7 @@ Lo que sí es seguro: solo habrá 21 millones de bitcoins, y cada halving nos ac
     authorRole: 'Educadores Bitcoin',
     publishedAt: '2026-09-23',
     readingTime: 7,
-    image: '/imagenes/og-blog.png',
+    image: '/blog/fallo-entropia-coldcard-semillas-bitcoin.webp',
     keywords: ['entropía', 'seed phrase', 'hardware wallet', 'cold storage', 'seguridad bitcoin', 'coldcard'],
     relatedSlugs: ['seguridad-crypto-proteger-criptomonedas', 'que-es-wallet-crypto-tipos'],
     content: `
