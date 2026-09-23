@@ -1,6 +1,7 @@
 import { Users, Lightbulb, MessageCircle, Hammer, Search, GitBranch, Handshake, Eye } from 'lucide-react'
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
 
 export const metadata: Metadata = {
   title: 'Espacio de Proyectos - Nodo360',
@@ -201,7 +202,7 @@ export default function ProyectosPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="https://discord.gg/ag5aPsNuPY"
+                href={DISCORD_INVITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300"

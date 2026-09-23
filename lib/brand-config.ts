@@ -1,3 +1,5 @@
+import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
+
 export const brandConfig = {
   logo: {
     url: '/imagenes/logo-nodo360.png',
@@ -21,7 +23,7 @@ export const brandConfig = {
     premiumLight: '#FFA500'
   },
   social: {
-    discord: 'https://discord.gg/ag5aPsNuPY',
+    discord: DISCORD_INVITE_URL,
     telegram: 'https://t.me/nodo360',
     twitter: 'https://twitter.com/nodo360',
     youtube: 'https://youtube.com/@nodo360'

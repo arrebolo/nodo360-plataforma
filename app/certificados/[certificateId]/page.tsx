@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { CertificatePreview } from "@/components/certificates/CertificatePreview";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { DiscordIcon } from '@/components/lesson/CommunityIcons';
+import { DISCORD_LINK_PROPS } from '@/lib/discord/invite';
 
 // Configuración de Next.js para rutas dinámicas
 export const dynamic = "force-dynamic";
@@ -149,6 +151,22 @@ export default async function CertificatePage({
           >
             Ver todos mis certificados
           </Link>
+        </div>
+
+        {/* Quien acaba de terminar un curso es quien mas tiene que preguntar y
+            que contar. Va debajo de las acciones para no competir con el
+            certificado, que es a lo que se viene a esta pagina. */}
+        <div className="mt-10 rounded-xl border border-[#5865F2]/25 bg-[#5865F2]/10 p-5 text-center">
+          <p className="text-white/80">
+            Comenta el curso y resuelve dudas en la comunidad de Discord.
+          </p>
+          <a
+            {...DISCORD_LINK_PROPS}
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#5865F2] px-5 py-2.5 font-medium text-white transition hover:bg-[#5865F2]/85"
+          >
+            <DiscordIcon className="h-5 w-5" />
+            Entrar al Discord de Nodo360
+          </a>
         </div>
       </div>
     </div>

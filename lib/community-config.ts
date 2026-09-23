@@ -1,3 +1,5 @@
+import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
+
 export type CommunityPlatform = 'discord' | 'telegram' | 'slack' | 'forum'
 
 export interface CommunityConfig {
@@ -13,7 +15,7 @@ export interface CommunityConfig {
 export const communityConfig: CommunityConfig = {
   platform: 'discord', // Plataforma por defecto
   urls: {
-    discord: 'https://discord.gg/ag5aPsNuPY',
+    discord: DISCORD_INVITE_URL,
     telegram: 'https://t.me/nodo360',
     slack: 'https://nodo360.slack.com',
     forum: 'https://comunidad.nodo360.com',
