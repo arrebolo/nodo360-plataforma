@@ -3191,6 +3191,89 @@ Lo que sí es seguro: solo habrá 21 millones de bitcoins, y cada halving nos ac
 ¿Quieres entender mejor los ciclos de Bitcoin y estrategias de inversión? Explora nuestros cursos en Nodo360.
 `
   },
+  {
+    slug: 'fallo-entropia-coldcard-semillas-bitcoin',
+    title: 'El fallo de entropía de Coldcard: qué enseña sobre las semillas de Bitcoin',
+    description: 'En julio de 2026 se vaciaron carteras creadas con dispositivos Coldcard por un error de firmware que debilitó la generación de semillas. Qué ocurrió y por qué la aleatoriedad es el cimiento de toda cartera.',
+    category: 'bitcoin',
+    author: 'Equipo Nodo360',
+    authorRole: 'Educadores Bitcoin',
+    publishedAt: '2026-09-23',
+    readingTime: 7,
+    image: '/imagenes/og-blog.png',
+    keywords: ['entropía', 'seed phrase', 'hardware wallet', 'cold storage', 'seguridad bitcoin', 'coldcard'],
+    relatedSlugs: ['seguridad-crypto-proteger-criptomonedas', 'que-es-wallet-crypto-tipos'],
+    content: `
+El 30 de julio de 2026 se produjo un barrido coordinado de fondos desde carteras cuya semilla se había generado en dispositivos Coldcard. En ese movimiento se transfirieron alrededor de 594 BTC. Días después, un investigador independiente identificó transacciones anteriores con la misma huella, que situarían el total en torno a 1.082 BTC; esa segunda cifra no está confirmada. <!-- REVISAR -->
+
+Conviene descartar de entrada la explicación intuitiva: nadie entró en los dispositivos. No hubo acceso remoto, ni programas maliciosos en los equipos de las víctimas, ni una base de datos filtrada. Los aparatos afectados siguieron haciendo exactamente lo que se esperaba de ellos, sin conexión, hasta el final. Los atacantes no necesitaron tocarlos: reconstruyeron las semillas por su cuenta, también sin conexión, aprovechando un defecto en cómo se habían generado años antes.
+
+## Un generador que dejó de funcionar sin avisar
+
+Un dispositivo de firma lleva un generador de números aleatorios por hardware: un componente físico que produce aleatoriedad a partir de un fenómeno impredecible, como el ruido eléctrico de un circuito. Es la pieza sobre la que se construye la semilla.
+
+Por un error de compilación introducido en marzo de 2021, las versiones afectadas del firmware dejaron de usar ese componente. El fallo lo desactivaba sin que nada en el sistema lo advirtiera: no había mensaje de error, ni aviso en pantalla, ni comportamiento raro. El dispositivo seguía generando semillas con normalidad, pero las tomaba de un generador por software mucho más débil.
+
+Ahí está lo importante. Un generador débil no produce semillas rotas. Produce semillas perfectamente válidas, escogidas de un conjunto de posibilidades mucho más pequeño del que debería. En lugar de elegir entre una cantidad de combinaciones tan grande que no cabe imaginarla, elige entre una cantidad que alguien con recursos puede recorrer entera.
+
+Eso es exactamente lo que ocurrió. Los atacantes no rompieron ninguna operación criptográfica: generaron todas las semillas que ese generador debilitado podía producir, derivaron sus direcciones y miraron cuáles tenían saldo.
+
+## Una semilla mala es indistinguible de una buena
+
+Este es el punto que conviene llevarse, y va mucho más allá de un fabricante concreto.
+
+Cuando un dispositivo muestra doce o veinticuatro palabras, no hay forma de saber si son buenas. Una semilla generada con mala aleatoriedad:
+
+- se compone de las mismas palabras de la misma lista estándar;
+- tiene un checksum válido, así que cualquier cartera la acepta sin protestar;
+- genera direcciones correctas, que reciben y envían con total normalidad;
+- funciona igual de bien durante años.
+
+No hay nada que mirar. No existe una comprobación que se pueda hacer sobre las palabras para averiguar de dónde salieron. La calidad de una semilla no está en la semilla: está en el proceso que la produjo, y ese proceso ocurrió una sola vez, probablemente hace años, dentro de un aparato que no lo enseñó.
+
+De ahí se sigue algo incómodo. Una semilla puede estar comprometida desde el instante en que nace, y el dispositivo puede no haber tocado internet jamás. Anotar las palabras en metal, repartir copias en dos ubicaciones y no fotografiarlas nunca —todo lo correcto— no cambia nada si el número del que salieron era adivinable. La custodia protege una semilla que existe; no puede arreglar su origen.
+
+En [la lección sobre seed phrases del curso de Cold Storage](/cursos/cold-storage-protege-tus-bitcoin/seed-phrases-tu-llave-maestra) desarrollamos esto en detalle: de dónde salen las palabras, qué errores detecta el checksum y cuáles se le escapan, y por qué la entropía sostiene todo lo que viene después.
+
+## Sin conexión no significa a salvo
+
+Hay una idea muy extendida que este caso matiza: que un dispositivo aislado de internet es seguro por estarlo. El aislamiento protege frente a una familia concreta de ataques —los que necesitan alcanzar el aparato— y funciona bien para eso. No protege frente a un defecto que viaja dentro del propio dispositivo desde el primer día.
+
+Dicho lo cual, la conclusión razonable no es la contraria. Generar una semilla en un equipo o un teléfono de propósito general expone a riesgos peores y más frecuentes: el sistema operativo, el navegador, las extensiones, los programas instalados y la copia de seguridad automática que lo sube todo a la nube. Un aparato dedicado sigue reduciendo mucho más superficie de la que este fallo abrió.
+
+Vale la pena señalar cómo se cerró el episodio, porque también es información. El defecto se detectó, se publicó y se corrigió, con una explicación pública de la causa. Un fallo comunicado y reparado dice más a favor de un proceso que un historial sin incidentes conocidos, que lo mismo significa que no ha pasado nada o que no se ha mirado.
+
+## Si tienes uno de los modelos afectados
+
+El fabricante ha publicado qué modelos quedaron alcanzados y qué hacer con cada uno. Esa lista se ha ido precisando conforme avanzaba la investigación, así que la referencia válida es su comunicación oficial, no lo que se reproduzca en cualquier otro sitio, incluido este artículo. <!-- REVISAR -->
+
+Sí conviene entender un detalle antes de leerla, porque cambia lo que significa actualizar: **el firmware corregido repara la generación futura, no las semillas ya creadas**. Una semilla débil sigue siendo débil después de actualizar. Cuando una semilla se generó con una versión afectada, el camino pasa por crear una nueva en un dispositivo ya corregido y mover los fondos, no por actualizar y quedarse quieto.
+
+No detallamos aquí el procedimiento a propósito. Es el tipo de operación en la que un paso mal explicado cuesta dinero, y el fabricante es quien puede describirlo para cada modelo y cada versión.
+
+Según la información publicada, dos situaciones quedaron fuera del problema: las semillas generadas aportando suficiente aleatoriedad externa mediante tiradas de dados, y las protegidas con una palabra adicional robusta. <!-- REVISAR -->
+
+## Qué se aprende para cualquier dispositivo
+
+Las lecciones no son sobre una marca. Son sobre dónde está apoyado todo lo demás.
+
+**La aleatoriedad es el cimiento.** Toda la seguridad de una cartera descansa en que el número del que nace la semilla sea imposible de adivinar. Si esa pieza falla, no hay contraseña, ni caja fuerte, ni placa de acero que lo compense. Es el único punto del sistema donde un fallo silencioso lo invalida todo aguas abajo.
+
+**Mezclar fuentes de aleatoriedad evita depender de una sola.** Un diseño que combina varias fuentes independientes y las une sigue funcionando aunque una de ellas se degrade o se desactive. Varios fabricantes trabajan así por este motivo exacto. <!-- REVISAR --> Como usuario no se elige la arquitectura interna, pero sí se puede preguntar por ella, y es una pregunta mucho más útil que la mayoría de las que se hacen al comparar aparatos.
+
+**Los dados aportan aleatoriedad verificable.** Varios dispositivos permiten aportar tiradas de dados al generar la semilla. Son lentas y tediosas, y por eso casi nadie las usa. Su valor es que la aleatoriedad la aporta quien va a custodiar los fondos, con un proceso físico que puede observar, en vez de confiarla entera a un componente cuyo funcionamiento no puede comprobar. En este incidente marcaron la diferencia.
+
+**La palabra adicional añade un factor independiente.** La passphrase —una palabra o frase que se suma a las palabras de la semilla y produce una cartera distinta— no vive dentro del dispositivo. Cuando es robusta y se elige fuera, no la alcanza un fallo en la generación, porque no salió de ahí. Tiene su propio coste: si se pierde, los fondos se pierden con ella, sin excepción y sin recuperación posible.
+
+## Lo que queda
+
+Un dispositivo dedicado a firmar sigue siendo mejor sitio para una semilla que un equipo conectado. Lo que este episodio corrige es una expectativa: la de que comprar el aparato adecuado resuelve el problema de una vez y para siempre.
+
+No lo resuelve porque la parte crítica ocurre en un instante que no se ve, no deja rastro comprobable y no se puede auditar después mirando las palabras. Lo único que se puede hacer es intervenir mientras ocurre —aportando aleatoriedad propia— y añadir después un factor que no dependa de ese instante.
+
+Si quieres entender cómo encaja esto en un plan de custodia completo, el [curso de Cold Storage](/cursos/cold-storage-protege-tus-bitcoin) recorre el camino entero: del modelo de amenazas a la verificación de que una copia de seguridad funciona de verdad.
+`
+  },
 ]
 
 /**
