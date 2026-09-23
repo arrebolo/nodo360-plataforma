@@ -84,6 +84,11 @@ const heroImages = [
     url: 'https://images.unsplash.com/photo-1643101809204-6fb869816dbe?w=1200&h=630&fit=crop&q=80',
     alt: 'Bitcoin halving representación visual'
   },
+  {
+    slug: 'fallo-entropia-coldcard-semillas-bitcoin',
+    url: 'https://images.unsplash.com/photo-1617839625591-e5a789593135?w=1200&h=630&fit=crop&q=80',
+    alt: 'Primer plano de una placa de circuito impreso con sus pistas de cobre'
+  },
 ]
 
 // Function to download image from URL

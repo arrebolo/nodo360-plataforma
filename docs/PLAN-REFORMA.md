@@ -18,6 +18,7 @@
 - [ ] Cerrar PR #6 (Fix RSC CVE) — ya resuelto en `main`
 - [ ] Revisar y cerrar PR #1 (Claude/claude md) — rescatar mejoras de `sitemap.ts` y metadata antes de cerrar
 - [ ] Validar la contraseña en el registro: exigir 8 caracteres como mínimo. Hoy no se comprueba en cliente y solo queda el mínimo de Supabase. El cambio estaba en `feature/lesson-comments`, que se borra porque su función principal ya está en `main`; conviene rehacerlo aparte y revisar de paso el formulario de cambio de contraseña
+- [ ] `scripts/download-blog-images.mjs` debe saltar los archivos que ya existen salvo que se le pase una opción explícita. Hoy el bucle va directo a la descarga para las 16 entradas y sobrescribe cada `.webp`, asi que ejecutarlo entero vuelve a bajar de Unsplash las portadas ya publicadas y puede cambiarlas sin que nadie lo pida (23/09/2026: la portada del articulo de Coldcard se genero con un script filtrado al slug nuevo por este motivo)
 - [x] Commitear `docs/content/` (69 KB sin subir a git: guiones de Cold Storage, Nodos Bitcoin, guía de slides) *(20/09/2026: PR #103)*
 - [ ] Configurar CI en PRs (typecheck + lint + build) — hoy no hay ninguna verificación automática antes de mergear
 - [x] Corregir validación de quiz server-side (`/api/quiz/submit` aceptaba `score` y `passed` del cliente: se podía emitir un certificado sin responder) — rama `fix/rls-quiz-security`
