@@ -3,6 +3,7 @@ import { COMUNIDAD_BENEFITS } from '@/lib/constants/comunidad-benefits'
 import { MessageCircle } from 'lucide-react'
 import { Metadata } from 'next'
 import { Footer } from '@/components/navigation/Footer'
+import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
 
 export const metadata: Metadata = {
   title: 'Comunidad Nodo360 - Conecta con Expertos en Bitcoin y Blockchain',
@@ -69,7 +70,7 @@ export default function ComunidadPage() {
               </div>
 
               <a
-                href="https://discord.gg/ag5aPsNuPY"
+                href={DISCORD_INVITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full py-4 bg-discord hover:bg-discord/90 text-white font-bold text-center rounded-xl transition-all duration-300 hover:scale-105"

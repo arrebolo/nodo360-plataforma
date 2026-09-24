@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
 
 // Lazy initialization para evitar error durante build
 let resendInstance: Resend | null = null
@@ -118,6 +119,17 @@ export async function sendCourseCompletedEmail({
                 Explorar más cursos →
               </a>
             </div>
+            <!-- Comunidad -->
+            <div style="background: rgba(88,101,242,0.12); border: 1px solid rgba(88,101,242,0.25); border-radius: 12px; padding: 24px; margin-top: 24px; text-align: center;">
+              <p style="color: #d1d5db; font-size: 16px; margin: 0 0 16px 0;">
+                Comenta el curso y resuelve dudas en la comunidad de Discord.
+              </p>
+              <a href="${DISCORD_INVITE_URL}" target="_blank" rel="noopener noreferrer"
+                 style="display: inline-block; background: #5865F2; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 15px;">
+                Entrar al Discord de Nodo360
+              </a>
+            </div>
+
 
             <!-- Footer -->
             <div style="text-align: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">

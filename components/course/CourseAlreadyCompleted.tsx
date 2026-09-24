@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { Award, CheckCircle2 } from 'lucide-react'
+import { DiscordIcon } from '@/components/lesson/CommunityIcons'
+import { DISCORD_LINK_PROPS } from '@/lib/discord/invite'
 
 type Props = {
   /** Fecha de finalizacion (ISO). Se muestra si viene. */
@@ -61,19 +63,37 @@ export function CourseAlreadyCompleted({
             recompensa se concede una sola vez.
           </p>
 
-          {certificateId && (
-            <Link
-              href={`/certificados/${certificateId}`}
-              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5
-                         text-sm text-white transition hover:bg-white/15"
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {certificateId && (
+              <Link
+                href={`/certificados/${certificateId}`}
+                className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5
+                           text-sm text-white transition hover:bg-white/15"
+              >
+                <Award className="h-4 w-4" aria-hidden="true" />
+                Ver tu certificado
+                {certificateNumber && (
+                  <span className="text-white/50">· {certificateNumber}</span>
+                )}
+              </Link>
+            )}
+
+            {/* Terminar un curso es el momento con mas ganas de preguntar y de
+                contar lo aprendido, asi que es donde tiene sentido ofrecer la
+                comunidad. */}
+            <a
+              {...DISCORD_LINK_PROPS}
+              className="inline-flex items-center gap-2 rounded-lg bg-[#5865F2]/15 px-3 py-1.5
+                         text-sm text-white transition hover:bg-[#5865F2]/25"
             >
-              <Award className="h-4 w-4" aria-hidden="true" />
-              Ver tu certificado
-              {certificateNumber && (
-                <span className="text-white/50">· {certificateNumber}</span>
-              )}
-            </Link>
-          )}
+              <DiscordIcon className="h-4 w-4" />
+              Comenta el curso en Discord
+            </a>
+          </div>
+
+          <p className="mt-2 text-xs text-white/50">
+            Comenta el curso y resuelve dudas en la comunidad de Discord.
+          </p>
         </div>
       </div>
     </div>

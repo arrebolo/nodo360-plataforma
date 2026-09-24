@@ -94,7 +94,7 @@ export function Footer() {
                 <a
                   href={brandConfig.social.discord}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 rounded"
                 >
                   Discord

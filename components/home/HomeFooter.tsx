@@ -100,7 +100,7 @@ export function HomeFooter() {
                 <a
                   href={brandConfig.social.discord}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
                 >
                   Discord
