@@ -400,6 +400,46 @@ desaparece en silencio y nadie se entera. Ha pasado varias veces.
 
 ---
 
+### Anunciar un articulo del blog en Discord: es un paso MANUAL
+
+El blog no vive en la base de datos: son articulos estaticos en
+`lib/blog-data.ts`, asi que no existe ningun evento de "publicar" al que
+engancharse. Desplegar el articulo **no lo anuncia**. Hay que llamar al
+endpoint a mano despues del despliegue:
+
+```bash
+curl -X POST https://nodo360.com/api/internal/discord-notify \
+  -H "Authorization: Bearer $INTERNAL_API_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"new_blog_post","slug":"el-slug-del-articulo"}'
+```
+
+El endpoint lee el articulo de `lib/blog-data.ts` y exige que el slug exista,
+de modo que una errata devuelve **404** en vez de anunciar un enlace roto.
+Esperar **200** y, sobre todo, **comprobar que el mensaje aparece en el canal**:
+las funciones de notificacion se tragan sus propios errores a proposito —un
+fallo de Discord no debe romper el flujo principal— asi que un `success: true`
+no garantiza que el webhook siga vivo.
+
+Los cursos si se anuncian solos, al aprobarlos desde el panel.
+
+**Canales.** Un webhook de Discord apunta siempre a UN canal, asi que elegir
+canal es elegir webhook:
+
+| Contenido | Variable | Canal |
+|-----------|----------|-------|
+| Cursos nuevos | `DISCORD_WEBHOOK_ANNOUNCEMENTS` | #anuncios |
+| Articulos del blog | `DISCORD_WEBHOOK_NEWS` | #noticias |
+
+Si `DISCORD_WEBHOOK_NEWS` no esta definida, los articulos caen en el canal de
+anuncios y queda constancia en el log. Es deliberado: perder el anuncio es
+peor que publicarlo en el canal de al lado.
+
+Para comprobar un webhook recien rotado sin publicar contenido real:
+`{"type":"test"}`, o `{"type":"test","channel":"news"}` para el de noticias.
+
+---
+
 ## BASE DE DATOS
 
 ### Migraciones
