@@ -28,60 +28,32 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
   const { verificationCode } = await params
   const supabase = await createClient()
 
-  // Buscar certificado por certificate_number directamente
-  const { data: certificate, error } = await supabase
-    .from('certificates')
-    .select('*')
-    .eq('certificate_number', verificationCode)
-    .single()
+  // Una sola llamada, a la puerta publica de la migracion 051.
+  //
+  // Antes eran cuatro consultas directas a certificates, courses, users y
+  // modules. Ninguna de esas tablas se sirve ya entera con la clave anonima:
+  // certificates esta cerrada (051), users solo expone columnas publicas (049)
+  // y lessons/modules dependen del estado del curso (050). La funcion resuelve
+  // las cuatro por dentro y devuelve solo lo que esta pagina pinta, sin
+  // user_id, y sin permitir listar la tabla.
+  const { data: filas } = await supabase.rpc('verificar_certificado', {
+    p_codigo: verificationCode,
+  })
 
-  // Si no encontramos por certificate_number, intentar por verification_url
-  let cert = certificate
-  if (error || !certificate) {
-    const { data: certByUrl } = await supabase
-      .from('certificates')
-      .select('*')
-      .ilike('verification_url', `%${verificationCode}%`)
-      .single()
-
-    if (!certByUrl) {
-      return <CertificateNotFound verificationCode={verificationCode} />
-    }
-    cert = certByUrl
+  const cert = Array.isArray(filas) ? filas[0] : filas
+  if (!cert) {
+    return <CertificateNotFound verificationCode={verificationCode} />
   }
 
-  // Obtener datos del curso
-  const { data: course } = await supabase
-    .from('courses')
-    .select('title, slug, description')
-    .eq('id', cert.course_id)
-    .single()
-
-  // Obtener datos del usuario
-  const { data: userData } = await supabase
-    .from('users')
-    .select('full_name, email')
-    .eq('id', cert.user_id)
-    .single()
-
-  // Obtener datos del módulo si aplica
-  let moduleTitle: string | null = null
-  if (cert.module_id) {
-    const { data: mod } = await supabase
-      .from('modules')
-      .select('title')
-      .eq('id', cert.module_id)
-      .single()
-    moduleTitle = mod?.title || null
-  }
+  const moduleTitle: string | null = cert.modulo_titulo || null
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://nodo360.com'
   const verificationUrl = `${siteUrl}/verificar/${cert.certificate_number}`
 
-  const userName = userData?.full_name || userData?.email?.split('@')[0] || 'Estudiante'
-  const courseTitle = course?.title || cert.title || 'Curso'
-  const courseDescription = course?.description || ''
-  const displayTitle = cert.type === 'module' && moduleTitle ? moduleTitle : courseTitle
+  const userName = cert.titular || 'Estudiante'
+  const courseTitle = cert.curso_titulo || cert.titulo_certificado || 'Curso'
+  const courseDescription = cert.curso_descripcion || ''
+  const displayTitle = cert.tipo === 'module' && moduleTitle ? moduleTitle : courseTitle
 
   const issuedAt = cert.issued_at ? formatLongEs(cert.issued_at) : null
   const expiresAt = cert.expires_at ? formatLongEs(cert.expires_at) : null
@@ -135,7 +107,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 </div>
                 <div>
                   <p className="text-xs text-white/50 uppercase tracking-wider mb-1">
-                    Certificado de {cert.type === 'module' ? 'Modulo' : 'Finalizacion'}
+                    Certificado de {cert.tipo === 'module' ? 'Modulo' : 'Finalizacion'}
                   </p>
                   <h1 className="text-xl font-bold text-white">{displayTitle}</h1>
                 </div>
@@ -161,7 +133,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 {/* Curso */}
                 <div>
                   <p className="text-xs text-white/40 uppercase tracking-wider mb-2">
-                    {cert.type === 'module' ? 'Módulo del curso' : 'Curso completado'}
+                    {cert.tipo === 'module' ? 'Módulo del curso' : 'Curso completado'}
                   </p>
                   <p className="text-lg text-white font-medium">{courseTitle}</p>
                   {courseDescription && (
@@ -183,7 +155,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                   </div>
                   <div>
                     <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Tipo</p>
-                    <p className="text-white/80">{cert.type === 'module' ? 'Modulo' : 'Curso'}</p>
+                    <p className="text-white/80">{cert.tipo === 'module' ? 'Modulo' : 'Curso'}</p>
                   </div>
                 </div>
 
