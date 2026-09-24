@@ -66,3 +66,9 @@ rmdir
 
 tmpclaude-*
 .vercel
+
+# Credenciales que no deben acabar en el repositorio.
+# Ruta exacta a proposito: un comodin como *discord* taparia por accidente
+# archivos legitimos del proyecto, que ya tiene varios con ese nombre.
+# El archivo vive ahora en C:\Users\alber\backups-sql\
+/codigos respaldo discord.txt
