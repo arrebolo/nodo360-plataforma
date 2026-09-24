@@ -51,7 +51,11 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
   const verificationUrl = `${siteUrl}/verificar/${cert.certificate_number}`
 
   const userName = cert.titular || 'Estudiante'
-  const courseTitle = cert.curso_titulo || cert.titulo_certificado || 'Curso'
+  // Manda el titulo guardado en el certificado, que es lo que acredita: lo que
+  // se completo entonces, no como se llame el curso hoy (migracion 053). La
+  // funcion ya lo resuelve con COALESCE; esta precedencia es el respaldo si
+  // alguna vez devolviera los dos campos sin resolver.
+  const courseTitle = cert.titulo_certificado || cert.curso_titulo || 'Curso'
   const courseDescription = cert.curso_descripcion || ''
   const displayTitle = cert.tipo === 'module' && moduleTitle ? moduleTitle : courseTitle
 
