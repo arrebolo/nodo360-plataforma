@@ -153,8 +153,16 @@ export default async function DashboardCertificatesPage({ searchParams }: PagePr
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {list.map((c: any) => {
+            // Se cae a c.title, la copia que el propio certificado guarda del
+            // nombre, antes que al generico. Importa cuando el curso deja de
+            // ser visible: RLS oculta los que no estan publicados, asi que
+            // archivar uno dejaria estas tarjetas diciendo "Curso" a secas,
+            // aunque el certificado siga siendo valido. Comprobado el
+            // 24/09/2026 con un curso archivado de prueba.
             const title =
-              c.type === 'module' ? (c.module?.title ?? 'Modulo') : (c.course?.title ?? 'Curso')
+              c.type === 'module'
+                ? (c.module?.title ?? c.title ?? 'Modulo')
+                : (c.course?.title ?? c.title ?? 'Curso')
 
             const subtitle = c.type === 'course' ? (c.course?.description ?? null) : null
 
