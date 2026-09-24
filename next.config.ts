@@ -257,6 +257,101 @@ const nextConfig: NextConfig = {
       { source: '/courses/:slug/', destination: '/cursos', permanent: true },
 
       // ========================================
+      // Curso "Bitcoin como sistema monetario", fusionado dentro de
+      // "Fundamentos de Bitcoin" (migracion 045)
+      // ========================================
+      // Sus 6 lecciones y su ficha quedan sin destino al archivarlo. Cada una
+      // apunta a la leccion de Fundamentos que trata ese mismo tema, no a la
+      // ficha del curso: aterrizar en el contenido equivalente conserva mucho
+      // mejor la intencion de quien llega desde un buscador.
+      //
+      // Con statusCode: 301 y no permanent: true, que emite 308.
+
+      // la ficha del curso pasa a la de Fundamentos
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario',
+        destination: '/cursos/fundamentos-de-bitcoin',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/',
+        destination: '/cursos/fundamentos-de-bitcoin',
+        statusCode: 301,
+      },
+
+      // mismo tema: si Bitcoin cumple las funciones del dinero
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/bitcoin-como-dinero-digital',
+        destination: '/cursos/fundamentos-de-bitcoin/es-bitcoin-dinero-las-tres-funciones',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/bitcoin-como-dinero-digital/',
+        destination: '/cursos/fundamentos-de-bitcoin/es-bitcoin-dinero-las-tres-funciones',
+        statusCode: 301,
+      },
+
+      // los 21 millones y el halving viven ahora en la 2.2
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/oferta-limitada-y-emision-programada',
+        destination: '/cursos/fundamentos-de-bitcoin/por-que-bitcoin-es-diferente',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/oferta-limitada-y-emision-programada/',
+        destination: '/cursos/fundamentos-de-bitcoin/por-que-bitcoin-es-diferente',
+        statusCode: 301,
+      },
+
+      // mismo tema y mismo slug, ya en Fundamentos
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/bitcoin-frente-al-dinero-fiat',
+        destination: '/cursos/fundamentos-de-bitcoin/bitcoin-frente-al-dinero-fiat',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/bitcoin-frente-al-dinero-fiat/',
+        destination: '/cursos/fundamentos-de-bitcoin/bitcoin-frente-al-dinero-fiat',
+        statusCode: 301,
+      },
+
+      // la soberania es parte de lo que resuelve, tratado en la 2.3
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/soberania-individual-y-neutralidad-monetaria',
+        destination: '/cursos/fundamentos-de-bitcoin/que-problemas-resuelve-realmente',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/soberania-individual-y-neutralidad-monetaria/',
+        destination: '/cursos/fundamentos-de-bitcoin/que-problemas-resuelve-realmente',
+        statusCode: 301,
+      },
+
+      // era la leccion duplicada; queda una sola
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/que-problemas-si-resuelve-bitcoin',
+        destination: '/cursos/fundamentos-de-bitcoin/que-problemas-resuelve-realmente',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/que-problemas-si-resuelve-bitcoin/',
+        destination: '/cursos/fundamentos-de-bitcoin/que-problemas-resuelve-realmente',
+        statusCode: 301,
+      },
+
+      // mismo tema y mismo slug, ya en Fundamentos
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/limites-y-criticas-a-bitcoin',
+        destination: '/cursos/fundamentos-de-bitcoin/limites-y-criticas-a-bitcoin',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/bitcoin-como-sistema-monetario/limites-y-criticas-a-bitcoin/',
+        destination: '/cursos/fundamentos-de-bitcoin/limites-y-criticas-a-bitcoin',
+        statusCode: 301,
+      },
+
+      // ========================================
       // URLs de WordPress comunes
       // ========================================
       { source: '/wp-admin', destination: '/', permanent: true },
