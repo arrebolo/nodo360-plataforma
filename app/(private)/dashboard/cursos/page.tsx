@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import PageHeader from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
-import { ArrowLeft, BookOpen, CheckCircle2, PlayCircle } from 'lucide-react'
+import { ArrowLeft, BookOpen, CheckCircle2, PlayCircle, Sparkles } from 'lucide-react'
 
 export const metadata = {
   title: 'Mis Cursos | Nodo360',
@@ -49,6 +49,48 @@ export default async function MisCursosPage() {
   // Se descartan esas matriculas en vez de pintarlas rotas: el curso ya no
   // existe para esta persona, y un hueco silencioso es mejor que un enlace
   // que no lleva a ninguna parte.
+  // Contenido publicado DESPUES de que esta persona pasara por el curso.
+  //
+  // Por comparacion de fechas, sin columna nueva: se toma la ultima actividad
+  // suya en el curso -su progreso mas reciente, o la fecha en que lo termino-
+  // y se cuentan las lecciones creadas despues. Al ampliar un curso de 6 a 9
+  // lecciones, quien ya lo habia terminado no se enteraba de nada.
+  const cursoIds = ((enrollments || []) as any[]).map((e) => e.course?.id).filter(Boolean)
+  const nuevasPorCurso = new Map<string, { total: number; primerSlug: string | null }>()
+
+  if (cursoIds.length > 0) {
+    const [{ data: modulos }, { data: misProgresos }] = await Promise.all([
+      supabase.from('modules').select('id, course_id').in('course_id', cursoIds),
+      supabase.from('user_progress').select('lesson_id, completed_at').eq('user_id', user.id).eq('is_completed', true),
+    ])
+
+    const { data: todasLecciones } = await supabase
+      .from('lessons')
+      .select('id, slug, created_at, module_id, order_index')
+      .in('module_id', (modulos || []).map((m: any) => m.id))
+      .order('order_index')
+
+    const fechaPorLeccion = new Map((misProgresos || []).map((p: any) => [p.lesson_id, p.completed_at]))
+
+    for (const e of ((enrollments || []) as any[])) {
+      if (!e.course?.id) continue
+      const modsCurso = (modulos || []).filter((m: any) => m.course_id === e.course.id).map((m: any) => m.id)
+      const lecs = (todasLecciones || []).filter((l: any) => modsCurso.includes(l.module_id))
+      if (lecs.length === 0) continue
+
+      const fechas = lecs.map((l: any) => fechaPorLeccion.get(l.id)).filter(Boolean) as string[]
+      const ultimaActividad = fechas.sort().pop() || e.completed_at
+      if (!ultimaActividad) continue
+
+      const nuevas = lecs.filter(
+        (l: any) => l.created_at > ultimaActividad && !fechaPorLeccion.has(l.id)
+      )
+      if (nuevas.length > 0) {
+        nuevasPorCurso.set(e.course.id, { total: nuevas.length, primerSlug: nuevas[0].slug })
+      }
+    }
+  }
+
   const courses = (enrollments || [])
     .filter((e: any) => e.course)
     .map((e: any) => ({
@@ -57,6 +99,7 @@ export default async function MisCursosPage() {
       enrolledAt: e.enrolled_at,
       completedAt: e.completed_at,
       lastAccessed: e.last_accessed_at,
+      contenidoNuevo: nuevasPorCurso.get(e.course.id) ?? null,
     }))
 
   const completedCourses = courses.filter((c: any) => c.completedAt)
@@ -174,7 +217,15 @@ export default async function MisCursosPage() {
                   {completedCourses.map((course: any) => (
                     <Link
                       key={course.id}
-                      href={`/cursos/${course.slug}`}
+                      /* Con contenido nuevo, la tarjeta lleva directamente a la
+                         primera leccion nueva en vez de al temario: es lo que
+                         esa persona ha venido a ver. La tarjeta entera ya es un
+                         enlace, asi que no cabe anidar otro dentro del aviso. */
+                      href={
+                        course.contenidoNuevo?.primerSlug
+                          ? `/cursos/${course.slug}/${course.contenidoNuevo.primerSlug}`
+                          : `/cursos/${course.slug}`
+                      }
                       className="group rounded-2xl border border-green-500/30 bg-green-500/5 overflow-hidden hover:bg-green-500/10 transition-all duration-300"
                     >
                       {course.thumbnail_url && (
@@ -198,6 +249,28 @@ export default async function MisCursosPage() {
                           <CheckCircle2 className="w-4 h-4" />
                           Completado
                         </div>
+
+                        {/* Contenido publicado despues de que lo terminara.
+                            La redaccion es deliberada: "se ha ampliado", no
+                            "te falta". El curso sigue completado y el
+                            certificado sigue siendo valido; esto es una
+                            invitacion, no un aviso de que haya perdido algo. */}
+                        {course.contenidoNuevo && (
+                          <div className="mt-3 rounded-lg border border-brand/30 bg-brand/10 p-3">
+                            <p className="text-xs text-white/80">
+                              <Sparkles className="mr-1 inline h-3.5 w-3.5 text-brand-light" aria-hidden="true" />
+                              Este curso se ha ampliado con{' '}
+                              <strong className="text-white">
+                                {course.contenidoNuevo.total}{' '}
+                                {course.contenidoNuevo.total === 1 ? 'lección nueva' : 'lecciones nuevas'}
+                              </strong>{' '}
+                              desde que lo terminaste.
+                            </p>
+                            <p className="mt-1 text-[11px] text-white/50">
+                              Tu certificado sigue siendo válido. Pulsa para ir a la primera.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </Link>
                   ))}
