@@ -1,10 +1,24 @@
 -- ============================================================================
 -- 051: los certificados se consultan por numero, no se enumeran
 -- ============================================================================
--- ESTADO: ESCRITA, SIN APLICAR (24/09/2026).
---   Es DDL: hay que ejecutarla en el SQL Editor de Supabase. Escrita contra la
---   salida de pg_policies del 24/09/2026, que esta recogida mas abajo.
---   Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
+-- ESTADO: APLICADA EN PRODUCCION EL 24/09/2026.
+--   Es DDL, asi que se ejecuto a mano en el SQL Editor de Supabase y se
+--   versiona despues, como exige la regla 4 del prompt maestro.
+--
+--   SE APLICO EN DOS PASADAS, igual que la 049 y por el mismo motivo:
+--     1. El bloque PASO 1 (verificar_certificado), antes del despliegue.
+--     2. Merge de la #184 y despliegue.
+--     3. El resto del fichero.
+--   Desde C:/Users/alber/051-paso1.sql y 051-paso2.sql, identicos a esto salvo
+--   por una guardia que abortaba el paso 2 si faltaba la funcion.
+--
+--   ESTE FICHERO, EJECUTADO ENTERO Y DE UNA VEZ, REPRODUCE EL RESULTADO desde
+--   cero: la funcion se crea antes del REVOKE.
+--
+--   Verificado despues con node scripts/auditar-clave-anonima.mjs -> TODO
+--   CORRECTO, y en produccion: /verificar responde con los 16 certificados y
+--   terminar un curso sigue emitiendo certificado, que era la comprobacion
+--   critica de esta migracion.
 --
 -- EL PROBLEMA
 --   Con la clave anonima se lee la tabla `certificates` entera: 16 de 16 filas
@@ -129,7 +143,7 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION public.verificar_certificado IS
-  'Puerta publica de /verificar/[codigo]. Devuelve un certificado por su numero sin exponer user_id ni permitir enumerar la tabla. SECURITY DEFINER porque certificates, users, courses y modules ya no son legibles por anon.';
+  'Puerta publica de /verificar/[codigo]. Devuelve un certificado por su numero sin exponer user_id ni permitir enumerar la tabla. SECURITY DEFINER porque certificates, users, courses y modules dejan de ser legibles por anon en las migraciones 049, 050 y 051.';
 
 REVOKE ALL ON FUNCTION public.verificar_certificado(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.verificar_certificado(text) TO anon, authenticated, service_role;

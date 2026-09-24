@@ -72,8 +72,9 @@ nadie como efecto de usar la plataforma con normalidad.
 **No se puede saber, y conviene que quede escrito por qué:**
 
 - **Vercel.** La consulta de registros de ejecución desde el conector devuelve
-  `403 Forbidden`. Aunque no lo hiciera, los registros de ejecución no cubren diez
-  meses: sin un *Log Drain* configurado —y no lo hay— la retención es de días.
+  `403 Forbidden`. Y aunque no lo hiciera, daría igual: **en el plan Hobby los
+  registros son una ventana en vivo, no un archivo, y los *Log Drains* no están
+  disponibles**. No es que estén mal configurados — no se pueden configurar.
 - **Supabase.** Los registros de API se conservan 1 día en el plan gratuito y 7 en
   Pro. Tampoco alcanzan.
 - **La aplicación.** No hay tabla de auditoría para este endpoint ni para ningún
@@ -125,5 +126,8 @@ registros del servidor.
 3. **Las políticas creadas desde el panel no se pueden datar.** No estar en una
    migración no es solo un problema de reproducibilidad: impide responder «desde
    cuándo» cuando hace falta.
-4. **Sin registros no hay forense.** Diez meses de ventana y cero capacidad de
-   saber si se explotó. Un *Log Drain* es barato comparado con esta conversación.
+4. **Sin registros no hay forense, y aquí no los hay por el plan.** Diez meses
+   de ventana y cero capacidad de saber si se explotó. En Hobby no es cuestión
+   de configurarlo mejor: no existe la opción. Mientras el proyecto siga ahí, el
+   próximo incidente se documentará igual de a ciegas, y conviene saberlo antes
+   de que haya datos de pago de por medio.

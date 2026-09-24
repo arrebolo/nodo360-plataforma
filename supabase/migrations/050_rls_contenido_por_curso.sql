@@ -1,10 +1,17 @@
 -- ============================================================================
 -- 050: el contenido de un curso se sirve segun el estado del curso
 -- ============================================================================
--- ESTADO: ESCRITA, SIN APLICAR (24/09/2026).
---   Es DDL: hay que ejecutarla en el SQL Editor de Supabase. Escrita contra la
---   salida de pg_policies del 24/09/2026, que esta recogida mas abajo.
---   Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
+-- ESTADO: APLICADA EN PRODUCCION EL 24/09/2026.
+--   Es DDL, asi que se ejecuto a mano en el SQL Editor de Supabase y se
+--   versiona despues, como exige la regla 4 del prompt maestro.
+--
+--   Se ejecuto ENTERA Y DE UNA VEZ, la ultima de las tres: es la unica que no
+--   depende del despliegue, porque ningun codigo de la aplicacion llama a
+--   curso_visible() -- solo la invocan las politicas.
+--
+--   Escrita contra la salida de pg_policies del 24/09/2026, recogida mas abajo.
+--   Verificado despues con node scripts/auditar-clave-anonima.mjs -> TODO
+--   CORRECTO: lessons pasa de 87 a 69 filas para anon y modules de 29 a 23.
 --
 -- EL PROBLEMA
 --   Con la clave anonima se leen las 87 lecciones y los 29 modulos de la base,

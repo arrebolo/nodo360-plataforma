@@ -1,10 +1,26 @@
 -- ============================================================================
 -- 049: el correo de los usuarios deja de ser legible
 -- ============================================================================
--- ESTADO: ESCRITA, SIN APLICAR (24/09/2026).
---   Es DDL: hay que ejecutarla en el SQL Editor de Supabase. El codigo que la
---   acompana ya esta en la rama y debe desplegarse ANTES o a la vez (ver mas
---   abajo). Comprobacion: node scripts/auditar-clave-anonima.mjs
+-- ESTADO: APLICADA EN PRODUCCION EL 24/09/2026.
+--   Es DDL, asi que se ejecuto a mano en el SQL Editor de Supabase y se
+--   versiona despues, como exige la regla 4 del prompt maestro.
+--
+--   SE APLICO EN DOS PASADAS, por el codigo que la acompana (PR #184):
+--     1. El bloque PASO 1 (mi_perfil), con el codigo viejo aun en produccion.
+--     2. Merge de la #184 y despliegue.
+--     3. El resto del fichero.
+--   Los dos trozos se ejecutaron desde C:/Users/alber/049-paso1.sql y
+--   049-paso2.sql, identicos a lo que hay aqui salvo por una guardia que
+--   abortaba el paso 2 si faltaba mi_perfil().
+--
+--   ESTE FICHERO, EJECUTADO ENTERO Y DE UNA VEZ, REPRODUCE EL RESULTADO desde
+--   cero: la funcion se crea antes de los REVOKE. La division en dos pasadas
+--   era operativa, no estructural.
+--
+--   Verificado despues con node scripts/auditar-clave-anonima.mjs -> TODO
+--   CORRECTO, y a mano: login, panel privado, /dashboard/rutas, perfil con
+--   cambio de avatar, /mentores, ficha de usuario en admin y aprobacion de
+--   curso desde admin y desde mentor.
 --
 -- EL PROBLEMA, EN DOS CAPAS
 --
