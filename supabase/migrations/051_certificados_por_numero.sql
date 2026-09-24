@@ -87,6 +87,10 @@ BEGIN;
 --
 -- Acepta tambien el codigo dentro de verification_url, que es el segundo
 -- intento que hacia la pagina.
+--
+-- Los cast a ::text no son adorno: RETURNS TABLE exige que el tipo declarado y
+-- el real coincidan, y si alguna de esas columnas fuese varchar(n) la funcion
+-- fallaria al llamarla con 42804. Con el cast da igual como esten declaradas.
 
 CREATE OR REPLACE FUNCTION public.verificar_certificado(p_codigo text)
 RETURNS TABLE (
@@ -106,13 +110,13 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
   SELECT
-    ce.certificate_number,
-    ce.type,
-    ce.title,
-    u.full_name,
-    c.title,
-    c.description,
-    m.title,
+    ce.certificate_number::text,
+    ce.type::text,
+    ce.title::text,
+    u.full_name::text,
+    c.title::text,
+    c.description::text,
+    m.title::text,
     ce.issued_at,
     ce.expires_at
   FROM public.certificates ce
