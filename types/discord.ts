@@ -56,4 +56,10 @@ export interface NewBlogPostNotification {
   title: string
   slug: string
   excerpt: string
+  /** Categoria del articulo, tal como la define blogPosts. */
+  category?: string
+  /** Minutos de lectura estimados. */
+  reading_time?: number
+  /** Portada. Ruta absoluta del sitio o URL completa. */
+  image_url?: string | null
 }

@@ -5,6 +5,7 @@
 
 import type {
   DiscordEmbed,
+  DiscordEmbedField,
   DiscordWebhookPayload,
   NewCourseNotification,
   NewBlogPostNotification,
@@ -118,15 +119,34 @@ export async function notifyNewCourse(course: NewCourseNotification): Promise<vo
   }
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  bitcoin: 'Bitcoin',
+  blockchain: 'Blockchain',
+  defi: 'DeFi',
+  web3: 'Web3',
+}
+
 /**
- * Notify Discord about a new blog post (for future use)
+ * Anuncia un articulo nuevo del blog.
+ *
+ * Canal: un webhook de Discord apunta siempre a un canal concreto, asi que
+ * elegir canal es elegir webhook. Los articulos van a DISCORD_WEBHOOK_NEWS
+ * (#noticias) y, si no esta definida, caen en DISCORD_WEBHOOK_ANNOUNCEMENTS,
+ * que es donde iba todo hasta ahora. Con el respaldo, separar los canales no
+ * obliga a desplegar y configurar la variable a la vez: mientras tanto el
+ * anuncio sale igual, solo que en el canal de siempre.
  */
 export async function notifyNewBlogPost(post: NewBlogPostNotification): Promise<void> {
-  const webhookUrl = process.env.DISCORD_WEBHOOK_ANNOUNCEMENTS
+  const webhookUrl =
+    process.env.DISCORD_WEBHOOK_NEWS || process.env.DISCORD_WEBHOOK_ANNOUNCEMENTS
 
   if (!webhookUrl) {
-    console.log('⚠️ [Discord] DISCORD_WEBHOOK_ANNOUNCEMENTS no configurado, saltando notificacion')
+    console.log('⚠️ [Discord] Sin webhook de noticias ni de anuncios, saltando notificacion')
     return
+  }
+
+  if (!process.env.DISCORD_WEBHOOK_NEWS) {
+    console.log('ℹ️ [Discord] DISCORD_WEBHOOK_NEWS sin definir, usando el canal de anuncios')
   }
 
   console.log('🔍 [Discord] Preparando notificacion de nuevo post:', post.title)
@@ -145,6 +165,35 @@ export async function notifyNewBlogPost(post: NewBlogPostNotification): Promise<
       text: 'Nodo360 - Educacion Bitcoin',
     },
     timestamp: new Date().toISOString(),
+  }
+
+  const fields: DiscordEmbedField[] = []
+  if (post.category) {
+    fields.push({
+      name: '🏷️ Categoria',
+      value: CATEGORY_LABELS[post.category] || post.category,
+      inline: true,
+    })
+  }
+  if (post.reading_time) {
+    fields.push({
+      name: '⏱️ Lectura',
+      value: `${post.reading_time} min`,
+      inline: true,
+    })
+  }
+  if (fields.length > 0) {
+    embed.fields = fields
+  }
+
+  // La portada se guarda como ruta del sitio (/blog/algo.webp). Discord
+  // necesita una URL absoluta para poder descargarla.
+  if (post.image_url) {
+    embed.image = {
+      url: post.image_url.startsWith('http')
+        ? post.image_url
+        : `https://nodo360.com${post.image_url}`,
+    }
   }
 
   try {
