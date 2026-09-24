@@ -11,12 +11,42 @@
  *   { type: 'test', channel: 'news' }     prueba sobre el canal de noticias
  */
 
+import { timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notifyNewCourse, notifyNewBlogPost, sendDiscordNotification } from '@/lib/discord/webhook'
 import { getPostBySlug } from '@/lib/blog-data'
 
 const INTERNAL_SECRET = process.env.INTERNAL_API_SECRET
+
+/**
+ * Compara el secreto recibido con el configurado en tiempo constante.
+ *
+ * Con `!==`, la comparacion se detiene en el primer caracter que no coincide,
+ * asi que el tiempo de respuesta depende de cuantos se acertaron. Medido sobre
+ * muchas peticiones, eso permite reconstruir el secreto caracter a caracter en
+ * vez de probar todo el espacio.
+ *
+ * Hasta ahora el reto de Bot Protection de Vercel hacia inviable ese ataque,
+ * porque ninguna peticion automatizada llegaba a ejecutar la funcion. Al
+ * excluir /api/internal/* del firewall para poder usar el endpoint, ese freno
+ * desaparece y la comparacion pasa a importar.
+ *
+ * timingSafeEqual lanza si los buffers no miden lo mismo, de ahi la
+ * comprobacion previa de longitud. Eso filtra la longitud del secreto, que es
+ * una fuga aceptable: no se elige a mano, se genera, y conocerla no acorta el
+ * espacio de busqueda de forma util.
+ */
+function secretoValido(recibido: string | undefined, esperado: string): boolean {
+  if (!recibido) return false
+
+  const a = Buffer.from(recibido, 'utf8')
+  const b = Buffer.from(esperado, 'utf8')
+
+  if (a.length !== b.length) return false
+
+  return timingSafeEqual(a, b)
+}
 
 export async function POST(request: NextRequest) {
   console.log('🔍 [Discord Notify API] Recibiendo solicitud...')
@@ -25,7 +55,7 @@ export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('Authorization')
   const providedSecret = authHeader?.replace('Bearer ', '')
 
-  if (!INTERNAL_SECRET || providedSecret !== INTERNAL_SECRET) {
+  if (!INTERNAL_SECRET || !secretoValido(providedSecret, INTERNAL_SECRET)) {
     console.error('❌ [Discord Notify API] Autorizacion fallida')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

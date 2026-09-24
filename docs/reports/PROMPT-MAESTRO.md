@@ -414,6 +414,17 @@ curl -X POST https://nodo360.com/api/internal/discord-notify \
   -d '{"type":"new_blog_post","slug":"el-slug-del-articulo"}'
 ```
 
+**AVISO: desde fuera esto devuelve 429 mientras el firewall lo bloquee.** El
+Bot Protection de Vercel responde a toda peticion no-navegador con un reto de
+JavaScript: `HTTP 429` + `X-Vercel-Mitigated: challenge`, y la funcion ni
+siquiera llega a ejecutarse. No es `checkRateLimit` —esta ruta no lo usa— ni un
+problema del secreto. Hace falta una regla de firewall con accion **Bypass**
+para `/api/internal/*`. Hasta que este activa, la unica forma de probarlo es
+en local, levantando el servidor con las variables reales.
+
+Se distingue mirando la respuesta: la nuestra es JSON y trae `Retry-After` y
+`X-RateLimit-*`; la del firewall es HTML y trae `X-Vercel-Mitigated`.
+
 El endpoint lee el articulo de `lib/blog-data.ts` y exige que el slug exista,
 de modo que una errata devuelve **404** en vez de anunciar un enlace roto.
 Esperar **200** y, sobre todo, **comprobar que el mensaje aparece en el canal**:
