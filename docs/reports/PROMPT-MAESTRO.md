@@ -715,6 +715,10 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
     fuente: `.nvmrc`, `engines.node` de `package.json` y el
     `node-version-file` del workflow. Vercel lee `engines.node`.
 
+    **Si el entorno local va con otra version**, el install avisa con
+    `EBADENGINE` y no falla. Ese aviso no es ruido: significa que cualquier
+    lockfile que se genere ahi puede romper el CI.
+
 ### Respaldos y reversion
 
 20. **El archivo que revierte una migracion no se guarda junto al que la
@@ -745,9 +749,36 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
     asi el sitio estaba roto, que es el peor tipo de fallo: no lo detecta
     ninguna comprobacion de integridad.
 
-    **Si el entorno local va con otra version**, el install avisa con
-    `EBADENGINE` y no falla. Ese aviso no es ruido: significa que cualquier
-    lockfile que se genere ahi puede romper el CI.
+
+22. **Escribir `description` o `long_description` de un curso publicado por
+    PostgREST lo saca de produccion.** Antes de tocar esos campos, o se hace
+    por SQL con `SET LOCAL app.skip_republish_check = 'on'`, o se cuenta con
+    devolver el curso a `published` en el mismo lote y se comprueba despues.
+
+    **Por que.** El disparador `check_course_modification` (migracion 030)
+    devuelve a `pending_review` cualquier curso publicado cuyo `title`,
+    `description`, `long_description`, `level`, `price`, `is_free`,
+    `is_premium`, `thumbnail_url` o `banner_url` cambie. Exime a dos: a quien
+    sea admin segun `auth.uid()`, y a quien fije `app.skip_republish_check` en
+    su transaccion.
+
+    **La clave de servicio no cumple ninguna de las dos.** `auth.uid()` es nulo,
+    asi que `is_admin` no la reconoce, y cada peticion de PostgREST es su propia
+    transaccion, asi que un `SET LOCAL` enviado aparte no la alcanza. El
+    disparador actua y el curso desaparece del catalogo, de su ruta y del
+    buscador **sin devolver ningun error**: la escritura se confirma.
+
+    Paso el 24/09/2026 con la migracion 048. El curso "Seguridad basica en
+    Bitcoin y criptomonedas" estuvo invisible para cualquier visitante hasta que
+    lo delato una comprobacion con la clave anonima. Lo mismo le habia pasado
+    antes a dos cursos, y por eso existe la exencion que anadio la 030.
+
+    **Como se detecta.** Consultar el curso con la clave **anonima**, no con la
+    de servicio, que lo ve igual en los dos estados:
+
+        SELECT slug, status FROM public.courses WHERE status = 'pending_review';
+
+    Debe salir vacio. Toda migracion de contenido termina con esa consulta.
 
 ### Codigo
 
