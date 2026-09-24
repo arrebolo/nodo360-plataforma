@@ -91,6 +91,19 @@
 --   `service_role` conserva GRANT ALL. Las escrituras de admin
 --   (/api/admin/users/*) ya iban por createAdminClient().
 --
+--
+-- COMO APLICARLA, EN TRES PASOS
+--   El PASO 1 (la funcion mi_perfil) es aditivo y no rompe nada: se ejecuta
+--   primero, con el codigo viejo todavia en produccion.
+--   Despues se mergea la PR y se deja desplegar.
+--   Solo entonces se ejecuta el PASO 2, que es el que retira privilegios.
+--
+--   Al reves no: si se retira el privilegio con el codigo viejo desplegado,
+--   el callback de login deja de leer is_suspended y el panel de admin deja
+--   de abrir la ficha de un usuario. Y si se despliega el codigo sin haber
+--   creado mi_perfil(), durante esa ventana un usuario suspendido entraria,
+--   porque el callback trata el perfil ausente como "sin datos" y sigue.
+--
 -- COMPROBACION PREVIA (24/09/2026)
 --   anon: 3 de 23 filas, 23 columnas, 3 correos
 --   authenticated: 23 de 23 filas enteras (users_read_all_authenticated)
@@ -100,55 +113,7 @@
 BEGIN;
 
 -- ============================================================================
--- 1. Retirar el privilegio de tabla, que es lo que hace inutil lo demas
--- ============================================================================
-
-REVOKE ALL ON public.users FROM anon;
-REVOKE ALL ON public.users FROM authenticated;
-
--- ============================================================================
--- 2. Devolver solo las columnas publicas
--- ============================================================================
--- `role` entra porque /mentores filtra por el y porque el propio listado ya lo
--- muestra. Fuera quedan email, is_suspended, suspended_reason, suspended_by,
--- suspended_at, is_beta, is_beta_enabled, wants_beta_notification,
--- last_seen_at, active_path_id, active_path_selected_at, avatar_path, website,
--- twitter, linkedin, github y updated_at.
-
-GRANT SELECT (
-  id,
-  full_name,
-  avatar_url,
-  role,
-  bio,
-  created_at
-) ON public.users TO anon, authenticated;
-
--- ============================================================================
--- 3. Lo que un usuario puede escribir de su propia ficha
--- ============================================================================
--- El REVOKE de arriba se llevo tambien el UPDATE. Estas son las columnas que
--- el propio usuario edita hoy: avatar (/api/user/avatar y avatar/upload),
--- ruta activa (/api/user/select-path) y el aviso de beta (/beta).
--- El resto quedan para el cliente de servicio. La politica de filas sigue
--- decidiendo QUE filas puede tocar; esto decide que columnas.
-
-GRANT UPDATE (
-  full_name,
-  avatar_url,
-  avatar_path,
-  bio,
-  website,
-  twitter,
-  linkedin,
-  github,
-  active_path_id,
-  active_path_selected_at,
-  wants_beta_notification
-) ON public.users TO authenticated;
-
--- ============================================================================
--- 4. La puerta a la fila propia, entera
+-- PASO 1 (ADITIVO). La puerta a la fila propia, entera
 -- ============================================================================
 -- Un GRANT de columna no distingue la fila propia de las ajenas, asi que
 -- cerrar las columnas ajenas cierra tambien las propias. Esta funcion las
@@ -171,7 +136,55 @@ REVOKE ALL ON FUNCTION public.mi_perfil() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.mi_perfil() TO authenticated, service_role;
 
 -- ============================================================================
--- 5. El rol de servicio no se toca
+-- PASO 2. Retirar el privilegio de tabla, que es lo que hace inutil lo demas
+-- ============================================================================
+
+REVOKE ALL ON public.users FROM anon;
+REVOKE ALL ON public.users FROM authenticated;
+
+-- ============================================================================
+-- PASO 2b. Devolver solo las columnas publicas
+-- ============================================================================
+-- `role` entra porque /mentores filtra por el y porque el propio listado ya lo
+-- muestra. Fuera quedan email, is_suspended, suspended_reason, suspended_by,
+-- suspended_at, is_beta, is_beta_enabled, wants_beta_notification,
+-- last_seen_at, active_path_id, active_path_selected_at, avatar_path, website,
+-- twitter, linkedin, github y updated_at.
+
+GRANT SELECT (
+  id,
+  full_name,
+  avatar_url,
+  role,
+  bio,
+  created_at
+) ON public.users TO anon, authenticated;
+
+-- ============================================================================
+-- PASO 2c. Lo que un usuario puede escribir de su propia ficha
+-- ============================================================================
+-- El REVOKE de arriba se llevo tambien el UPDATE. Estas son las columnas que
+-- el propio usuario edita hoy: avatar (/api/user/avatar y avatar/upload),
+-- ruta activa (/api/user/select-path) y el aviso de beta (/beta).
+-- El resto quedan para el cliente de servicio. La politica de filas sigue
+-- decidiendo QUE filas puede tocar; esto decide que columnas.
+
+GRANT UPDATE (
+  full_name,
+  avatar_url,
+  avatar_path,
+  bio,
+  website,
+  twitter,
+  linkedin,
+  github,
+  active_path_id,
+  active_path_selected_at,
+  wants_beta_notification
+) ON public.users TO authenticated;
+
+-- ============================================================================
+-- PASO 2d. El rol de servicio no se toca
 -- ============================================================================
 
 GRANT ALL ON public.users TO service_role;

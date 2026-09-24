@@ -224,7 +224,9 @@ async function handleSuccessfulAuth(
     console.error('[Auth Callback] No se pudo leer el perfil del usuario')
   }
 
-  console.log('[Auth Callback] Perfil:', profile)
+  // Solo lo que hace falta para decidir: mi_perfil() devuelve la fila entera
+  // y volcarla aqui meteria el correo en los registros del servidor.
+  console.log('[Auth Callback] Perfil:', { role: profile?.role, is_suspended: profile?.is_suspended })
 
   // Usuario suspendido
   if (profile?.is_suspended) {

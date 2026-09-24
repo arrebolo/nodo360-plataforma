@@ -66,6 +66,13 @@
 --   predicado, una por comando. El permiso efectivo es identico; la diferencia
 --   es que queda escrito cual es y deja de conceder SELECT de forma implicita.
 --
+--
+-- COMO APLICARLA, EN TRES PASOS
+--   Igual que la 049: el PASO 1 crea verificar_certificado() y no rompe nada;
+--   despues se despliega el codigo, que es el que empieza a usarla; y solo
+--   entonces el PASO 2 cierra la tabla. Al reves, /verificar queda en blanco
+--   entre una cosa y la otra.
+--
 -- COMPROBACION PREVIA (clave anonima, 24/09/2026)
 --   certificates: anon ve 16 de 16, con user_id
 -- ============================================================================
@@ -73,69 +80,7 @@
 BEGIN;
 
 -- ============================================================================
--- 1. Cerrar la tabla a los anonimos
--- ============================================================================
--- Como en la 025 y la 049: el GRANT de tabla es lo que hay que retirar.
-
-REVOKE ALL ON public.certificates FROM anon;
-
--- Se retiran TODAS las politicas de la tabla: las tres de SELECT y la FOR ALL.
--- Las de abajo las sustituyen sin cambiar el permiso efectivo de nadie.
-
-DO $$
-DECLARE r record;
-BEGIN
-  FOR r IN
-    SELECT policyname, cmd FROM pg_policies
-     WHERE schemaname = 'public' AND tablename = 'certificates'
-  LOOP
-    EXECUTE format('DROP POLICY %I ON public.certificates', r.policyname);
-    RAISE NOTICE 'retirada politica % de certificates: %', r.cmd, r.policyname;
-  END LOOP;
-END $$;
-
--- ============================================================================
--- 2. Quien lee certificados con sesion
--- ============================================================================
-
-CREATE POLICY "Cada uno ve sus certificados"
-ON public.certificates FOR SELECT TO authenticated
-USING (user_id = auth.uid());
-
--- Las tres que sustituyen a la FOR ALL. Mismo predicado, un comando cada una.
--- Sin ellas, createCertificate.ts y generator.ts dejan de poder emitir.
-
-CREATE POLICY "Cada uno crea sus certificados"
-ON public.certificates FOR INSERT TO authenticated
-WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Cada uno actualiza sus certificados"
-ON public.certificates FOR UPDATE TO authenticated
-USING (user_id = auth.uid())
-WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Cada uno borra sus certificados"
-ON public.certificates FOR DELETE TO authenticated
-USING (user_id = auth.uid());
-
-CREATE POLICY "El admin ve todos los certificados"
-ON public.certificates FOR SELECT TO authenticated
-USING (is_admin(check_user_id => auth.uid()));
-
--- Para los contadores de /dashboard/instructor/estadisticas y
--- /api/instructor/students/stats, que cuentan por course_id.
-CREATE POLICY "El instructor ve los certificados de sus cursos"
-ON public.certificates FOR SELECT TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.courses c
-     WHERE c.id = certificates.course_id
-       AND c.instructor_id = auth.uid()
-  )
-);
-
--- ============================================================================
--- 3. La puerta publica: verificar uno, por su numero
+-- PASO 1 (ADITIVO). La puerta publica: verificar uno, por su numero
 -- ============================================================================
 -- Devuelve solo lo que pinta /verificar/[codigo]. Nunca user_id, ni course_id,
 -- ni el hash, ni los campos de NFT.
@@ -184,6 +129,68 @@ COMMENT ON FUNCTION public.verificar_certificado IS
 
 REVOKE ALL ON FUNCTION public.verificar_certificado(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.verificar_certificado(text) TO anon, authenticated, service_role;
+
+-- ============================================================================
+-- PASO 2. Cerrar la tabla a los anonimos
+-- ============================================================================
+-- Como en la 025 y la 049: el GRANT de tabla es lo que hay que retirar.
+
+REVOKE ALL ON public.certificates FROM anon;
+
+-- Se retiran TODAS las politicas de la tabla: las tres de SELECT y la FOR ALL.
+-- Las de abajo las sustituyen sin cambiar el permiso efectivo de nadie.
+
+DO $$
+DECLARE r record;
+BEGIN
+  FOR r IN
+    SELECT policyname, cmd FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'certificates'
+  LOOP
+    EXECUTE format('DROP POLICY %I ON public.certificates', r.policyname);
+    RAISE NOTICE 'retirada politica % de certificates: %', r.cmd, r.policyname;
+  END LOOP;
+END $$;
+
+-- ============================================================================
+-- PASO 2b. Quien lee certificados con sesion
+-- ============================================================================
+
+CREATE POLICY "Cada uno ve sus certificados"
+ON public.certificates FOR SELECT TO authenticated
+USING (user_id = auth.uid());
+
+-- Las tres que sustituyen a la FOR ALL. Mismo predicado, un comando cada una.
+-- Sin ellas, createCertificate.ts y generator.ts dejan de poder emitir.
+
+CREATE POLICY "Cada uno crea sus certificados"
+ON public.certificates FOR INSERT TO authenticated
+WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Cada uno actualiza sus certificados"
+ON public.certificates FOR UPDATE TO authenticated
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Cada uno borra sus certificados"
+ON public.certificates FOR DELETE TO authenticated
+USING (user_id = auth.uid());
+
+CREATE POLICY "El admin ve todos los certificados"
+ON public.certificates FOR SELECT TO authenticated
+USING (is_admin(check_user_id => auth.uid()));
+
+-- Para los contadores de /dashboard/instructor/estadisticas y
+-- /api/instructor/students/stats, que cuentan por course_id.
+CREATE POLICY "El instructor ve los certificados de sus cursos"
+ON public.certificates FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.courses c
+     WHERE c.id = certificates.course_id
+       AND c.instructor_id = auth.uid()
+  )
+);
 
 GRANT ALL ON public.certificates TO service_role;
 
