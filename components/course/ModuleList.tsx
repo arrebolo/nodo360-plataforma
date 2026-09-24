@@ -36,9 +36,31 @@ export default function ModuleList({ courseSlug, modules }: Props) {
 
   return (
     <div className="space-y-3">
+      {/* El porque del orden, en el temario y no en un aviso que se cierra y
+          no vuelve. Solo aparece si de verdad hay algo bloqueado: si la
+          persona ya tiene el curso entero abierto, no hay nada que explicar. */}
+      {modules.some((m) => !m.isUnlocked) && (
+        <p className="px-1 pb-1 text-sm text-white/50">
+          Los módulos se abren en orden: cada uno da por sabido el anterior.
+        </p>
+      )}
+
       {modules.map((module, moduleIndex) => {
         const isExpanded = expandedModules.has(module.id)
         const isModuleCompleted = module.isCompleted
+
+        // Si este modulo esta bloqueado, que falta del anterior. Se calcula
+        // aqui porque ModuleList ya recibe el progreso de todos los modulos.
+        const anterior = moduleIndex > 0 ? modules[moduleIndex - 1] : null
+        const pendienteAnterior =
+          !module.isUnlocked && anterior
+            ? {
+                titulo: anterior.title,
+                pendientes: anterior.progress.total - anterior.progress.completed,
+                siguienteSlug:
+                  anterior.lessons.find((l) => !l.isCompleted)?.slug ?? null,
+              }
+            : null
 
         return (
           <div
@@ -122,12 +144,35 @@ export default function ModuleList({ courseSlug, modules }: Props) {
               </div>
             )}
 
-            {/* Mensaje de bloqueo */}
+            {/* Mensaje de bloqueo. Dice cuanto falta y lleva a la primera
+                leccion pendiente, en vez de un candado sin explicacion. */}
             {!module.isUnlocked && (
               <div className="px-4 sm:px-5 pb-4">
                 <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-sm text-white/60">
-                  <Lock className="w-4 h-4 inline mr-2" />
-                  Completa el módulo anterior para desbloquear este contenido
+                  <Lock className="w-4 h-4 inline mr-2" aria-hidden="true" />
+                  {pendienteAnterior ? (
+                    <>
+                      Te {pendienteAnterior.pendientes === 1 ? 'queda' : 'quedan'}{' '}
+                      <strong className="text-white/80">
+                        {pendienteAnterior.pendientes}{' '}
+                        {pendienteAnterior.pendientes === 1 ? 'lección' : 'lecciones'}
+                      </strong>{' '}
+                      del módulo «{pendienteAnterior.titulo}»
+                      {pendienteAnterior.siguienteSlug && (
+                        <>
+                          {'. '}
+                          <Link
+                            href={`/cursos/${courseSlug}/${pendienteAnterior.siguienteSlug}`}
+                            className="text-brand-light hover:underline"
+                          >
+                            Continuar por donde ibas
+                          </Link>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>Completa el módulo anterior para abrir este contenido</>
+                  )}
                 </div>
               </div>
             )}

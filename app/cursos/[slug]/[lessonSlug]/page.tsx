@@ -10,6 +10,8 @@ import { resolveCourseAccess } from "@/lib/courses/access"
 import { CoursePreviewBanner } from "@/components/course/CoursePreviewBanner"
 import { CourseAlreadyCompleted } from "@/components/course/CourseAlreadyCompleted"
 import { CourseUnavailable } from "@/components/course/CourseUnavailable"
+import { checkLessonAccess } from "@/lib/progress/checkLessonAccess"
+import { LessonLocked } from "@/components/course/LessonLocked"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -169,6 +171,31 @@ export default async function LessonPage({ params }: PageProps) {
   if (lessonError || !lesson) {
     console.error("❌ [LessonPage] Error cargando leccion:", lessonError?.message)
     notFound()
+  }
+
+  // 3.5) Escalonado: el modulo N se abre cuando el N-1 esta completo.
+  //
+  // Se comprueba AQUI, en el servidor, y no en un componente de cliente: una
+  // comprobacion en el navegador no impide escribir la URL a mano, que es
+  // justamente el caso que habia que cerrar.
+  //
+  // No se redirige: se muestra una pagina que explica cuanto falta y lleva a
+  // la primera leccion pendiente. Redirigir en silencio deja a la persona sin
+  // entender por que ha acabado en otro sitio.
+  const acceso = await checkLessonAccess(userId, lesson.id, course.id)
+
+  if (!acceso.canAccess && acceso.bloqueo) {
+    return (
+      <LessonLocked
+        courseSlug={courseSlug}
+        courseTitle={course.title}
+        moduloTitulo={acceso.bloqueo.moduloTitulo}
+        pendientes={acceso.bloqueo.pendientes}
+        total={acceso.bloqueo.total}
+        siguienteSlug={acceso.bloqueo.siguienteSlug}
+        siguienteTitulo={acceso.bloqueo.siguienteTitulo}
+      />
+    )
   }
 
   // 4) Process modules - sort and structure
