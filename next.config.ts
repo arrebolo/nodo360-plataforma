@@ -535,6 +535,279 @@ const nextConfig: NextConfig = {
         statusCode: 301,
       },
       // ========================================
+      // Rutas Web3 Basica y Trading Basico, fusionadas (migracion 052)
+      // ========================================
+      // Cada ruta pasa de dos cursos a uno. "Ecosistema Web3 explicado" y
+      // "Gestion del riesgo y mentalidad en trading" quedan archivados y sus
+      // 12 lecciones sin destino.
+      //
+      // Ademas, los dos cursos que se quedan cambian nueve slugs entre ellos,
+      // asi que sus URLs antiguas tambien necesitan destino. Es lo que la
+      // regla 21 del prompt maestro obliga a no olvidar.
+      //
+      // Dos van fuera de su curso a proposito: los riesgos de Web3 los trata
+      // Seguridad basica, que es donde estan de verdad.
+      //
+      // Con statusCode: 301 y no permanent: true, que emite 308.
+
+      // Web3: la ficha del curso absorbido
+      {
+        source: '/cursos/ecosistema-web3-explicado',
+        destination: '/cursos/introduccion-a-web3',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/',
+        destination: '/cursos/introduccion-a-web3',
+        statusCode: 301,
+      },
+
+      // componentes de Web3: la clave y el contrato tienen leccion propia ahora
+      {
+        source: '/cursos/ecosistema-web3-explicado/wallets-en-web3',
+        destination: '/cursos/introduccion-a-web3/claves-identidad-y-acceso',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/wallets-en-web3/',
+        destination: '/cursos/introduccion-a-web3/claves-identidad-y-acceso',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/dapps-y-contratos-inteligentes',
+        destination: '/cursos/introduccion-a-web3/contratos-inteligentes-y-dapps',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/dapps-y-contratos-inteligentes/',
+        destination: '/cursos/introduccion-a-web3/contratos-inteligentes-y-dapps',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/tokens-y-nfts',
+        destination: '/cursos/introduccion-a-web3/tokens-y-nfts',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/tokens-y-nfts/',
+        destination: '/cursos/introduccion-a-web3/tokens-y-nfts',
+        statusCode: 301,
+      },
+
+      // que probar y riesgos: lo cubren el metodo y los cursos de uso y seguridad
+      {
+        source: '/cursos/ecosistema-web3-explicado/que-puedes-probar-hoy-en-web3',
+        destination: '/cursos/introduccion-a-web3/como-mirar-un-proyecto',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/que-puedes-probar-hoy-en-web3/',
+        destination: '/cursos/introduccion-a-web3/como-mirar-un-proyecto',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/riesgos-y-expectativas-realistas',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/errores-comunes-de-los-principiantes',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/riesgos-y-expectativas-realistas/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/errores-comunes-de-los-principiantes',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/proximos-pasos-de-aprendizaje-en-web3',
+        destination: '/cursos/introduccion-a-web3/que-sigue-despues',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/ecosistema-web3-explicado/proximos-pasos-de-aprendizaje-en-web3/',
+        destination: '/cursos/introduccion-a-web3/que-sigue-despues',
+        statusCode: 301,
+      },
+
+      // Web3: slugs que cambian dentro del curso que se queda
+      {
+        source: '/cursos/introduccion-a-web3/que-es-web2-y-cuales-son-sus-limites',
+        destination: '/cursos/introduccion-a-web3/que-es-web2-y-como-funciona',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/que-es-web2-y-cuales-son-sus-limites/',
+        destination: '/cursos/introduccion-a-web3/que-es-web2-y-como-funciona',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/diferencias-clave-entre-web2-y-web3',
+        destination: '/cursos/introduccion-a-web3/que-cambia-y-que-no-cambia',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/diferencias-clave-entre-web2-y-web3/',
+        destination: '/cursos/introduccion-a-web3/que-cambia-y-que-no-cambia',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/identidad-digital-en-web3',
+        destination: '/cursos/introduccion-a-web3/claves-identidad-y-acceso',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/identidad-digital-en-web3/',
+        destination: '/cursos/introduccion-a-web3/claves-identidad-y-acceso',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/descentralizacion-y-propiedad-digital',
+        destination: '/cursos/introduccion-a-web3/como-mirar-un-proyecto',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/descentralizacion-y-propiedad-digital/',
+        destination: '/cursos/introduccion-a-web3/como-mirar-un-proyecto',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/casos-de-uso-reales-de-web3',
+        destination: '/cursos/introduccion-a-web3/donde-aporta-y-donde-no',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-a-web3/casos-de-uso-reales-de-web3/',
+        destination: '/cursos/introduccion-a-web3/donde-aporta-y-donde-no',
+        statusCode: 301,
+      },
+
+      // Trading: la ficha del curso absorbido
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas',
+        statusCode: 301,
+      },
+
+      // riesgo y por que se pierde: ahora es el modulo 2 entero
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/que-es-el-riesgo-en-trading',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/las-cuentas-que-no-se-hacen',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/que-es-el-riesgo-en-trading/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/las-cuentas-que-no-se-hacen',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/por-que-la-mayoria-pierde-dinero',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/de-donde-sale-el-dinero',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/por-que-la-mayoria-pierde-dinero/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/de-donde-sale-el-dinero',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/expectativas-realistas-en-trading',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/expectativas-realistas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/expectativas-realistas-en-trading/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/expectativas-realistas',
+        statusCode: 301,
+      },
+
+      // mentalidad: fusionada en una sola leccion
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/psicologia-basica-del-trader',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/lo-que-hace-la-cabeza',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/psicologia-basica-del-trader/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/lo-que-hace-la-cabeza',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/disciplina-y-reglas-personales',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/lo-que-hace-la-cabeza',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/disciplina-y-reglas-personales/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/lo-que-hace-la-cabeza',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/checklist-del-trader-principiante',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/deberia-hacer-trading',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/gestion-del-riesgo-y-mentalidad-en-trading/checklist-del-trader-principiante/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/deberia-hacer-trading',
+        statusCode: 301,
+      },
+
+      // Trading: slugs que cambian dentro del curso que se queda
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/trading-vs-inversion',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/trading-inversion-y-uso',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/trading-vs-inversion/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/trading-inversion-y-uso',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/errores-comunes-en-trading',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/lo-que-hace-la-cabeza',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/errores-comunes-en-trading/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/lo-que-hace-la-cabeza',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/que-es-un-mercado-y-la-liquidez',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/las-cuentas-que-no-se-hacen',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/que-es-un-mercado-y-la-liquidez/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/las-cuentas-que-no-se-hacen',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/riesgos-reales-del-trading',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/expectativas-realistas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/riesgos-reales-del-trading/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/expectativas-realistas',
+        statusCode: 301,
+      },
+
+      // la leccion de tipos de orden desaparece: el curso ya no ensena a operar
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/tipos-de-ordenes-basicas',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/deberia-hacer-trading',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/introduccion-al-trading-de-criptomonedas/tipos-de-ordenes-basicas/',
+        destination: '/cursos/introduccion-al-trading-de-criptomonedas/deberia-hacer-trading',
+        statusCode: 301,
+      },
+      // ========================================
       // URLs de WordPress comunes
       // ========================================
       { source: '/wp-admin', destination: '/', permanent: true },
