@@ -352,6 +352,189 @@ const nextConfig: NextConfig = {
       },
 
       // ========================================
+      // Cursos "Custodia y proteccion de tus fondos" y "Custodia y
+      // proteccion practica de criptomonedas", fusionados dentro de
+      // "Seguridad basica en Bitcoin y criptomonedas" (migracion 048)
+      // ========================================
+      // Los dos cursos cubrian lo mismo con distinto nombre. Sus 12 lecciones
+      // y sus 2 fichas quedan sin destino al archivarlos. Cada una apunta a la
+      // leccion que trata ese mismo tema, no a la ficha del curso.
+      //
+      // Tres van fuera del curso fusionado a proposito: las copias de seguridad
+      // se tratan a fondo en Cold Storage, que ahora esta en la misma ruta, y
+      // los tipos de cartera, en Uso practico.
+      //
+      // Con statusCode: 301 y no permanent: true, que emite 308.
+
+      // las dos fichas de curso pasan a la de Seguridad basica
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas',
+        statusCode: 301,
+      },
+
+      // que es custodiar: mismo tema, leccion 3.1 del curso fusionado
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/que-es-la-custodia-de-criptomonedas',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/que-es-la-custodia-de-criptomonedas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/que-es-la-custodia-de-criptomonedas/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/que-es-la-custodia-de-criptomonedas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/que-significa-realmente-custodiar-criptomonedas',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/que-es-la-custodia-de-criptomonedas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/que-significa-realmente-custodiar-criptomonedas/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/que-es-la-custodia-de-criptomonedas',
+        statusCode: 301,
+      },
+
+      // custodia propia o delegada: leccion 3.2
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/custodia-propia-vs-custodios-terceros',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/custodia-propia-vs-custodios-terceros',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/custodia-propia-vs-custodios-terceros/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/custodia-propia-vs-custodios-terceros',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/custodia-propia-y-custodia-en-terceros',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/custodia-propia-vs-custodios-terceros',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/custodia-propia-y-custodia-en-terceros/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/custodia-propia-vs-custodios-terceros',
+        statusCode: 301,
+      },
+
+      // tipos de cartera: lo trata Uso practico al elegir con que empezar
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/wallets-tipos-y-diferencias',
+        destination: '/cursos/uso-practico-de-bitcoin/que-necesitas-para-usar-bitcoin',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/wallets-tipos-y-diferencias/',
+        destination: '/cursos/uso-practico-de-bitcoin/que-necesitas-para-usar-bitcoin',
+        statusCode: 301,
+      },
+
+      // control del acceso: leccion 2.1, claves y contrasenas
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/wallets-y-control-del-acceso',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/claves-privadas-y-contrasenas',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/wallets-y-control-del-acceso/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/claves-privadas-y-contrasenas',
+        statusCode: 301,
+      },
+
+      // copias de seguridad: donde se tratan de verdad, en Cold Storage
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/copias-de-seguridad-y-recuperacion',
+        destination: '/cursos/cold-storage-protege-tus-bitcoin/backup-seguro-de-seeds',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/copias-de-seguridad-y-recuperacion/',
+        destination: '/cursos/cold-storage-protege-tus-bitcoin/backup-seguro-de-seeds',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/copias-de-seguridad-y-recuperacion',
+        destination: '/cursos/cold-storage-protege-tus-bitcoin/backup-seguro-de-seeds',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/copias-de-seguridad-y-recuperacion/',
+        destination: '/cursos/cold-storage-protege-tus-bitcoin/backup-seguro-de-seeds',
+        statusCode: 301,
+      },
+
+      // habitos del dia a dia: leccion 2.3, el minimo ordenado
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/que-hacer-y-que-no-hacer-en-el-dia-a-dia',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/buenas-practicas-minimas-de-seguridad',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/que-hacer-y-que-no-hacer-en-el-dia-a-dia/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/buenas-practicas-minimas-de-seguridad',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/checklist-de-proteccion-basica',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/buenas-practicas-minimas-de-seguridad',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-de-tus-fondos/checklist-de-proteccion-basica/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/buenas-practicas-minimas-de-seguridad',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/uso-diario-seguro-y-habitos-basicos',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/buenas-practicas-minimas-de-seguridad',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/uso-diario-seguro-y-habitos-basicos/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/buenas-practicas-minimas-de-seguridad',
+        statusCode: 301,
+      },
+
+      // errores de custodia: leccion 1.3, por que se cometen
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/errores-comunes-en-la-custodia',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/errores-comunes-de-los-principiantes',
+        statusCode: 301,
+      },
+      {
+        source: '/cursos/custodia-y-proteccion-practica-de-criptomonedas/errores-comunes-en-la-custodia/',
+        destination: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas/errores-comunes-de-los-principiantes',
+        statusCode: 301,
+      },
+
+      // La ruta "Seguridad Avanzada" desaparece: su unico curso, Cold Storage,
+      // pasa a "Seguridad en Criptomonedas", que ahora la incluye entera.
+      {
+        source: '/rutas/seguridad-avanzada',
+        destination: '/rutas/seguridad-cripto',
+        statusCode: 301,
+      },
+      {
+        source: '/rutas/seguridad-avanzada/',
+        destination: '/rutas/seguridad-cripto',
+        statusCode: 301,
+      },
+      // ========================================
       // URLs de WordPress comunes
       // ========================================
       { source: '/wp-admin', destination: '/', permanent: true },
