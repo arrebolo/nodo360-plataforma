@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { getMiPerfil } from '@/lib/auth/miPerfil'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ProfileForm } from '@/components/profile/ProfileForm'
@@ -17,11 +18,8 @@ export default async function ProfilePage() {
   }
 
   // Obtener perfil del usuario
-  const { data: profile } = await supabase
-    .from('users')
-    .select('full_name, avatar_url, avatar_path, role')
-    .eq('id', user.id)
-    .single()
+  // avatar_path no es una columna publica desde la 049: va por mi_perfil().
+  const profile = await getMiPerfil()
 
   return (
     <div className="min-h-screen bg-dark">

@@ -134,7 +134,6 @@ export async function getProjectsForMentorReview(): Promise<Project[]> {
         id,
         full_name,
         avatar_url,
-        email
       )
     `)
     .eq('status', 'pending_review')
@@ -405,7 +404,6 @@ export async function adminListProjects(filters?: ProjectFilters & {
         id,
         full_name,
         avatar_url,
-        email
       )
     `, { count: 'exact' })
 

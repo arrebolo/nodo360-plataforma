@@ -33,7 +33,7 @@ export async function POST(
 
     const { data: me, error: roleError } = await supabase
       .from('users')
-      .select('role, email')
+      .select('role')
       .eq('id', authData.user.id)
       .single()
 
@@ -55,7 +55,7 @@ export async function POST(
     console.log('[Reset Course] Iniciando reset:', {
       userId: userId.substring(0, 8),
       courseId: courseId.substring(0, 8),
-      adminEmail: me.email
+      adminEmail: authData.user.email
     })
 
     const admin = createAdminClient()
@@ -244,7 +244,7 @@ export async function POST(
           user_id: userId,
           event_type: 'admin_adjustment',
           xp_earned: -xpToDeduct,
-          description: `Reset de curso por admin (${me.email})`,
+          description: `Reset de curso por admin (${authData.user.email})`,
           course_id: courseId,
         })
 

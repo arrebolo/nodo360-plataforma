@@ -2,10 +2,9 @@
 -- 051: los certificados se consultan por numero, no se enumeran
 -- ============================================================================
 -- ESTADO: ESCRITA, SIN APLICAR (24/09/2026).
---   Es DDL: no se puede aplicar por PostgREST, hay que ejecutarla en el SQL
---   Editor de Supabase. Antes hay que mirar la salida de pg_policies para las
---   tablas que toca, por si hay alguna politica FOR ALL que este fichero no
---   contempla. Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
+--   Es DDL: hay que ejecutarla en el SQL Editor de Supabase. Escrita contra la
+--   salida de pg_policies del 24/09/2026, que esta recogida mas abajo.
+--   Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
 --
 -- EL PROBLEMA
 --   Con la clave anonima se lee la tabla `certificates` entera: 16 de 16 filas
@@ -52,6 +51,21 @@
 --   createAdminClient() —lib/gamification/checkAndAwardBadges.ts y las rutas de
 --   /api/admin/users/[id]/*— no pasa por RLS.
 --
+-- LO QUE HAY HOY, SEGUN pg_policies (24/09/2026)
+--   tres politicas de SELECT, dos de ellas con USING true, y una FOR ALL a
+--   `public` con user_id = auth.uid().
+--
+--   La FOR ALL no se puede quitar sin mas: al cubrir todos los comandos, es la
+--   que permite a lib/certificates/createCertificate.ts y a
+--   lib/certificates/generator.ts INSERTAR, ACTUALIZAR y BORRAR certificados
+--   con el cliente de sesion. Borrarla y dejar solo politicas de SELECT dejaria
+--   la plataforma sin poder emitir certificados, y el fallo no saldria hasta
+--   que alguien terminara un curso.
+--
+--   Asi que se retira y se sustituye por tres politicas explicitas con el mismo
+--   predicado, una por comando. El permiso efectivo es identico; la diferencia
+--   es que queda escrito cual es y deja de conceder SELECT de forma implicita.
+--
 -- COMPROBACION PREVIA (clave anonima, 24/09/2026)
 --   certificates: anon ve 16 de 16, con user_id
 -- ============================================================================
@@ -65,15 +79,18 @@ BEGIN;
 
 REVOKE ALL ON public.certificates FROM anon;
 
+-- Se retiran TODAS las politicas de la tabla: las tres de SELECT y la FOR ALL.
+-- Las de abajo las sustituyen sin cambiar el permiso efectivo de nadie.
+
 DO $$
 DECLARE r record;
 BEGIN
   FOR r IN
-    SELECT policyname FROM pg_policies
-     WHERE schemaname = 'public' AND tablename = 'certificates' AND cmd = 'SELECT'
+    SELECT policyname, cmd FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'certificates'
   LOOP
     EXECUTE format('DROP POLICY %I ON public.certificates', r.policyname);
-    RAISE NOTICE 'retirada politica SELECT certificates.%', r.policyname;
+    RAISE NOTICE 'retirada politica % de certificates: %', r.cmd, r.policyname;
   END LOOP;
 END $$;
 
@@ -83,6 +100,22 @@ END $$;
 
 CREATE POLICY "Cada uno ve sus certificados"
 ON public.certificates FOR SELECT TO authenticated
+USING (user_id = auth.uid());
+
+-- Las tres que sustituyen a la FOR ALL. Mismo predicado, un comando cada una.
+-- Sin ellas, createCertificate.ts y generator.ts dejan de poder emitir.
+
+CREATE POLICY "Cada uno crea sus certificados"
+ON public.certificates FOR INSERT TO authenticated
+WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Cada uno actualiza sus certificados"
+ON public.certificates FOR UPDATE TO authenticated
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Cada uno borra sus certificados"
+ON public.certificates FOR DELETE TO authenticated
 USING (user_id = auth.uid());
 
 CREATE POLICY "El admin ve todos los certificados"
@@ -182,3 +215,7 @@ COMMIT;
 --
 -- 6. /dashboard/instructor/estadisticas y /api/admin/students/stats siguen
 --    devolviendo los mismos contadores que antes de aplicar esto.
+--
+-- 7. LA MAS IMPORTANTE: terminar un curso sigue emitiendo certificado. Es lo
+--    que rompe si las tres politicas de escritura de arriba faltan, y no da
+--    la cara hasta que alguien completa un curso.

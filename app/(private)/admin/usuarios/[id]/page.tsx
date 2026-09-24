@@ -1,4 +1,5 @@
 import { redirect, notFound } from 'next/navigation'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 // Componentes reales (verificados)
@@ -40,7 +41,10 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
   /* ======================================================
      USUARIO OBJETIVO
   ====================================================== */
-  const { data: targetUser, error: userError } = await supabase
+  // Esta ficha muestra el correo a proposito, y desde la 049 ni el correo ni
+  // is_suspended son columnas publicas: va por el cliente de servicio. Arriba
+  // ya se ha comprobado que quien mira es admin.
+  const { data: targetUser, error: userError } = await createAdminClient()
     .from('users')
     .select('id, email, full_name, role, created_at, is_suspended, suspended_reason, suspended_at')
     .eq('id', userId)
@@ -157,7 +161,11 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
         <p className="text-sm text-gray-400 mb-4">
           Suspende temporalmente o elimina permanentemente la cuenta del usuario.
         </p>
-        <UserManagementActions user={targetUser} />
+        {/* El cliente de servicio si va tipado y devuelve is_suspended como
+            boolean | null; el componente lo espera opcional. */}
+        <UserManagementActions
+          user={{ ...targetUser, is_suspended: targetUser.is_suspended ?? undefined }}
+        />
       </div>
 
       {/* =========================================

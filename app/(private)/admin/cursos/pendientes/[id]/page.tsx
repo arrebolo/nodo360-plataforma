@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/admin/auth'
 import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -38,7 +39,7 @@ async function approveCourse(courseId: string) {
   const supabase = await createClient()
 
   // Obtener curso con info del instructor para el email y Discord
-  const { data: course } = await supabase
+  const { data: course } = await createAdminClient()
     .from('courses')
     .select(`
       id, title, slug, description, level, thumbnail_url,
@@ -107,7 +108,7 @@ async function rejectCourse(courseId: string, formData: FormData) {
   }
 
   // Obtener curso con info del instructor para el email
-  const { data: course } = await supabase
+  const { data: course } = await createAdminClient()
     .from('courses')
     .select(`
       id, title,
@@ -157,7 +158,7 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
   const supabase = await createClient()
 
   // Obtener curso
-  const { data: course, error } = await supabase
+  const { data: course, error } = await createAdminClient()
     .from('courses')
     .select(`
       *,
@@ -176,7 +177,11 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
   }
 
   // Verificar que está pendiente
-  if (course.status !== 'pending_review') {
+  // El tipo generado de courses.status no incluye 'pending_review' aunque la
+  // base lo use desde la migracion 030; con el cliente de servicio, que si va
+  // tipado, la comparacion no compila. Se compara como texto hasta que se
+  // regeneren los tipos.
+  if ((course.status as string) !== 'pending_review') {
     redirect('/admin/cursos/pendientes')
   }
 

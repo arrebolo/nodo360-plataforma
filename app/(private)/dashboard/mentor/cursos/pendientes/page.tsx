@@ -40,7 +40,6 @@ export default async function MentorPendingCoursesPage() {
       users!courses_instructor_id_fkey (
         id,
         full_name,
-        email,
         avatar_url
       )
     `)

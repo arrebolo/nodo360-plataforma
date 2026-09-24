@@ -46,7 +46,7 @@ export default async function LeaderboardPage() {
   const userIds = leaderboard?.map(l => l.user_id) || []
   const { data: usersData } = await admin
     .from('users')
-    .select('id, full_name, avatar_url, email')
+    .select('id, full_name, avatar_url')
     .in('id', userIds.length > 0 ? userIds : ['no-users'])
 
   // Crear mapa de usuarios para acceso rápido
@@ -75,7 +75,6 @@ export default async function LeaderboardPage() {
   const getUserName = (userId: string) => {
     const userData = usersMap.get(userId)
     if (userData?.full_name) return userData.full_name
-    if (userData?.email) return userData.email.split('@')[0]
     return 'Usuario'
   }
 
