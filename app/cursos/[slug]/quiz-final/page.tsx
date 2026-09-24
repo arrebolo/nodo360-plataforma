@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import { AvisoEducativo } from '@/components/legal/AvisoEducativo'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -136,6 +137,8 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
           redirectTo="/dashboard/certificados"
           fallbackUrl={`/cursos/${course.slug}`}
         />
+
+        <AvisoEducativo tipo="curso" />
       </main>
     </div>
   )

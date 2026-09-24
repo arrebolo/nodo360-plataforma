@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AvisoEducativo } from '@/components/legal/AvisoEducativo'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getCourseProgressForUser } from '@/lib/progress/getCourseProgress'
@@ -405,6 +406,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <AvisoEducativo tipo="curso" />
       </div>
 
       <Footer />
