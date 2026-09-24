@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getMiPerfil } from '@/lib/auth/miPerfil'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronRight, BookOpen, Layers, CheckCircle, Play, Sparkles } from 'lucide-react'
@@ -44,14 +45,13 @@ export default async function RutaDetallePage({
   if (!path) notFound()
 
   // Fetch courses and user data in parallel
-  const [courses, userData] = await Promise.all([
+  // active_path_id no es una columna publica desde la 049: va por mi_perfil().
+  const [courses, perfil] = await Promise.all([
     getCoursesByLearningPathSlug(path.slug),
-    user
-      ? supabase.from('users').select('active_path_id').eq('id', user.id).single()
-      : Promise.resolve({ data: null })
+    user ? getMiPerfil() : Promise.resolve(null)
   ])
 
-  const activePathId = userData?.data?.active_path_id ?? null
+  const activePathId = perfil?.active_path_id ?? null
   const isActive = activePathId === path.id
   const isLoggedIn = !!user
 

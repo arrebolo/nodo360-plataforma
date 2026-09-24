@@ -793,6 +793,21 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
 
 ## HISTORIAL DE SESIONES
 
+### 24/09/2026 - Incidente de correos y cierre de la RLS
+
+- **Incidente de datos personales**: `GET /api/gamification/leaderboard` devolvia
+  el correo de 15 usuarios en su JSON a cualquier cuenta con sesion, y la politica
+  `users_read_all_authenticated` (`USING true`) servia `public.users` entera, 23
+  filas por 23 columnas. Ventana de 10 meses, desde que el endpoint nacio con el
+  correo dentro. Sin sesion no habia exposicion. Ficha completa en
+  `docs/reports/INCIDENTE-2026-09-24-correos-leaderboard.md`.
+- Migraciones 049, 050 y 051: columnas publicas en `users` mas `mi_perfil()`,
+  `curso_visible()` para `lessons`/`modules`/`quiz_questions`, y `certificates`
+  cerrada con `verificar_certificado()` como unica puerta publica.
+- `scripts/auditar-clave-anonima.mjs`: comprobacion repetible de lo que se lleva
+  la clave anonima, para ejecutar antes y despues de cada migracion de RLS.
+
+
 ### 22/09/2026 — Cierre de funciones, XP y niveles
 
 El dia mas denso hasta ahora. Diez migraciones, de la 032 a la 041.

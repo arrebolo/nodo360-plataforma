@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getMiPerfil } from '@/lib/auth/miPerfil'
 import { ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getLearningPaths, getCoursesByLearningPathSlug } from '@/lib/db/learning-paths'
@@ -108,14 +109,10 @@ export default async function RutasPage() {
 
   let activePathId: string | null = null
   if (user) {
-    // Leer active_path_id directamente de la tabla users
-    const { data: userData } = await supabase
-      .from('users')
-      .select('active_path_id')
-      .eq('id', user.id)
-      .single()
+    // active_path_id no es una columna publica desde la 049: va por mi_perfil().
+    const perfil = await getMiPerfil()
 
-    activePathId = userData?.active_path_id ?? null
+    activePathId = perfil?.active_path_id ?? null
   }
 
   const paths = await getLearningPaths()

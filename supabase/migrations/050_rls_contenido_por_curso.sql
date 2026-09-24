@@ -2,10 +2,9 @@
 -- 050: el contenido de un curso se sirve segun el estado del curso
 -- ============================================================================
 -- ESTADO: ESCRITA, SIN APLICAR (24/09/2026).
---   Es DDL: no se puede aplicar por PostgREST, hay que ejecutarla en el SQL
---   Editor de Supabase. Antes hay que mirar la salida de pg_policies para las
---   tablas que toca, por si hay alguna politica FOR ALL que este fichero no
---   contempla. Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
+--   Es DDL: hay que ejecutarla en el SQL Editor de Supabase. Escrita contra la
+--   salida de pg_policies del 24/09/2026, que esta recogida mas abajo.
+--   Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
 --
 -- EL PROBLEMA
 --   Con la clave anonima se leen las 87 lecciones y los 29 modulos de la base,
@@ -13,11 +12,18 @@
 --   borrador. `courses` si filtra (anon ve 10 de 13); `lessons` y `modules` no.
 --
 --   RLS esta ACTIVA en las dos tablas —un INSERT imposible responde 42501, que
---   solo emite una tabla con RLS— asi que lo que hay es una politica permisiva
---   de SELECT. No esta en el repo: las unicas politicas sobre estas tablas en
+--   solo emite una tabla con RLS— asi que lo que hay son politicas permisivas
+--   de SELECT. pg_policies (24/09/2026) las nombra:
+--
+--     lessons  "Allow public read lessons"          USING true
+--     lessons  "Enable read access for all users"   USING true   <- son DOS
+--     modules  "Enable read access for all users"   USING true
+--
+--   Ninguna esta en el repo: las unicas politicas sobre estas tablas en
 --   supabase/migrations y docs/migrations son las cuatro de la 014, todas para
 --   instructores. Las de base se crearon desde el panel, como `is_admin` y como
---   las de `courses`.
+--   las de `courses`. Por eso el bloque de limpieza recorre pg_policies en vez
+--   de nombrarlas: dar por hecho que hay una sola habria dejado la otra.
 --
 --   Hoy el dano es acotado (todo el catalogo es gratuito y los 3 cursos no
 --   publicados estuvieron publicados antes), pero fija el techo de lo que se
@@ -129,13 +135,14 @@ GRANT EXECUTE ON FUNCTION public.curso_visible(uuid) TO anon, authenticated, ser
 -- ============================================================================
 -- 2. Retirar las politicas permisivas de SELECT
 -- ============================================================================
--- Sus nombres no estan en el repo. Este bloque quita TODAS las politicas de
--- SELECT de las tres tablas y deja que las de abajo las sustituyan; las de
+-- Quita TODAS las politicas de SELECT de las tres tablas —son tres, dos de
+-- ellas sobre lessons— y deja que las de abajo las sustituyan. Las de
 -- INSERT/UPDATE/DELETE de la 014 no se tocan.
 --
--- OJO: si pg_policies muestra alguna politica FOR ALL sobre estas tablas, este
--- bloque NO la quita (cmd = 'ALL', no 'SELECT') y seguiria concediendo lectura.
--- Hay que mirarlo antes y tratarla a mano.
+-- pg_policies no muestra ninguna politica FOR ALL sobre estas tres tablas, asi
+-- que recorrer cmd = 'SELECT' las cubre todas. El bucle avisa por NOTICE de
+-- cual retira: conviene mirar la salida y que sean exactamente esas tres mas
+-- la de quiz_questions de la 024.
 
 DO $$
 DECLARE r record;

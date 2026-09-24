@@ -9,6 +9,7 @@
  */
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generateCertificatePDF, type CertificateData } from "./generateCertificate";
 import { uploadCertificateServer, getCertificatePath } from "./storage";
 import crypto from "crypto";
@@ -164,7 +165,8 @@ export async function generateAndIssueCertificate(
     }
 
     // 3. GET USER, COURSE, AND MODULE DATA
-    const { data: user, error: userError } = await supabase
+    // El correo del titular no es columna publica desde la 049.
+    const { data: user, error: userError } = await createAdminClient()
       .from("users")
       .select("full_name, email")
       .eq("id", userId)
@@ -430,7 +432,8 @@ export async function regenerateCertificatePDF(
     const supabase = await createClient();
 
     // Get certificate with related data
-    const { data: certificate, error } = await supabase
+    // Embebe el correo del titular: cliente de servicio, como arriba.
+    const { data: certificate, error } = await createAdminClient()
       .from("certificates")
       .select(
         `

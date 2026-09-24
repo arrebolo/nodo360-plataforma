@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireMentor } from '@/lib/auth/requireMentor'
 import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -48,7 +49,7 @@ async function approveCourse(courseId: string) {
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
 
-  const { data: course } = await supabase
+  const { data: course } = await createAdminClient()
     .from('courses')
     .select(`
       title, slug, status, description, level, thumbnail_url,
@@ -121,7 +122,7 @@ async function requestChanges(courseId: string, formData: FormData) {
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
 
-  const { data: course } = await supabase
+  const { data: course } = await createAdminClient()
     .from('courses')
     .select(`
       title,
@@ -166,7 +167,7 @@ export default async function MentorReviewCoursePage({ params }: ReviewCoursePag
   const supabase = await createClient()
 
   // Obtener curso
-  const { data: course, error } = await supabase
+  const { data: course, error } = await createAdminClient()
     .from('courses')
     .select(`
       *,
@@ -185,7 +186,11 @@ export default async function MentorReviewCoursePage({ params }: ReviewCoursePag
   }
 
   // Verificar que está pendiente
-  if (course.status !== 'pending_review') {
+  // El tipo generado de courses.status no incluye 'pending_review' aunque la
+  // base lo use desde la migracion 030; con el cliente de servicio, que si va
+  // tipado, la comparacion no compila. Se compara como texto hasta que se
+  // regeneren los tipos.
+  if ((course.status as string) !== 'pending_review') {
     redirect('/dashboard/mentor/cursos/pendientes')
   }
 

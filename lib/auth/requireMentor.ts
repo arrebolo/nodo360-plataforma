@@ -18,7 +18,7 @@ export async function requireMentor() {
 
   const { data: profile, error: profileError } = await supabase
     .from("users")
-    .select("id, role, full_name, email")
+    .select("id, role, full_name")
     .eq("id", user.id)
     .single();
 
@@ -35,6 +35,7 @@ export async function requireMentor() {
     userId: user.id,
     role: profile.role as "mentor" | "admin",
     fullName: profile.full_name,
-    email: profile.email,
+    // El correo propio viene de la sesion: users ya no lo expone (049).
+    email: user.email ?? null,
   };
 }

@@ -7,7 +7,6 @@ interface LeaderboardEntry {
   position: number
   userId: string
   name: string
-  email: string
   totalXp: number
   level: number
   totalBadges: number

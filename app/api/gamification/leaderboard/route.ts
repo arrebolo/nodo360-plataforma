@@ -27,8 +27,7 @@ export async function GET(request: Request) {
         current_streak,
         users!inner (
           id,
-          full_name,
-          email
+          full_name
         )
       `)
       .order('total_xp', { ascending: false })
@@ -47,8 +46,7 @@ export async function GET(request: Request) {
     const leaderboard = topUsers?.map((entry: any, index: number) => ({
       position: index + 1,
       userId: entry.user_id,
-      name: entry.users?.full_name || entry.users?.email?.split('@')[0] || 'Usuario',
-      email: entry.users?.email,
+      name: entry.users?.full_name || 'Usuario',
       totalXp: entry.total_xp,
       level: entry.current_level,
       currentStreak: entry.current_streak

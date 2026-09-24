@@ -41,7 +41,7 @@ async function getGamificationStats() {
       total_xp,
       current_level,
       user_id,
-      users!inner (full_name, email)
+      users!inner (full_name)
     `)
     .order('total_xp', { ascending: false })
     .limit(5)
@@ -201,7 +201,6 @@ export default async function GamificacionPage() {
                     <div>
                       <p className="font-medium text-white">
                         {user.users?.full_name ||
-                          user.users?.email?.split('@')[0] ||
                           'Usuario'}
                       </p>
                       <p className="text-xs text-white/60">

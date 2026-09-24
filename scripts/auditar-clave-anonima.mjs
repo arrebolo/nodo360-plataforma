@@ -50,9 +50,13 @@ for (const [t, esperado] of TABLAS) {
 // ---------------------------------------------------------------- columnas
 
 console.log('\n=== columnas que NO deberia poder leer ===')
+// Se comprueban con clave anonima; con sesion de alumno importan aun mas:
+// hasta la 049, users_read_all_authenticated (USING true) servia las 23
+// filas enteras a cualquiera que hubiera iniciado sesion.
 const PROHIBIDAS = [
   ['users', 'email'],
   ['users', 'is_suspended'],
+  ['users', 'suspended_reason'],
   ['users', 'active_path_id'],
   ['certificates', 'user_id'],
 ]
@@ -114,6 +118,17 @@ if (noPub.length) {
   const { data, error } = await anon.rpc('curso_visible', { p_course_id: noPub[0].id })
   ok(!error && data === false, `curso_visible(${noPub[0].status}) sin sesion -> ${error ? error.code : data}`)
 }
+
+// ---------------------------------------------------------------- fila propia
+
+console.log('')
+console.log('=== la fila propia: mi_perfil() ===')
+{
+  const { data, error } = await anon.rpc('mi_perfil')
+  ok(!error && Array.isArray(data) && data.length === 0,
+    `mi_perfil() sin sesion -> ${error ? error.code : (data?.length ?? '?') + ' filas'} (0 esperadas)`)
+}
+console.log('  (con sesion se prueba desde la aplicacion: /dashboard/perfil)')
 
 console.log(`\n${fallos === 0 ? '=== TODO CORRECTO ===' : `=== ${fallos} COMPROBACIONES FALLIDAS ===`}`)
 process.exit(fallos === 0 ? 0 : 1)

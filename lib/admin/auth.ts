@@ -24,7 +24,7 @@ export async function requireAdmin(returnUrl?: string) {
   // Obtener rol
   const { data: profile, error: profileError } = await supabase
     .from('users')
-    .select('role, full_name, email')
+    .select('role, full_name')
     .eq('id', user.id)
     .single()
 

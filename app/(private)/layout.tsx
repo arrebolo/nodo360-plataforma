@@ -1,5 +1,6 @@
 // app/(private)/layout.tsx
 import type { ReactNode } from "react";
+import { getMiPerfil } from '@/lib/auth/miPerfil'
 import { createClient } from "@/lib/supabase/server";
 import BetaBanner from "@/components/beta/BetaBanner";
 
@@ -12,14 +13,11 @@ export default async function PrivateLayout({ children }: { children: ReactNode 
   // Obtener perfil para verificar si es beta y su rol
   let showBetaBanner = false;
   if (user) {
-    const { data: profile } = await supabase
-      .from('users')
-      .select('is_beta, role')
-      .eq('id', user.id)
-      .single();
+    // is_beta no es una columna publica desde la 049: va por mi_perfil().
+    const profile = await getMiPerfil();
 
     // Mostrar banner solo para usuarios beta que no sean admin
-    showBetaBanner = profile?.is_beta && profile?.role !== 'admin';
+    showBetaBanner = !!profile?.is_beta && profile?.role !== 'admin';
   }
 
   return (

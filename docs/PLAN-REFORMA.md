@@ -26,6 +26,10 @@
   Hoy el daño es acotado (todo el catálogo es gratuito y los 2 cursos archivados ya estuvieron publicados), pero fija el techo de lo que puede protegerse: mientras la política siga así, **cualquier curso premium, en borrador o retirado tendrá su contenido accesible desde el primer día**, y el Tier 3 contempla contenido de pago. Lo mismo hay que comprobar en `modules` y en `quiz_questions` (esta última sí tiene política propia, de la migración 024).
   No se toca dentro de una migración de contenido: cambiar la política de `lessons` puede dejar fuera al panel de instructor y a la vista previa de borradores, así que necesita su propia rama y su propia verificación.
 
+- [ ] **No hay forma de saber si un endpoint se consultó.** El incidente del 24/09/2026 dejó una ventana de 10 meses sin ninguna manera de comprobar si alguien la aprovechó: los registros de ejecución de Vercel no llegan (sin *Log Drain* la retención es de días), los de API de Supabase duran 1 día en gratuito y 7 en Pro, y la aplicación no audita lecturas. Decidir si se configura un *Log Drain*, aunque sea al almacenamiento más barato: sin él, cualquier incidente futuro se documentará igual de a ciegas.
+
+- [ ] **Barrer el código muerto que sigue teniendo ruta.** `components/gamification/Leaderboard.tsx` no lo importa nadie desde 2025 y su endpoint seguía publicado devolviendo datos personales. El componente y `/api/gamification/leaderboard` son candidatos a borrarse enteros, no solo a limpiarse. Buscar el resto: un endpoint sin consumidor sigue respondiendo.
+
 - [ ] Configurar CI en PRs (typecheck + lint + build) — hoy no hay ninguna verificación automática antes de mergear
 - [x] Corregir validación de quiz server-side (`/api/quiz/submit` aceptaba `score` y `passed` del cliente: se podía emitir un certificado sin responder) — rama `fix/rls-quiz-security`
 - [x] Dejar de exponer `correct_answer` al navegador (API, payload RSC y corrección en cliente)

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getMiPerfil } from '@/lib/auth/miPerfil'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import type { EmailOtpType } from '@supabase/supabase-js'
@@ -216,17 +217,16 @@ async function handleSuccessfulAuth(
     return response
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from('users')
-    .select('role, is_suspended')
-    .eq('id', user.id)
-    .single()
+  // is_suspended no es una columna publica desde la 049: va por mi_perfil().
+  const profile = await getMiPerfil()
 
-  if (profileError) {
-    console.error('[Auth Callback] Error obteniendo perfil:', profileError)
+  if (!profile) {
+    console.error('[Auth Callback] No se pudo leer el perfil del usuario')
   }
 
-  console.log('[Auth Callback] Perfil:', profile)
+  // Solo lo que hace falta para decidir: mi_perfil() devuelve la fila entera
+  // y volcarla aqui meteria el correo en los registros del servidor.
+  console.log('[Auth Callback] Perfil:', { role: profile?.role, is_suspended: profile?.is_suspended })
 
   // Usuario suspendido
   if (profile?.is_suspended) {

@@ -2,10 +2,9 @@
 -- 051: los certificados se consultan por numero, no se enumeran
 -- ============================================================================
 -- ESTADO: ESCRITA, SIN APLICAR (24/09/2026).
---   Es DDL: no se puede aplicar por PostgREST, hay que ejecutarla en el SQL
---   Editor de Supabase. Antes hay que mirar la salida de pg_policies para las
---   tablas que toca, por si hay alguna politica FOR ALL que este fichero no
---   contempla. Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
+--   Es DDL: hay que ejecutarla en el SQL Editor de Supabase. Escrita contra la
+--   salida de pg_policies del 24/09/2026, que esta recogida mas abajo.
+--   Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
 --
 -- EL PROBLEMA
 --   Con la clave anonima se lee la tabla `certificates` entera: 16 de 16 filas
@@ -52,6 +51,28 @@
 --   createAdminClient() —lib/gamification/checkAndAwardBadges.ts y las rutas de
 --   /api/admin/users/[id]/*— no pasa por RLS.
 --
+-- LO QUE HAY HOY, SEGUN pg_policies (24/09/2026)
+--   tres politicas de SELECT, dos de ellas con USING true, y una FOR ALL a
+--   `public` con user_id = auth.uid().
+--
+--   La FOR ALL no se puede quitar sin mas: al cubrir todos los comandos, es la
+--   que permite a lib/certificates/createCertificate.ts y a
+--   lib/certificates/generator.ts INSERTAR, ACTUALIZAR y BORRAR certificados
+--   con el cliente de sesion. Borrarla y dejar solo politicas de SELECT dejaria
+--   la plataforma sin poder emitir certificados, y el fallo no saldria hasta
+--   que alguien terminara un curso.
+--
+--   Asi que se retira y se sustituye por tres politicas explicitas con el mismo
+--   predicado, una por comando. El permiso efectivo es identico; la diferencia
+--   es que queda escrito cual es y deja de conceder SELECT de forma implicita.
+--
+--
+-- COMO APLICARLA, EN TRES PASOS
+--   Igual que la 049: el PASO 1 crea verificar_certificado() y no rompe nada;
+--   despues se despliega el codigo, que es el que empieza a usarla; y solo
+--   entonces el PASO 2 cierra la tabla. Al reves, /verificar queda en blanco
+--   entre una cosa y la otra.
+--
 -- COMPROBACION PREVIA (clave anonima, 24/09/2026)
 --   certificates: anon ve 16 de 16, con user_id
 -- ============================================================================
@@ -59,56 +80,17 @@
 BEGIN;
 
 -- ============================================================================
--- 1. Cerrar la tabla a los anonimos
--- ============================================================================
--- Como en la 025 y la 049: el GRANT de tabla es lo que hay que retirar.
-
-REVOKE ALL ON public.certificates FROM anon;
-
-DO $$
-DECLARE r record;
-BEGIN
-  FOR r IN
-    SELECT policyname FROM pg_policies
-     WHERE schemaname = 'public' AND tablename = 'certificates' AND cmd = 'SELECT'
-  LOOP
-    EXECUTE format('DROP POLICY %I ON public.certificates', r.policyname);
-    RAISE NOTICE 'retirada politica SELECT certificates.%', r.policyname;
-  END LOOP;
-END $$;
-
--- ============================================================================
--- 2. Quien lee certificados con sesion
--- ============================================================================
-
-CREATE POLICY "Cada uno ve sus certificados"
-ON public.certificates FOR SELECT TO authenticated
-USING (user_id = auth.uid());
-
-CREATE POLICY "El admin ve todos los certificados"
-ON public.certificates FOR SELECT TO authenticated
-USING (is_admin(check_user_id => auth.uid()));
-
--- Para los contadores de /dashboard/instructor/estadisticas y
--- /api/instructor/students/stats, que cuentan por course_id.
-CREATE POLICY "El instructor ve los certificados de sus cursos"
-ON public.certificates FOR SELECT TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.courses c
-     WHERE c.id = certificates.course_id
-       AND c.instructor_id = auth.uid()
-  )
-);
-
--- ============================================================================
--- 3. La puerta publica: verificar uno, por su numero
+-- PASO 1 (ADITIVO). La puerta publica: verificar uno, por su numero
 -- ============================================================================
 -- Devuelve solo lo que pinta /verificar/[codigo]. Nunca user_id, ni course_id,
 -- ni el hash, ni los campos de NFT.
 --
 -- Acepta tambien el codigo dentro de verification_url, que es el segundo
 -- intento que hacia la pagina.
+--
+-- Los cast a ::text no son adorno: RETURNS TABLE exige que el tipo declarado y
+-- el real coincidan, y si alguna de esas columnas fuese varchar(n) la funcion
+-- fallaria al llamarla con 42804. Con el cast da igual como esten declaradas.
 
 CREATE OR REPLACE FUNCTION public.verificar_certificado(p_codigo text)
 RETURNS TABLE (
@@ -128,13 +110,13 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
   SELECT
-    ce.certificate_number,
-    ce.type,
-    ce.title,
-    u.full_name,
-    c.title,
-    c.description,
-    m.title,
+    ce.certificate_number::text,
+    ce.type::text,
+    ce.title::text,
+    u.full_name::text,
+    c.title::text,
+    c.description::text,
+    m.title::text,
     ce.issued_at,
     ce.expires_at
   FROM public.certificates ce
@@ -151,6 +133,68 @@ COMMENT ON FUNCTION public.verificar_certificado IS
 
 REVOKE ALL ON FUNCTION public.verificar_certificado(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.verificar_certificado(text) TO anon, authenticated, service_role;
+
+-- ============================================================================
+-- PASO 2. Cerrar la tabla a los anonimos
+-- ============================================================================
+-- Como en la 025 y la 049: el GRANT de tabla es lo que hay que retirar.
+
+REVOKE ALL ON public.certificates FROM anon;
+
+-- Se retiran TODAS las politicas de la tabla: las tres de SELECT y la FOR ALL.
+-- Las de abajo las sustituyen sin cambiar el permiso efectivo de nadie.
+
+DO $$
+DECLARE r record;
+BEGIN
+  FOR r IN
+    SELECT policyname, cmd FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'certificates'
+  LOOP
+    EXECUTE format('DROP POLICY %I ON public.certificates', r.policyname);
+    RAISE NOTICE 'retirada politica % de certificates: %', r.cmd, r.policyname;
+  END LOOP;
+END $$;
+
+-- ============================================================================
+-- PASO 2b. Quien lee certificados con sesion
+-- ============================================================================
+
+CREATE POLICY "Cada uno ve sus certificados"
+ON public.certificates FOR SELECT TO authenticated
+USING (user_id = auth.uid());
+
+-- Las tres que sustituyen a la FOR ALL. Mismo predicado, un comando cada una.
+-- Sin ellas, createCertificate.ts y generator.ts dejan de poder emitir.
+
+CREATE POLICY "Cada uno crea sus certificados"
+ON public.certificates FOR INSERT TO authenticated
+WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Cada uno actualiza sus certificados"
+ON public.certificates FOR UPDATE TO authenticated
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Cada uno borra sus certificados"
+ON public.certificates FOR DELETE TO authenticated
+USING (user_id = auth.uid());
+
+CREATE POLICY "El admin ve todos los certificados"
+ON public.certificates FOR SELECT TO authenticated
+USING (is_admin(check_user_id => auth.uid()));
+
+-- Para los contadores de /dashboard/instructor/estadisticas y
+-- /api/instructor/students/stats, que cuentan por course_id.
+CREATE POLICY "El instructor ve los certificados de sus cursos"
+ON public.certificates FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.courses c
+     WHERE c.id = certificates.course_id
+       AND c.instructor_id = auth.uid()
+  )
+);
 
 GRANT ALL ON public.certificates TO service_role;
 
@@ -182,3 +226,7 @@ COMMIT;
 --
 -- 6. /dashboard/instructor/estadisticas y /api/admin/students/stats siguen
 --    devolviendo los mismos contadores que antes de aplicar esto.
+--
+-- 7. LA MAS IMPORTANTE: terminar un curso sigue emitiendo certificado. Es lo
+--    que rompe si las tres politicas de escritura de arriba faltan, y no da
+--    la cara hasta que alguien completa un curso.

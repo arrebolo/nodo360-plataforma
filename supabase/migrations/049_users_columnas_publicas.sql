@@ -1,73 +1,156 @@
 -- ============================================================================
--- 049: la clave anonima deja de leer el correo de nadie
+-- 049: el correo de los usuarios deja de ser legible
 -- ============================================================================
 -- ESTADO: ESCRITA, SIN APLICAR (24/09/2026).
---   Es DDL: no se puede aplicar por PostgREST, hay que ejecutarla en el SQL
---   Editor de Supabase. Antes hay que mirar la salida de pg_policies para las
---   tablas que toca, por si hay alguna politica FOR ALL que este fichero no
---   contempla. Comprobacion antes y despues: node scripts/auditar-clave-anonima.mjs
+--   Es DDL: hay que ejecutarla en el SQL Editor de Supabase. El codigo que la
+--   acompana ya esta en la rama y debe desplegarse ANTES o a la vez (ver mas
+--   abajo). Comprobacion: node scripts/auditar-clave-anonima.mjs
 --
--- EL PROBLEMA
---   Con la clave anonima —la que va en el HTML de cualquier pagina del sitio—
---   se leen 3 filas de public.users con sus 23 columnas, correo incluido:
+-- EL PROBLEMA, EN DOS CAPAS
 --
---     admin@nodo360.com (mentor) · [admin] (admin) · [instructor] (instructor)
+--   Capa 1, la que se vio primero. Con la clave anonima —la que va en el HTML
+--   de cualquier pagina— se leen 3 filas de public.users con sus 23 columnas,
+--   correo incluido. Son los tres usuarios de rol distinto de 'student', que
+--   la politica de filas expone a proposito para alimentar /mentores. Lo que
+--   sobra no son las filas: son las columnas.
 --
---   Son exactamente los tres usuarios cuyo `role` no es 'student'. La politica
---   de filas esta pensada para alimentar el listado publico /mentores, y hace
---   bien en dejar ver esas filas: lo que sobra son las columnas.
+--   Capa 2, la grave, que aparecio al leer pg_policies. `users` tiene la
+--   politica "users_read_all_authenticated" con USING true para el rol
+--   `authenticated`: **cualquier alumno registrado lee las 23 filas enteras**,
+--   con correo, is_suspended, suspended_reason y todo lo demas.
 --
---   Los 23 alumnos NO estan expuestos. El alcance es de tres cuentas internas,
---   pero son tres correos reales servidos a quien abra la consola.
+--   Y no hace falta ni la consola. GET /api/gamification/leaderboard usa el
+--   cliente de sesion, embebe users!inner(id, full_name, email) y **devuelve
+--   el correo en su JSON**. Comprobado el 24/09/2026: sin sesion devuelve 0
+--   entradas; con la sesion de cualquier alumno, 15 correos.
 --
--- QUE NECESITAN DE VERDAD LAS PAGINAS PUBLICAS
---   /mentores            -> id, full_name, avatar_url, role
---   /mentores/[id]       -> id, full_name, avatar_url, bio, created_at
---   /instructores        -> users(id, full_name, avatar_url) embebido
---   /instructores/[id]   -> users(id, full_name, avatar_url) embebido
---   /verificar/[codigo]  -> full_name  (ver el cambio de codigo mas abajo)
+-- POR QUE NO SE ARREGLA SOLO CON POLITICAS NI SOLO CON GRANTS
+--   Lo que se quiere es "mi fila entera, de los demas solo lo publico". Una
+--   politica decide por FILA y no sabe que columnas se piden; un GRANT decide
+--   por COLUMNA y es por rol, no distingue la fila propia de las ajenas.
+--   Ninguno de los dos lo expresa por su cuenta.
 --
---   Ninguna usa email, website, twitter, linkedin, github, is_suspended,
---   suspended_reason, is_beta, last_seen_at ni active_path_id.
+--   De las dos formas de combinarlos se elige la barata:
+--
+--     A) Politica de filas restringida a la fila propia + una vista publica
+--        para los demas. Obliga a reescribir ~40 embeds (comentarios,
+--        mensajeria, proyectos, moderacion, instructores...) y depende de que
+--        PostgREST sepa embeber una vista por su clave ajena.
+--
+--     B) GRANT de columna con las seis publicas + una funcion para la fila
+--        propia. Los ~40 embeds siguen funcionando sin tocarlos, porque casi
+--        todos piden id/full_name/avatar_url. Cambian 13 sitios.  <-- esta
+--
+--   Y como la politica "users_read_all_authenticated" pasa a exponer solo seis
+--   columnas, deja de ser un problema y no hace falta tocarla.
 --
 -- POR QUE UN REVOKE POR COLUMNA NO BASTA
---   Lo dejo escrito la migracion 025: un GRANT de tabla y un GRANT de columna
---   son privilegios independientes y acumulativos. Mientras exista el GRANT
---   sobre la tabla entera, quitar una columna no resta nada. Hay que retirar
---   el privilegio de tabla primero y volver a conceder solo las columnas.
+--   Lo dejo escrito la 025: un GRANT de tabla y uno de columna son privilegios
+--   independientes y acumulativos. Mientras exista el GRANT sobre la tabla
+--   entera, quitar una columna no resta nada. Hay que retirar el privilegio de
+--   tabla primero y volver a conceder solo las columnas.
 --
--- QUE NO TOCA
---   El rol `authenticated`. Sus consultas incluyen la fila propia, y ahi un
---   usuario necesita columnas que aqui se retiran (is_suspended en el callback
---   de login, is_beta en el layout privado, active_path_id en /rutas,
---   avatar_path en el perfil). Un GRANT de columna no distingue la fila propia
---   de las ajenas, asi que ese caso no se arregla por aqui: si la politica de
---   filas resulta servir tambien a `authenticated` esas tres filas con correo,
---   se corrige con una politica de filas o una vista, en su propia migracion.
+-- QUE NECESITAN DE VERDAD LAS PAGINAS
+--   /mentores           -> id, full_name, avatar_url, role
+--   /mentores/[id]      -> id, full_name, avatar_url, bio, created_at
+--   /instructores[/id]  -> users(id, full_name, avatar_url) embebido
+--   comentarios, mensajeria, proyectos, moderacion, leaderboard
+--                       -> id, full_name, avatar_url
+--   /verificar/[codigo] -> full_name
 --
---   `service_role` conserva GRANT ALL: las rutas de admin que leen correos
---   (/api/admin/users/beta) ya usan createAdminClient().
+-- CODIGO QUE ACOMPANA A ESTA MIGRACION (ya en la rama)
 --
--- CAMBIO DE CODIGO QUE ACOMPANA A ESTA MIGRACION
---   app/verificar/[verificationCode]/page.tsx pedia 'full_name, email' y usaba
---   la parte local del correo como nombre de respaldo. Al retirar la columna,
---   PostgREST devolveria 42501 para la consulta ENTERA y la pagina mostraria
---   "Estudiante" tambien para los 9 titulares que hoy si tienen nombre. Por eso
---   el select pasa a pedir solo 'full_name'. Se pierde el respaldo por correo,
---   que afectaba a 1 usuario visible sin full_name y mostraba su buzon.
+--   Fuga cerrada en el propio codigo, independientemente de la RLS:
+--     app/api/gamification/leaderboard/route.ts  deja de pedir y de devolver
+--       el correo; components/gamification/Leaderboard.tsx pierde el campo.
+--     app/(private)/dashboard/leaderboard/page.tsx y admin/gamificacion
+--       dejan de usar la parte local del correo como nombre de respaldo.
 --
--- COMPROBACION PREVIA (clave anonima, 24/09/2026)
---   users: anon ve 3 de 23 · columnas expuestas: 23 · correos legibles: 3
+--   Lectura de la fila propia -> mi_perfil() (lib/auth/miPerfil.ts):
+--     app/(auth)/auth/callback/route.ts        is_suspended
+--     app/(private)/layout.tsx                 is_beta
+--     app/(private)/dashboard/rutas/page.tsx   active_path_id
+--     app/(private)/dashboard/rutas/[routeSlug]/page.tsx  active_path_id
+--     app/(private)/dashboard/perfil/page.tsx  avatar_path
+--
+--   Lectura privilegiada de correo ajeno -> createAdminClient(), en sitios que
+--   ya estaban detras de requireAdmin, requireMentor o un control de rol:
+--     admin/cursos/pendientes/[id]/page.tsx    (3 consultas)
+--     dashboard/mentor/cursos/pendientes/[id]/page.tsx  (3 consultas)
+--     admin/usuarios/[id]/page.tsx             muestra el correo a proposito
+--     lib/certificates/generator.ts            (2 consultas)
+--
+--   Pedian el correo sin usarlo, y dejan de pedirlo:
+--     admin/cursos/pendientes/page.tsx · dashboard/mentor/cursos/pendientes/page.tsx
+--     lib/admin/auth.ts · lib/projects/index.ts (2 embeds)
+--
+--   El correo propio sale ya de la sesion, no de la tabla:
+--     lib/auth/requireMentor.ts · app/api/admin/users/[id]/reset-course/route.ts
+--
+-- QUE NO SE TOCA
+--   `service_role` conserva GRANT ALL. Las escrituras de admin
+--   (/api/admin/users/*) ya iban por createAdminClient().
+--
+--
+-- COMO APLICARLA, EN TRES PASOS
+--   El PASO 1 (la funcion mi_perfil) es aditivo y no rompe nada: se ejecuta
+--   primero, con el codigo viejo todavia en produccion.
+--   Despues se mergea la PR y se deja desplegar.
+--   Solo entonces se ejecuta el PASO 2, que es el que retira privilegios.
+--
+--   Al reves no: si se retira el privilegio con el codigo viejo desplegado,
+--   el callback de login deja de leer is_suspended y el panel de admin deja
+--   de abrir la ficha de un usuario. Y si se despliega el codigo sin haber
+--   creado mi_perfil(), durante esa ventana un usuario suspendido entraria,
+--   porque el callback trata el perfil ausente como "sin datos" y sigue.
+--
+-- COMPROBACION PREVIA (24/09/2026)
+--   anon: 3 de 23 filas, 23 columnas, 3 correos
+--   authenticated: 23 de 23 filas enteras (users_read_all_authenticated)
+--   GET /api/gamification/leaderboard con sesion: 15 correos en el JSON
 -- ============================================================================
 
 BEGIN;
 
--- 1. Retirar el privilegio de tabla, que es el que hace inutil todo lo demas.
-REVOKE ALL ON public.users FROM anon;
+-- ============================================================================
+-- PASO 1 (ADITIVO). La puerta a la fila propia, entera
+-- ============================================================================
+-- Un GRANT de columna no distingue la fila propia de las ajenas, asi que
+-- cerrar las columnas ajenas cierra tambien las propias. Esta funcion las
+-- devuelve, y solo las de auth.uid(). Sin sesion no devuelve nada.
 
--- 2. Devolver solo lo que las paginas publicas pintan.
---    `role` entra porque /mentores filtra por el y porque distingue al equipo;
---    no dice nada que el propio listado no muestre ya.
+CREATE OR REPLACE FUNCTION public.mi_perfil()
+RETURNS SETOF public.users
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT * FROM public.users WHERE id = auth.uid();
+$$;
+
+COMMENT ON FUNCTION public.mi_perfil IS
+  'La fila propia de users, con todas sus columnas. Necesaria porque desde la 049 authenticated solo tiene GRANT sobre las seis columnas publicas, y un GRANT de columna no distingue la fila propia de las ajenas.';
+
+REVOKE ALL ON FUNCTION public.mi_perfil() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.mi_perfil() TO authenticated, service_role;
+
+-- ============================================================================
+-- PASO 2. Retirar el privilegio de tabla, que es lo que hace inutil lo demas
+-- ============================================================================
+
+REVOKE ALL ON public.users FROM anon;
+REVOKE ALL ON public.users FROM authenticated;
+
+-- ============================================================================
+-- PASO 2b. Devolver solo las columnas publicas
+-- ============================================================================
+-- `role` entra porque /mentores filtra por el y porque el propio listado ya lo
+-- muestra. Fuera quedan email, is_suspended, suspended_reason, suspended_by,
+-- suspended_at, is_beta, is_beta_enabled, wants_beta_notification,
+-- last_seen_at, active_path_id, active_path_selected_at, avatar_path, website,
+-- twitter, linkedin, github y updated_at.
+
 GRANT SELECT (
   id,
   full_name,
@@ -75,9 +158,35 @@ GRANT SELECT (
   role,
   bio,
   created_at
-) ON public.users TO anon;
+) ON public.users TO anon, authenticated;
 
--- 3. El rol de servicio no se toca.
+-- ============================================================================
+-- PASO 2c. Lo que un usuario puede escribir de su propia ficha
+-- ============================================================================
+-- El REVOKE de arriba se llevo tambien el UPDATE. Estas son las columnas que
+-- el propio usuario edita hoy: avatar (/api/user/avatar y avatar/upload),
+-- ruta activa (/api/user/select-path) y el aviso de beta (/beta).
+-- El resto quedan para el cliente de servicio. La politica de filas sigue
+-- decidiendo QUE filas puede tocar; esto decide que columnas.
+
+GRANT UPDATE (
+  full_name,
+  avatar_url,
+  avatar_path,
+  bio,
+  website,
+  twitter,
+  linkedin,
+  github,
+  active_path_id,
+  active_path_selected_at,
+  wants_beta_notification
+) ON public.users TO authenticated;
+
+-- ============================================================================
+-- PASO 2d. El rol de servicio no se toca
+-- ============================================================================
+
 GRANT ALL ON public.users TO service_role;
 
 COMMIT;
@@ -86,24 +195,28 @@ COMMIT;
 -- ============================================================================
 -- COMPROBACIONES
 -- ============================================================================
--- 1. Con la clave ANONIMA, pedir el correo debe fallar:
+-- 1. Con la clave ANONIMA y con sesion de alumno, el correo debe fallar:
+--      GET /rest/v1/users?select=email          -> 42501
+--      GET /rest/v1/users?select=is_suspended   -> 42501
 --
---      GET /rest/v1/users?select=email
---      QUE DEBE SALIR: 401/403 con code 42501.
---
--- 2. Con la clave ANONIMA, el listado de mentores debe seguir entero:
---
+-- 2. Lo publico debe seguir entero:
 --      GET /rest/v1/users?select=id,full_name,avatar_url,role
---      QUE DEBE SALIR: las mismas 3 filas de antes.
+--      QUE DEBE SALIR: 3 filas sin sesion, 23 con sesion de alumno.
 --
--- 3. Ninguna columna sensible sobrevive:
+-- 3. El leaderboard ya no lleva correos:
+--      GET /api/gamification/leaderboard con sesion
+--      QUE DEBE SALIR: ninguna clave `email` en el JSON.
 --
---      GET /rest/v1/users?select=is_suspended
---      GET /rest/v1/users?select=active_path_id
---      QUE DEBE SALIR: 42501 en ambas.
+-- 4. Cada uno lee su ficha entera:
+--      POST /rest/v1/rpc/mi_perfil con sesion -> una fila con las 23 columnas
+--      POST /rest/v1/rpc/mi_perfil sin sesion -> []
 --
--- 4. Un `select=*` con clave anonima devuelve solo las 6 columnas concedidas.
+-- 5. Un usuario sigue pudiendo cambiar su avatar y su ruta activa, y NO puede
+--    cambiarse el rol ni levantarse una suspension:
+--      PATCH /rest/v1/users?id=eq.<propio>  {"role":"admin"}      -> 42501
+--      PATCH /rest/v1/users?id=eq.<propio>  {"is_suspended":false} -> 42501
 --
--- 5. Las paginas /mentores, /mentores/[id], /instructores, /instructores/[id]
---    y /verificar/[codigo] se abren sin sesion y muestran lo mismo que antes,
---    salvo el nombre de respaldo por correo descrito arriba.
+-- 6. A mano: iniciar sesion (callback lee is_suspended), abrir el panel
+--    privado (banner beta), /dashboard/rutas, /dashboard/perfil, /mentores,
+--    /instructores, la ficha de un usuario en el panel de admin, y aprobar un
+--    curso desde admin y desde mentor (ambos mandan correo al instructor).
