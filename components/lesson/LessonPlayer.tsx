@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
+import { AvisoEducativo } from '@/components/legal/AvisoEducativo'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { LessonHeader } from '@/components/lesson/LessonHeader'
@@ -318,6 +319,9 @@ export default function LessonPlayer({
         <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-dark-secondary/95 backdrop-blur-sm border-t border-dark-border p-4 z-50">
           {activeContentTab === 'content' && <LessonFooter {...footerProps} />}
         </div>
+
+        {/* Aviso de contenido educativo */}
+        <AvisoEducativo tipo="leccion" className="mt-10" />
 
         {/* Spacer for mobile footer */}
         <div className="sm:hidden h-24" />
