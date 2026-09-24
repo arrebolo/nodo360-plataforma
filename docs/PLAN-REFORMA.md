@@ -38,6 +38,11 @@
 
 ## Tier 2 — Reforma estructural del catálogo
 
+- [ ] **Auditar todas las consultas que traen `courses`, `modules` o `lessons` como relación embebida sin `!inner` y asumen que la fila existe.** En PostgREST ese embed es un LEFT JOIN: cuando RLS oculta la fila —y la oculta en cuanto el curso no está `published`— llega `null`, no un error. El código que hace `x.course.title` revienta con 500, y el que hace `{...x.course}` produce un objeto vacío que se pinta como una tarjeta sin enlace.
+  Archivar **un solo** curso el 24/09/2026 obligó a tres arreglos seguidos, cada uno descubierto después del anterior: el título en `/dashboard/certificados` (ponía «Curso» a secas), la tarjeta rota en `/dashboard/cursos` (`href="/cursos/undefined"`) y un **500** en `/certificados/[id]`, que es justo la página del botón «Ver tu certificado».
+  Inventario al 24/09/2026, ya revisado: `/rutas` y `/dashboard/rutas` **están protegidas** (`if (!course) continue`); `lib/certificates/generator.ts:459` usa `module?.title`, correcto. Queda **`lib/db/enrollments.ts:131`**, que hace `enrollment.course.id` sin proteger: hoy no afecta a nadie porque `getUserEnrollments` **no la importa ningún archivo**, pero es una mina para quien la conecte.
+  Lo que falta es convertir esto en una comprobación repetible en vez de una ronda manual: decidir el criterio por defecto (`!inner` cuando la fila es imprescindible, `?.` y respaldo cuando no) y dejarlo escrito, porque el patrón volverá cada vez que se archive o despublique algo. *(El primero que lo descubra si no, será un usuario.)*
+
 - [ ] Decidir destino de la ruta **Trading** (2 cursos huérfanos del mapa Web3): archivar / mantener aparte / reconvertir
 - [ ] Reencuadrar "Seguridad básica en Bitcoin y criptomonedas" como Seguridad Transversal nivel 1 (ampliar a riesgos Web3, no solo Bitcoin)
 - [ ] Arreglar colisión de `position` entre rutas Seguridad Avanzada y Trading Básico
