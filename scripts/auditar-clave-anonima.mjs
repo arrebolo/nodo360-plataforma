@@ -124,9 +124,12 @@ if (noPub.length) {
 console.log('')
 console.log('=== la fila propia: mi_perfil() ===')
 {
-  const { data, error } = await anon.rpc('mi_perfil')
-  ok(!error && Array.isArray(data) && data.length === 0,
-    `mi_perfil() sin sesion -> ${error ? error.code : (data?.length ?? '?') + ' filas'} (0 esperadas)`)
+  // La 049 concede EXECUTE solo a authenticated y service_role, asi que a
+  // anon le corresponde 42501, no una lista vacia. La expectativa anterior
+  // (0 filas sin error) estaba mal escrita y marcaba en rojo el buen estado.
+  const { error } = await anon.rpc('mi_perfil')
+  ok(error?.code === '42501' || error?.code === 'PGRST202',
+    `mi_perfil() sin sesion -> ${error ? 'denegada (' + error.code + ')' : 'RESPONDE, y no deberia'}`)
 }
 console.log('  (con sesion se prueba desde la aplicacion: /dashboard/perfil)')
 

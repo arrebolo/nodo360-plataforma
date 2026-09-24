@@ -780,6 +780,56 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
 
     Debe salir vacio. Toda migracion de contenido termina con esa consulta.
 
+### Visibilidad y RLS
+
+23. **Una tabla que cuelga de `courses` no hereda su visibilidad.** Si guarda
+    contenido de un curso —`modules`, `lessons`, `quiz_questions` y lo que
+    venga—, su politica de RLS tiene que preguntar `curso_visible(<course_id>)`.
+    No basta con que `courses` filtre.
+
+    **Por que.** El 24/09/2026 `courses` ocultaba bien los cursos archivados
+    (anon veia 10 de 13) y `lessons` servia las 87 lecciones de la base con su
+    `content`, y `modules` los 29 modulos, sin mirar el estado del curso. La
+    pagina no lo dejaba ver porque resuelve antes el curso con
+    `resolveCourseAccess`, pero PostgREST va por otro camino y no pasa por ahi.
+    Con todo el catalogo gratuito el dano era acotado; con contenido de pago
+    habria sido el techo de lo que se podia proteger.
+
+    `curso_visible(uuid)` (migracion 050) es el equivalente en SQL de
+    `lib/courses/access.ts`: publicado para cualquiera, no publicado para su
+    instructor y el admin, en `pending_review` tambien para un mentor activo.
+    Es la unica forma de que la regla no se escriba dos veces y se separe.
+
+    **Y tiene que ser `SECURITY DEFINER`**: las subconsultas de una politica
+    aplican la RLS de las tablas que consultan. Una politica sobre `lessons`
+    que mirase `courses` directamente heredaria lo que `courses` oculte a ese
+    rol, y un mentor seguiria sin ver el curso que se le pide revisar aunque su
+    excepcion estuviera escrita. Eso fue exactamente lo que dejo la 024 en
+    `quiz_questions`, que solo miraba `published`.
+
+24. **En un embed de PostgREST: `!inner` cuando la fila es imprescindible,
+    `?.` con respaldo cuando no.** No hay tercera opcion, y elegir mal no da
+    error hasta que alguien deja de ver una fila.
+
+    Un embed sin `!inner` es un LEFT JOIN: cuando RLS oculta la fila —y la
+    oculta en cuanto el curso no esta `published`— llega `null`, no un error.
+    `x.course.title` revienta con 500; `{...x.course}` produce un objeto vacio
+    que se pinta como una tarjeta rota.
+
+    - **Imprescindible** (sin ella la fila no significa nada): `!inner`, y que
+      desaparezca entera. Ej.: una leccion sin su curso.
+    - **Prescindible** (la fila se entiende sin ella): sin `!inner`, `?.` al
+      leerla y un respaldo explicito. Ej.: `certificate.course?.title ??
+      certificate.title`.
+
+    **Por que.** Archivar **un solo** curso el 24/09/2026 obligo a tres
+    arreglos seguidos, cada uno descubierto despues del anterior: el titulo en
+    `/dashboard/certificados`, una tarjeta con `href="/cursos/undefined"` en
+    `/dashboard/cursos` y un **500** en `/certificados/[id]`, que es justo la
+    pagina del boton "Ver tu certificado". Ninguno dio la cara al archivar: los
+    encontro una revision manual.
+
+
 ### Codigo
 
 - Usar `lesson.module.course` (singular), nunca las relaciones plurales
@@ -795,17 +845,47 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
 
 ### 24/09/2026 - Incidente de correos y cierre de la RLS
 
-- **Incidente de datos personales**: `GET /api/gamification/leaderboard` devolvia
-  el correo de 15 usuarios en su JSON a cualquier cuenta con sesion, y la politica
-  `users_read_all_authenticated` (`USING true`) servia `public.users` entera, 23
-  filas por 23 columnas. Ventana de 10 meses, desde que el endpoint nacio con el
-  correo dentro. Sin sesion no habia exposicion. Ficha completa en
-  `docs/reports/INCIDENTE-2026-09-24-correos-leaderboard.md`.
-- Migraciones 049, 050 y 051: columnas publicas en `users` mas `mi_perfil()`,
-  `curso_visible()` para `lessons`/`modules`/`quiz_questions`, y `certificates`
-  cerrada con `verificar_certificado()` como unica puerta publica.
-- `scripts/auditar-clave-anonima.mjs`: comprobacion repetible de lo que se lleva
-  la clave anonima, para ejecutar antes y despues de cada migracion de RLS.
+**Incidente de datos personales.** Registrado con las mismas cuatro preguntas
+que el de SPV Trabajos del 20-21/09. Ficha completa, con la arqueologia de git
+y lo que no se pudo averiguar, en
+`docs/reports/INCIDENTE-2026-09-24-correos-leaderboard.md`.
+
+- **Que se expuso.** Dos caminos a lo mismo. `GET /api/gamification/leaderboard`
+  embebia `users!inner (id, full_name, email)` y **devolvia el correo en su
+  JSON**: 15 correos, con XP, nivel y racha. Y la politica
+  `users_read_all_authenticated` (`USING true` para `authenticated`) servia
+  `public.users` entera por PostgREST: 23 filas por 23 columnas, con `email`,
+  `is_suspended` y `suspended_reason`.
+- **Desde cuando.** El endpoint nacio con el correo dentro en `0a3c94a`,
+  **24/11/2025 13:07:29 +0100** (PR #3). `git log -S` confirma que nunca hubo
+  una version sin el. **Ventana de 10 meses.** La salvedad es que la exposicion
+  requeria tambien esa politica, y su fecha **no es rastreable**: se creo desde
+  el panel y no esta en ninguna migracion.
+- **A quien.** Cualquier cuenta con sesion; hoy 23, de ellas 3 internas. **Sin
+  sesion, cero**: verificado reproduciendo la consulta del endpoint con la clave
+  anonima, que devuelve 0 entradas. Y el endpoint era **codigo muerto** -- su
+  unico consumidor, `components/gamification/Leaderboard.tsx`, no lo importa
+  nadie, y `/dashboard/leaderboard` construye su propia tabla con el cliente de
+  servicio. Ninguna pantalla lo pedia al cargar: habia que pedir la URL a mano.
+- **Si alguien lo consulto.** **No se puede saber.** Los registros de ejecucion
+  de Vercel no cubren 10 meses (sin Log Drain la retencion es de dias, y el
+  conector devuelve 403), los de API de Supabase duran 1 dia en gratuito y 7 en
+  Pro, y la aplicacion no audita lecturas.
+- **Que se hizo.** En codigo, el endpoint deja de pedir y devolver el correo, y
+  tres sitios mas dejan de usar su parte local como nombre de respaldo. En base
+  de datos, las migraciones 049-051. Barrido de la misma clase de fallo: ninguna
+  otra ruta de `app/api` sirve correos ajenos.
+
+**Cierre de la RLS.** Migraciones 049, 050 y 051, aplicadas el mismo dia:
+columnas publicas en `users` mas `mi_perfil()` para la fila propia,
+`curso_visible()` como regla unica para `lessons`, `modules` y `quiz_questions`
+-- que de paso arregla que un mentor no pudiera ver el quiz del curso que debia
+revisar --, y `certificates` cerrada con `verificar_certificado()` como unica
+puerta publica. De ahi salen las reglas 23 y 24.
+
+**`scripts/auditar-clave-anonima.mjs`**: comprobacion repetible de lo que se
+lleva la clave anonima, para ejecutar antes y despues de cada migracion de RLS.
+Antes de las tres marcaba 14 fallos; despues, TODO CORRECTO.
 
 
 ### 22/09/2026 — Cierre de funciones, XP y niveles
