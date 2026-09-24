@@ -119,7 +119,7 @@ export default async function CertificatePage({
             Has completado exitosamente{" "}
             {certificate.type === "module"
               ? `el módulo "${certificate.module?.title}"`
-              : `el curso "${certificate.course.title}"`}
+              : `el curso "${certificate.course?.title ?? certificate.title}"`}
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export default async function CertificatePage({
             certificateNumber={certificate.certificate_number}
             verificationUrl={certificate.verification_url || undefined}
             userName={user.full_name || user.email}
-            courseTitle={certificate.course.title}
+            courseTitle={certificate.course?.title ?? certificate.title}
             moduleTitle={certificate.module?.title}
             issuedDate={new Date(certificate.issued_at)}
             type={certificate.type as "module" | "course"}
@@ -139,12 +139,20 @@ export default async function CertificatePage({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <Link
-            href={`/cursos/${certificate.course.slug}`}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 text-white font-medium rounded-lg hover:bg-white/10 transition-all border border-white/10"
-          >
-            Ver curso
-          </Link>
+          {/* El curso puede haber dejado de ser visible: RLS oculta los que
+              no estan publicados, y entonces el embed llega en null. Antes se
+              accedia a certificate.course.title sin proteger y la pagina
+              lanzaba una excepcion. El certificado sigue siendo valido, asi
+              que se muestra igual; lo unico que desaparece es el enlace al
+              curso, que ya no llevaria a ninguna parte. */}
+          {certificate.course?.slug && (
+            <Link
+              href={`/cursos/${certificate.course.slug}`}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 text-white font-medium rounded-lg hover:bg-white/10 transition-all border border-white/10"
+            >
+              Ver curso
+            </Link>
+          )}
           <Link
             href="/dashboard/certificados"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-medium rounded-lg hover:shadow-lg hover:shadow-brand-light/20 transition-all"

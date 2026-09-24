@@ -42,13 +42,22 @@ export default async function MisCursosPage() {
     .eq('user_id', user.id)
     .order('last_accessed_at', { ascending: false, nullsFirst: false })
 
-  const courses = (enrollments || []).map((e: any) => ({
-    ...e.course,
-    progress: e.progress_percentage || 0,
-    enrolledAt: e.enrolled_at,
-    completedAt: e.completed_at,
-    lastAccessed: e.last_accessed_at,
-  }))
+  // El embed de courses es un LEFT JOIN, asi que e.course llega en null
+  // cuando el curso deja de ser visible: RLS oculta los que no estan
+  // publicados. Sin este filtro, el spread de null dejaba una tarjeta sin id
+  // ni slug, con enlace a /cursos/undefined y key duplicada en React.
+  // Se descartan esas matriculas en vez de pintarlas rotas: el curso ya no
+  // existe para esta persona, y un hueco silencioso es mejor que un enlace
+  // que no lleva a ninguna parte.
+  const courses = (enrollments || [])
+    .filter((e: any) => e.course)
+    .map((e: any) => ({
+      ...e.course,
+      progress: e.progress_percentage || 0,
+      enrolledAt: e.enrolled_at,
+      completedAt: e.completed_at,
+      lastAccessed: e.last_accessed_at,
+    }))
 
   const completedCourses = courses.filter((c: any) => c.completedAt)
   const inProgressCourses = courses.filter((c: any) => !c.completedAt)
