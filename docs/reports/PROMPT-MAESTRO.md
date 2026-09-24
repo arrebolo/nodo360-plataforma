@@ -704,6 +704,36 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
     fuente: `.nvmrc`, `engines.node` de `package.json` y el
     `node-version-file` del workflow. Vercel lee `engines.node`.
 
+### Respaldos y reversion
+
+20. **El archivo que revierte una migracion no se guarda junto al que la
+    aplica.** Va a una carpeta aparte, `C:\Users\alber\backups-sql\`, con
+    extension **`.bak`** para que no se ejecute de un doble clic ni se confunda
+    con un script de aplicar. Su cabecera dice, en la primera linea, **que
+    deshace y de que fecha es el estado que restaura**.
+
+    **Por que.** El 23/09/2026 los `volver-atras.sql` de las migraciones 042 y
+    043 estaban en la misma carpeta que los `aplicar.sql`, con nombres
+    parecidos. Se ejecutaron por error **al revisarlos**, y el curso publicado
+    "Como funciona Bitcoin" perdio su reescritura entera: volvio de 38.632 a
+    14.137 caracteres, el quiz de 18 preguntas volvio a 5, y el fallo de la
+    respuesta marcada mal reaparecio en produccion. Se repuso leyendo los
+    valores de la migracion ya versionada en git, que es exactamente para lo
+    que sirve versionarlas.
+
+21. **Un respaldo de lecciones incluye SIEMPRE el `slug`, ademas del `title` y
+    el `content`.** En general: un respaldo guarda todas las columnas que la
+    migracion pueda tocar, no solo las que se piensa tocar.
+
+    **Por que.** En el mismo incidente, los `volver-atras` restauraban `title` y
+    `content` pero no `slug`, porque la migracion "solo cambiaba contenido". La
+    043 si habia reasignado slugs, asi que al revertir quedaron los slugs nuevos
+    sobre el contenido viejo: **cinco de las seis URLs servian una leccion que
+    no era la suya** (`/mineria-y-prueba-de-trabajo` mostraba "Seguridad y
+    confianza en Bitcoin"). La base de datos era coherente consigo misma y aun
+    asi el sitio estaba roto, que es el peor tipo de fallo: no lo detecta
+    ninguna comprobacion de integridad.
+
     **Si el entorno local va con otra version**, el install avisa con
     `EBADENGINE` y no falla. Ese aviso no es ruido: significa que cualquier
     lockfile que se genere ahi puede romper el CI.
