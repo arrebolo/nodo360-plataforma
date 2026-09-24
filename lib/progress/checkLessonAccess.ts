@@ -1,349 +1,169 @@
+import { createClient } from '@/lib/supabase/server'
+
 /**
- * Lesson Access Control
+ * Control de acceso escalonado a las lecciones.
  *
- * Determines if a user can access a specific lesson based on:
- * - Module must be accessible
- * - Lessons must be completed sequentially within a module
+ * REGLA
+ *   El modulo 1 esta abierto. El modulo N se abre cuando TODAS las lecciones
+ *   del N-1 estan completadas. Dentro de un modulo abierto, todas sus
+ *   lecciones son accesibles: el escalonado es entre modulos, no dentro.
+ *
+ * POR QUE EN EL SERVIDOR
+ *   La version anterior de este archivo usaba el cliente de navegador y solo
+ *   la consumia un componente que nadie montaba. Una comprobacion en cliente
+ *   no impide escribir la URL a mano, asi que esto tiene que decidirse aqui.
+ *
+ * EXCEPCIONES
+ *   Sin ellas, activar el escalonado le quitaria a gente el acceso a
+ *   contenido que ya habia hecho. Medido antes de implementarlo: 7 de los 13
+ *   usuarios con progreso tenian lecciones en modulos cuyo anterior estaba
+ *   incompleto, porque hasta hoy nada lo impedia.
  */
-
-import type { Lesson } from '@/types/database'
-import { createClient } from '@/lib/supabase/client'
-import { checkModuleAccess } from './checkModuleAccess'
-
-export interface LessonAccessResult {
+export type LessonAccess = {
   canAccess: boolean
-  reason?: 'module_locked' | 'previous_lesson_incomplete' | 'accessible'
-  previousLessonId?: string
-  previousLessonTitle?: string
+  /** Por que se concede o se deniega. Util para el mensaje y para depurar. */
+  reason:
+    | 'primer_modulo'
+    | 'modulo_anterior_completo'
+    | 'ya_completada'
+    | 'vista_previa'
+    | 'curso_completado'
+    | 'admin_o_instructor'
+    | 'modulo_anterior_incompleto'
+    | 'no_encontrada'
+  /** Cuando se deniega: que modulo falta y cuanto queda de el. */
+  bloqueo?: {
+    moduloTitulo: string
+    pendientes: number
+    total: number
+    /** Primera leccion sin completar del modulo que falta. */
+    siguienteSlug: string | null
+    siguienteTitulo: string | null
+  }
 }
 
-/**
- * Check if a user can access a specific lesson
- *
- * Rules:
- * - Module must be accessible first
- * - First lesson in module is always accessible (if module is accessible)
- * - Must complete previous lesson to access next one
- *
- * @param userId - User ID (null for anonymous users)
- * @param lessonId - Lesson to check access for
- * @param courseIsFree - Whether the course is free
- * @returns LessonAccessResult with access status and reason
- */
 export async function checkLessonAccess(
   userId: string | null,
   lessonId: string,
-  courseIsFree: boolean
-): Promise<LessonAccessResult> {
-  const supabase = createClient()
+  courseId: string
+): Promise<LessonAccess> {
+  const supabase = await createClient()
 
-  // Get lesson info with module
-  const { data: lesson, error: lessonError } = await supabase
+  const { data: leccion, error: errorLeccion } = await supabase
     .from('lessons')
-    .select(`
-      id,
-      order_index,
-      module_id,
-      title,
-      modules (
-        id,
-        course_id,
-        order_index,
-        requires_quiz
-      )
-    `)
+    .select('id, module_id, is_free_preview')
     .eq('id', lessonId)
     .single()
 
-  if (lessonError || !lesson || !(lesson as any).modules) {
-    return { canAccess: false }
+  if (errorLeccion || !leccion) {
+    console.error('[checkLessonAccess] Leccion no encontrada:', errorLeccion?.message)
+    return { canAccess: false, reason: 'no_encontrada' }
   }
 
-  // Type cast to fix Supabase generated types
-  const lessonData = lesson as any
-
-  // Check if module is accessible
-  const moduleAccess = await checkModuleAccess(
-    userId,
-    lessonData.module_id,
-    courseIsFree
-  )
-
-  if (!moduleAccess.canAccess) {
-    return {
-      canAccess: false,
-      reason: 'module_locked',
-    }
+  // --- Excepcion 4: vista previa gratuita --------------------------------
+  if (leccion.is_free_preview) {
+    return { canAccess: true, reason: 'vista_previa' }
   }
 
-  // First lesson in module is always accessible (if module is accessible)
-  if (lessonData.order_index === 1) {
-    return {
-      canAccess: true,
-      reason: 'accessible',
-    }
-  }
-
-  // For anonymous users, use localStorage to check completion
+  // Sin sesion no hay progreso que consultar; la pagina ya exige login antes
+  // de llegar aqui, asi que esto solo cubre llamadas sueltas.
   if (!userId) {
-    // This will be handled by client-side code
-    // For server-side, we can't check localStorage
-    return {
-      canAccess: true, // Allow access on server, will be gated on client
-      reason: 'accessible',
-    }
+    return { canAccess: true, reason: 'vista_previa' }
   }
 
-  // Check if previous lesson is completed
-  const { data: previousLesson } = await supabase
-    .from('lessons')
-    .select('id, title')
-    .eq('module_id', lessonData.module_id)
-    .eq('order_index', lessonData.order_index - 1)
-    .single()
-
-  if (!previousLesson) {
-    return { canAccess: false }
-  }
-
-  // Type cast to fix Supabase generated types
-  const prevLessonData = previousLesson as any
-
-  // Check if user completed previous lesson
-  const { data: progress } = await supabase
-    .from('user_progress')
-    .select('is_completed')
-    .eq('user_id', userId)
-    .eq('lesson_id', prevLessonData.id)
-    .single()
-
-  const previousLessonCompleted = (progress as any)?.is_completed === true
-
-  if (previousLessonCompleted) {
-    return {
-      canAccess: true,
-      reason: 'accessible',
-    }
-  }
-
-  return {
-    canAccess: false,
-    reason: 'previous_lesson_incomplete',
-    previousLessonId: prevLessonData.id,
-    previousLessonTitle: prevLessonData.title,
-  }
-}
-
-/**
- * Check lesson access for client-side (localStorage)
- *
- * This version uses localStorage to check if previous lesson is completed
- */
-export function checkLessonAccessClient(
-  lessonOrderIndex: number,
-  moduleOrderIndex: number,
-  courseIsFree: boolean,
-  moduleIsAccessible: boolean,
-  previousLessonCompleted?: boolean
-): LessonAccessResult {
-  // Check module access first
-  if (!moduleIsAccessible) {
-    return {
-      canAccess: false,
-      reason: 'module_locked',
-    }
-  }
-
-  // First lesson in module is always accessible
-  if (lessonOrderIndex === 1) {
-    return {
-      canAccess: true,
-      reason: 'accessible',
-    }
-  }
-
-  // Check if previous lesson is completed
-  if (previousLessonCompleted) {
-    return {
-      canAccess: true,
-      reason: 'accessible',
-    }
-  }
-
-  return {
-    canAccess: false,
-    reason: 'previous_lesson_incomplete',
-  }
-}
-
-/**
- * Get all accessible lessons for a module
- *
- * @param userId - User ID (null for anonymous)
- * @param moduleId - Module ID
- * @param courseIsFree - Whether course is free
- * @returns Array of lesson IDs that are accessible
- */
-export async function getAccessibleLessons(
-  userId: string | null,
-  moduleId: string,
-  courseIsFree: boolean
-): Promise<string[]> {
-  const supabase = createClient()
-
-  // First check if module is accessible
-  const moduleAccess = await checkModuleAccess(userId, moduleId, courseIsFree)
-  if (!moduleAccess.canAccess) {
-    return []
-  }
-
-  // Get all lessons for the module
-  const { data: lessons } = await supabase
-    .from('lessons')
-    .select('id, order_index')
-    .eq('module_id', moduleId)
-    .order('order_index', { ascending: true })
-
-  if (!lessons || lessons.length === 0) {
-    return []
-  }
-
-  const lessonsData = lessons as any[]
-  const accessibleLessonIds: string[] = []
-
-  // Check each lesson
-  for (const lesson of lessonsData) {
-    const access = await checkLessonAccess(userId, lesson.id, courseIsFree)
-    if (access.canAccess) {
-      accessibleLessonIds.push(lesson.id)
-    } else {
-      // Stop at first inaccessible lesson (sequential gating)
-      break
-    }
-  }
-
-  return accessibleLessonIds
-}
-
-/**
- * Get the next available lesson for a user to study
- *
- * Used for "Continue Learning" functionality
- */
-export async function getNextAvailableLesson(
-  userId: string | null,
-  courseId: string,
-  courseIsFree: boolean
-): Promise<Lesson | null> {
-  const supabase = createClient()
-
-  // Get all modules for the course
-  const { data: modules } = await supabase
+  const { data: modulos, error: errorModulos } = await supabase
     .from('modules')
-    .select('id, order_index')
+    .select('id, title, order_index')
     .eq('course_id', courseId)
-    .order('order_index', { ascending: true })
+    .order('order_index')
 
-  if (!modules || modules.length === 0) {
-    return null
+  if (errorModulos || !modulos?.length) {
+    console.error('[checkLessonAccess] Error leyendo modulos:', errorModulos?.message)
+    return { canAccess: true, reason: 'no_encontrada' }
   }
 
-  const modulesData = modules as any[]
+  const moduloActual = modulos.find((m) => m.id === leccion.module_id)
+  if (!moduloActual) return { canAccess: true, reason: 'no_encontrada' }
 
-  // Check each module
-  for (const mod of modulesData) {
-    // Check if module is accessible
-    const moduleAccess = await checkModuleAccess(userId, mod.id, courseIsFree)
-    if (!moduleAccess.canAccess) {
-      continue
-    }
+  // --- Excepcion 1: ya la completo ---------------------------------------
+  const { data: yaHecha } = await supabase
+    .from('user_progress')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .eq('is_completed', true)
+    .limit(1)
 
-    // Get lessons for this module
-    const { data: lessons } = await supabase
-      .from('lessons')
-      .select('*')
-      .eq('module_id', mod.id)
-      .order('order_index', { ascending: true })
-
-    if (!lessons || lessons.length === 0) {
-      continue
-    }
-
-    const lessonsData = lessons as any[]
-
-    // Find first incomplete lesson
-    for (const lesson of lessonsData) {
-      if (!userId) {
-        // For anonymous users, return first lesson of first accessible module
-        return lesson
-      }
-
-      // Check if lesson is completed
-      const { data: progress } = await supabase
-        .from('user_progress')
-        .select('is_completed')
-        .eq('user_id', userId)
-        .eq('lesson_id', lesson.id)
-        .single()
-
-      if (!progress || !(progress as any).is_completed) {
-        // Check if this lesson is accessible
-        const lessonAccess = await checkLessonAccess(userId, lesson.id, courseIsFree)
-        if (lessonAccess.canAccess) {
-          return lesson
-        }
-      }
-    }
+  if ((yaHecha ?? []).length > 0) {
+    return { canAccess: true, reason: 'ya_completada' }
   }
 
-  return null
-}
+  // --- Regla general: el primer modulo siempre esta abierto ---------------
+  if (moduloActual.order_index === 0) {
+    return { canAccess: true, reason: 'primer_modulo' }
+  }
 
-/**
- * Calculate course progress percentage
- *
- * @param userId - User ID
- * @param courseId - Course ID
- * @returns Progress percentage (0-100)
- */
-export async function calculateCourseProgress(
-  userId: string,
-  courseId: string
-): Promise<number> {
-  const supabase = createClient()
+  // --- Excepcion 3: admin o instructor del curso -------------------------
+  const [{ data: perfil }, { data: curso }] = await Promise.all([
+    supabase.from('users').select('role').eq('id', userId).maybeSingle(),
+    supabase.from('courses').select('instructor_id').eq('id', courseId).maybeSingle(),
+  ])
 
-  // Get total lessons in course
-  const { data: lessons } = await supabase
+  if (perfil?.role === 'admin' || curso?.instructor_id === userId) {
+    return { canAccess: true, reason: 'admin_o_instructor' }
+  }
+
+  // --- Excepcion 2: curso ya completado o certificado --------------------
+  // Importa mas de lo que parece: al ampliar un curso de 6 a 9 lecciones,
+  // quien lo habia terminado se queda con el curso completo y lecciones sin
+  // registrar. Sin esto, alguien con certificado quedaria bloqueado en un
+  // curso que ya termino.
+  const [{ data: certificados }, { data: matricula }] = await Promise.all([
+    supabase.from('certificates').select('id').eq('user_id', userId).eq('course_id', courseId).limit(1),
+    supabase.from('course_enrollments').select('completed_at').eq('user_id', userId).eq('course_id', courseId).maybeSingle(),
+  ])
+
+  if ((certificados ?? []).length > 0 || matricula?.completed_at) {
+    return { canAccess: true, reason: 'curso_completado' }
+  }
+
+  // --- Regla general: el modulo anterior tiene que estar completo ---------
+  const anterior = modulos.find((m) => m.order_index === moduloActual.order_index - 1)
+  if (!anterior) return { canAccess: true, reason: 'primer_modulo' }
+
+  const { data: leccionesAnterior } = await supabase
     .from('lessons')
-    .select(`
-      id,
-      modules!inner (
-        course_id
-      )
-    `)
-    .eq('modules.course_id', courseId)
+    .select('id, title, slug, order_index')
+    .eq('module_id', anterior.id)
+    .order('order_index')
 
-  if (!lessons || lessons.length === 0) {
-    return 0
-  }
+  const lista = leccionesAnterior ?? []
+  if (lista.length === 0) return { canAccess: true, reason: 'modulo_anterior_completo' }
 
-  const lessonsData = lessons as any[]
-  const totalLessons = lessonsData.length
-
-  // Get completed lessons
-  const { data: completedProgress } = await supabase
+  const { data: hechas } = await supabase
     .from('user_progress')
     .select('lesson_id')
     .eq('user_id', userId)
     .eq('is_completed', true)
-    .in(
-      'lesson_id',
-      lessonsData.map((l) => l.id)
-    )
+    .in('lesson_id', lista.map((l) => l.id))
 
-  const completedLessons = (completedProgress as any)?.length || 0
+  const completadas = new Set((hechas ?? []).map((h) => h.lesson_id))
+  const pendientes = lista.filter((l) => !completadas.has(l.id))
 
-  return Math.round((completedLessons / totalLessons) * 100)
+  if (pendientes.length === 0) {
+    return { canAccess: true, reason: 'modulo_anterior_completo' }
+  }
+
+  return {
+    canAccess: false,
+    reason: 'modulo_anterior_incompleto',
+    bloqueo: {
+      moduloTitulo: anterior.title,
+      pendientes: pendientes.length,
+      total: lista.length,
+      // La PRIMERA pendiente, no el inicio del curso: es donde hay que seguir.
+      siguienteSlug: pendientes[0]?.slug ?? null,
+      siguienteTitulo: pendientes[0]?.title ?? null,
+    },
+  }
 }
-
-
