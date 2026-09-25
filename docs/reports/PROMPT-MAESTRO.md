@@ -87,8 +87,8 @@ cuando el dato ha cambiado.
 | Modulos `lib/` | **99** archivos `.ts` | en 26 subcarpetas (v5.0: 95) |
 | Archivos de tipos | 9 | `types/*.ts` |
 | Scripts | 46 | `scripts/*.{mjs,ts,js}` |
-| Commits en `main` | **211** | v5.0: 147 |
-| Ramas remotas | 28 | incluye ramas muertas por limpiar |
+| Commits en `main` | **217** | v5.0: 147 |
+| Ramas remotas | **5** | `main`, las 2 que se conservan y las PR abiertas. Las 25 muertas se borraron el 25/09/2026, tras comprobar por contenido con `git merge-tree` que main ya las tenia |
 | Redirecciones 301 | **96** | `next.config.ts`; 48 son de la 052 |
 
 ### Base de datos (Supabase, proyecto `gcahtbecfidroepelcuw`)
@@ -497,8 +497,8 @@ Ninguna urge con 23 usuarios. Las dos urgiran el dia que haya datos de pago.
 
 | Deuda | Estado |
 |---|---|
-| **La 053 sin aplicar ni mergear** | Su commit quedo huerfano al hacer squash de la rama. Migracion y cambio de codigo listos, fuera de `main` |
-| **Los certificados guardan el titulo antiguo del curso** | Tras la 052, cuatro acreditan «Introduccion al trading…» y su curso se llama ya otra cosa. La 053 fija el criterio: manda el guardado. Hoy son 4; decidir antes de que sean cuarenta |
+| ~~**La 053 sin aplicar ni mergear**~~ | **Cerrada el 25/09/2026.** Mergeada en la PR #189 y aplicada a la base. Comprobado con la clave anonima sobre los 17 certificados: los 17 devuelven el titulo guardado, incluidos los 4 cuyo curso se llama ya de otra forma |
+| ~~**Los certificados guardan el titulo antiguo del curso**~~ | **Resuelta el 25/09/2026, y el criterio es el bueno: manda el guardado.** Son 4 los divergentes (3 de *Introduccion al trading* y 1 de *Introduccion a Web3*) y los 4 verifican con el titulo que tenian al emitirse. Un certificado acredita lo que se completo entonces |
 | **4 matriculas al 100% con progreso incompleto** | Tres en *Gestion del riesgo* (3 de 6) y una en *Introduccion al trading* (5 de 6), con certificado de enero en formato antiguo. La 047 las dejo sin tocar a proposito: no hay contenido nuevo que consumir |
 | **7 matriculas huerfanas en cursos archivados** | Sus tarjetas desaparecen del panel sin explicacion. Falta decidir el trato por defecto: matricular en el curso que absorbe, avisar de la fusion, o aceptar la perdida silenciosa |
 | **8 remisiones muertas tras las fusiones** | Cerradas en la 054, y `scripts/comprobar-remisiones.mjs` deja la comprobacion repetible. De aqui sale la regla 30 |
@@ -757,7 +757,7 @@ saber cual gano (la de `docs/`). Unificarlas esta en el Tier 2.
 
 #### De la 041 a la 053
 
-Verificado fichero a fichero el 25/09/2026. Todas aplicadas salvo la 053.
+Verificado fichero a fichero el 25/09/2026. **Todas aplicadas**, la 053 incluida.
 
 | # | Que hizo | Estado |
 |---|----------|--------|
@@ -773,7 +773,7 @@ Verificado fichero a fichero el 25/09/2026. Todas aplicadas salvo la 053.
 | 050 | `curso_visible()` y RLS de `lessons`, `modules` y `quiz_questions` | aplicada |
 | 051 | `certificates` cerrada; `verificar_certificado()` como unica puerta publica | aplicada |
 | 052 | Fusion de las rutas Web3 Basica y Trading Basico | aplicada |
-| 053 | `/verificar` muestra el titulo del certificado, no el vigente del curso | en `main` (PR #189); **SIN aplicar a la base** |
+| 053 | `/verificar` muestra el titulo del certificado, no el vigente del curso | aplicada |
 | 054 | Arregla 8 remisiones muertas en 4 lecciones que las fusiones dejaron atras | aplicada |
 | 055 | Crea el curso *Blockchain: lo que Bitcoin no es* y lo pone primero en Web3 Basica | aplicada |
 | 056 | Crea la ruta **Ecosistema Ethereum** y su primer curso, *Ethereum y contratos inteligentes* | aplicada |
@@ -785,13 +785,22 @@ Verificado fichero a fichero el 25/09/2026. Todas aplicadas salvo la 053.
 > un numero. Se reconstruyo el 25/09 desde su respaldo y el estado de la base,
 > que coinciden. Es exactamente lo que la regla 4 existe para evitar.
 
-> **La 053 estuvo a punto de perderse.** Su commit quedo fuera de `main` porque
-> la rama se mergeo por squash *antes* de escribirlo, y el squash rompe la
-> ascendencia. Se recupero al volver a mergear la misma rama (PR #189). La
-> migracion es DDL y **sigue sin aplicarse a la base**: el fichero listo esta en
-> `C:/Users/alber/053-aplicar.sql`. No corre prisa, porque el arreglo real de los
-> cuatro certificados afectados era la precedencia de la pagina, que ya esta
-> desplegada; la migracion solo mueve el respaldo dentro de la funcion.
+> **La 053 estuvo a punto de perderse, y ya esta cerrada.** Su commit quedo fuera
+> de `main` porque la rama se mergeo por squash *antes* de escribirlo, y el squash
+> rompe la ascendencia. Se recupero al volver a mergear la misma rama (PR #189) y
+> **se aplico a la base el 25/09/2026**.
+>
+> Comprobado con la clave anonima sobre los **17 certificados**: los 17 devuelven
+> el titulo guardado en el momento de la emision. Cuatro de ellos divergen del
+> titulo actual de su curso —tres acreditan *Introduccion al trading de
+> criptomonedas* y uno *Introduccion a Web3*—, y siguen acreditando eso, que es
+> el criterio correcto: un certificado acredita lo que se completo entonces.
+>
+> El squash aparece **dos veces** en este historial, y las dos por el mismo
+> mecanismo: aqui, y en la PR #192, cuyo squash hizo que la rama del blog
+> arrastrara su propio cambio con otro SHA y diera un conflicto que no era tal.
+> La leccion no es evitar el squash: es que **`git log rama..main` no dice si un
+> cambio esta en main**. Solo lo dice comparar el contenido.
 
 Aplicadas a mano y versionadas a posteriori: 024, 025 y 026 el 21/09/2026; 030 y
 033 el 22/09; 041 el 24/09; 047 el 25/09. Las 049, 050 y 051 son DDL y se
@@ -1347,8 +1356,9 @@ presente.
 **Dos huecos de proceso que destapo la revision para esta version.** La
 migracion **047 nunca se versiono**: se aplico el 24/09 y el fichero no se
 escribio; se reconstruyo el 25/09 desde su respaldo. Y la **053 quedo huerfana**
-al hacer squash de su rama, asi que no esta en `main`. Las dos son la regla 4
-incumplida por vias distintas.
+al hacer squash de su rama. Las dos son la regla 4 incumplida por vias distintas,
+y **las dos quedaron cerradas el 25/09/2026**: la 047 versionada y la 053
+mergeada y aplicada.
 
 ### 22/09/2026 — Cierre de funciones, XP y niveles
 
