@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { courseHasQuiz, userPassedQuiz } from '@/lib/quiz/checkCourseQuiz'
 
 interface CreateCertificateParams {
   userId: string
@@ -22,6 +23,13 @@ interface CertificateResult {
   }
   error?: string
   alreadyExists?: boolean
+  /**
+   * Motivo por el que no se ha emitido, cuando no es un error sino una
+   * condicion que al alumno le falta cumplir. Sirve para que la interfaz pueda
+   * decirle QUE le falta en vez de no mostrar nada, que es lo que parece un
+   * fallo.
+   */
+  pendiente?: 'examen'
 }
 
 /**
@@ -92,6 +100,33 @@ export async function createCertificate({
 
     if (!isCompleted) {
       return { success: false, error: 'El curso no ha sido completado' }
+    }
+
+    // 3 bis. Y haber aprobado el examen final del curso.
+    //
+    // Hasta el 25/09/2026 bastaba con marcar las lecciones: el examen no
+    // gateaba nada, asi que un certificado acreditaba haber pasado por el
+    // contenido y no haberlo entendido. Esta es la condicion que lo cambia.
+    //
+    // OJO con el orden: esto va DESPUES de la comprobacion de si ya existe
+    // (paso 1), que devuelve el certificado tal cual. Los ya emitidos no se
+    // revisan ni se revocan: la exigencia es para lo que venga.
+    //
+    // Y va condicionado a que el curso TENGA examen. Exigir un examen que no
+    // existe deja el certificado inalcanzable para siempre, que es exactamente
+    // la trampa en la que estaba requires_quiz: una bandera que, de haberse
+    // cableado, habria bloqueado los modulos 2 y 3 de cada curso sin remedio.
+    // Hoy los 10 cursos publicados tienen preguntas, pero uno futuro puede no
+    // tenerlas.
+    if (await courseHasQuiz(courseId)) {
+      const aprobado = await userPassedQuiz(userId, courseId)
+      if (!aprobado) {
+        return {
+          success: false,
+          error: 'Falta aprobar el examen final del curso',
+          pendiente: 'examen',
+        }
+      }
     }
 
     // 4. Generate certificate

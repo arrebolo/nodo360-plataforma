@@ -18,6 +18,7 @@ import { tokens, cx } from '@/lib/design/tokens'
 import { ChevronRight, Lock } from 'lucide-react'
 import type { Metadata } from 'next'
 import { CourseAlreadyCompleted } from '@/components/course/CourseAlreadyCompleted'
+import { getCourseQuizStatus } from '@/lib/quiz/checkCourseQuiz'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -234,6 +235,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
         .maybeSingle()
     : { data: null }
 
+  // Ha terminado las lecciones y no hay certificado: puede ser que le falte el
+  // examen final, que desde el 25/09/2026 es condicion para emitirlo. Hay que
+  // saberlo para poder decirselo, porque un aviso que se calla se parece
+  // demasiado a un fallo.
+  const estadoQuiz = yaCompletado && !certificado
+    ? await getCourseQuizStatus(course.id, user.id)
+    : null
+  const examenPendiente = !!estadoQuiz?.hasQuiz && !estadoQuiz.userPassed
+
   // 6. Obtener progreso completo
   const courseProgress = isEnrolled
     ? await getCourseProgressForUser(course.id, user.id)
@@ -305,6 +315,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
               completedAt={enrollment?.completed_at ?? certificado?.issued_at ?? null}
               certificateId={certificado?.id ?? null}
               certificateNumber={certificado?.certificate_number ?? null}
+              examenPendiente={examenPendiente}
+              cursoSlug={course.slug}
             />
           </div>
         )}

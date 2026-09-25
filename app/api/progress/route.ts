@@ -87,6 +87,13 @@ export async function POST(request: NextRequest) {
     // ========================================
     // 3) NUEVO: Actualizar course_enrollments
     // ========================================
+    // Que ha pasado con el certificado al completar el curso. Se devuelve al
+    // cliente: desde el 25/09/2026 el certificado exige aprobar el examen, y si
+    // el resultado se queda en un console.warn el alumno no tiene forma de saber
+    // que le falta un paso. Un fallo silencioso y un paso pendiente se parecen
+    // demasiado.
+    let certificado: { emitido: boolean; pendiente?: 'examen' } | null = null
+
     try {
       // Obtener el course_id desde la lección
       const { data: lessonData } = await supabase
@@ -180,12 +187,18 @@ export async function POST(request: NextRequest) {
                 courseId: courseId,
               })
               if (certResult.success) {
+                certificado = { emitido: true }
                 if (certResult.alreadyExists) {
                   console.log('📜 [Progress] Certificado ya existía:', certResult.certificate?.certificate_number)
                 } else {
                   console.log('📜 [Progress] Certificado generado:', certResult.certificate?.certificate_number)
                 }
+              } else if (certResult.pendiente === 'examen') {
+                // No es un error: es el examen final, que falta por aprobar.
+                certificado = { emitido: false, pendiente: 'examen' }
+                console.log('📝 [Progress] Certificado pendiente del examen final')
               } else {
+                certificado = { emitido: false }
                 console.warn('⚠️ [Progress] Error generando certificado:', certResult.error)
               }
             } catch (certError) {
@@ -318,6 +331,8 @@ export async function POST(request: NextRequest) {
       awardedBadges,
       streak: streakResult.currentStreak,
       streakIncreased: streakResult.streakIncreased,
+      // null si esta leccion no completaba el curso
+      certificado,
     })
   } catch (error) {
     console.error('❌ [API POST /progress] Exception:', error)
