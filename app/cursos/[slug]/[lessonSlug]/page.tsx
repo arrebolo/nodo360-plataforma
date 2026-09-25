@@ -355,6 +355,8 @@ export default async function LessonPage({ params }: PageProps) {
             completedAt={matricula?.completed_at ?? certificado?.issued_at ?? null}
             certificateId={certificado?.id ?? null}
             certificateNumber={certificado?.certificate_number ?? null}
+            examenPendiente={!certificado && quizStatus.hasQuiz && !quizStatus.userPassed}
+            cursoSlug={course.slug}
           />
         </div>
       )}
