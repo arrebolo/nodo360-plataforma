@@ -11,6 +11,17 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   'user_already_exists': 'Este correo electrónico ya está registrado.',
 
   // Errores de contraseña
+  //
+  // Las tres claves de «demasiado larga» van ANTES que las de «demasiado
+  // corta» a proposito: getSpanishErrorMessage recorre este objeto en orden de
+  // insercion y se queda con la primera clave contenida en el mensaje. Sin
+  // ellas, «Password cannot be longer than 72 characters» caia en el mensaje
+  // generico —o peor, en el de los 6 caracteres si el codigo era
+  // weak_password—, y el usuario leia justo lo contrario de lo que pasaba. El
+  // limite son 72 bytes porque es el de bcrypt, no una decision de Nodo360.
+  'password cannot be longer than': 'La contraseña es demasiado larga. Usa 72 caracteres o menos.',
+  'password should be at most': 'La contraseña es demasiado larga. Usa 72 caracteres o menos.',
+  'password is too long': 'La contraseña es demasiado larga. Usa 72 caracteres o menos.',
   'password should be at least': 'La contraseña debe tener al menos 6 caracteres.',
   'weak password': 'La contraseña es muy débil. Usa al menos 6 caracteres.',
   'password is too short': 'La contraseña debe tener al menos 6 caracteres.',
@@ -64,12 +75,21 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   'unexpected error': 'Ha ocurrido un error inesperado. Por favor intenta de nuevo.',
 }
 
+/** Lo que se dice cuando no se reconoce el error. */
+export const MENSAJE_GENERICO = 'Ha ocurrido un error. Por favor intenta de nuevo.'
+
 /**
- * Convierte un mensaje de error a español
- * Busca coincidencias parciales (case-insensitive)
+ * Igual que getSpanishErrorMessage, pero devuelve null cuando no reconoce el
+ * error en vez de caer en el mensaje genérico.
+ *
+ * Existe para poder encadenar: quien llama puede probar primero por el texto
+ * —más específico— y recurrir al código de Supabase solo si el texto no dice
+ * nada. Con la versión que siempre devuelve algo, esa distinción se pierde:
+ * 'weak_password' vale tanto para una contraseña corta como para una demasiado
+ * larga, y el texto de Supabase sí las diferencia.
  */
-export function getSpanishErrorMessage(error: string | null | undefined): string {
-  if (!error) return 'Ha ocurrido un error. Por favor intenta de nuevo.'
+export function findSpanishErrorMessage(error: string | null | undefined): string | null {
+  if (!error) return null
 
   const errorLower = error.toLowerCase()
 
@@ -85,8 +105,15 @@ export function getSpanishErrorMessage(error: string | null | undefined): string
     return error
   }
 
-  // Default
-  return 'Ha ocurrido un error. Por favor intenta de nuevo.'
+  return null
+}
+
+/**
+ * Convierte un mensaje de error a español
+ * Busca coincidencias parciales (case-insensitive)
+ */
+export function getSpanishErrorMessage(error: string | null | undefined): string {
+  return findSpanishErrorMessage(error) ?? MENSAJE_GENERICO
 }
 
 /**
