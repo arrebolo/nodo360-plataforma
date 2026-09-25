@@ -86,7 +86,7 @@
 
 ## Tier 3 — Construcción nueva (por orden)
 
-- [ ] **Fundamentos Blockchain** — curso base: consenso, PoW/PoS, forks, criptografía (0% cobertura actual)
+- [x] ~~**Fundamentos Blockchain**~~ *(25/09/2026: creado como «Blockchain: lo que Bitcoin no es», primero de la ruta Web3 Básica. 9 lecciones, 56.143 caracteres, 27 preguntas. Migración 055. El enfoque no fue el obvio: en vez de explicar blockchain desde cero —que ya hace *Cómo funciona Bitcoin* con un caso real—, explica **lo que no es Bitcoin**. El diagnóstico lo decidió: en los 247.672 caracteres de los cursos relevantes había cero menciones de prueba de participación, validador, estado compartido, capa 2, interoperabilidad o cadenas con permisos. Queda fuera, y reconocido por escrito en la última lección, la criptografía de debajo y la programación)*
 - [ ] **Ethereum y Smart Contracts** — apoyarse en el artículo de blog existente + lección de dApps ya generada
 - [ ] **DAOs** — sinergia con el sistema de gobernanza propio; resuelve la contradicción de `/proyectos`
 - [ ] **NFTs** — usar como semilla la lección "Tokens y NFTs" de Ecosistema Web3 + artículo de blog
