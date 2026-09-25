@@ -64,8 +64,13 @@ no(DAO, /5\s*-\s*15\s*%|entre\s+5\s+y\s+15\s*%/g, '7', 'el "5-15%"')
 
 console.log('\n=== RONDA 2: marcas y cifras del staking ===')
 for (const m of ['Binance', 'Kraken', 'Coinbase', 'Lido', 'Rocket Pool', 'Cardano', 'Solana', 'Cosmos', 'stETH', 'Yoroi', 'Daedalus', 'Ledger', 'Trezor', 'Polkadot']) {
-  // \b evita el falso positivo de "Lido" dentro de "fallido"
-  no(STK, new RegExp(`\\b${m.replace(' ', '\\s')}\\b`, 'gi'), 'marcas', 'la marca ' + m)
+  // El limite NO puede ser \b. En JavaScript \w es solo [A-Za-z0-9_], asi que una
+  // letra acentuada cuenta como no-palabra y \bLido\b casa dentro de "solido" o
+  // "invalido". Con \p{L} y la bandera u el limite es el de una palabra de verdad.
+  // (En "fallido" \b ya funcionaba, porque la l va pegada a otra l. De ahi que el
+  // fallo pasara desapercibido.)
+  const ini = '(?<![\\p{L}\\p{N}])', fin = '(?![\\p{L}\\p{N}])'
+  no(STK, new RegExp(ini + m.replace(' ', '\\s') + fin, 'giu'), 'marcas', 'la marca ' + m)
 }
 console.log(`  OK    [marcas] FTX se conserva a proposito, como ejemplo de quiebra  -> ${cuenta(STK, /\bFTX\b/g)}`)
 no(STK, /Lo Mejor de Ambos Mundos/g, 'staking', 'el titulo "Lo Mejor de Ambos Mundos"')
