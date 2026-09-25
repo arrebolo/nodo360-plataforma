@@ -1432,11 +1432,11 @@ La minería de Bitcoin consume ~120-150 TWh/año. Estudios sugieren que 50-60% u
 2. **Costo de electricidad**: 50-70% de gastos
 3. **Dificultad**: Aumenta con competencia
 4. **Eficiencia del hardware**
-5. **Halving**: Reduce recompensa cada 4 años
+5. **Halving**: Reduce el subsidio por bloque cada 4 años
 
 ### El halving de 2024
 
-Redujo la recompensa de 6.25 a 3.125 BTC por bloque. Al mismo precio de Bitcoin, los ingresos se reducen a la mitad.
+Redujo el subsidio de 6.25 a 3.125 BTC por bloque. Lo que cobra un minero es el subsidio **más** las comisiones de las transacciones que incluye, y esas no cambian por el halving: al mismo precio, sus ingresos bajan menos de la mitad. Cuánto menos depende de lo que se esté pagando en comisiones.
 
 ### ¿Cuándo es rentable?
 
@@ -1732,8 +1732,8 @@ Entender NFTs te ayuda a navegar Web3 y las nuevas formas de propiedad, identida
       },
       {
         afterSection: 6,
-        src: '/blog/inline/staking-rendimientos-riesgos.svg',
-        alt: 'Tabla de rendimientos y riesgos del staking',
+        src: '/blog/inline/staking-de-donde-sale-la-recompensa.svg',
+        alt: 'Las dos fuentes de las que puede salir la recompensa del staking',
         caption: 'La recompensa sale de emitir unidades nuevas o de comisiones de otros, no de un tercer sitio'
       }
     ],
@@ -2213,18 +2213,6 @@ La buena noticia: siguiendo estas prácticas, puedes operar con confianza y prot
         src: '/blog/inline/bitcoin-oro-propiedades.svg',
         alt: 'Tabla comparativa de propiedades entre Bitcoin y oro',
         caption: 'Bitcoin supera al oro en divisibilidad, portabilidad y verificabilidad'
-      },
-      {
-        afterSection: 4,
-        src: '/blog/inline/bitcoin-oro-rendimiento.svg',
-        alt: 'Gráfico de rendimiento histórico Bitcoin vs oro',
-        caption: 'Rendimiento comparado de Bitcoin y oro en la última década'
-      },
-      {
-        afterSection: 6,
-        src: '/blog/inline/bitcoin-oro-portfolio.svg',
-        alt: 'Estrategia de diversificación con Bitcoin y oro',
-        caption: 'Ambos activos pueden complementarse en un portfolio diversificado'
       }
     ],
     content: `
@@ -2943,18 +2931,18 @@ No son perfectas, pero están iterando rápidamente. Participar en una DAO es un
         afterSection: 2,
         src: '/blog/inline/halving-que-es-como-funciona.svg',
         alt: 'Diagrama explicativo del halving de Bitcoin',
-        caption: 'El halving reduce a la mitad la recompensa de los mineros cada 210.000 bloques'
+        caption: 'Cada 210.000 bloques, el subsidio por bloque se divide entre dos'
       },
       {
         afterSection: 4,
-        src: '/blog/inline/halving-historia-precios.svg',
-        alt: 'Gráfico histórico de halvings y precio de Bitcoin',
+        src: '/blog/inline/halving-subsidio-por-bloque.svg',
+        alt: 'El subsidio por bloque en cada uno de los cuatro halvings',
         caption: 'Cuatro halvings han llevado la recompensa de 50 a 3,125 bitcoin por bloque'
       },
       {
         afterSection: 6,
-        src: '/blog/inline/halving-ciclos-mercado.svg',
-        alt: 'Infografía de ciclos de mercado de Bitcoin',
+        src: '/blog/inline/halving-cuatro-no-son-un-patron.svg',
+        alt: 'Los cuatro halvings ocurridos, cada uno en un contexto distinto',
         caption: 'Cuatro observaciones no son una serie de la que deducir la quinta'
       }
     ],
@@ -3142,7 +3130,7 @@ Es una pregunta abierta y no tiene respuesta comprobable. La fecha del halving s
 
 ### ¿Qué le ocurre al minero el día del halving?
 
-Esta sí tiene respuesta concreta: **sus ingresos por bloque se reducen a la mitad de un día para otro**, mientras sus costes siguen iguales. Los equipos menos eficientes dejan de ser rentables y se apagan, y el ajuste de dificultad reacciona a eso en las semanas siguientes. Es el efecto directo y medible del halving.
+Esta sí tiene respuesta concreta, con una precisión que conviene no saltarse: **lo que se reduce a la mitad de un día para otro es el subsidio por bloque, no sus ingresos**. Las comisiones de las transacciones que incluye no cambian por el halving, así que lo que cobra baja menos de la mitad, y cuánto menos depende de lo que se esté pagando en comisiones. Sus costes, mientras tanto, siguen iguales. Los equipos menos eficientes dejan de ser rentables y se apagan, y el ajuste de dificultad reacciona a eso en las semanas siguientes. Es el efecto directo y medible del halving.
 
 ### ¿Puede cancelarse un halving?
 
