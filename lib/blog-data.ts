@@ -1090,11 +1090,11 @@ En agosto de 2021, Ethereum implementó EIP-1559, que cambió el modelo de fees.
 
 ### ¿Qué es Proof of Stake?
 
-En lugar de mineros que consumen energía, Proof of Stake usa validadores que "apuestan" (stake) sus ETH como garantía. El mínimo para validar es 32 ETH, con recompensas de aproximadamente 4-5% anual. Si actúas maliciosamente, pierdes ETH (slashing).
+En lugar de mineros que consumen energía, Proof of Stake usa validadores que "apuestan" (stake) sus ETH como garantía. El mínimo para validar está fijado por el protocolo en 32 ETH. La recompensa varía según cuántos validen y cuánta actividad haya, así que no damos una cifra: se consulta en la documentación del protocolo el día que haga falta. Si actúas maliciosamente, pierdes parte de lo depositado (slashing).
 
 ### Beneficios de The Merge
 
-1. **Reducción energética**: 99.95% menos consumo de energía
+1. **Reducción energética**: el consumo cae de forma drástica, porque desaparece la competición por resolver cálculos. Las estimaciones publicadas hablan de más de dos órdenes de magnitud; la cifra exacta depende de la metodología y conviene tomarla de la fuente que la calcule
 2. **Mayor seguridad**: Atacar la red es económicamente inviable
 3. **Escalabilidad futura**: Permite implementar sharding
 4. **ETH deflacionario**: Más ETH se quema que se emite
@@ -1742,7 +1742,7 @@ Entender NFTs te ayuda a navegar Web3 y las nuevas formas de propiedad, identida
 
 El staking es el proceso de bloquear tus criptomonedas en una red blockchain para ayudar a validar transacciones y mantener la seguridad de la red. A cambio, recibes recompensas en forma de más criptomonedas.
 
-Es como poner tu dinero en un depósito a plazo fijo, pero para criptomonedas. La diferencia es que tus fondos trabajan activamente para asegurar la red, no simplemente están guardados.
+Se compara a menudo con un depósito a plazo fijo, y la comparación engaña en lo esencial: un depósito conserva el capital y aquí no hay nada que lo garantice. Lo que hay es un activo cuyo precio se mueve, bloqueado durante un tiempo, que puede recibir unidades adicionales.
 
 El staking es posible en blockchains que usan el mecanismo de consenso **Proof of Stake (PoS)**, a diferencia de Bitcoin que usa Proof of Work (minería).
 
@@ -1807,20 +1807,18 @@ Stakeas y recibes un token derivado que puedes usar en DeFi mientras tus fondos 
 
 **Ejemplos:** Lido (stETH), Rocket Pool (rETH)
 
-## Rendimientos de Staking
+## De dónde sale la recompensa
 
-Los rendimientos varían según la criptomoneda y las condiciones del mercado:
+Aquí está la pregunta que ordena todo lo demás, y que casi nunca se hace: **ese pago viene de algún sitio**. En la práctica, de uno de dos:
 
-| Criptomoneda | APY aproximado |
-|--------------|----------------|
-| Ethereum (ETH) | 3-5% |
-| Cardano (ADA) | 3-5% |
-| Solana (SOL) | 6-8% |
-| Polkadot (DOT) | 10-14% |
-| Cosmos (ATOM) | 15-20% |
-| Avalanche (AVAX) | 8-10% |
+- **De emisión nueva.** El protocolo crea unidades y las reparte entre quienes validan. Si el total crece, cada unidad representa una fracción menor del conjunto: lo que se recibe por un lado se diluye por el otro.
+- **De comisiones que pagan otros usuarios.** Aquí no hay dilución, pero depende de que haya actividad y de cuánta.
 
-**Nota**: Estos rendimientos son en la misma criptomoneda, no en euros. Si el precio de la cripto baja, puedes tener más monedas pero menos valor en fiat.
+Saber cuál de las dos sostiene un caso concreto se puede comprobar en la documentación del protocolo, y es más informativo que cualquier porcentaje.
+
+**Por qué no damos cifras.** Las tasas cambian según cuántos validen, cuánta actividad haya y las reglas de cada red, así que cualquier número aquí estaría desactualizado al poco de publicarse. La fuente buena es el propio protocolo o un explorador de su cadena, consultados el día que te haga falta.
+
+Y un detalle que importa más que la tasa: **la recompensa se paga en la misma moneda depositada, no en euros**. Recibir más unidades de algo que vale menos puede ser una pérdida.
 
 ## Riesgos del Staking
 
@@ -1961,11 +1959,11 @@ Las tres columnas se mueven juntas: los métodos con mayor rendimiento potencial
 
 ## Conclusión
 
-El staking es una forma accesible de generar ingresos pasivos con tus criptomonedas mientras contribuyes a la seguridad de las redes blockchain. Aunque no está libre de riesgos, es menos complejo que otras estrategias DeFi.
+El staking es el mecanismo por el que ciertas redes eligen quién valida: se inmoviliza capital como fianza y se recibe una parte de la emisión o de las comisiones. No es un depósito ni un ingreso: el capital sigue expuesto al precio, está bloqueado durante un tiempo y puede reducirse por penalización.
 
 Para valorar lo que supone el staking hacen falta cuatro respuestas: durante cuánto tiempo quedan bloqueados los fondos y en qué condiciones se recuperan; quién custodia las monedas en cada modalidad; de dónde sale la recompensa y en qué moneda se paga; y qué pasa con el capital depositado si el validador es penalizado o el contrato falla. Un APY, por sí solo, no dice nada mientras esas cuatro preguntas sigan abiertas.
 
-¿Quieres aprender más sobre DeFi y estrategias de ingresos pasivos en cripto? Explora nuestros cursos en Nodo360.
+Si quieres entender qué hay debajo de todo esto, el curso *Blockchain: lo que Bitcoin no es* explica las formas de consenso —incluida la prueba de participación— y qué se gana y qué se cede con cada una.
 `
   },
   {
@@ -2839,7 +2837,7 @@ En token voting simple, los ricos tienen más poder. Una ballena con millones de
 
 ### 2. Participación baja
 
-La mayoría de token holders no votan. Apatía del votante es un problema real. A menudo solo 5-15% participan.
+La mayoría de los poseedores de tokens no votan. Las cifras de participación son públicas en la gobernanza de cada proyecto y suelen ser bajas, pero varían tanto entre unos y otros que dar un rango general no informa: se consultan en el propio foro de propuestas.
 
 ### 3. Velocidad
 
