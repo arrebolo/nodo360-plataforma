@@ -1,14 +1,15 @@
 # PROMPT MAESTRO - PROYECTO NODO360
 
 **Version:** 6.0
-**Fecha:** 25/09/2026
+**Fecha:** 25/09/2026 (cifras recontadas al cierre de la tanda)
 **Sustituye a:** v5.0 (22/09/2026)
 
 > **Por que existe esta version.** La v5.0 documentaba una plataforma con 13
-> cursos publicados cuya leccion mediana tenia **1.748 caracteres**. Hoy hay 8
-> cursos publicados y la mediana es **6.025**. Entre una cosa y otra se
+> cursos publicados cuya leccion mediana tenia **1.748 caracteres**. Hoy hay 9
+> cursos publicados y la mediana es **6.073**. Entre una cosa y otra se
 > reescribieron cinco cursos enteros, se fusionaron seis en tres, se archivaron
-> cinco y se cerro la RLS de cuatro tablas. Esta version describe el resultado.
+> cinco, se creo el que faltaba y se cerro la RLS de cuatro tablas. Esta version
+> describe el resultado.
 >
 > Ninguna cifra viene de la v5.0. Todas se han vuelto a contar contra el
 > repositorio y la base de datos el 25/09/2026. Cuando un dato no se ha podido
@@ -107,17 +108,19 @@ codigo espera encontrar.
 
 ### Contenido: el catalogo, al 25/09/2026
 
-**5 rutas activas · 8 cursos publicados · 63 lecciones · 409.577 caracteres ·
-189 preguntas de quiz.** Contado sobre `lessons.content` sin etiquetas HTML.
+**5 rutas activas · 9 cursos publicados · 72 lecciones · 465.667 caracteres ·
+216 preguntas de quiz.** Contado sobre `lessons.content` sin etiquetas HTML el
+25/09/2026, al cierre de la tanda.
 
 | Ruta | Curso | Lec | Caracteres | Preg |
 |---|---|---|---|---|
-| **1. Fundamentos de Bitcoin** <br><sub>`fundamentos-bitcoin`</sub> | Fundamentos de Bitcoin | 9 | 52.505 | 27 |
-| | Como funciona Bitcoin (nivel basico) | 6 | 38.299 | 18 |
-| | Uso practico de Bitcoin | 9 | 53.796 | 27 |
+| **1. Fundamentos de Bitcoin** <br><sub>`fundamentos-bitcoin`</sub> | Fundamentos de Bitcoin | 9 | 52.477 | 27 |
+| | Como funciona Bitcoin (nivel basico) | 6 | 38.245 | 18 |
+| | Uso practico de Bitcoin | 9 | 53.768 | 27 |
 | **2. Seguridad en Criptomonedas** <br><sub>`seguridad-cripto`</sub> | Seguridad basica en Bitcoin y criptomonedas | 9 | 54.851 | 27 |
 | | Cold Storage — Protege tus Bitcoin | 6 | 58.867 | 18 |
-| **3. Web3 Basica** <br><sub>`web3-basica`</sub> | Que es Web3 y que no | 9 | 54.929 | 27 |
+| **3. Web3 Basica** <br><sub>`web3-basica`</sub> | Blockchain: lo que Bitcoin no es | 9 | 56.200 | 27 |
+| | Que es Web3 y que no | 9 | 54.929 | 27 |
 | **4. Trading Basico** <br><sub>`trading-basico`</sub> | Trading: que es y por que casi nadie gana | 9 | 50.205 | 27 |
 | **5. Bitcoin Tecnico** <br><sub>`bitcoin-tecnico`</sub> | Nodos Bitcoin - Tu Soberania Tecnica | 6 | 46.125 | 18 |
 
@@ -125,17 +128,24 @@ codigo espera encontrar.
 
 | | v5.0 (22/09) | v6.0 (25/09) |
 |---|---|---|
+| Lecciones publicadas | 66 | **72** |
 | Minimo | 857 | **5.151** |
-| Mediana | 1.748 | **6.025** |
+| Mediana | 1.748 | **6.073** |
 | Maximo | 12.371 | 12.015 |
 | Por debajo de 3.000 caracteres | la mayoria | **0** |
-| Entre 5.000 y 7.000 | — | **52 de 63** |
+| Entre 5.000 y 7.000 | — | **61 de 72** |
 
-Los cinco cursos reescritos tienen los tres la misma forma: 3 modulos, 9
-lecciones de 5.000-7.000 caracteres y 27 preguntas. Los tres que conservan la
-estructura antigua —**Como funciona Bitcoin**, **Cold Storage** y **Nodos
-Bitcoin**— tienen 6 lecciones y 18 preguntas. Es la diferencia que queda
-pendiente.
+**El orden de Web3 Basica importa y es deliberado**: `fundamentos-blockchain` va
+en **posicion 0** y `introduccion-a-web3` en la 1. El primero explica el suelo
+—que es un registro compartido, que es un estado, que cuesta mantenerlo— y el
+segundo lo que se construye encima. La ficha del primero declara su propio
+requisito previo: haber hecho *Como funciona Bitcoin*.
+
+Los seis cursos reescritos o creados en esta tanda tienen la misma forma: 3
+modulos, 9 lecciones de 5.000-7.000 caracteres y 27 preguntas. Los tres que
+conservan la estructura antigua —**Como funciona Bitcoin**, **Cold Storage** y
+**Nodos Bitcoin**— tienen 6 lecciones y 18 preguntas. Es la diferencia que queda
+pendiente, y ahora es de tres cursos sobre nueve.
 
 **5 cursos archivados**, todos por fusion y ninguno por retirada de contenido:
 
@@ -349,18 +359,27 @@ es. Por eso:
 El inventario completo vive en **`docs/PLAN-REFORMA.md`**, por Tier 0-3. Aqui
 solo lo que manda al 25/09/2026.
 
-### El hueco principal: Fundamentos Blockchain
+### El hueco principal: los cinco cursos que faltan de Tier 3
 
-**No existe, y sin el el mapa de 8 rutas se apoya en el aire.** El Tier 3 lo
-anota con «0% cobertura actual», y es el suelo que le falta a todo lo demas:
-*Que es Web3 y que no* da por sabido que es una blockchain y remite a *Como
-funciona Bitcoin*, que habla de Bitcoin y no de blockchains en general. La
-ultima leccion del curso reconoce ese hueco por escrito, que es lo honesto
-mientras no se llene, pero sigue siendo un hueco.
+**Fundamentos Blockchain ya existe** (migracion 055, 25/09/2026), asi que la ruta
+Web3 Basica tiene suelo por primera vez: *Blockchain: lo que Bitcoin no es*
+explica que es un registro compartido y que es un estado, y *Que es Web3 y que
+no* lo que se construye encima.
 
-Detras de el, en orden: Ethereum y Smart Contracts · DAOs · NFTs · DeFi · Otras
-L1/L2. Los cinco tienen semilla ya escrita (lecciones de Web3, articulos de blog
-y terminos de glosario), pero ninguno tiene base sin el primero.
+Lo que queda por delante, en el orden del Tier 3:
+
+| Curso | Semilla ya escrita |
+|---|---|
+| Ethereum y Smart Contracts | Leccion 2.2 de Web3 mas un articulo de blog |
+| DAOs | El subsistema de gobernanza propio; resuelve la contradiccion de `/proyectos` |
+| NFTs | Leccion 2.3 de Web3 mas un articulo de blog |
+| DeFi | Dos articulos de blog y 11 terminos de glosario |
+| Otras L1/L2 e Interoperabilidad | Leccion 3.2 de Blockchain (capas y puentes) mas un articulo |
+
+Los cinco tienen ya la base conceptual que les faltaba. Y dos huecos que el
+propio curso nuevo reconoce por escrito en su ultima leccion, sin prometer
+fechas: **la criptografia que hay debajo** —como funciona una firma, como se
+construye una funcion de huella— y **como se programa nada de esto**.
 
 ### Tres cursos con la estructura antigua
 
@@ -416,6 +435,7 @@ Ninguna urge con 23 usuarios. Las dos urgiran el dia que haya datos de pago.
 | **Los certificados guardan el titulo antiguo del curso** | Tras la 052, cuatro acreditan «Introduccion al trading…» y su curso se llama ya otra cosa. La 053 fija el criterio: manda el guardado. Hoy son 4; decidir antes de que sean cuarenta |
 | **4 matriculas al 100% con progreso incompleto** | Tres en *Gestion del riesgo* (3 de 6) y una en *Introduccion al trading* (5 de 6), con certificado de enero en formato antiguo. La 047 las dejo sin tocar a proposito: no hay contenido nuevo que consumir |
 | **7 matriculas huerfanas en cursos archivados** | Sus tarjetas desaparecen del panel sin explicacion. Falta decidir el trato por defecto: matricular en el curso que absorbe, avisar de la fusion, o aceptar la perdida silenciosa |
+| **8 remisiones muertas tras las fusiones** | Cerradas en la 054, y `scripts/comprobar-remisiones.mjs` deja la comprobacion repetible. De aqui sale la regla 30 |
 | **Codigo muerto con ruta viva** | `components/gamification/Leaderboard.tsx` no lo importa nadie desde 2025 y su endpoint seguia publicado devolviendo datos personales. Los dos son candidatos a borrarse enteros |
 | **Los contadores de curso se escriben a mano** | `courses.total_modules` y `total_lessons` los fija cada migracion. Hoy cuadran; nada lo garantiza. `modules.total_lessons` vale 0 en casi todas las filas y se pinta igual |
 | **Los tipos generados estan desfasados** | `courses.status` no incluye `pending_review` aunque la base lo use desde la 030. Con el cliente de servicio, que si va tipado, hay que comparar como texto |
@@ -430,11 +450,11 @@ Ninguna urge con 23 usuarios. Las dos urgiran el dia que haya datos de pago.
 Seis cosas, cada una con lo minimo para entenderla. El detalle esta en las
 migraciones, en `docs/PLAN-REFORMA.md` y en la ficha del incidente.
 
-### 1. Reescritura de cuatro rutas
+### 1. Reescritura de cuatro rutas y un curso nuevo
 
-Cinco cursos reescritos enteros y seis fusionados en tres. El catalogo pasa de
-13 cursos publicados con leccion mediana de 1.748 caracteres a **8 cursos con
-mediana de 6.025**.
+Cinco cursos reescritos enteros, seis fusionados en tres y uno creado desde cero.
+El catalogo pasa de 13 cursos publicados con leccion mediana de 1.748 caracteres
+a **9 cursos con mediana de 6.073**.
 
 - **Fundamentos**: *Fundamentos de Bitcoin* absorbe *Bitcoin como sistema
   monetario* (045). *Como funciona Bitcoin* se reescribe (043). *Uso practico*
@@ -442,7 +462,15 @@ mediana de 6.025**.
 - **Seguridad**: *Seguridad basica* absorbe los **dos** cursos de custodia, que
   cubrian lo mismo con distinto nombre (048). Cold Storage se mueve a esta ruta
   y *Seguridad Avanzada* desaparece.
-- **Web3** y **Trading**: cada ruta pasa de dos cursos a uno (052).
+- **Web3** y **Trading**: cada ruta pasa de dos cursos a uno (052). Y despues
+  Web3 gana un curso nuevo delante, *Blockchain: lo que Bitcoin no es* (055),
+  que era el hueco principal del Tier 3.
+
+  Su enfoque no fue el obvio, y lo decidio el diagnostico: en los 247.672
+  caracteres de los cursos relevantes habia **cero** menciones de prueba de
+  participacion, validador, estado compartido, capa 2, interoperabilidad o
+  cadenas con permisos. El territorio libre no era el mecanismo —que *Como
+  funciona Bitcoin* cubre con un caso real— sino **todo lo que no es Bitcoin**.
 
 **El criterio de fusion**: se queda el curso con mas recorrido —mas matriculas y
 mas certificados— y absorbe al otro. El absorbido pasa a `archived`, nunca se
@@ -679,7 +707,9 @@ Verificado fichero a fichero el 25/09/2026. Todas aplicadas salvo la 053.
 | 050 | `curso_visible()` y RLS de `lessons`, `modules` y `quiz_questions` | aplicada |
 | 051 | `certificates` cerrada; `verificar_certificado()` como unica puerta publica | aplicada |
 | 052 | Fusion de las rutas Web3 Basica y Trading Basico | aplicada |
-| 053 | `/verificar` muestra el titulo del certificado, no el vigente del curso | **escrita, SIN aplicar y SIN mergear** |
+| 053 | `/verificar` muestra el titulo del certificado, no el vigente del curso | en `main` (PR #189); **SIN aplicar a la base** |
+| 054 | Arregla 8 remisiones muertas en 4 lecciones que las fusiones dejaron atras | aplicada |
+| 055 | Crea el curso *Blockchain: lo que Bitcoin no es* y lo pone primero en Web3 Basica | aplicada |
 
 > **La 047 estuvo cuatro meses sin existir en el repositorio.** Se aplico el
 > 24/09/2026 por PostgREST y el fichero no llego a escribirse; el hueco lo
@@ -687,10 +717,13 @@ Verificado fichero a fichero el 25/09/2026. Todas aplicadas salvo la 053.
 > un numero. Se reconstruyo el 25/09 desde su respaldo y el estado de la base,
 > que coinciden. Es exactamente lo que la regla 4 existe para evitar.
 
-> **La 053 esta en la rama `content/fusion-web3-y-trading`, que se mergeo por
-> squash antes de ese commit.** El squash rompe la ascendencia, asi que el
-> commit quedo huerfano en la rama. Ni la migracion ni su cambio de codigo estan
-> en `main`.
+> **La 053 estuvo a punto de perderse.** Su commit quedo fuera de `main` porque
+> la rama se mergeo por squash *antes* de escribirlo, y el squash rompe la
+> ascendencia. Se recupero al volver a mergear la misma rama (PR #189). La
+> migracion es DDL y **sigue sin aplicarse a la base**: el fichero listo esta en
+> `C:/Users/alber/053-aplicar.sql`. No corre prisa, porque el arreglo real de los
+> cuatro certificados afectados era la precedencia de la pagina, que ya esta
+> desplegada; la migracion solo mueve el respaldo dentro de la funcion.
 
 Aplicadas a mano y versionadas a posteriori: 024, 025 y 026 el 21/09/2026; 030 y
 033 el 22/09; 041 el 24/09; 047 el 25/09. Las 049, 050 y 051 son DDL y se
@@ -1182,14 +1215,21 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
 
 Dos dias. Tres frentes a la vez, y el resultado esta medido en la seccion
 METRICAS: el catalogo pasa de 13 cursos con leccion mediana de 1.748 caracteres
-a **8 cursos con mediana de 6.025**.
+a **9 cursos con mediana de 6.073**.
 
-**Contenido.** Cinco cursos reescritos enteros y seis fusionados en tres.
+**Contenido.** Cinco cursos reescritos enteros, seis fusionados en tres y uno
+creado desde cero.
 *Fundamentos de Bitcoin* absorbe el curso monetario (045); *Seguridad basica*
 absorbe los dos de custodia (048); Web3 y Trading pasan de dos cursos a uno cada
-una (052). Cinco cursos archivados, ninguno por retirada de contenido: todos por
-fusion, con 301 desde cada URL a la leccion que trata ese mismo tema. La ruta
-*Seguridad Avanzada* desaparece y Cold Storage se integra en Seguridad.
+una (052). Y despues Web3 gana delante *Blockchain: lo que Bitcoin no es* (055),
+el hueco principal del Tier 3, cuyo enfoque lo decidio el diagnostico: no
+explicar blockchain desde cero, sino **lo que no es Bitcoin**.
+
+Cinco cursos archivados, ninguno por retirada de contenido: todos por fusion, con
+301 desde cada URL a la leccion que trata ese mismo tema. La ruta *Seguridad
+Avanzada* desaparece y Cold Storage se integra en Seguridad. Y la 054 cierra las
+8 remisiones muertas que las fusiones dejaron en el texto de cuatro lecciones, de
+donde sale la regla 30.
 
 De aqui salen las cuatro reglas editoriales, 26 a 29, y en particular la
 reescritura de Trading: el curso anterior tenia tres juicios de inversion
