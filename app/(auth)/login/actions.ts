@@ -48,8 +48,12 @@ function mensajeDeError(error: { message?: string; code?: string }): string {
 
 /**
  * Tipos de proveedor OAuth soportados
+ *
+ * Solo Google: es el único habilitado en Supabase. Que el tipo lo refleje no es
+ * cosmética, es lo que impide volver a poner un botón hacia un proveedor
+ * apagado sin darse cuenta.
  */
-export type OAuthProvider = 'google' | 'github'
+export type OAuthProvider = 'google'
 
 /**
  * Resultado de una acción de autenticación
@@ -372,7 +376,7 @@ export async function resendSignUpConfirmation(email: string): Promise<AuthResul
 }
 
 /**
- * Iniciar sesión con OAuth (Google, GitHub)
+ * Iniciar sesión con OAuth (Google)
  * @param provider - Proveedor OAuth
  * @param redirectTo - URL a la que redirigir después del login
  */

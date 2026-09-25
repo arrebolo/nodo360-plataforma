@@ -17,8 +17,14 @@ import { sendGAEvent } from '@next/third-parties/google'
  * Aquí solo viajan slugs, números y métodos.
  */
 
-/** Por dónde entró quien se registra. */
-export type MetodoRegistro = 'email' | 'google' | 'github' | 'magic_link'
+/**
+ * Por dónde entró quien se registra.
+ *
+ * Sin 'github': ese proveedor no está habilitado en Supabase, así que el valor
+ * no podía llegar nunca y solo habría servido para dejar una dimensión vacía en
+ * los informes de GA4.
+ */
+export type MetodoRegistro = 'email' | 'google' | 'magic_link'
 
 type Eventos = {
   /** Cuenta creada. Uno por registro, nunca dos para el mismo. */

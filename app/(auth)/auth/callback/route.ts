@@ -26,14 +26,15 @@ const MARGEN_CUENTA_NUEVA_MS = 60 * 1000
 function metodoDeRegistro(
   user: User | null | undefined,
   type: EmailOtpType | null
-): 'google' | 'github' | 'magic_link' | null {
+): 'google' | 'magic_link' | null {
   if (!user?.created_at) return null
 
   const edad = Date.now() - new Date(user.created_at).getTime()
   if (!Number.isFinite(edad) || edad < 0 || edad > MARGEN_CUENTA_NUEVA_MS) return null
 
+  // Solo Google: es el único proveedor externo habilitado en Supabase.
   const proveedor = user.app_metadata?.provider
-  if (proveedor === 'google' || proveedor === 'github') return proveedor
+  if (proveedor === 'google') return proveedor
 
   // Sin proveedor externo, la cuenta se creó con un enlace mágico: signInWithOtp
   // da de alta al usuario que no existe. El registro con contraseña queda fuera

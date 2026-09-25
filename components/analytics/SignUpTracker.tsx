@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { enviarEvento, type MetodoRegistro } from '@/lib/analytics/eventos'
 
-const METODOS: MetodoRegistro[] = ['email', 'google', 'github', 'magic_link']
+const METODOS: MetodoRegistro[] = ['email', 'google', 'magic_link']
 
 /**
  * Emite `sign_up` cuando alguien vuelve de un registro por OAuth o enlace
