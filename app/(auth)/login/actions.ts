@@ -280,11 +280,15 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
     // Enviar email de bienvenida (no bloquea el flujo)
     if (data.user) {
       try {
-        await sendWelcomeEmail({
+        const envio = await sendWelcomeEmail({
           to: email,
           userName: fullName || email.split('@')[0],
         })
-        console.log('[Auth Actions] Email de bienvenida enviado')
+        if (envio.success) {
+          console.log('✅ [Auth Actions] Email de bienvenida enviado')
+        } else {
+          console.error('❌ [Auth Actions] Email de bienvenida NO enviado:', envio.error)
+        }
       } catch (emailError) {
         // No fallar el registro por error de email
         console.error('[Auth Actions] Error enviando email de bienvenida:', emailError)

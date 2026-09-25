@@ -109,13 +109,21 @@ export async function POST(req: Request) {
       } else {
         console.log(`📧 [Admin Beta] Intentando enviar email a: ${userEmail}`)
         try {
-          await sendAccessGrantedEmail(userEmail, userName)
-          emailSent = true
-          console.log(`✅ [Admin Beta] Email enviado exitosamente a: ${userEmail}`)
+          // sendAccessGrantedEmail ya no lanza: devuelve success. Sin mirarlo,
+          // `emailSent` seria true siempre y el panel diria que el aviso ha
+          // salido cuando no ha salido nada.
+          const envio = await sendAccessGrantedEmail(userEmail, userName)
+          emailSent = envio.success
 
-          // Broadcast a Discord/Telegram
-          await broadcastNewUser(userName, userId)
-          console.log(`✅ [Admin Beta] Broadcast enviado para: ${userName}`)
+          if (envio.success) {
+            console.log(`✅ [Admin Beta] Email enviado exitosamente a: ${userEmail}`)
+
+            // Broadcast a Discord/Telegram
+            await broadcastNewUser(userName, userId)
+            console.log(`✅ [Admin Beta] Broadcast enviado para: ${userName}`)
+          } else {
+            console.error(`❌ [Admin Beta] Email NO enviado a ${userEmail}:`, envio.error)
+          }
         } catch (emailError) {
           console.error('❌ [Admin Beta] Error enviando email:', emailError)
         }

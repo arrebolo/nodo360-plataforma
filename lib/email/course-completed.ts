@@ -1,19 +1,5 @@
-import { Resend } from 'resend'
+import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
 import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
-
-// Lazy initialization para evitar error durante build
-let resendInstance: Resend | null = null
-
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    console.error('❌ [Resend] RESEND_API_KEY no está configurada')
-    return null
-  }
-  if (!resendInstance) {
-    resendInstance = new Resend(process.env.RESEND_API_KEY)
-  }
-  return resendInstance
-}
 
 interface CourseCompletedEmailProps {
   to: string
@@ -36,8 +22,10 @@ export async function sendCourseCompletedEmail({
 
   const resend = getResend()
   if (!resend) {
-    console.error('❌ [sendCourseCompletedEmail] No se puede enviar email: Resend no configurado')
-    throw new Error('Email service not configured')
+    // Devolver, no lanzar: este correo no puede tumbar la acción que lo
+    // dispara. getResend() ya lo ha registrado con ❌.
+    console.error('❌ [sendCourseCompletedEmail] Email no enviado: Resend no configurado')
+    return { success: false, error: 'Email service not configured' }
   }
 
   // Construir sección de nivel si subió
@@ -50,7 +38,7 @@ export async function sendCourseCompletedEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Nodo360 <hola@nodo360.com>',
+      from: REMITENTE_NODO360,
       to,
       subject: `🎓 ¡Felicidades! Completaste "${courseName}"`,
       html: `
@@ -152,7 +140,7 @@ export async function sendCourseCompletedEmail({
 
     if (error) {
       console.error('❌ [sendCourseCompletedEmail] Error:', error)
-      throw error
+      return { success: false, error: error.message }
     }
 
     console.log('✅ [sendCourseCompletedEmail] Enviado:', data?.id)
@@ -160,6 +148,6 @@ export async function sendCourseCompletedEmail({
 
   } catch (error) {
     console.error('❌ [sendCourseCompletedEmail] Error crítico:', error)
-    throw error
+    return { success: false, error: String(error) }
   }
 }

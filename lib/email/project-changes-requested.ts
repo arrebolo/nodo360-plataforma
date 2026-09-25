@@ -1,18 +1,4 @@
-import { Resend } from 'resend'
-
-// Lazy initialization para evitar error durante build
-let resendInstance: Resend | null = null
-
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('[Resend] RESEND_API_KEY no está configurada')
-    return null
-  }
-  if (!resendInstance) {
-    resendInstance = new Resend(process.env.RESEND_API_KEY)
-  }
-  return resendInstance
-}
+import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
 
 interface ProjectChangesRequestedEmailProps {
   to: string
@@ -33,7 +19,7 @@ export async function sendProjectChangesRequestedEmail({
 
   const resend = getResend()
   if (!resend) {
-    console.warn('[sendProjectChangesRequestedEmail] Email no enviado: Resend no configurado')
+    console.error('❌ [sendProjectChangesRequestedEmail] Email no enviado: Resend no configurado')
     return { success: false, error: 'Email service not configured' }
   }
 
@@ -53,7 +39,7 @@ export async function sendProjectChangesRequestedEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Nodo360 <hola@nodo360.com>',
+      from: REMITENTE_NODO360,
       to,
       subject: `Tu proyecto "${projectTitle}" necesita algunos cambios`,
       html: `
@@ -145,7 +131,7 @@ export async function sendProjectChangesRequestedEmail({
     })
 
     if (error) {
-      console.error('[sendProjectChangesRequestedEmail] Error:', error)
+      console.error('❌ [sendProjectChangesRequestedEmail] Error:', error)
       return { success: false, error: error.message }
     }
 
@@ -153,7 +139,7 @@ export async function sendProjectChangesRequestedEmail({
     return { success: true, id: data?.id }
 
   } catch (error) {
-    console.error('[sendProjectChangesRequestedEmail] Error critico:', error)
+    console.error('❌ [sendProjectChangesRequestedEmail] Error critico:', error)
     return { success: false, error: String(error) }
   }
 }

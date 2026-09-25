@@ -1,21 +1,8 @@
 import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/ratelimit'
-
-// Lazy initialization de Resend
-let resendInstance: Resend | null = null
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('[Feedback API] RESEND_API_KEY no configurada, no se enviará email')
-    return null
-  }
-  if (!resendInstance) {
-    resendInstance = new Resend(process.env.RESEND_API_KEY)
-  }
-  return resendInstance
-}
+import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
 
 export async function POST(request: Request) {
   // Rate limiting (strict para feedback)
@@ -132,7 +119,7 @@ export async function POST(request: Request) {
     if (resend) {
       try {
         await resend.emails.send({
-          from: 'Nodo360 <hola@nodo360.com>',
+          from: REMITENTE_NODO360,
           to: 'arrebolo@gmail.com',
           replyTo: userEmail,
           subject: '🔔 Nuevo Feedback - Nodo360',
