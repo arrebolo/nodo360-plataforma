@@ -2197,15 +2197,15 @@ La buena noticia: siguiendo estas prácticas, puedes operar con confianza y prot
   },
   {
     slug: 'bitcoin-vs-oro-comparativa',
-    title: 'Bitcoin vs Oro: ¿Cuál es Mejor Reserva de Valor en 2026?',
-    description: 'Comparativa completa entre Bitcoin y oro como reservas de valor. Analiza escasez, portabilidad, divisibilidad, historia y rendimiento para decidir cómo diversificar.',
+    title: 'Bitcoin y oro: en qué se parecen y en qué no',
+    description: 'Comparación propiedad por propiedad entre Bitcoin y el oro: escasez, portabilidad, divisibilidad, verificabilidad y resistencia a la confiscación. Qué se puede comprobar de cada uno y qué no.',
     category: 'bitcoin',
     author: 'Equipo Nodo360',
     authorRole: 'Educadores Bitcoin',
     publishedAt: '2025-03-10',
     readingTime: 10,
     image: '/blog/bitcoin-vs-oro-comparativa.webp',
-    keywords: ['bitcoin vs oro', 'reserva de valor', 'bitcoin oro digital', 'invertir bitcoin u oro', 'oro digital'],
+    keywords: ['bitcoin y oro', 'reserva de valor', 'bitcoin oro digital', 'escasez verificable', 'oro digital'],
     relatedSlugs: ['que-es-bitcoin-guia-completa', 'halving-bitcoin-que-es-cuando'],
     inlineImages: [
       {
@@ -2216,256 +2216,218 @@ La buena noticia: siguiendo estas prácticas, puedes operar con confianza y prot
       }
     ],
     content: `
-## Bitcoin: ¿El Oro Digital?
+## Bitcoin y el «oro digital»
 
-Bitcoin ha sido llamado "oro digital" desde sus primeros días. Pero, ¿es una comparación justa? ¿Puede Bitcoin realmente competir con un activo que ha sido reserva de valor durante 5.000 años?
+A Bitcoin se le llama «oro digital» desde sus primeros años. La comparación es útil porque los dos se proponen para lo mismo —guardar valor a lo largo del tiempo— y es engañosa porque lo consiguen de formas que no se parecen en nada.
 
-En este artículo comparamos ambos activos en profundidad: de dónde viene el valor de cada uno, en qué se parecen, en qué no, y qué limitaciones tiene la propia comparación.
+Este artículo los compara propiedad por propiedad: de dónde viene el valor de cada uno, en qué se parecen, en qué no, y qué limitaciones tiene la propia comparación. No dice cuál conviene. Dice de qué depende cada cosa.
 
-## Historia como Reserva de Valor
+## Historia: 5.000 años frente a 15
 
-### Oro: 5.000 años de historia
+### Oro
 
-El oro ha sido valorado por civilizaciones desde el antiguo Egipto. Ha sobrevivido:
-- Imperios que cayeron
-- Guerras mundiales
-- Crisis financieras
-- Cambios de sistemas monetarios
+El oro ha sido valorado por civilizaciones desde el antiguo Egipto, y ha atravesado imperios que cayeron, guerras mundiales, crisis financieras y varios cambios de sistema monetario.
 
-**Argumento**: El oro tiene un track record inigualable de mantener valor a través de generaciones.
+**Lo que eso permite decir**: que ha conservado demanda a través de generaciones y de contextos muy distintos. Es el historial más largo que existe.
 
-### Bitcoin: 15 años de existencia
+**Y lo que no**: que vaya a seguir conservándola. Un historial largo describe lo que pasó; no garantiza lo que viene.
 
-Bitcoin nació en 2009 como respuesta a la crisis financiera. En su corta vida:
-- Ha pasado de valer centavos a decenas de miles de dólares
-- Ha sobrevivido múltiples "muertes" declaradas por medios
-- Ha sido adoptado por instituciones y países
-- Ha registrado una revalorización muy alta en ese periodo, acompañada de una volatilidad igual de alta y de caídas superiores al 70% en varias ocasiones
+### Bitcoin
 
-**Argumento**: Aunque joven, Bitcoin ha demostrado resiliencia y adopción creciente.
+Bitcoin arrancó en 2009. En quince años ha funcionado sin interrupciones: la red no se ha detenido y no se ha falsificado ninguna unidad.
+
+**Lo que eso permite decir**: que el mecanismo aguanta. Quince años de funcionamiento continuo son una prueba técnica razonable.
+
+**Y lo que no**: que sea una reserva de valor probada. Quince años es un plazo corto para juzgar eso, y conviene decirlo aunque incomode.
 
 ## Escasez
 
 ### Oro
 
-- Suministro limitado pero no fijo
-- Se estima que quedan ~50.000 toneladas por minar
-- La minería continúa añadiendo ~3.000 toneladas anuales (~1.5% de inflación)
-- Teóricamente podrían descubrirse nuevos depósitos o minarse asteroides
+- Suministro limitado, pero no fijo
+- Se estima que quedan unas 50.000 toneladas por extraer
+- La minería añade cada año en torno al 1,5% del oro que ya existe
+- Podrían descubrirse depósitos nuevos, y nadie puede descartarlo
 
 ### Bitcoin
 
-- Suministro fijo: 21 millones de BTC, nunca habrá más
-- Actualmente ~19.5 millones en circulación
-- La emisión se reduce cada 4 años (halving)
-- El último bitcoin se minará alrededor del año 2140
+- Suministro fijo por protocolo: 21 millones de unidades
+- Alrededor de 19,5 millones ya emitidos
+- La emisión se divide entre dos cada 210.000 bloques, unos cuatro años
+- La última fracción se emitirá alrededor de 2140
 
-**Ganador en escasez: Bitcoin** tiene escasez verificable matemáticamente, mientras que el suministro del oro tiene incertidumbres.
+**La diferencia**: la del oro es una escasez estimada; la de Bitcoin, una escasez comprobable. Cualquiera puede verificar cuántas unidades hay, mientras que con el oro hay que fiarse de estimaciones. A cambio, la escasez de Bitcoin depende de que las reglas no cambien, y eso depende de las personas que las sostienen.
 
 ## Portabilidad
 
 ### Oro
 
 - Pesado y voluminoso
-- Difícil de transportar grandes cantidades
-- Cruzar fronteras con oro es complicado y regulado
-- Necesitas verificar autenticidad con cada transacción
+- Mover cantidades grandes es caro y logísticamente complicado
+- Pasar una frontera con oro está regulado y hay que declararlo
+- Cada entrega exige comprobar la autenticidad
 
 ### Bitcoin
 
-- Completamente digital
-- Puedes llevar millones en un teléfono o en tu memoria
-- Cruzar fronteras sin que nadie lo sepa
-- Sin peso ni volumen físico
+- No tiene peso ni volumen
+- Moverlo cuesta lo mismo sea la cantidad que sea
+- Se puede llevar memorizado
+- Mover valor a otro país no depende de transportar nada
 
-**Ganador en portabilidad: Bitcoin** gana por goleada.
+**La diferencia**: aquí no hay término medio, y es la ventaja más clara de Bitcoin. A cambio, lo que se mueve sin peso también se pierde sin peso: una copia mal anotada o una clave olvidada no tienen equivalente en una caja fuerte.
 
 ## Divisibilidad
 
 ### Oro
 
-- Difícil de dividir en pequeñas cantidades
-- Prácticamente imposible usar para pagos pequeños
-- Necesitas intermediarios para fraccionarlo
+- Difícil de fraccionar en cantidades pequeñas
+- Para importes pequeños hace falta un intermediario que lo divida y lo certifique
 
 ### Bitcoin
 
-- Divisible hasta 8 decimales (satoshis)
-- 1 BTC = 100,000,000 satoshis
-- Puedes enviar fracciones de céntimo de euro
-- Ideal para micropagos
+- Divisible hasta ocho decimales: un bitcoin son cien millones de unidades mínimas
+- Fraccionarlo no requiere permiso ni intermediario
 
-**Ganador en divisibilidad: Bitcoin** permite transacciones de cualquier tamaño.
+**La diferencia**: Bitcoin se divide solo; el oro, no. Con una salvedad práctica que se menciona poco: en la cadena principal la comisión no depende de la cantidad, así que enviar importes muy pequeños puede costar más que el propio importe.
 
 ## Verificabilidad
 
 ### Oro
 
-- Requiere expertos para verificar autenticidad
-- El oro falso (tungsteno bañado) ha engañado a muchos
-- Incluso barras de bancos centrales han resultado falsas
+- Comprobar la autenticidad exige pericia o instrumental
+- El oro falsificado con tungsteno ha pasado controles
+- Se han encontrado barras falsas incluso en reservas oficiales
 
 ### Bitcoin
 
-- Cualquiera puede verificar la autenticidad y suministro
-- Ejecutando un nodo, verificas sin confiar en nadie
-- Imposible falsificar la blockchain
+- Cualquiera puede comprobar cuántas unidades existen y si una transacción es válida
+- Con un nodo propio se comprueba sin fiarse de nadie
+- Falsificar una unidad exigiría rehacer el trabajo acumulado de toda la cadena
 
-**Ganador en verificabilidad: Bitcoin** ofrece verificación trustless.
+**La diferencia**: el oro se verifica con instrumentos y expertos; Bitcoin, con software que cualquiera puede ejecutar. A cambio, esa verificación solo la tiene quien la hace: si usas una aplicación que pregunta a un servidor ajeno, estás confiando igual que con el oro, solo que en otro sitio.
 
-## Resistencia a Confiscación
+## Resistencia a la confiscación
 
 ### Oro
 
-- Ha sido confiscado múltiples veces en la historia
-- Orden Ejecutiva 6102 de Roosevelt (1933) en EE.UU.
-- Fácil de detectar y requisar
-- Necesitas custodia física
+- Se ha confiscado varias veces: la orden ejecutiva 6102 de 1933 en Estados Unidos obligó a entregarlo
+- Es detectable y requisable físicamente
+- Exige custodia física en un lugar concreto
 
 ### Bitcoin
 
-- Muy difícil de confiscar
-- Puedes memorizar 12 palabras (seed phrase)
-- No hay forma de saber cuánto bitcoin tienes
-- Funciona sin infraestructura física
+- No hay nada físico que requisar
+- Una frase de recuperación se puede memorizar
+- Lo que hay en la cadena es público; lo que no es público es a quién pertenece cada dirección
 
-**Ganador en resistencia a confiscación: Bitcoin** es prácticamente imposible de confiscar si se maneja correctamente.
+**La diferencia**: confiscar oro es un problema logístico resuelto; llegar a unos bitcoin exige llegar a la clave, y eso casi siempre significa llegar a la persona. Conviene no exagerarlo. Ante coacción directa, la resistencia técnica no sirve de nada. Y decir que «no hay forma de saber cuánto tienes» es falso: el registro es público, y basta con enlazar una dirección contigo.
 
-## Rendimiento Histórico
+## Por qué aquí no hay una comparación de rentabilidades
 
-### Oro (últimos 50 años)
+Esta sección existía y se ha quitado. Emparejaba cada activo con una cifra de rentabilidad pasada: un porcentaje anual para el oro a lo largo de cincuenta años y, para Bitcoin, un adjetivo en lugar de un número, más la conclusión de que había sido el activo con mejor comportamiento de la década.
 
-- 1974: ~$180/oz
-- 2024: ~$2.300/oz
-- Rendimiento: ~7% anual compuesto
-- Buen hedge contra inflación a muy largo plazo
+Las tres comparten el mismo problema: describen lo que ya pasó y se leen como una previsión. Y la segunda no era ni siquiera un dato, porque un adjetivo no se puede comprobar.
 
-### Bitcoin (desde 2010)
+Aquí tampoco se reproducen esas cifras, ni para desmontarlas. Una cifra de rentabilidad pasada se queda en la cabeza de quien la lee mucho después de que se haya olvidado la advertencia que la acompañaba.
 
-- 2010: ~$0.01
-- 2024: ~$60.000
-- Rendimiento: Astronómico (pero con extrema volatilidad)
-- Mejor activo de la última década por amplio margen
+Lo que sí se puede afirmar sin inventar nada:
 
-**Nota importante**: Rendimientos pasados no garantizan rendimientos futuros. Bitcoin es mucho más volátil.
+- El oro añade cada año en torno al 1,5% de la cantidad existente. Es un dato de oferta, no de precio.
+- Bitcoin tiene una emisión fija y conocida de antemano. También es oferta.
+- Lo que haga el precio de cualquiera de los dos depende de lo que decidan millones de personas, y eso no se deduce de la oferta.
+
+Quien te dé una cifra de rentabilidad futura para cualquiera de los dos está opinando.
 
 ## Volatilidad
 
 ### Oro
 
-- Relativamente estable
-- Movimientos de 2-3% diarios son raros
-- Puede pasar años en rangos estrechos
+- Se mueve poco en el día a día
+- Puede pasar años dentro de un rango estrecho
 
 ### Bitcoin
 
-- Extremadamente volátil
-- Caídas de 50-80% han ocurrido varias veces
-- También subidas de 100%+ en meses
-- La volatilidad ha ido disminuyendo con el tiempo
+- Se mueve mucho más, y las caídas grandes se han repetido varias veces
+- No hay nada en el protocolo que amortigüe el precio
 
-**Ganador en estabilidad: Oro** es claramente más estable.
+**La diferencia**: es la mayor de todas, y va en contra de Bitcoin para quien necesite estabilidad a corto plazo. Sobre si esa volatilidad bajará con el tiempo se puede tener una opinión, pero no un dato: solo se sabrá si ocurre.
 
-## Liquidez y Accesibilidad
+## Liquidez y accesibilidad
 
 ### Oro
 
-- Mercado establecido de billones de dólares
-- Necesitas dealers o ETFs para comprar/vender
-- Spread (diferencia compra/venta) puede ser significativo
-- Almacenamiento tiene costo
+- Mercado muy grande y establecido
+- Comprar y vender pasa por intermediarios o por productos financieros
+- La diferencia entre el precio de compra y el de venta puede ser notable
+- Guardarlo cuesta dinero
 
 ### Bitcoin
 
-- Mercado 24/7, 365 días
-- Compra desde el teléfono en minutos
-- Alta liquidez en exchanges principales
-- Almacenamiento prácticamente gratis (self-custody)
+- Mercado abierto todos los días del año
+- Se puede comprar desde un teléfono en minutos
+- Guardarlo por tu cuenta no cuesta más que el aparato y el cuidado
 
-**Ganador en accesibilidad: Bitcoin** es más fácil de comprar, vender y almacenar.
+**La diferencia**: Bitcoin es más fácil de comprar y de guardar. Y eso también es un riesgo: la fricción del oro protege de las decisiones impulsivas, y Bitcoin no la tiene.
 
-## Usos Prácticos
+## Usos prácticos
 
 ### Oro
 
-- Joyería (~50% de la demanda)
-- Electrónica e industria (~10%)
-- Inversión y reservas (~40%)
-- Tiene utilidad industrial real
+- Joyería, en torno a la mitad de la demanda
+- Electrónica e industria
+- Inversión y reservas oficiales
 
 ### Bitcoin
 
-- Reserva de valor
-- Transferencias internacionales
-- Base para Layer 2 (Lightning Network)
-- Programabilidad limitada pero creciente
+- Mover valor entre personas o países
+- Guardarlo sin intermediario
+- Servir de base a capas construidas encima, como los canales de pago
 
-**Debate abierto**: El oro tiene usos industriales "tangibles", pero Bitcoin tiene utilidad digital única.
+**La diferencia**: el oro sirve para algo aunque nadie lo quiera como dinero; Bitcoin, no. Es un punto a favor del oro que se menciona poco.
 
-## Riesgos Específicos
+## Riesgos propios de cada uno
 
-### Riesgos del Oro
+### Del oro
 
-- Descubrimiento de nuevos depósitos
-- Minería de asteroides (futuro)
-- Sustitución por otras materias primas
-- Cambios en demanda de joyería
+- Que se descubran depósitos nuevos y la oferta crezca más de lo previsto
+- Que caiga la demanda industrial o de joyería
+- Que guardarlo o moverlo se encarezca o se restrinja
 
-### Riesgos del Bitcoin
+### De Bitcoin
 
-- Riesgo tecnológico (aunque mínimo tras 15 años)
-- Riesgo regulatorio (prohibiciones)
-- Competencia de otras criptomonedas
-- Adopción insuficiente
+- Que un fallo en el software o en la criptografía obligue a cambiar las reglas
+- Que la regulación limite el acceso o la custodia en algún país
+- Que la adopción se estanque y la red quede en pocas manos
+- Que pierdas el acceso por un error tuyo, que es el riesgo más frecuente de todos
 
-## ¿Qué Dicen los Expertos?
+## Por qué la opinión de un inversor famoso no es un argumento
 
-### A favor del oro
+Esta comparación se suele zanjar citando quién está a favor de qué: que tal gestor compró, que tal crítico sigue en contra, que tal empresa acumula. Aquí no aparece ninguno de esos nombres, y el motivo es el mismo que en el resto de la plataforma.
 
-- Warren Buffett: Ha criticado Bitcoin aunque recientemente invirtió en empresas cripto
-- Peter Schiff: Defensor acérrimo del oro, crítico de Bitcoin
-- Ray Dalio: Posee ambos, prefiere oro como diversificación
+Quien tiene una posición grande en algo tiene interés en que suba. Eso no lo descalifica, pero tampoco lo convierte en prueba: lo que dice un inversor conocido sobre un activo que posee es información sobre su cartera, no sobre el activo.
 
-### A favor de Bitcoin
+Las propiedades de arriba —escasez, portabilidad, divisibilidad, verificabilidad— se pueden comprobar sin preguntarle a nadie. Eso es justamente lo que las hace útiles para decidir.
 
-- Michael Saylor: MicroStrategy tiene >200.000 BTC
-- Fidelity: Ofrece Bitcoin a clientes institucionales
-- BlackRock: Lanzó ETF de Bitcoin con récord de entradas
+## Lo que hay que responder antes de decidir cuánto
 
-## Estrategia de Diversificación
+No hay una proporción recomendada, y aquí no vas a encontrar una: cuánto tener de cada cosa depende de circunstancias que solo conoces tú. Lo que sí se puede ordenar son las preguntas.
 
-No tiene por qué ser uno u otro. Muchos inversores optan por tener ambos:
-
-### Estrategia conservadora
-
-- 5-10% oro
-- 1-5% Bitcoin
-- Resto en activos tradicionales
-
-### Estrategia moderada
-
-- 5-10% oro
-- 5-10% Bitcoin
-- Diversificación en renta variable y fija
-
-### Estrategia agresiva
-
-- 2-5% oro
-- 15-25% Bitcoin
-- Mayor exposición a renta variable
+1. **¿Para qué lo quieres?** Guardar valor a diez años y tener algo disponible el mes que viene no son el mismo problema.
+2. **¿Qué pasa si baja mucho y tarda años en recuperarse?** Si la respuesta te cambia los planes, la cantidad es demasiada.
+3. **¿Quién va a custodiarlo?** El oro exige un sitio físico; Bitcoin, una clave que no se pierda. Los dos fallan por lo mismo: el cuidado.
+4. **¿Sabrías explicar de dónde viene el valor de lo que estás comprando?** Si no, la cantidad correcta es cero hasta que sepas.
+5. **¿Qué pasa si te ocurre algo a ti?** Con oro queda un objeto que alguien encuentra. Con Bitcoin, si nadie sabe nada, no hay nada que encontrar.
 
 ## Conclusión
 
-Bitcoin y oro no son mutuamente excluyentes. Ambos tienen propiedades de reserva de valor pero con características muy diferentes:
+Bitcoin y oro no responden a la misma pregunta con distinta eficacia: responden a preguntas parecidas con mecanismos distintos.
 
-- **Oro**: Estabilidad, historia probada, menor volatilidad
-- **Bitcoin**: Escasez verificable, portabilidad, potencial de revalorización
+- **El oro** tiene el historial más largo que existe, utilidad al margen de su papel monetario y una escasez que hay que estimar.
+- **Bitcoin** tiene una escasez comprobable, se mueve y se divide sin intermediario, y un historial de quince años.
 
-Tu elección dependerá de tu horizonte temporal, tolerancia al riesgo, y creencias sobre el futuro del dinero.
+Cuál encaja mejor depende de para qué, de cuánto tiempo y de quién vaya a cuidarlo. Este artículo no lo decide, y quien lo decida por ti con una cifra está vendiendo algo.
 
-Lo más prudente: Diversificar y no apostar todo a un solo activo.
-
-¿Quieres aprender más sobre Bitcoin como reserva de valor y estrategias de inversión? Explora nuestros cursos en Nodo360.
+¿Quieres entender de dónde viene la escasez de Bitcoin y cómo se comprueba? Empieza por *Fundamentos de Bitcoin* y sigue con *Cómo funciona Bitcoin (nivel básico)*. Y si vas a custodiar tú, antes que nada *Seguridad básica en Bitcoin y criptomonedas*.
 `
   },
   {
