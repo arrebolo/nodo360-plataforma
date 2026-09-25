@@ -979,7 +979,6 @@ export type Database = {
           description: string | null
           id: string
           order_index: number
-          requires_quiz: boolean
           slug: string | null
           title: string
           total_duration_minutes: number | null
@@ -992,7 +991,6 @@ export type Database = {
           description?: string | null
           id?: string
           order_index: number
-          requires_quiz?: boolean
           slug?: string | null
           title: string
           total_duration_minutes?: number | null
@@ -1005,7 +1003,6 @@ export type Database = {
           description?: string | null
           id?: string
           order_index?: number
-          requires_quiz?: boolean
           slug?: string | null
           title?: string
           total_duration_minutes?: number | null

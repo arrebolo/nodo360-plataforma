@@ -358,64 +358,11 @@ export async function issueModuleCertificate(
   });
 }
 
-/**
- * Issue course certificate after completing all modules
- *
- * Validates that all required modules are completed
- *
- * @param userId - User ID
- * @param courseId - Course ID
- * @returns Generation result
- */
-export async function issueCourseCertificate(
-  userId: string,
-  courseId: string
-): Promise<GenerateCertificateResult> {
-  const supabase = await createClient();
+// issueCourseCertificate se borro el 25/09/2026. Filtraba los modulos con
+// requires_quiz = true, no encontraba ninguno -estaba en false en los 27- y
+// devolvia "Course has no required modules": no podia emitir un certificado nunca.
+// Y no la llamaba nadie. La via viva es lib/certificates/createCertificate.
 
-  // Get all modules that require quiz
-  const { data: requiredModules, error: modulesError } = await supabase
-    .from("modules")
-    .select("id")
-    .eq("course_id", courseId)
-    .eq("requires_quiz", true);
-
-  if (modulesError) {
-    return {
-      success: false,
-      error: "Failed to fetch course modules",
-    };
-  }
-
-  if (!requiredModules || requiredModules.length === 0) {
-    return {
-      success: false,
-      error: "Course has no required modules",
-    };
-  }
-
-  // Check if user has passed all required modules
-  for (const mod of requiredModules) {
-    const { data: passed } = await supabase.rpc("has_passed_module_quiz", {
-      p_user_id: userId,
-      p_module_id: mod.id,
-    });
-
-    if (!passed) {
-      return {
-        success: false,
-        error: `Not all required modules completed. Module ${mod.id} not passed.`,
-      };
-    }
-  }
-
-  // All modules passed, issue course certificate
-  return generateAndIssueCertificate({
-    userId,
-    courseId,
-    type: "course",
-  });
-}
 
 /**
  * Regenerate certificate PDF

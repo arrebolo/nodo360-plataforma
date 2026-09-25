@@ -5,6 +5,10 @@ import { awardXP } from '@/lib/gamification/awardXP'
 import { checkAndAwardBadges } from '@/lib/gamification/checkAndAwardBadges'
 import { createCertificate } from '@/lib/certificates/createCertificate'
 import { checkRateLimit } from '@/lib/ratelimit'
+import {
+  ESPERA_ENTRE_INTENTOS_SEGUNDOS,
+  esExamenLegitimo,
+} from '@/lib/quiz/sortearExamen'
 import { broadcastCourseCompleted } from '@/lib/notifications'
 import { sendCourseCompletedEmail } from '@/lib/email/course-completed'
 import { sendBadgeEarnedEmail } from '@/lib/email/badge-earned'
@@ -51,35 +55,80 @@ export async function POST(request: NextRequest) {
 
     const admin = createAdminClient()
 
-    // Obtener el primer modulo del curso para usar como referencia
-    const { data: firstModule, error: moduleError } = await admin
+    // Modulos del curso, en su orden. El primero se usa como referencia del
+    // intento, que es como se ha guardado siempre.
+    const { data: allModules, error: moduleError } = await admin
       .from('modules')
       .select('id')
       .eq('course_id', course_id)
       .order('order_index', { ascending: true })
-      .limit(1)
-      .single()
 
-    if (moduleError || !firstModule) {
-      console.error('[quiz/submit] Error obteniendo modulo:', moduleError)
+    if (moduleError || !allModules || allModules.length === 0) {
+      console.error('[quiz/submit] Error obteniendo modulos:', moduleError)
       return NextResponse.json(
         { error: 'Curso no tiene modulos' },
         { status: 400 }
       )
     }
 
-    // Obtener preguntas del quiz para calcular correctas
-    const { data: allModules } = await admin
-      .from('modules')
-      .select('id')
-      .eq('course_id', course_id)
+    const moduleIds = allModules.map(m => m.id)
+    const firstModule = allModules[0]
 
-    const moduleIds = (allModules || []).map(m => m.id)
+    // Espera corta entre intentos. Los intentos son ilimitados a proposito
+    // -bloquear a quien aprende es peor que el agujero-, pero sin ninguna espera
+    // el examen se recorre a golpe de boton.
+    const desde = new Date(Date.now() - ESPERA_ENTRE_INTENTOS_SEGUNDOS * 1000).toISOString()
+    const { data: recientes } = await admin
+      .from('quiz_attempts')
+      .select('created_at')
+      .eq('user_id', user_id)
+      .in('module_id', moduleIds)
+      .gte('created_at', desde)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (recientes && recientes.length > 0) {
+      const faltan = Math.max(
+        1,
+        ESPERA_ENTRE_INTENTOS_SEGUNDOS -
+          Math.floor((Date.now() - new Date(recientes[0].created_at).getTime()) / 1000)
+      )
+      return NextResponse.json(
+        { error: 'Espera ' + faltan + ' segundos antes de volver a intentarlo', retry_after: faltan },
+        { status: 429 }
+      )
+    }
+
+    // Se corrige SOLO lo que se ha respondido, porque el examen es un
+    // subconjunto sorteado de las preguntas del curso. Los ids llegan del
+    // cliente, asi que hay que comprobar que son de este curso y que forman un
+    // examen legitimo: ni mas ni menos preguntas, y el reparto por modulo que
+    // toca. Sin eso se podria enviar una seleccion a medida.
+    const idsRespondidas = Object.keys(answers)
+
+    if (idsRespondidas.length === 0) {
+      return NextResponse.json(
+        { error: 'No has respondido ninguna pregunta' },
+        { status: 400 }
+      )
+    }
 
     const { data: questions, error: questionsError } = await admin
       .from('quiz_questions')
-      .select('id, correct_answer, points')
+      .select('id, module_id, correct_answer, points, options, explanation')
       .in('module_id', moduleIds)
+      .in('id', idsRespondidas)
+
+    // Cuantas preguntas tiene cada modulo, para saber que reparto tocaba
+    const { data: todasDelCurso } = await admin
+      .from('quiz_questions')
+      .select('module_id')
+      .in('module_id', moduleIds)
+
+    const totalPorModulo = new Map<string, number>()
+    for (const q of todasDelCurso || []) {
+      totalPorModulo.set(q.module_id, (totalPorModulo.get(q.module_id) ?? 0) + 1)
+    }
 
     if (questionsError) {
       console.error('[quiz/submit] Error obteniendo preguntas:', questionsError)
@@ -99,7 +148,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Correccion server-side: correct_answer no sale nunca de esta funcion.
+    // Todos los ids respondidos tienen que ser preguntas de este curso.
+    if (questions.length !== idsRespondidas.length) {
+      console.error('[quiz/submit] Ids ajenos al curso:', idsRespondidas.length - questions.length)
+      return NextResponse.json(
+        { error: 'Hay respuestas que no corresponden a este examen' },
+        { status: 400 }
+      )
+    }
+
+    const legitimo = esExamenLegitimo(questions, moduleIds, totalPorModulo)
+    if (!legitimo.ok) {
+      console.error('[quiz/submit] Examen no legitimo:', legitimo.motivo)
+      return NextResponse.json(
+        { error: 'Este examen no es valido: ' + legitimo.motivo },
+        { status: 400 }
+      )
+    }
+
+    // Correccion server-side: correct_answer no sale de esta funcion, salvo
+    // para las preguntas FALLADAS y solo despues de corregir. Ahi si sale, con
+    // su explicacion: es lo que enseña, y hasta ahora no se mostraba nunca.
     const correctAnswersMap = new Map(
       questions.map(q => [q.id, { correct: q.correct_answer, points: q.points || 1 }])
     )
@@ -363,6 +432,17 @@ export async function POST(request: NextRequest) {
         question_id: a.question_id,
         correct: a.correct,
       })),
+      // Repaso de lo fallado: la respuesta correcta y su explicacion, SOLO de
+      // las preguntas falladas y solo una vez corregido el examen. De las
+      // acertadas no se manda nada, y de las que no salieron sorteadas tampoco:
+      // el banco entero no viaja nunca al navegador.
+      fallos: questions
+        .filter(q => answers[q.id] !== correctAnswersMap.get(q.id)!.correct)
+        .map(q => ({
+          question_id: q.id,
+          correcta: String((q.options as unknown[])[q.correct_answer] ?? ''),
+          explicacion: q.explanation ?? '',
+        })),
       xp_awarded: xpAwarded,
       certificate: certificate,
       awarded_badges: awardedBadges,

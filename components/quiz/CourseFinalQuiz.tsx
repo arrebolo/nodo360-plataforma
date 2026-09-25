@@ -26,6 +26,10 @@ interface QuizResult {
   // Veredicto por pregunta que devuelve el servidor. No contiene la respuesta
   // correcta, solo si se acerto.
   results?: Record<string, boolean>
+  // Repaso de lo fallado, que manda el servidor solo despues de corregir y solo
+  // de las preguntas falladas. Antes no se mostraba nunca: el alumno sabia que
+  // habia fallado la 3 y la 7, y no por que.
+  fallos?: Array<{ question_id: string; correcta: string; explicacion: string }>
 }
 
 export function CourseFinalQuiz({
@@ -101,6 +105,7 @@ export function CourseFinalQuiz({
         submitted: true,
         certificate: data.certificate || null,
         results: resultsMap,
+        fallos: data.fallos || [],
       })
 
       // Mostrar badges ganados
@@ -168,7 +173,12 @@ export function CourseFinalQuiz({
     setAnswers({})
     setShowResults(false)
     setQuizResult(null)
+    setSubmitError(null)
     hasSubmittedRef.current = false
+    // Sin esto el reintento reusaria las MISMAS preguntas: el sorteo ocurre en
+    // el servidor, al cargar la pagina. router.refresh() vuelve a pedirla y
+    // llegan otras.
+    router.refresh()
   }
 
   // Mostrar resultados
@@ -181,6 +191,7 @@ export function CourseFinalQuiz({
       percentage: 0,
       passed: false,
       results: undefined as Record<string, boolean> | undefined,
+      fallos: undefined as QuizResult['fallos'],
     }
     const passed = score.passed
 
@@ -253,6 +264,36 @@ export function CourseFinalQuiz({
           </div>
         )}
 
+        {/* Repaso de lo fallado: la respuesta correcta y por qué. Es la parte
+            que enseña, y hasta ahora no se mostraba nunca. */}
+        {!isSubmitting && (score.fallos?.length ?? 0) > 0 && (
+          <div className="mb-8 space-y-4">
+            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">
+              Lo que has fallado
+            </h3>
+            {score.fallos!.map((f) => {
+              const pregunta = questions.find((q) => q.id === f.question_id)
+              return (
+                <div
+                  key={f.question_id}
+                  className="rounded-xl border border-white/10 bg-white/5 p-4"
+                >
+                  {pregunta && (
+                    <p className="text-white/90 font-medium mb-3">{pregunta.question}</p>
+                  )}
+                  <p className="text-sm text-green-400 mb-2">
+                    <span className="text-white/50">Respuesta correcta: </span>
+                    {f.correcta}
+                  </p>
+                  {f.explicacion && (
+                    <p className="text-sm text-white/70 leading-relaxed">{f.explicacion}</p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         {/* Mensaje según estado */}
         {isSubmitting ? (
           <div className="text-center text-white/60 mb-8">
@@ -273,7 +314,9 @@ export function CourseFinalQuiz({
           </div>
         ) : (
           <p className="text-center text-white/60 mb-8">
-            Necesitas al menos 70% para aprobar. Revisa el contenido del curso e inténtalo de nuevo.
+            Necesitas al menos 70% para aprobar. Arriba tienes lo que has fallado, con
+            la respuesta correcta y el motivo. Al volver a intentarlo saldrán otras
+            preguntas del curso.
           </p>
         )}
 
