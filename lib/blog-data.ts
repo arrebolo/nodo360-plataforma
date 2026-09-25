@@ -1757,7 +1757,7 @@ El staking es posible en blockchains que usan el mecanismo de consenso **Proof o
 
 ### Proof of Stake (PoS)
 
-- Usado por Ethereum, Cardano, Solana, etc.
+- Lo usan varias de las redes grandes, incluida Ethereum desde 2022
 - Los validadores bloquean monedas como garantía
 - Mucho más eficiente energéticamente
 - No se necesita hardware especializado
@@ -1768,7 +1768,7 @@ El staking es posible en blockchains que usan el mecanismo de consenso **Proof o
 
 ### Proceso simplificado
 
-1. **Adquieres** la criptomoneda que quieres stakear (ETH, ADA, SOL, etc.)
+1. **Adquieres** la criptomoneda de la red en la que quieras participar
 2. **Bloqueas** tus tokens en un contrato de staking o con un validador
 3. **El protocolo** te selecciona aleatoriamente para validar transacciones (ponderado por tu stake)
 4. **Validas** transacciones correctamente
@@ -1793,19 +1793,30 @@ Correr tu propio nodo validador. Máximo control pero altos requisitos.
 
 ### 2. Staking Delegado
 
-Delegas tus monedas a un validador existente que hace el trabajo técnico. Común en Cardano, Solana, Cosmos.
+Delegas tus monedas a un validador existente que hace el trabajo técnico. Lo permiten varias redes, con reglas distintas en cada una: conviene leer las de la red concreta, porque cambian el plazo de salida y quién absorbe una penalización.
 
-### 3. Staking en Exchanges
+### 3. Staking a través de una plataforma
 
-El exchange hace el staking por ti. Más simple pero menos control.
-
-**Plataformas:** Binance, Kraken, Coinbase
+Una empresa lo hace por ti. Más simple, y a cambio las claves son suyas: lo que tienes es una anotación a tu favor, no la capacidad de retirar sin su permiso.
 
 ### 4. Staking Líquido
 
-Stakeas y recibes un token derivado que puedes usar en DeFi mientras tus fondos siguen generando recompensas.
+Depositas y recibes a cambio un token que representa lo depositado y que se puede usar en otros sitios mientras el original sigue bloqueado.
 
-**Ejemplos:** Lido (stETH), Rocket Pool (rETH)
+Añade una capa: ese token vale lo que valga la promesa de poder canjearlo por el original, y quien sostiene esa promesa es el servicio que lo emitió.
+
+### Qué preguntar antes de usar cualquiera de las dos
+
+No damos nombres, y desconfía de quien te dé uno sin explicar sus criterios. Lo que sí se puede comprobar, y conviene comprobar:
+
+- **¿Quién tiene las claves?** Si alguien puede devolverte el acceso, es porque lo tiene él.
+- **¿Qué pasa si el servicio cierra?** ¿Puedes retirar por tu cuenta, o dependes de que siga operando?
+- **¿Cuánto tarda la salida, y quién fija ese plazo?** ¿El protocolo, o la empresa?
+- **¿Qué comisión se queda, y sobre qué?** Sobre la recompensa o sobre el capital.
+- **¿Qué pasa si el validador es penalizado?** ¿Lo absorbe el servicio o lo repercute?
+- **¿Está publicado cuánto custodia y se puede verificar?**
+
+Si alguna de las seis no tiene respuesta clara y comprobable, eso ya es la respuesta.
 
 ## De dónde sale la recompensa
 
@@ -1842,86 +1853,68 @@ Especialmente en staking líquido o DeFi, hay riesgo de errores o exploits en lo
 
 Si usas un exchange centralizado, estás expuesto al riesgo de quiebra (como pasó con FTX).
 
-## Staking Líquido: Lo Mejor de Ambos Mundos
+## Staking Líquido: qué añade y qué añade de riesgo
 
-El staking líquido resuelve el problema de la iliquidez. Cuando stakeas con protocolos como Lido:
+El staking líquido responde al problema del bloqueo, y lo hace introduciendo una capa más:
 
-1. Depositas ETH
-2. Recibes stETH (un token que representa tu ETH stakeado)
-3. El stETH genera recompensas automáticamente
-4. Puedes usar stETH en DeFi (préstamos, liquidez, etc.)
+1. Depositas el activo en un servicio
+2. Recibes a cambio **otro token**, que representa lo depositado
+3. Ese token acumula las recompensas
+4. Y se puede usar en otros sitios mientras el original sigue bloqueado
 
-### Principales protocolos de staking líquido
+La parte que conviene entender: **ese token no es el activo, es una promesa de poder canjearlo**. Vale lo que valga esa promesa, y quien la sostiene es el servicio que lo emitió. Si el servicio falla, el token sigue existiendo y circulando, sin nada detrás.
 
-**Lido (stETH)**
-- El más grande para Ethereum
-- ~30% del ETH stakeado
-- Preocupaciones de centralización
+### Lo que diferencia a unos servicios de otros
 
-**Rocket Pool (rETH)**
-- Más descentralizado
-- Requiere menos ETH para ser operador de nodo
-- Menor adopción que Lido
+No damos nombres. Lo que sí se puede comprobar, y es lo que de verdad los distingue:
 
-**Coinbase (cbETH)**
-- Opción institucional
-- Regulado
-- Menor rendimiento (comisiones más altas)
+- **Cuánto del total de la red custodia uno solo.** Cuando un único servicio concentra una parte grande de lo depositado, eso es un problema para la red entera, no solo para sus clientes.
+- **Quién opera los validadores**: un conjunto abierto, o una lista que alguien aprueba.
+- **Quién puede cambiar las reglas del contrato**, y qué hace falta para que lo haga.
+- **Qué comisión se queda y sobre qué**: sobre la recompensa o sobre el capital.
+- **Si el canje está garantizado por el protocolo o depende del mercado.** No es lo mismo poder recuperar el original que poder venderlo a quien quiera comprarlo.
 
-## Staking de Ethereum (ETH)
+## Las cuatro formas, comparadas por lo que exigen
 
-Desde "The Merge" en 2022, Ethereum usa Proof of Stake. Las opciones son:
+Desde 2022 Ethereum usa prueba de participación, y su caso sirve para ver las cuatro formas que existen en casi cualquier red. Comparadas por lo que piden y por quién tiene las claves, que es lo que importa:
 
-### Solo staking (32 ETH)
+### Validar por tu cuenta
 
-- Máximas recompensas (~4-5%)
-- Control total
-- Requisitos técnicos altos
-- Necesitas 32 ETH mínimo
+- Mínimo fijado por el protocolo, en Ethereum 32 ETH
+- Las claves son tuyas y el control es total
+- Requisitos técnicos altos y disponibilidad continua
+- Sin comisión de intermediario, pero con coste de equipo y tiempo
 
-### Staking pools
+### Fondo común de validación
 
-- Junta fondos de múltiples usuarios
-- Menor requisito de entrada
-- Comisiones al pool
+- Junta el capital de varias personas para alcanzar el mínimo
+- Menor entrada, comisión al fondo
+- La custodia depende de cómo esté montado: hay que mirarlo caso por caso
 
-### Staking líquido (Lido, Rocket Pool)
+### Staking líquido
 
-- Sin mínimo
-- Liquidez inmediata vía token derivado
-- Comisiones (~10% de recompensas)
+- Sin mínimo, y devuelve un token que representa lo depositado
+- Añade la capa de riesgo descrita arriba
+- Comisión sobre las recompensas
 
-### Exchanges centralizados
+### A través de una plataforma
 
-- Muy fácil
-- Menor control
-- Comisiones variables
+- Lo más sencillo, y las claves son de la empresa
+- Lo que tienes es una anotación a tu favor, no la capacidad de retirar sin permiso
+- Comisión variable, y expuesto a que la empresa quiebre
 
-## Cómo Empezar con Staking
+**Las comisiones y los mínimos cambian**, así que no damos cifras: el mínimo está en el protocolo y la comisión, en las condiciones de cada servicio.
 
-### Opción 1: Exchange centralizado
+## El orden en que conviene decidir
 
-1. Abre cuenta en Binance, Kraken o Coinbase
-2. Compra la cripto que quieres stakear
-3. Busca la sección de "Earn" o "Staking"
-4. Selecciona el producto y cantidad
-5. Confirma y empieza a ganar
+No damos una guía de pasos, porque los pasos concretos dependen de la red y del servicio, y cambian. Lo que no cambia es el orden de las decisiones:
 
-### Opción 2: Staking delegado (ejemplo Cardano)
-
-1. Descarga una wallet compatible (Yoroi, Daedalus)
-2. Compra y envía ADA a tu wallet
-3. Ve a la sección de staking
-4. Elige un pool (investiga su rendimiento y confiabilidad)
-5. Delega tu ADA
-6. Espera el período de activación (~4 epochs en Cardano)
-
-### Opción 3: Staking líquido (ejemplo Lido)
-
-1. Conecta MetaMask a stake.lido.fi
-2. Deposita ETH
-3. Recibe stETH
-4. Usa stETH en DeFi o simplemente holdea
+1. **Decide si quieres participar**, sabiendo que el capital queda bloqueado un tiempo, que la recompensa se paga en la misma moneda y que puede reducirse por penalización.
+2. **Decide la cantidad**, con el criterio de siempre: la que podrías perder entera sin que te cambie nada.
+3. **Elige la forma** entre las cuatro de arriba, según cuánto control quieras y cuánto trabajo estés dispuesto a asumir.
+4. **Comprueba el servicio** con las seis preguntas de más arriba, si no vas a validar por tu cuenta.
+5. **Averigua el plazo de salida** antes de entrar, no después. Es el dato que más sorprende.
+6. **Y antes de nada, resuelve la custodia.** Si las claves no están bien guardadas, nada de lo anterior importa.
 
 ## Los Riesgos de Cada Método
 
@@ -2988,34 +2981,24 @@ El halving es el mecanismo que hace esto posible.
 - **Bloque**: 210.000
 - **Fecha**: 28 de noviembre de 2012
 - **Recompensa**: 50 BTC → 25 BTC
-- **Precio antes**: ~$12
-- **Precio un año después**: ~$1.100 (+9.000%)
 
 ### Halving #2 - Julio 2016
 
 - **Bloque**: 420.000
 - **Fecha**: 9 de julio de 2016
 - **Recompensa**: 25 BTC → 12.5 BTC
-- **Precio antes**: ~$650
-- **Precio un año después**: ~$2.500 (+285%)
-- **Máximo del ciclo**: ~$20.000 (diciembre 2017)
 
 ### Halving #3 - Mayo 2020
 
 - **Bloque**: 630.000
 - **Fecha**: 11 de mayo de 2020
 - **Recompensa**: 12.5 BTC → 6.25 BTC
-- **Precio antes**: ~$8.700
-- **Precio un año después**: ~$55.000 (+530%)
-- **Máximo del ciclo**: ~$69.000 (noviembre 2021)
 
 ### Halving #4 - Abril 2024
 
 - **Bloque**: 840.000
 - **Fecha**: 20 de abril de 2024
 - **Recompensa**: 6.25 BTC → 3.125 BTC
-- **Precio antes**: ~$64.000
-- **Ciclo en curso**: Por determinar
 
 ## ¿Cuándo es el Próximo Halving?
 
@@ -3042,17 +3025,13 @@ Cada halving reduce la producción anual a la mitad, aumentando el ratio S2F y, 
 - No predijo correctamente el ciclo 2021-2022
 - No considera demanda, solo oferta
 
-### Patrón histórico
+### Por qué no hay «patrón histórico»
 
-Históricamente, cada halving ha sido seguido por un mercado alcista significativo:
+Se describe a menudo una secuencia de fases con plazos —acumulación, consolidación, subida a los tantos meses, máximo, corrección— presentada como lo que ocurre después de cada halving.
 
-1. **Acumulación pre-halving**: Anticipación del evento
-2. **Consolidación**: Meses después del halving
-3. **Rally**: 12-18 meses post-halving
-4. **Máximo**: Nuevo all-time high
-5. **Corrección**: Caída del 70-80%
+Conviene ver el problema de fondo: **ha habido cuatro halvings**. Cuatro observaciones no son una serie de la que deducir un patrón, y menos cuando cada una ocurrió en un contexto distinto: el primero con un mercado casi inexistente, el último con productos financieros regulados de por medio.
 
-**Advertencia**: Rendimientos pasados no garantizan rendimientos futuros. Cada ciclo es diferente.
+Describir esas cuatro veces como «el patrón» y prolongarlo hacia el futuro es exactamente lo que este artículo advierte de no hacer unas secciones más abajo. Lo que se puede afirmar es lo verificable: **la recompensa se divide entre dos cada 210.000 bloques**. Lo que el precio haga a partir de ahí no se deduce de eso.
 
 ## Los Ciclos de Bitcoin
 
@@ -3159,13 +3138,11 @@ El halving es un hecho verificable del protocolo: cada 210.000 bloques la recomp
 
 ### ¿El halving está "priced in"?
 
-Parcialmente. El mercado anticipa el halving, pero históricamente los efectos completos tardan meses en materializarse.
+Es una pregunta abierta y no tiene respuesta comprobable. La fecha del halving se conoce con años de antelación, así que cualquiera que quiera actuar en consecuencia puede hacerlo antes; de ahí que se discuta si el efecto ya está en el precio. Quien te dé una respuesta segura está opinando.
 
-### ¿Por qué el precio no sube inmediatamente?
+### ¿Qué le ocurre al minero el día del halving?
 
-- Mineros venden para cubrir costos
-- Expectativas ya incorporadas
-- Otros factores macro influyen
+Esta sí tiene respuesta concreta: **sus ingresos por bloque se reducen a la mitad de un día para otro**, mientras sus costes siguen iguales. Los equipos menos eficientes dejan de ser rentables y se apagan, y el ajuste de dificultad reacciona a eso en las semanas siguientes. Es el efecto directo y medible del halving.
 
 ### ¿Puede cancelarse un halving?
 
