@@ -1138,6 +1138,33 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
     20-21/09 se retiraron de la web «entre 500 y 5.000 estudiantes» segun la
     pagina, con 23 usuarios reales.
 
+
+30. **Al fusionar, archivar o renombrar un curso, hay que revisar las
+    remisiones en el texto de todas las lecciones publicadas.** Las
+    redirecciones 301 arreglan los enlaces; no arreglan las menciones.
+
+    **Por que.** Las migraciones 045, 048 y 052 archivaron cinco cursos y
+    renombraron dos. Las URLs quedaron cubiertas con 96 redirecciones, y aun
+    asi el cierre de *Como funciona Bitcoin* siguio recomendando cuatro cursos
+    de los que **tres ya no existian con ese nombre**. Ocho remisiones muertas
+    en cuatro lecciones, todas en prosa: `<em>Ecosistema Web3 explicado</em>`,
+    `<em>Bitcoin como sistema monetario</em>`, `<em>Introduccion a Web3</em>`.
+    Ninguna daba error. Simplemente mandaban al alumno a buscar algo que no
+    encontraria.
+
+    **Como se comprueba**, y no de memoria:
+
+        node scripts/comprobar-remisiones.mjs
+
+    Recorre las lecciones publicadas y busca titulos de cursos archivados,
+    titulos antiguos de cursos vivos, slugs de curso y de leccion que ya no
+    existen, rutas eliminadas y enlaces `/cursos/...` y `/rutas/...` rotos.
+    Sale con codigo 1 si encuentra algo.
+
+    **Y direcciona por `id`, nunca por slug**, porque `lessons.slug` es unico
+    por curso y no globalmente: al arreglar esto, `limites-y-criticas-a-bitcoin`
+    existia dos veces, una en el curso publicado y otra en el archivado.
+
 ### Codigo
 
 - Usar `lesson.module.course` (singular), nunca las relaciones plurales
