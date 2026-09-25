@@ -34,6 +34,7 @@ const STK = art('staking-criptomonedas-guia')
 const HAL = art('halving-bitcoin-que-es-cuando')
 const ETH = art('que-es-ethereum-guia-completa')
 const DAO = art('dao-organizaciones-descentralizadas')
+const ORO = art('bitcoin-vs-oro-comparativa')
 
 // el array de keywords es SEO, no texto que lea nadie: se excluye del cuerpo
 const sinKeywords = (a) => a.replace(/keywords:\s*\[[^\]]*\]/gs, '')
@@ -115,6 +116,31 @@ for (const [etq, a] of [['staking', STK], ['halving', HAL], ['ethereum', ETH], [
   if (malos.length) fallos.push('promesa en un campo de ' + etq)
 }
 
+console.log('\n=== BITCOIN VS ORO: la cuarta pasada ===')
+// Este articulo se limpio despues que los otros tres. Tenia mas que el "7% anual"
+// del oro: declaraba "Ganador: Bitcoin" en seis apartados seguidos, zanjaba la
+// comparacion citando a inversores famosos, y recomendaba reparto de cartera
+// ("Conservador 5% oro, 2% BTC"), que no es una promesa de rendimiento sino un
+// juicio de inversion.
+no(ORO, /Ganador en/g, 'oro', 'los "Ganador en" que declaraban vencedor apartado por apartado')
+no(ORO, /Warren Buffett|Peter Schiff|Ray Dalio|Michael Saylor|MicroStrategy|BlackRock|Fidelity/g, 'oro', 'los inversores y empresas citados como argumento')
+no(ORO, /Estrategia (conservadora|moderada|agresiva)|\d+\s*-\s*\d+\s*% (oro|Bitcoin)/g, 'oro', 'el reparto de cartera recomendado')
+no(ORO, /7\s*%\s*anual|Astron[oó]mico|mejor activo de la [uú]ltima d[eé]cada/gi, 'oro', 'las cifras de rentabilidad pasada')
+no(ORO, /\$\s?[\d.,]+/g, 'oro', 'los puntos de precio en dolares')
+no(ORO, /Imposible falsificar|gana por goleada|Ideal para micropagos|sin que nadie lo sepa/gi, 'oro', 'las afirmaciones exageradas')
+si(ORO, 'Por qu\u00e9 aqu\u00ed no hay una comparaci\u00f3n de rentabilidades', 'oro', 'la seccion que explica por que no hay rentabilidades')
+si(ORO, 'Por qu\u00e9 la opini\u00f3n de un inversor famoso no es un argumento', 'oro', 'la seccion sobre el argumento de autoridad')
+si(ORO, 'No hay una proporci\u00f3n recomendada', 'oro', 'que no se recomienda ninguna proporcion')
+{
+  // lo unico con % que puede quedar es la oferta de oro, que es un dato de
+  // oferta y el propio articulo lo dice
+  const pct = (ORO.match(/[^\n]*\d+[.,]?\d*\s*%[^\n]*/g) || []).map((t) => t.trim())
+  const sueltos = pct.filter((t) => !t.includes('1,5%'))
+  console.log(`  ${sueltos.length ? 'FALLO' : 'OK   '} [oro] el unico porcentaje que queda es la oferta anual de oro`)
+  for (const t of sueltos) console.log('        ' + t.slice(0, 96))
+  if (sueltos.length) fallos.push('porcentaje suelto en el articulo del oro')
+}
+
 console.log('\n=== LOS GRAFICOS: los SVG inline y sus alt ===')
 // Anadido despues de que la #193 se mergeara: el texto del articulo estaba
 // limpio y los GRAFICOS seguian publicados con lo mismo. El de staking mostraba
@@ -159,15 +185,19 @@ const otros = []
 for (const m of s.matchAll(/\d+([.,]\d+)?\s*%\s*(anual|al año|APY|APR)/gi)) {
   const ini = s.lastIndexOf("slug: '", m.index)
   const slug = s.slice(ini + 7, s.indexOf("'", ini + 7))
-  if (slug !== 'staking-criptomonedas-guia' && slug !== 'halving-bitcoin-que-es-cuando') {
+  if (!['staking-criptomonedas-guia', 'halving-bitcoin-que-es-cuando', 'bitcoin-vs-oro-comparativa'].includes(slug)) {
     otros.push(`[${slug}] ${s.slice(Math.max(0, m.index - 46), m.index + m[0].length).split('\n').pop().trim()}`)
   }
 }
 for (const o of otros) console.log('  AVISO ' + o)
 if (!otros.length) console.log('  (ninguno)')
-console.log('  NOTA  siguen pendientes de tu decision, y no se han tocado: los arrays')
-console.log('        de keywords ("ingresos pasivos crypto", "ciclos bitcoin"), la')
-console.log('        seccion "Los Ciclos de Bitcoin" y el apartado de Stock-to-Flow.')
+console.log('  NOTA  siguen pendientes de tu decision, y no se han tocado:')
+console.log('        - los arrays de keywords ("ingresos pasivos crypto", "ciclos bitcoin")')
+console.log('        - la seccion "Los Ciclos de Bitcoin" y el apartado de Stock-to-Flow')
+console.log('        - las MARCAS en dos graficos: exchanges-comparativa.svg compara')
+console.log('          plataformas con sus comisiones, y defi-ecosistema-mapa.svg nombra')
+console.log('          protocolos. Mismo criterio que se aplico al texto del staking:')
+console.log('          sustituir el nombre por lo que hay que preguntar.')
 
 console.log()
 if (fallos.length) {

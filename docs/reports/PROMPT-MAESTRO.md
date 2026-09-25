@@ -1275,6 +1275,51 @@ vosotros|vuestro|acá|allá|tenés|podés|querés|sos |plata|vale,
     por curso y no globalmente: al arreglar esto, `limites-y-criticas-a-bitcoin`
     existia dos veces, una en el curso publicado y otra en el archivado.
 
+
+31. **Revisar un articulo incluye abrir sus SVG.** El cuerpo del texto y los
+    pies de foto no delatan lo que dice un grafico. Hay que leer el fichero.
+
+    **Por que.** La PR #193 limpio el texto de tres articulos: fuera las
+    promesas de rendimiento, las marcas y las cifras sin fuente. Se mergeo, y
+    lo que seguia publicado era esto:
+
+    - `staking-rendimientos-riesgos.svg`, una tabla de APY por criptomoneda
+      -ETH 3-5%, SOL 6-8%, ADA 4-5%, ATOM 15-20%-, **justo debajo** del parrafo
+      que explica que no damos cifras.
+    - `halving-ciclos-mercado.svg`, con «Bull Run 12-18 meses post-halving»,
+      «Nuevo ATH, euforia» y «Correccion 70-80%», dos parrafos despues de la
+      seccion titulada *Por que no hay «patron historico»*.
+    - `halving-historia-precios.svg`, emparejando cada halving con un salto de
+      precio en dolares.
+
+    Los pies de foto ya estaban corregidos y no delataban nada. El texto del
+    articulo tampoco. Para verlo hay que abrir el SVG.
+
+    **Y el nombre del fichero tambien se publica.** Los tres se renombraron al
+    rehacerlos, porque `staking-rendimientos-riesgos.svg` sigue prometiendo en
+    la URL aunque el contenido ya no prometa.
+
+    **Ojo con los huerfanos.** Habia 34 SVG que no usaba ningun articulo y que
+    seguian accesibles por URL, tres de ellos con el mismo problema. No estar
+    referenciado no es estar despublicado.
+
+    **Como se comprueba**, y es obligatorio antes de dar por revisado un
+    articulo:
+
+        node scripts/comprobar-blog-sin-promesas.mjs
+
+    Abre los SVG referenciados y lee su texto visible, mira los `alt` -que
+    tambien se publican-, y comprueba los campos que no son `content`:
+    `title`, `description` y `caption`. Esa parte se anadio porque las dos
+    primeras rondas solo miraron el cuerpo y dejaron **ocho** promesas fuera de
+    el, incluida una en el titulo del articulo de staking. Sale con codigo 1.
+
+    **El mismo criterio vale para los juicios de inversion, no solo para los
+    rendimientos.** En el barrido aparecio `bitcoin-oro-portfolio.svg`
+    repartiendo cartera: «Conservador 5% oro, 2% BTC», «Agresivo 2% oro, 15%
+    BTC». No promete una rentabilidad; recomienda cuanto tener de cada cosa,
+    que es lo que prohibe el Principio #2.
+
 ### Codigo
 
 - Usar `lesson.module.course` (singular), nunca las relaciones plurales
