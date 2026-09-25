@@ -1707,8 +1707,8 @@ Entender NFTs te ayuda a navegar Web3 y las nuevas formas de propiedad, identida
   },
   {
     slug: 'staking-criptomonedas-guia',
-    title: 'Staking de Criptomonedas: Qué Es y Cómo Generar Ingresos Pasivos',
-    description: 'Guía completa sobre staking de criptomonedas. Aprende qué es, cómo funciona, los rendimientos esperados, riesgos y las mejores plataformas para hacer staking.',
+    title: 'Staking de Criptomonedas: Qué Es y De Dónde Sale la Recompensa',
+    description: 'Guía sobre el staking de criptomonedas: qué es, cómo funciona, de dónde sale la recompensa, qué riesgos tiene y qué preguntar antes de usar cualquier servicio.',
     category: 'defi',
     author: 'Equipo Nodo360',
     authorRole: 'Educadores DeFi',
@@ -1734,7 +1734,7 @@ Entender NFTs te ayuda a navegar Web3 y las nuevas formas de propiedad, identida
         afterSection: 6,
         src: '/blog/inline/staking-rendimientos-riesgos.svg',
         alt: 'Tabla de rendimientos y riesgos del staking',
-        caption: 'Rendimientos típicos varían entre 3-15% según la criptomoneda'
+        caption: 'La recompensa sale de emitir unidades nuevas o de comisiones de otros, no de un tercer sitio'
       }
     ],
     content: `
@@ -2928,8 +2928,8 @@ No son perfectas, pero están iterando rápidamente. Participar en una DAO es un
   },
   {
     slug: 'halving-bitcoin-que-es-cuando',
-    title: 'Halving de Bitcoin: Qué Es, Cuándo Ocurre y Cómo Afecta al Precio',
-    description: 'Guía completa sobre el halving de Bitcoin. Aprende qué es, su historia, el impacto en el precio, los ciclos de mercado y cuándo será el próximo halving.',
+    title: 'Halving de Bitcoin: Qué Es, Cuándo Ocurre y Qué Cambia de Verdad',
+    description: 'Guía sobre el halving de Bitcoin: qué es, cómo funciona la reducción de la recompensa cada 210.000 bloques, qué le ocurre al minero ese día y cuándo será el próximo.',
     category: 'bitcoin',
     author: 'Equipo Nodo360',
     authorRole: 'Educadores Bitcoin',
@@ -2949,13 +2949,13 @@ No son perfectas, pero están iterando rápidamente. Participar en una DAO es un
         afterSection: 4,
         src: '/blog/inline/halving-historia-precios.svg',
         alt: 'Gráfico histórico de halvings y precio de Bitcoin',
-        caption: 'Históricamente, el precio ha subido significativamente tras cada halving'
+        caption: 'Cuatro halvings han llevado la recompensa de 50 a 3,125 bitcoin por bloque'
       },
       {
         afterSection: 6,
         src: '/blog/inline/halving-ciclos-mercado.svg',
         alt: 'Infografía de ciclos de mercado de Bitcoin',
-        caption: 'Los ciclos de 4 años de Bitcoin correlacionan con los halvings'
+        caption: 'Cuatro observaciones no son una serie de la que deducir la quinta'
       }
     ],
     content: `
@@ -3153,7 +3153,7 @@ Técnicamente requeriría cambiar el código de Bitcoin, lo que necesita consens
 - Mineros menos eficientes salen del mercado
 - Los que quedan reciben mayor proporción de fees
 - Hashrate puede caer temporalmente
-- A largo plazo, precio compensa la menor recompensa
+- Lo que ocurra después depende del precio y del coste eléctrico, que el halving no determina
 
 ## Conclusión
 
