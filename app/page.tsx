@@ -59,18 +59,21 @@ export default function HomePage() {
               La plataforma educativa en español
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Domina{' '}
+              Aprende{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-brand">
                 Bitcoin
               </span>{' '}
               y{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-brand">
                 Web3
-              </span>
+              </span>{' '}
+              en español
             </h1>
+            {/* El texto va literal y no sale de brandConfig.description: esa
+                cadena termina en «en español», que aqui ya lo dice el H1. */}
             <p className="text-lg sm:text-xl text-white/70 mb-8 max-w-2xl mx-auto">
-              {brandConfig.description}. Rutas claras, sin humo, diseñadas para
-              llevarte de cero a experto.
+              Cursos gratuitos de Bitcoin, Blockchain y Web3. Rutas claras, sin
+              humo y a tu ritmo, empezando desde cero.
             </p>
 
             {/* CTAs */}
@@ -82,8 +85,11 @@ export default function HomePage() {
                 Explorar cursos
                 <ArrowRight className="h-5 w-5" />
               </Link>
+              {/* /rutas, no /dashboard/rutas: la segunda esta en el matcher del
+                  middleware, asi que el visitante sin sesion acababa en /login
+                  al pulsar el segundo boton de la portada. */}
               <Link
-                href="/dashboard/rutas"
+                href="/rutas"
                 className="inline-flex items-center justify-center gap-2 rounded-lg font-medium h-12 px-6 text-base text-white bg-white/10 border border-white/20 hover:bg-white/15 transition-colors"
               >
                 Ver rutas de aprendizaje
@@ -91,7 +97,8 @@ export default function HomePage() {
             </div>
 
             {/* Social proof */}
-            <div className="mt-12 flex items-center justify-center gap-6 text-sm text-white/50">
+            {/* flex-wrap: los tres reclamos no caben en una linea a 375px. */}
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/50">
               <span className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-success" />
                 100% en español
@@ -169,7 +176,7 @@ export default function HomePage() {
               Aprende sobre Bitcoin y Blockchain
             </h2>
             <p className="text-lg text-white/60 max-w-2xl mx-auto">
-              Articulos gratuitos para empezar tu camino en el mundo crypto
+              Artículos gratuitos para empezar tu camino en el mundo crypto
             </p>
           </div>
 
@@ -201,7 +208,7 @@ export default function HomePage() {
                       {post.description}
                     </p>
                     <span className="inline-flex items-center gap-1 text-sm text-brand-light font-medium">
-                      Leer articulo
+                      Leer artículo
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
@@ -216,7 +223,7 @@ export default function HomePage() {
               className="inline-flex items-center justify-center gap-2 rounded-lg font-medium h-12 px-6 text-base text-white bg-white/10 border border-white/20 hover:bg-white/15 transition-colors"
             >
               <FileText className="h-5 w-5" />
-              Ver todos los articulos
+              Ver todos los artículos
               <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
@@ -239,11 +246,11 @@ export default function HomePage() {
                   Programa de instructores
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                  Eres experto en Bitcoin o Blockchain?
+                  ¿Eres experto en Bitcoin o Blockchain?
                 </h2>
                 <p className="text-lg text-white/70 mb-6">
-                  Comparte tu conocimiento y genera ingresos enseñando en Nodo360.
-                  Unete a nuestra comunidad de educadores.
+                  Comparte tu conocimiento con alumnos de habla hispana en
+                  Nodo360. Únete a nuestra comunidad de educadores.
                 </p>
 
                 {/* Benefits */}
@@ -252,7 +259,10 @@ export default function HomePage() {
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center">
                       <DollarSign className="w-4 h-4 text-success" />
                     </div>
-                    <span>Comisión 35-40% por cada venta</span>
+                    <span>
+                      Hoy todos los cursos son gratuitos. Si en el futuro hay
+                      monetización, los instructores participarán en los ingresos
+                    </span>
                   </li>
                   <li className="flex items-center gap-3 text-white/80">
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-brand-light/20 flex items-center justify-center">
@@ -268,11 +278,14 @@ export default function HomePage() {
                   </li>
                 </ul>
 
+                {/* /instructores es la unica pagina publica que existe hoy: es el
+                    directorio de instructores, no un formulario de solicitud.
+                    /dashboard/instructor esta tras el middleware. */}
                 <Link
-                  href="/dashboard/instructor"
+                  href="/instructores"
                   className="inline-flex items-center justify-center gap-2 rounded-lg font-medium h-12 px-6 text-base text-white bg-gradient-to-r from-brand-light to-brand hover:opacity-90 transition-opacity"
                 >
-                  Conviertete en Instructor
+                  Conviértete en Instructor
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               </div>
@@ -306,10 +319,11 @@ export default function HomePage() {
                 Glosario crypto
               </p>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                No entiendes un termino? Consulta nuestro glosario
+                ¿No entiendes un término? Consulta nuestro glosario
               </h2>
               <p className="text-lg text-white/60 mb-6">
-                Mas de 50 terminos explicados de forma clara y sencilla. Desde Bitcoin hasta DeFi, todo lo que necesitas saber.
+                {glossaryTerms.length} términos explicados de forma clara y sencilla.
+                Desde Bitcoin hasta DeFi, todo lo que necesitas saber.
               </p>
 
               <div className="flex flex-wrap gap-2 mb-8">
@@ -334,7 +348,8 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            {/* Una columna en movil: dos tarjetas con definicion no caben a 320px. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {glossaryTerms.slice(0, 6).map((term) => {
                 const categoryInfo = glossaryCategories[term.category]
                 return (

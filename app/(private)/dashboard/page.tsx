@@ -91,10 +91,10 @@ export default async function DashboardPage() {
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold text-white">
-              Hola, {userName}!
+              ¡Hola, {userName}!
             </h1>
             <p className="text-sm text-white/60">
-              {role === 'student' && 'Continua tu aprendizaje'}
+              {role === 'student' && 'Continúa tu aprendizaje'}
               {role === 'instructor' && 'Gestiona tus cursos y alumnos'}
               {role === 'mentor' && 'Lidera la comunidad'}
               {role === 'admin' && 'Panel de control'}
@@ -120,9 +120,9 @@ export default async function DashboardPage() {
         {/* BLOQUE PRINCIPAL (EDUCATIVO) */}
         <section className="bg-dark-surface border border-white/10 rounded-2xl p-6 md:p-8 space-y-5">
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-white">Continua tu aprendizaje</h2>
+            <h2 className="text-xl font-semibold text-white">Continúa tu aprendizaje</h2>
             <p className="text-sm text-white/60">
-              Retoma tu ruta donde la dejaste y manten tu progreso activo.
+              Retoma tu ruta donde la dejaste y mantén tu progreso activo.
             </p>
           </div>
 
@@ -167,7 +167,7 @@ export default async function DashboardPage() {
             <div className="bg-gradient-to-br from-success/15 to-success/10 border border-success/20 rounded-xl p-5">
               <span className="text-success text-sm font-medium">Objetivo diario</span>
               <p className="text-white text-lg font-semibold mt-1">Completa 1 lección</p>
-              <p className="text-white/60 text-sm mt-1">Manten tu racha activa</p>
+              <p className="text-white/60 text-sm mt-1">Mantén tu racha activa</p>
             </div>
           </div>
         </section>
@@ -216,14 +216,14 @@ export default async function DashboardPage() {
             href="/cursos"
             icon={Search}
             label="Explorar Cursos"
-            description="Descubrir mas"
+            description="Descubrir más"
             color="cyan"
           />
           <DashboardIconCard
             href="/dashboard/progreso"
             icon={TrendingUp}
             label="Mi Progreso"
-            description="Estadisticas"
+            description="Estadísticas"
             color="emerald"
           />
         </DashboardSection>
@@ -266,7 +266,7 @@ export default async function DashboardPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-semibold text-white mb-1">Mentores</h3>
                   <p className="text-sm text-gray-400 mb-3">
-                    Recibe guia personalizada de miembros destacados de la comunidad.
+                    Recibe guía personalizada de miembros destacados de la comunidad.
                   </p>
                   <span className="inline-flex items-center gap-1 text-sm font-medium text-purple-400 group-hover:text-purple-300 transition-colors">
                     Buscar Mentores
@@ -315,7 +315,7 @@ export default async function DashboardPage() {
         </DashboardSection>
 
         {/* MENTORIAS */}
-        <DashboardSection title="Mentorias" columns={4}>
+        <DashboardSection title="Mentorías" columns={4}>
           <DashboardIconCard
             href="/dashboard/mentor"
             icon={Shield}
@@ -327,7 +327,7 @@ export default async function DashboardPage() {
             href="/mentoria"
             icon={GraduationCap}
             label="Buscar Mentor"
-            description="Encuentra guia"
+            description="Encuentra guía"
             color="purple"
           />
           <DashboardIconCard
@@ -373,7 +373,7 @@ export default async function DashboardPage() {
             <DashboardIconCard
               href="/dashboard/instructor/estadisticas"
               icon={BarChart}
-              label="Estadisticas"
+              label="Estadísticas"
               description="Alumnos"
               color="blue"
             />
@@ -421,7 +421,7 @@ export default async function DashboardPage() {
               href="/admin"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
             >
-              🛡️ Ir al Panel de Administracion
+              🛡️ Ir al Panel de Administración
             </Link>
           </div>
         )}
@@ -429,7 +429,7 @@ export default async function DashboardPage() {
         {/* DIAGNOSTICO (SOLO DEV) */}
         {process.env.NODE_ENV === "development" && (
           <section className="bg-dark-surface border border-white/10 rounded-xl p-5 space-y-2">
-            <h4 className="text-white font-medium">Diagnostico (dev)</h4>
+            <h4 className="text-white font-medium">Diagnóstico (dev)</h4>
             <p className="text-sm text-white/60">
               Si no aparecen enlaces por rol, revisa que tu usuario tenga el rol correcto en{" "}
               <span className="text-white/80 font-medium">public.users.role</span> y que exista un registro en{" "}

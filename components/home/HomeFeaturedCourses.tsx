@@ -7,26 +7,64 @@ type FeaturedCourse = {
   title: string
   slug: string
   description: string | null
+  is_free: boolean | null
+  requirements: string[] | null
   total_modules: number | null
   total_lessons: number | null
 }
 
+/**
+ * Los tres cursos con los que tiene sentido empezar, por slug.
+ *
+ * Antes esta seccion mostraba los tres `created_at` mas recientes, y eso
+ * convertia la portada en un escaparate de lo ultimo publicado: en septiembre
+ * de 2026 los tres destacados eran Ethereum, Fundamentos de Blockchain y Nodos
+ * Bitcoin —los tres de nivel intermedio— bajo el titulo «Empieza tu formacion
+ * hoy». Quien llegaba por primera vez veia lo mas avanzado del catalogo.
+ *
+ * Los slugs no coinciden con los nombres cortos: «Como funciona Bitcoin» es
+ * `como-funciona-bitcoin-nivel-basico`, y «Seguridad basica» es
+ * `seguridad-basica-en-bitcoin-y-criptomonedas`.
+ */
+const CURSOS_DE_ENTRADA = [
+  'fundamentos-de-bitcoin',
+  'como-funciona-bitcoin-nivel-basico',
+  'seguridad-basica-en-bitcoin-y-criptomonedas',
+] as const
+
+const CUANTOS_DESTACADOS = 3
+
 async function getFeaturedCourses(): Promise<FeaturedCourse[]> {
   const supabase = await createClient()
 
+  // `created_at` ascendente a proposito: si alguno de los tres preferidos deja
+  // de estar publicado, el relleno sale de los cursos mas antiguos, que son los
+  // fundacionales, y el orden es el mismo en cada despliegue.
   const { data, error } = await supabase
     .from('courses')
-    .select('id, title, slug, description, total_modules, total_lessons')
+    .select(
+      'id, title, slug, description, is_free, requirements, total_modules, total_lessons'
+    )
     .eq('status', 'published')
-    .order('created_at', { ascending: false })
-    .limit(3)
+    .eq('level', 'beginner')
+    .order('created_at', { ascending: true })
 
   if (error) {
-    console.error('Error fetching featured courses:', error)
+    console.error('❌ [HomeFeaturedCourses] Error al leer los cursos:', error.message)
     return []
   }
 
-  return data || []
+  const candidatos: FeaturedCourse[] = (data ?? []).filter(
+    (curso: FeaturedCourse) => !curso.requirements || curso.requirements.length === 0
+  )
+
+  const preferidos = CURSOS_DE_ENTRADA.map((slug) =>
+    candidatos.find((curso) => curso.slug === slug)
+  ).filter((curso): curso is FeaturedCourse => Boolean(curso))
+
+  const relleno = candidatos.filter((curso) => !preferidos.includes(curso))
+
+  return [...preferidos, ...relleno].slice(0, CUANTOS_DESTACADOS)
 }
 
 export async function HomeFeaturedCourses() {
@@ -48,8 +86,8 @@ export async function HomeFeaturedCourses() {
             Empieza tu formación hoy
           </h2>
           <p className="text-white/60 max-w-2xl mx-auto">
-            Cursos diseñados para llevarte de cero a experto en Bitcoin y Web3.
-            Sin requisitos previos, solo ganas de aprender.
+            Cursos para empezar desde cero. Sin requisitos previos, solo ganas de
+            aprender.
           </p>
         </div>
 
@@ -77,6 +115,17 @@ export async function HomeFeaturedCourses() {
                     <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/60 z-10 border border-white/20">
                       <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
                       Próximamente
+                    </span>
+                  )}
+
+                  {/* Precio. Que el curso no cuesta nada es la objecion que se
+                      resuelve antes de entrar, asi que va en la tarjeta y no
+                      solo en la ficha. Sale de `is_free`, no de un texto fijo:
+                      si algun dia un curso deja de serlo, la etiqueta se cae
+                      sola en vez de mentir. */}
+                  {!isComingSoon && course.is_free && (
+                    <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-success/15 px-2.5 py-1 text-xs font-semibold text-success z-10 border border-success/30">
+                      Gratis
                     </span>
                   )}
 

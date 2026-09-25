@@ -330,7 +330,7 @@ export async function POST(request: NextRequest) {
 
                 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com'
 
-                await sendCourseCompletedEmail({
+                const envio = await sendCourseCompletedEmail({
                   to: courseUserData.email,
                   userName: userName,
                   courseName: courseTitle,
@@ -338,7 +338,11 @@ export async function POST(request: NextRequest) {
                   xpEarned: xpAwarded,
                   newLevel: userStats?.current_level,
                 })
-                console.log('[quiz/submit] Email de curso completado enviado')
+                if (envio.success) {
+                  console.log('✅ [quiz/submit] Email de curso completado enviado')
+                } else {
+                  console.error('❌ [quiz/submit] Email de curso completado NO enviado:', envio.error)
+                }
               } catch (emailError) {
                 console.error('[quiz/submit] Error enviando email:', emailError)
               }
@@ -400,14 +404,18 @@ export async function POST(request: NextRequest) {
                 legendary: '👑',
               }
 
-              await sendBadgeEarnedEmail({
+              const envio = await sendBadgeEarnedEmail({
                 to: courseUserData.email,
                 userName: badgeUserName,
                 badgeName: badge.title,
                 badgeDescription: badge.description || 'Has desbloqueado un nuevo logro en Nodo360',
                 badgeIcon: rarityIcons[badge.rarity || ''] || '🏆',
               })
-              console.log('[quiz/submit] Email de badge enviado:', badge.title)
+              if (envio.success) {
+                console.log('✅ [quiz/submit] Email de badge enviado:', badge.title)
+              } else {
+                console.error('❌ [quiz/submit] Email de badge NO enviado:', badge.title, envio.error)
+              }
             } catch (emailError) {
               console.error('[quiz/submit] Error enviando email de badge:', emailError)
             }

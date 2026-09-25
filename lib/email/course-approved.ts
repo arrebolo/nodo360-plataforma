@@ -1,18 +1,4 @@
-import { Resend } from 'resend'
-
-// Lazy initialization para evitar error durante build
-let resendInstance: Resend | null = null
-
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('⚠️ [Resend] RESEND_API_KEY no está configurada')
-    return null
-  }
-  if (!resendInstance) {
-    resendInstance = new Resend(process.env.RESEND_API_KEY)
-  }
-  return resendInstance
-}
+import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
 
 interface CourseApprovedEmailProps {
   to: string
@@ -31,7 +17,7 @@ export async function sendCourseApprovedEmail({
 
   const resend = getResend()
   if (!resend) {
-    console.warn('⚠️ [sendCourseApprovedEmail] Email no enviado: Resend no configurado')
+    console.error('❌ [sendCourseApprovedEmail] Email no enviado: Resend no configurado')
     return { success: false, error: 'Email service not configured' }
   }
 
@@ -40,7 +26,7 @@ export async function sendCourseApprovedEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Nodo360 <hola@nodo360.com>',
+      from: REMITENTE_NODO360,
       to,
       subject: `🎉 ¡Tu curso "${courseName}" ha sido aprobado!`,
       html: `

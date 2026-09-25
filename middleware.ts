@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
   // 7) Verificar suspensión y ruta activa
   const { data: userRow, error: userError } = await supabase
     .from('users')
-    .select('role, active_path_id, is_suspended, suspended_reason')
+    .select('role, is_suspended, suspended_reason')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -105,29 +105,12 @@ export async function middleware(request: NextRequest) {
 
   // Beta access check removed - all authenticated users can access
 
-  // 8) Solo rutas de CONTENIDO de cursos requieren ruta activa
-  // La mayoría de rutas del dashboard NO requieren active_path_id
-  // Solo se requiere para acceder a lecciones específicas dentro de una ruta
-
-  // Rutas que SÍ requieren active_path_id (contenido de aprendizaje):
-  const routesRequiringActivePath = [
-    '/dashboard/leccion',
-    '/dashboard/modulo',
-  ]
-
-  const isDashboard = pathname.startsWith('/dashboard')
-  const requiresActivePath = routesRequiringActivePath.some(route => pathname.startsWith(route))
-
-  // Solo redirigir si:
-  // 1. Es una ruta que requiere active_path_id
-  // 2. No es usuario privilegiado
-  // 3. No tiene active_path_id
-  if (isDashboard && requiresActivePath && !isPrivileged && !userRow?.active_path_id) {
-    console.log('[Middleware] No active path for content route:', pathname)
-    const rutasUrl = new URL('/dashboard/rutas', request.url)
-    rutasUrl.searchParams.set('_p', '1')
-    return NextResponse.redirect(rutasUrl)
-  }
+  // 8) Aqui habia una comprobacion de active_path_id para /dashboard/leccion y
+  //    /dashboard/modulo: sin ruta activa, redirigia a /dashboard/rutas.
+  //    Retirada el 26/09/2026 porque ninguna de las dos rutas existe. Las
+  //    lecciones viven en /cursos/[slug]/[lessonSlug], que ni siquiera esta en
+  //    el matcher. Era una puerta vigilando un pasillo sin puerta, y el unico
+  //    efecto posible era romper una ruta futura con ese nombre.
 
   return response
 }

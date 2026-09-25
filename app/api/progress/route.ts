@@ -305,14 +305,18 @@ export async function POST(request: NextRequest) {
               legendary: '👑',
             }
 
-            await sendBadgeEarnedEmail({
+            const envio = await sendBadgeEarnedEmail({
               to: user.email,
               userName,
               badgeName: badge.title,
               badgeDescription: badge.description || 'Has desbloqueado un nuevo logro en Nodo360',
               badgeIcon: rarityIcons[badge.rarity || ''] || '🏆',
             })
-            console.log('📧 [Progress] Email de badge enviado:', badge.title)
+            if (envio.success) {
+              console.log('📧 [Progress] Email de badge enviado:', badge.title)
+            } else {
+              console.error('❌ [Progress] Email de badge NO enviado:', badge.title, envio.error)
+            }
           } catch (emailError) {
             console.error('⚠️ [Progress] Error enviando email de badge:', emailError)
           }

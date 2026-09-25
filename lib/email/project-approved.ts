@@ -1,18 +1,4 @@
-import { Resend } from 'resend'
-
-// Lazy initialization para evitar error durante build
-let resendInstance: Resend | null = null
-
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('[Resend] RESEND_API_KEY no está configurada')
-    return null
-  }
-  if (!resendInstance) {
-    resendInstance = new Resend(process.env.RESEND_API_KEY)
-  }
-  return resendInstance
-}
+import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
 
 interface ProjectApprovedEmailProps {
   to: string
@@ -31,7 +17,7 @@ export async function sendProjectApprovedEmail({
 
   const resend = getResend()
   if (!resend) {
-    console.warn('[sendProjectApprovedEmail] Email no enviado: Resend no configurado')
+    console.error('❌ [sendProjectApprovedEmail] Email no enviado: Resend no configurado')
     return { success: false, error: 'Email service not configured' }
   }
 
@@ -40,7 +26,7 @@ export async function sendProjectApprovedEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Nodo360 <hola@nodo360.com>',
+      from: REMITENTE_NODO360,
       to,
       subject: `Tu proyecto "${projectTitle}" ha sido aprobado`,
       html: `
@@ -126,7 +112,7 @@ export async function sendProjectApprovedEmail({
     })
 
     if (error) {
-      console.error('[sendProjectApprovedEmail] Error:', error)
+      console.error('❌ [sendProjectApprovedEmail] Error:', error)
       return { success: false, error: error.message }
     }
 
@@ -134,7 +120,7 @@ export async function sendProjectApprovedEmail({
     return { success: true, id: data?.id }
 
   } catch (error) {
-    console.error('[sendProjectApprovedEmail] Error critico:', error)
+    console.error('❌ [sendProjectApprovedEmail] Error critico:', error)
     return { success: false, error: String(error) }
   }
 }

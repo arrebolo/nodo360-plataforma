@@ -127,6 +127,19 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // ========================================
+      // /beta, retirada el 26/09/2026
+      // ========================================
+      // La puerta de la beta ya no existe: el middleware dejo de comprobarla
+      // ("Beta access check removed"), asi que cualquier usuario autenticado
+      // entra. La pagina, en cambio, seguia publicada diciendo «Estamos
+      // activando accesos gradualmente», y nadie la enlazaba: solo se llegaba
+      // por un enlace antiguo o escribiendo la URL. Una lista de espera que no
+      // existe es peor que ninguna pagina, asi que se retira y se redirige al
+      // catalogo, que es lo que esa persona venia a buscar.
+      { source: '/beta', destination: '/cursos', permanent: true },
+      { source: '/beta/', destination: '/cursos', permanent: true },
+
+      // ========================================
       // Páginas principales antiguas de WordPress
       // ========================================
       { source: '/home', destination: '/', permanent: true },

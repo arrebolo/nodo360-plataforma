@@ -1,18 +1,4 @@
-import { Resend } from 'resend'
-
-// Lazy initialization para evitar error durante build
-let resendInstance: Resend | null = null
-
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('[Resend] RESEND_API_KEY no está configurada')
-    return null
-  }
-  if (!resendInstance) {
-    resendInstance = new Resend(process.env.RESEND_API_KEY)
-  }
-  return resendInstance
-}
+import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
 
 interface ProjectCollaborationInviteEmailProps {
   to: string
@@ -35,7 +21,7 @@ export async function sendProjectCollaborationInviteEmail({
 
   const resend = getResend()
   if (!resend) {
-    console.warn('[sendProjectCollaborationInviteEmail] Email no enviado: Resend no configurado')
+    console.error('❌ [sendProjectCollaborationInviteEmail] Email no enviado: Resend no configurado')
     return { success: false, error: 'Email service not configured' }
   }
 
@@ -44,7 +30,7 @@ export async function sendProjectCollaborationInviteEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Nodo360 <hola@nodo360.com>',
+      from: REMITENTE_NODO360,
       to,
       subject: `${inviterName} te invita a colaborar en un proyecto`,
       html: `
@@ -134,7 +120,7 @@ export async function sendProjectCollaborationInviteEmail({
     })
 
     if (error) {
-      console.error('[sendProjectCollaborationInviteEmail] Error:', error)
+      console.error('❌ [sendProjectCollaborationInviteEmail] Error:', error)
       return { success: false, error: error.message }
     }
 
@@ -142,7 +128,7 @@ export async function sendProjectCollaborationInviteEmail({
     return { success: true, id: data?.id }
 
   } catch (error) {
-    console.error('[sendProjectCollaborationInviteEmail] Error critico:', error)
+    console.error('❌ [sendProjectCollaborationInviteEmail] Error critico:', error)
     return { success: false, error: String(error) }
   }
 }

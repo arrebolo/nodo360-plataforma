@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, AlertCircle, AlertTriangle, Info, Rocket } from 'lucide-react'
+import { Loader2, AlertCircle, AlertTriangle, Info, Rocket, MailCheck } from 'lucide-react'
 import {
   signInWithEmail,
   signInWithPassword,
   signInWithOAuth,
   signUp,
+  resendSignUpConfirmation,
   type OAuthProvider,
 } from './actions'
 import { getSpanishErrorMessage } from '@/lib/auth/error-messages'
@@ -26,6 +27,14 @@ export default function LoginContent() {
   const [loadingOAuth, setLoadingOAuth] = useState<OAuthProvider | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  /**
+   * Email de un registro que ha salido bien pero está esperando confirmación.
+   * Mientras tenga valor se muestra la pantalla «Revisa tu correo» en lugar del
+   * formulario: la cuenta existe, pero sin sesión no se puede entrar todavía.
+   */
+  const [registroPendiente, setRegistroPendiente] = useState<string | null>(null)
+  const [reenviando, setReenviando] = useState(false)
+  const [reenviado, setReenviado] = useState(false)
 
   // Leer parámetros de URL
   const redirectTo = searchParams.get('redirect')
@@ -114,8 +123,16 @@ export default function LoginContent() {
       const result = await signUp(formData)
 
       if (result.success) {
+        // Con la confirmación de email activada no hay sesión todavía, así que
+        // ir al dashboard solo consigue que el middleware devuelva a /login sin
+        // decir nada. Quien acaba de registrarse necesita saber que le falta un
+        // paso y dónde está, no volver a ver la pantalla de acceso.
+        if (result.needsEmailConfirmation) {
+          setRegistroPendiente(result.email ?? (formData.get('email') as string))
+          return
+        }
+
         setSuccess(result.message)
-        // Redirigir al dashboard después de registro exitoso
         router.push('/dashboard')
       } else {
         setError(result.message)
@@ -125,6 +142,100 @@ export default function LoginContent() {
     } finally {
       setIsRegistering(false)
     }
+  }
+
+  const handleResend = async () => {
+    if (!registroPendiente) return
+
+    setReenviando(true)
+    setError(null)
+
+    try {
+      const result = await resendSignUpConfirmation(registroPendiente)
+      if (result.success) {
+        setReenviado(true)
+      } else {
+        setError(result.message)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error inesperado')
+    } finally {
+      setReenviando(false)
+    }
+  }
+
+  if (registroPendiente) {
+    return (
+      <div className="min-h-screen bg-dark-surface flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20 text-center">
+            <div className="w-16 h-16 bg-brand-light/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MailCheck className="w-8 h-8 text-brand-light" aria-hidden="true" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">
+              Revisa tu correo
+            </h2>
+            <p className="text-white/70">
+              Tu cuenta ya está creada. Para activarla, abre el enlace de
+              confirmación que acabamos de enviar a:
+            </p>
+            <p className="mt-2 mb-4 font-medium text-white break-all">
+              {registroPendiente}
+            </p>
+            <p className="text-sm text-white/60 mb-6">
+              Si no lo ves en unos minutos, míralo en spam o en correo no
+              deseado. Abre el enlace en este mismo navegador.
+            </p>
+
+            {error && (
+              <p
+                className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300"
+                role="alert"
+                aria-live="assertive"
+              >
+                {getSpanishErrorMessage(error)}
+              </p>
+            )}
+
+            {reenviado ? (
+              <p
+                className="mb-4 rounded-lg border border-success/30 bg-success/10 p-3 text-sm text-success"
+                role="status"
+                aria-live="polite"
+              >
+                Te lo hemos enviado otra vez a {registroPendiente}.
+              </p>
+            ) : (
+              <button
+                onClick={handleResend}
+                disabled={reenviando}
+                className="w-full py-3 px-4 mb-4 font-semibold rounded-lg bg-white/10 text-white hover:bg-white/20 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {reenviando ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  'Reenviar el correo de confirmación'
+                )}
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                setRegistroPendiente(null)
+                setReenviado(false)
+                setError(null)
+              }}
+              className="text-brand-light hover:text-brand text-sm font-medium transition"
+            >
+              ← Usar otro correo
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (emailSent) {
@@ -473,9 +584,20 @@ export default function LoginContent() {
                     name="password"
                     type="password"
                     required
-                    placeholder="Mínimo 6 caracteres"
+                    minLength={6}
+                    maxLength={72}
+                    aria-describedby="password-register-ayuda"
+                    placeholder="••••••••"
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-transparent transition"
                   />
+                  {/* El requisito va en un texto fijo, no en el placeholder: el
+                      placeholder desaparece al primer carácter y no lo lee un
+                      lector de pantalla, así que el límite solo se descubría
+                      fallando el envío. El máximo son 72 caracteres porque es
+                      el límite de bcrypt, y antes no se decía en ninguna parte. */}
+                  <p id="password-register-ayuda" className="mt-2 text-xs text-white/50">
+                    Entre 6 y 72 caracteres
+                  </p>
                 </div>
 
                 {/* Aceptación de términos */}
