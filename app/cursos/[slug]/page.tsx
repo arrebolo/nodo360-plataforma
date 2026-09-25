@@ -408,6 +408,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     <EnrollButton
                       courseId={course.id}
                       courseSlug={course.slug}
+                      courseLevel={course.level || 'beginner'}
                       isEnrolled={false}
                       isAuthenticated={true}
                       firstLessonSlug={firstLessonSlug}

@@ -43,28 +43,19 @@ export interface LessonLocation {
 // ========================================
 // ANALYTICS
 // ========================================
-
-export function trackEvent(eventName: string, data?: Record<string, any>): void {
-  if (typeof window === 'undefined') return
-
-  try {
-    console.log('[Analytics]', eventName, data)
-
-    // Dispatch custom event para que otros componentes puedan escuchar
-    window.dispatchEvent(
-      new CustomEvent('analytics-event', {
-        detail: { eventName, data, timestamp: new Date().toISOString() }
-      })
-    )
-
-    // Aquí se puede integrar con Google Analytics, Mixpanel, etc.
-    // if (window.gtag) {
-    //   window.gtag('event', eventName, data)
-    // }
-  } catch (error) {
-    console.error('Error tracking event:', error)
-  }
-}
+//
+// Aquí vivía trackEvent(), retirado el 26/09/2026.
+//
+// No medía nada: el envío a gtag llevaba comentado desde el principio, así que
+// sus cuatro llamadas escribían en la consola y disparaban un CustomEvent
+// 'analytics-event' que ningún componente escuchaba. Además solo era alcanzable
+// a través de markLessonCompleted(), que usa components/lesson/LessonNavigation
+// .tsx, un componente que nada importa.
+//
+// Los eventos de conversión salen ahora de un único sitio,
+// lib/analytics/eventos.ts, con los parámetros declarados y tipados. Dos
+// sistemas a medias miden peor que uno entero: si algún día se revive esta ruta
+// de localStorage, lesson_complete y course_complete se contarían dos veces.
 
 // ========================================
 // LESSON COMPLETION
@@ -123,24 +114,10 @@ export function markLessonCompleted(lessonId: string, courseId?: string, totalLe
       if (totalLessons && courseProgress.lessonsCompleted.length >= totalLessons) {
         courseProgress.isCompleted = true
         courseProgress.completedAt = new Date().toISOString()
-
-        // Analytics: Curso completado
-        trackEvent('course_complete', {
-          courseId,
-          totalLessons,
-          completedAt: courseProgress.completedAt
-        })
       }
 
       localStorage.setItem(courseKey, JSON.stringify(courseProgress))
     }
-
-    // Analytics: Lección completada
-    trackEvent('lesson_complete', {
-      lessonId,
-      courseId,
-      timestamp: new Date().toISOString()
-    })
 
     // Dispatch event para que otros componentes puedan escuchar
     window.dispatchEvent(new CustomEvent('lesson-completed', { detail: { lessonId, courseId } }))
@@ -543,13 +520,6 @@ export function markLessonStarted(lessonId: string, courseId: string): void {
     const courseKey = `nodo360_course_${courseId}_progress`
     localStorage.setItem(courseKey, JSON.stringify(courseProgress))
 
-    // Analytics: Lección iniciada
-    trackEvent('lesson_start', {
-      lessonId,
-      courseId,
-      timestamp: new Date().toISOString()
-    })
-
     // Dispatch event
     window.dispatchEvent(new CustomEvent('lesson-started', { detail: { lessonId, courseId } }))
     window.dispatchEvent(new Event('progress-updated'))
@@ -560,18 +530,19 @@ export function markLessonStarted(lessonId: string, courseId: string): void {
 
 /**
  * Track locked access attempt (for analytics)
+ *
+ * Se queda como registro en consola. No tenía ningún uso en la aplicación y su
+ * evento nunca llegó a GA4: cuando haga falta medir los intentos de entrar a
+ * una lección bloqueada, el sitio es lib/analytics/eventos.ts, declarando el
+ * evento y sus parámetros.
  */
 export function trackLockedAccessAttempt(
   lessonId: string,
   courseId: string,
   reason: string
 ): void {
-  trackEvent('locked_access_attempt', {
-    lessonId,
-    courseId,
-    reason,
-    timestamp: new Date().toISOString()
-  })
+  if (typeof window === 'undefined') return
+  console.log('🔒 [Progreso] Intento de acceso a lección bloqueada:', { lessonId, courseId, reason })
 }
 
 // ========================================

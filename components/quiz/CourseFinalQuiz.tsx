@@ -6,9 +6,12 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, ArrowRight, Trophy, RotateCcw, Loader2 } from 'lucide-react'
 import type { QuizQuestion } from '@/types/database'
 import { useBadgeNotification } from '@/hooks/useBadgeNotification'
+import { enviarEvento } from '@/lib/analytics/eventos'
 
 interface CourseFinalQuizProps {
   courseId: string
+  /** Slug del curso, para los eventos exam_passed / exam_failed de GA4. */
+  courseSlug: string
   courseTitle: string
   questions: QuizQuestion[]
   redirectTo: string
@@ -34,6 +37,7 @@ interface QuizResult {
 
 export function CourseFinalQuiz({
   courseId,
+  courseSlug,
   courseTitle,
   questions,
   redirectTo,
@@ -106,6 +110,13 @@ export function CourseFinalQuiz({
         certificate: data.certificate || null,
         results: resultsMap,
         fallos: data.fallos || [],
+      })
+
+      // Aprobado o suspendido lo decide el servidor, no el cliente, así que
+      // el evento sale del mismo dato que la pantalla. Suspender puede repetirse:
+      // los intentos son ilimitados desde que el examen es obligatorio.
+      enviarEvento(data.passed ? 'exam_passed' : 'exam_failed', {
+        course_slug: courseSlug,
       })
 
       // Mostrar badges ganados

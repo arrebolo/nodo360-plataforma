@@ -13,6 +13,7 @@ import {
   type OAuthProvider,
 } from './actions'
 import { getSpanishErrorMessage } from '@/lib/auth/error-messages'
+import { enviarEvento } from '@/lib/analytics/eventos'
 
 type TabType = 'login' | 'register'
 
@@ -123,6 +124,17 @@ export default function LoginContent() {
       const result = await signUp(formData)
 
       if (result.success) {
+        // El evento va PRIMERO, antes de cualquier return o navegación. Dos
+        // razones, y las dos importan:
+        //
+        // 1. La cuenta ya existe en cuanto Supabase la crea, así que un registro
+        //    pendiente de confirmar el email cuenta igual. Si el evento fuera
+        //    después del `return` de abajo, con la confirmación activada no se
+        //    mediría ni un registro por contraseña.
+        // 2. Después del router.push, la navegación puede desmontar el
+        //    componente antes de que el evento salga.
+        enviarEvento('sign_up', { method: 'email' })
+
         // Con la confirmación de email activada no hay sesión todavía, así que
         // ir al dashboard solo consigue que el middleware devuelva a /login sin
         // decir nada. Quien acaba de registrarse necesita saber que le falta un

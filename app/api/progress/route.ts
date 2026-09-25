@@ -63,6 +63,26 @@ export async function POST(request: NextRequest) {
 
     const alreadyCompleted = existingProgress?.is_completed === true
 
+    // 1 bis) ¿Es la primera lección que completa esta persona en TODA la
+    // plataforma? Lo necesita GA4 para el evento first_lesson_complete, que es
+    // el que mide de verdad si alguien que se registra llega a empezar.
+    //
+    // Se cuenta ANTES del upsert: después, la fila de esta misma lección ya está
+    // dentro y habría que descontarla. Y solo puede ser la primera si la lección
+    // no estaba ya completada: volver a marcar una que lo estaba no completa
+    // nada, y sin esta condición cualquier re-marcado de la única lección
+    // completada volvería a contar como «la primera».
+    let esPrimeraCompletada = false
+    if (!alreadyCompleted) {
+      const { count: yaCompletadas } = await supabase
+        .from('user_progress')
+        .select('lesson_id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_completed', true)
+
+      esPrimeraCompletada = (yaCompletadas ?? 0) === 0
+    }
+
     // 2) Guardar progreso (upsert)
     const { error: progressError } = await supabase
       .from('user_progress')
@@ -337,6 +357,8 @@ export async function POST(request: NextRequest) {
       streakIncreased: streakResult.streakIncreased,
       // null si esta leccion no completaba el curso
       certificado,
+      // true solo la primerísima vez que esta persona completa una lección
+      is_first_completion: esPrimeraCompletada,
     })
   } catch (error) {
     console.error('❌ [API POST /progress] Exception:', error)

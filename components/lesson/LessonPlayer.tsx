@@ -14,6 +14,7 @@ import { SlidesEmbed } from '@/components/lesson/SlidesEmbed'
 import LessonComments from '@/components/lesson/LessonComments'
 import { useCourseCompletion } from '@/hooks/useCourseCompletion'
 import type { LessonPlayerProps } from '@/types/lesson-player'
+import { enviarEvento } from '@/lib/analytics/eventos'
 
 // Dynamic import for modal (only loaded when needed)
 const CourseCompletionModal = dynamic(
@@ -123,6 +124,33 @@ export default function LessonPlayer({
         setCompletedIds((prev) => prev.filter((id) => id !== lesson.id))
       } else {
         console.log('✅ Progreso guardado')
+
+        // Hasta ahora la respuesta se tiraba: solo se miraba res.ok. Trae dos
+        // cosas que el cliente no puede saber por su cuenta, porque dependen de
+        // la base entera y no de esta pantalla.
+        const datos = await res.json().catch(() => ({} as Record<string, unknown>))
+
+        // El número de lección es su posición en el curso, ya en base 1: lo
+        // calcula el servidor en la página recorriendo todos los módulos.
+        enviarEvento('lesson_complete', {
+          course_slug: course.slug,
+          lesson_number: navigation.currentIndex,
+        })
+
+        // La primerísima lección de esta persona en la plataforma. Es el paso
+        // del embudo que dice si quien se registra llega a empezar algo.
+        if (datos.is_first_completion === true) {
+          enviarEvento('first_lesson_complete', { course_slug: course.slug })
+        }
+
+        // Curso terminado. Se emite cuando el certificado se ha emitido de
+        // verdad, no al marcar la última lección: desde que el examen final es
+        // obligatorio, terminar las lecciones ya no cierra el curso.
+        const certificado = datos.certificado as { emitido?: boolean } | null | undefined
+        if (certificado?.emitido === true) {
+          enviarEvento('course_complete', { course_slug: course.slug })
+        }
+
         // Dispatch event for other components
         window.dispatchEvent(
           new CustomEvent('lesson-completed', {
@@ -137,7 +165,7 @@ export default function LessonPlayer({
     } finally {
       setIsMarkingComplete(false)
     }
-  }, [userId, isCompleted, isMarkingComplete, lesson.id, lesson.slug, course.slug, router])
+  }, [userId, isCompleted, isMarkingComplete, lesson.id, lesson.slug, course.slug, navigation.currentIndex, router])
 
   // Handler: Login redirect
   const handleLogin = useCallback(() => {
