@@ -276,30 +276,84 @@ Orden de trabajo, tomado del Tier 1-3 del plan:
 
 ### Mapa de rutas
 
-**5 rutas activas**, verificado el 25/09/2026. La coleccion de cursos de cada una
-esta arriba, en Contenido.
+**Este es el mapa canonico.** Hasta la v6 no existia escrito en ninguna parte: se
+hablaba de «las 8 rutas» y ese listado no estaba en el repositorio, asi que cada
+decision de contenido se tomaba contra un objetivo que solo vivia en la cabeza de
+alguien. Decidido el 25/09/2026, tras la planificacion de Tier 3.
 
-| # | Ruta | Slug | Subtitulo | Cursos |
-|---|------|------|-----------|--------|
-| 1 | Fundamentos de Bitcoin | `fundamentos-bitcoin` | Empieza desde cero y construye una base solida | 3 |
-| 2 | Seguridad en Criptomonedas | `seguridad-cripto` | De no perderlo por un descuido a no perderlo nunca | 2 |
-| 3 | Web3 Basica | `web3-basica` | Entender antes de usar | 1 |
-| 4 | Trading Basico | `trading-basico` | Decidir antes de operar | 1 |
-| 5 | Bitcoin Tecnico | `bitcoin-tecnico` | Verifica por ti mismo, sin intermediarios | 1 |
+#### Lo que existe hoy (5 rutas, 9 cursos)
 
-Eran 6 en la v5.0. **Seguridad Avanzada desaparecio en la 048**: su unico curso,
-Cold Storage, paso a Seguridad en Criptomonedas, que ahora cubre el recorrido
-entero desde los habitos basicos hasta el almacenamiento sin conexion. Queda una
-301 desde `/rutas/seguridad-avanzada`. Con ella se fue tambien la colision de
-`position` que la v5.0 anotaba entre esa ruta y Trading Basico.
+| # | Ruta | Slug | Cursos |
+|---|------|------|--------|
+| 1 | Fundamentos de Bitcoin | `fundamentos-bitcoin` | 3 |
+| 2 | Seguridad en Criptomonedas | `seguridad-cripto` | 2 |
+| 3 | Web3 Basica | `web3-basica` | 2 — Blockchain · Que es Web3 |
+| 4 | Trading Basico | `trading-basico` | 1 |
+| 5 | Bitcoin Tecnico | `bitcoin-tecnico` | 1 |
 
-**Areas ausentes** que el Tier 3 del plan identifica: Fundamentos de Blockchain ·
-Ethereum y Smart Contracts · DAOs · NFTs · DeFi · Otras L1/L2 e Interoperabilidad.
+#### Lo que falta: una ruta nueva
 
-> **El mapa canonico de 8 rutas sigue sin estar registrado en el repositorio.**
-> Se ha vuelto a buscar y no aparece. Cinco rutas mas seis areas ausentes no
-> suman ocho. **Hay que pegar aqui el mapa tal y como esta decidido**; no se
-> reconstruye por deduccion.
+| # | Ruta | Slug propuesto | Cursos previstos |
+|---|------|----------------|------------------|
+| 6 | **Ecosistema Ethereum** | `ecosistema-ethereum` | Ethereum y contratos inteligentes · DAOs · DeFi |
+
+No caben en Web3 Basica: con cinco cursos dejaria de ser basica y mezclaria el
+suelo —que es una blockchain, que propone Web3— con lo aplicado.
+
+**El orden de construccion, y por que.**
+
+1. **Ethereum y contratos inteligentes.** Es el que mejor se apoya en lo ya
+   escrito: la leccion 1.3 de Blockchain explica el estado compartido y la 2.2 de
+   Web3 los contratos y las firmas. Es lo mas buscado tras Bitcoin, el riesgo de
+   principios es bajo —es tecnologia, no producto— y desbloquea los otros dos.
+2. **DAOs**, con una condicion: **no antes de arreglar `/proyectos`**. La
+   plataforma tiene un subsistema de gobernanza con una sola propuesta,
+   `cancelled` desde 11/2025, y `/proyectos` promete DAO, NFTs y DEX con fechas
+   de 2025 caducadas. Publicar un curso de DAOs con el propio DAO roto es un
+   problema de Principio #7 que el alumno ve en dos clics.
+3. **DeFi**, el ultimo a proposito: el de mayor riesgo editorial y el que mas
+   depende de que Ethereum este explicado.
+
+#### Lo que se decidio NO hacer, y por que
+
+**NFTs no es un curso: es un modulo de Ethereum.** La leccion 2.3 de *Que es Web3
+y que no* ya cubre lo esencial —que un NFT es el mismo mecanismo contando de otra
+forma, que la imagen casi nunca esta dentro, que tener el token no da derechos
+sobre la obra, y que unico no significa valioso—. Lo que queda son tres o cuatro
+lecciones, y estirarlas a nueve seria relleno. Tecnicamente vive en Ethereum, y
+ahi va.
+
+**Otras L1/L2 e Interoperabilidad tampoco, todavia.** La leccion 3.2 de
+*Blockchain* ya cubre capas y puentes al nivel que necesita quien decide: las
+tres familias, que supuesto de confianza reintroduce cada una, y por que los
+puentes son el punto mas atacado. El detalle tecnico restante —pruebas de
+validez, disponibilidad del dato, centralizacion del secuenciador— interesa a una
+minoria y solapa mucho. **Se reconsidera despues de Ethereum**, y probablemente
+acabe siendo un modulo suyo.
+
+**DeFi si, pero no el curso obvio.** Un curso que intente ensenar «a usar DeFi»
+sin nombrar protocolos seria inutil, y nombrarlos va contra el Principio #2. El
+que si funciona es el mismo movimiento que hizo el curso de Trading: no responde
+«como obtener rendimiento» sino **«de donde sale el rendimiento y que tiene que
+fallar para perderlo»**. Eso es describible sin nombrar nada y es aritmetico: un
+rendimiento sale de comisiones de alguien, de emision de unidades nuevas, o de la
+perdida de otro participante, y no hay una cuarta fuente. Con ese encuadre el
+curso ensena algo real; con el otro, no se puede escribir.
+
+#### Las semillas, medidas
+
+El Tier 3 del plan decia «apoyarse en el articulo de blog existente». Medido el
+25/09/2026, cada articulo tiene entre 4.400 y 8.800 caracteres: **da para una
+leccion, no para un curso**. Y el glosario tiene **8** terminos de DeFi, no 11
+como decia el plan.
+
+| Tema | Semilla real |
+|---|---|
+| Ethereum | `que-es-ethereum-guia-completa` 8.079 car · Web3 2.2 · Blockchain 1.3 |
+| DAOs | `dao-organizaciones-descentralizadas` 6.308 car · el subsistema propio |
+| DeFi | `defi-para-principiantes` 5.627 · `staking-criptomonedas-guia` 9.686 · 8 terminos |
+| NFTs | `nfts-que-son-para-que-sirven` 6.686 · Web3 2.3 |
+| L1/L2 | `layer-2-blockchain-escalabilidad` 5.646 · Blockchain 3.2 |
 
 ---
 
@@ -359,24 +413,24 @@ es. Por eso:
 El inventario completo vive en **`docs/PLAN-REFORMA.md`**, por Tier 0-3. Aqui
 solo lo que manda al 25/09/2026.
 
-### El hueco principal: los cinco cursos que faltan de Tier 3
+### El hueco principal: los tres cursos de Ecosistema Ethereum
 
 **Fundamentos Blockchain ya existe** (migracion 055, 25/09/2026), asi que la ruta
 Web3 Basica tiene suelo por primera vez: *Blockchain: lo que Bitcoin no es*
 explica que es un registro compartido y que es un estado, y *Que es Web3 y que
 no* lo que se construye encima.
 
-Lo que queda por delante, en el orden del Tier 3:
+Lo que queda son **tres** cursos, no cinco, en la ruta nueva **Ecosistema
+Ethereum**. NFTs y L1/L2 dejan de ser cursos y pasan a modulos: el motivo esta en
+el mapa de rutas, en ROADMAP, con las semillas medidas.
 
-| Curso | Semilla ya escrita |
+| Curso | Estado |
 |---|---|
-| Ethereum y Smart Contracts | Leccion 2.2 de Web3 mas un articulo de blog |
-| DAOs | El subsistema de gobernanza propio; resuelve la contradiccion de `/proyectos` |
-| NFTs | Leccion 2.3 de Web3 mas un articulo de blog |
-| DeFi | Dos articulos de blog y 11 terminos de glosario |
-| Otras L1/L2 e Interoperabilidad | Leccion 3.2 de Blockchain (capas y puentes) mas un articulo |
+| Ethereum y contratos inteligentes | el siguiente; diagnostico hecho el 25/09 |
+| DAOs | **bloqueado** hasta arreglar `/proyectos`, que es Tier 0 |
+| DeFi | el ultimo; solo con el encuadre de «de donde sale el rendimiento» |
 
-Los cinco tienen ya la base conceptual que les faltaba. Y dos huecos que el
+Los tres tienen ya la base conceptual que les faltaba. Y dos huecos que el
 propio curso nuevo reconoce por escrito en su ultima leccion, sin prometer
 fechas: **la criptografia que hay debajo** —como funciona una firma, como se
 construye una funcion de huella— y **como se programa nada de esto**.

@@ -87,11 +87,13 @@
 ## Tier 3 — Construcción nueva (por orden)
 
 - [x] ~~**Fundamentos Blockchain**~~ *(25/09/2026: creado como «Blockchain: lo que Bitcoin no es», primero de la ruta Web3 Básica. 9 lecciones, 56.143 caracteres, 27 preguntas. Migración 055. El enfoque no fue el obvio: en vez de explicar blockchain desde cero —que ya hace *Cómo funciona Bitcoin* con un caso real—, explica **lo que no es Bitcoin**. El diagnóstico lo decidió: en los 247.672 caracteres de los cursos relevantes había cero menciones de prueba de participación, validador, estado compartido, capa 2, interoperabilidad o cadenas con permisos. Queda fuera, y reconocido por escrito en la última lección, la criptografía de debajo y la programación)*
-- [ ] **Ethereum y Smart Contracts** — apoyarse en el artículo de blog existente + lección de dApps ya generada
-- [ ] **DAOs** — sinergia con el sistema de gobernanza propio; resuelve la contradicción de `/proyectos`
-- [ ] **NFTs** — usar como semilla la lección "Tokens y NFTs" de Ecosistema Web3 + artículo de blog
-- [ ] **DeFi** — usar como semilla los 2 artículos de blog + 11 términos de glosario ya existentes
-- [ ] **Otras L1/L2 e Interoperabilidad** — usar como semilla el artículo de blog sobre Layer 2
+*(25/09/2026: el mapa de rutas se decidió y está escrito en el ROADMAP del prompt maestro. Tier 3 pasa de cinco cursos a **tres**, en una ruta nueva, **Ecosistema Ethereum**. Las semillas se midieron: cada artículo de blog da para **una lección**, no para un curso, y el glosario tiene 8 términos de DeFi, no 11.)*
+
+- [ ] **Ethereum y contratos inteligentes** — el siguiente. Semilla: `que-es-ethereum-guia-completa` (8.079 car), la lección 2.2 de *Qué es Web3* y la 1.3 de *Blockchain*. Absorbe **NFTs** como módulo
+- [ ] **DAOs** — **bloqueado**: no antes de arreglar `/proyectos`, que es Tier 0. Publicar un curso de DAOs con una sola propuesta `cancelled` desde 11/2025 es un problema de Principio #7 visible en dos clics
+- [ ] **DeFi** — el último, y solo con el encuadre de *«de dónde sale el rendimiento y qué tiene que fallar para perderlo»*. El curso de «cómo usar DeFi» no se puede escribir sin nombrar protocolos, y nombrarlos va contra el Principio #2
+- [x] ~~**NFTs** como curso propio~~ — pasa a módulo de Ethereum: la lección 2.3 de *Qué es Web3* ya cubre lo esencial y lo que queda no da para nueve lecciones
+- [x] ~~**Otras L1/L2 e Interoperabilidad** como curso propio~~ — la lección 3.2 de *Blockchain* ya cubre capas y puentes al nivel que necesita quien decide. Se reconsidera tras Ethereum, probablemente como módulo suyo
 
 ---
 
