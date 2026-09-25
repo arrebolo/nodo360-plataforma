@@ -22,7 +22,7 @@
       <path d="M405 300 L435 300" stroke="#F7931A" stroke-width="2" stroke-dasharray="5,5"/>
       <polygon points="430,294 440,300 430,306" fill="#F7931A"/>
     <rect x="440" y="240" width="140" height="120" rx="12" fill="rgba(255,255,255,0.05)" stroke="#F7931A" stroke-width="2" filter="url(#shadow)"/>
-    <text x="510" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#F7931A">Recompensa ÷ 2</text>
+    <text x="510" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#F7931A">Subsidio ÷ 2</text>
     <text x="510" y="315" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">Se reduce a la mitad</text>
       <path d="M585 300 L615 300" stroke="#F7931A" stroke-width="2" stroke-dasharray="5,5"/>
       <polygon points="610,294 620,300 610,306" fill="#F7931A"/>

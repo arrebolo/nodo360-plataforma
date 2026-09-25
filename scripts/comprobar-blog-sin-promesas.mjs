@@ -15,7 +15,7 @@
 //   "rendimientos" dentro de la advertencia de la ficha. Aqui van acotados.
 //
 // Uso: node scripts/comprobar-blog-sin-promesas.mjs   (sale 1 si algo falla)
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 
 // OJO: el archivo esta con CRLF en Windows. Node no normaliza los saltos de
 // linea al leer -Python si-, y sin normalizarlos el delimitador de articulo
@@ -113,6 +113,45 @@ for (const [etq, a] of [['staking', STK], ['halving', HAL], ['ethereum', ETH], [
   console.log(`  ${malos.length ? 'FALLO' : 'OK   '} [${etq}] title, description y caption sin promesas`)
   for (const x of malos) console.log('        ' + x)
   if (malos.length) fallos.push('promesa en un campo de ' + etq)
+}
+
+console.log('\n=== LOS GRAFICOS: los SVG inline y sus alt ===')
+// Anadido despues de que la #193 se mergeara: el texto del articulo estaba
+// limpio y los GRAFICOS seguian publicados con lo mismo. El de staking mostraba
+// una tabla de rendimientos por criptomoneda, y los del halving afirmaban un
+// bull run a los 12-18 meses, un ATH y una correccion del 70-80%, justo debajo
+// de la seccion que dice que cuatro halvings no son un patron. Ni el cuerpo ni
+// los pies de foto los delataban: hay que abrir el fichero.
+{
+  const PROMETE = /\d+\s*[-–a]\s*\d+\s*%|\bAPY\b|\bAPR\b|bull\s*run|\bATH\b|mercado alcista|Rendimientos? de|Rendimiento Hist|Ciclos? de (Mercado|Precio)|Diversificaci[oó]n del Portfolio/i
+  const refs = [...s.matchAll(/src: '\/blog\/inline\/([^']+)'/g)].map((m) => m[1])
+  const vistos = new Set()
+  let sucios = 0, ausentes = 0
+  for (const f of refs) {
+    if (vistos.has(f)) continue
+    vistos.add(f)
+    const ruta = 'public/blog/inline/' + f
+    if (!existsSync(ruta)) { console.log(`  FALLO falta el fichero ${f}`); ausentes++; continue }
+    // solo el texto visible del SVG: lo que lee el lector
+    const texto = [...readFileSync(ruta, 'utf8').matchAll(/>([^<>]+)</g)].map((m) => m[1].trim()).filter(Boolean).join(' ')
+    const m = texto.match(PROMETE)
+    if (m) { console.log(`  FALLO ${f} dice "${m[0]}"`); sucios++ }
+  }
+  console.log(`  ${sucios === 0 && ausentes === 0 ? 'OK   ' : 'FALLO'} ${vistos.size} SVG referenciados: ${sucios} con promesas, ${ausentes} sin fichero`)
+  if (sucios || ausentes) fallos.push('un grafico promete rendimiento o un patron de precio')
+
+  // y los alt, que tambien se publican
+  const ALT = /rendimiento|rentabilidad|\d+\s*[-–a]\s*\d+\s*%|precio de Bitcoin|ciclos? de mercado|hist[oó]rico de/i
+  // Una excepcion, y solo una: el grafico de mineria enumera los factores de los
+  // que depende la rentabilidad -coste electrico, dificultad, precio, hashrate-.
+  // Describe de que depende, no promete un resultado. Es la misma distincion que
+  // se aplica en el cuerpo de los articulos, asi que se deja pasar por nombre y
+  // no aflojando el filtro.
+  const PERMITIDO = new Set(['Factores que afectan la rentabilidad de la minería'])
+  const malos = [...s.matchAll(/alt: '([^']*)'/g)].map((m) => m[1])
+    .filter((a) => ALT.test(a) && !PERMITIDO.has(a))
+  console.log(`  ${malos.length === 0 ? 'OK   ' : 'FALLO'} los alt de los graficos, sin promesas${malos.length ? ': ' + malos.join(' | ') : ''}`)
+  if (malos.length) fallos.push('un alt de grafico promete rendimiento')
 }
 
 console.log('\n=== fuera del alcance de esta rama, para que conste ===')
