@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { CourseFinalQuiz } from '@/components/quiz/CourseFinalQuiz'
+import { sortearExamen } from '@/lib/quiz/sortearExamen'
 import type { QuizQuestion } from '@/types/database'
 import { resolveCourseAccess } from '@/lib/courses/access'
 import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
@@ -89,10 +90,18 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
       .in('module_id', moduleIds)
       .order('order_index', { ascending: true })
 
-    questions = (questionData || []) as QuizQuestion[]
+    // El examen es un subconjunto sorteado, no el banco entero: 4 preguntas por
+    // modulo, 12 en un curso de tres. Antes se servian las 27 siempre las
+    // mismas, y con reintentos ilimitados y el veredicto pregunta por pregunta
+    // eso se recorre a base de repetir. Ver lib/quiz/sortearExamen.ts.
+    //
+    // El sorteo ocurre AQUI, en el servidor, en cada carga de la pagina. Al
+    // volver a intentarlo el componente recarga la ruta, asi que toca examen
+    // nuevo.
+    questions = sortearExamen((questionData || []) as QuizQuestion[], moduleIds)
   }
 
-  console.log('🔍 [QuizFinal] Curso:', course.title, '- Preguntas:', questions.length)
+  console.log('🔍 [QuizFinal] Curso:', course.title, '- Preguntas sorteadas:', questions.length)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">

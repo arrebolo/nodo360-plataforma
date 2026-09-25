@@ -99,7 +99,6 @@ export interface Module {
   order_index: number
   total_lessons: number
   total_duration_minutes: number
-  requires_quiz: boolean
   created_at: string
   updated_at: string
 }
