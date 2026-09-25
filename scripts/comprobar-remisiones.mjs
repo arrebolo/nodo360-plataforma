@@ -48,6 +48,15 @@ const titulosArchivados = cursos.filter((c) => c.status !== 'published').map((c)
 const RUTAS_MUERTAS = ['seguridad-avanzada', 'Seguridad Avanzada']
 
 const txt = (h) => (h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+
+// Titulos mal citados: la cita apunta a un curso que existe, pero no lo escribe
+// como se llama. Salio de la 056: cinco lecciones citaban "Nodos Bitcoin - Tu
+// Soberania Tecnica" con raya en vez de guion. No es una remision muerta -el
+// lector llega igual- pero es una cita falsa, y el catalogo mezcla los dos
+// signos en sus titulos, asi que a ojo no se ve.
+const norm = (x) => x.replace(/[—–−]/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim().toLowerCase()
+const titulosVivos = new Map(pub.map((c) => [norm(c.title), c.title]))
+
 const hallazgos = []
 
 for (const l of vivas) {
@@ -60,6 +69,12 @@ for (const l of vivas) {
   for (const x of slugsCursoMuertos) if (crudo.includes(x)) add('slug de curso ARCHIVADO', x, '(redirige, pero el texto miente)')
   for (const x of slugsLeccionMuertos) if (crudo.includes(x)) add('slug de leccion QUE NO EXISTE', x, '')
   for (const x of RUTAS_MUERTAS) if (t.includes(x) || crudo.includes(x)) add('ruta ELIMINADA', x, 'seguridad-cripto')
+  // titulos citados en cursiva que no coinciden exactamente con el titulo real
+  for (const m of crudo.matchAll(/<em>([^<]{12,90})<\/em>/g)) {
+    const cita = m[1].trim()
+    const real = titulosVivos.get(norm(cita))
+    if (real && real !== cita) add('titulo MAL CITADO', cita, real)
+  }
   // enlaces absolutos a cursos
   for (const m of crudo.matchAll(/\/cursos\/([a-z0-9-]+)/g)) {
     if (!slugsCursoVivos.has(m[1])) add('enlace a curso inexistente', m[1], '')
