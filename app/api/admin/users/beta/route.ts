@@ -118,6 +118,26 @@ export async function POST(req: Request) {
           if (envio.success) {
             console.log(`✅ [Admin Beta] Email enviado exitosamente a: ${userEmail}`)
 
+            // El aviso ya salió, así que esta persona deja de estar esperándolo.
+            //
+            // La ruta leía wants_beta_notification desde el principio y no hacía
+            // nada con ella: la bandera se quedaba puesta para siempre y cada
+            // vuelta del interruptor mandaba otro correo. Se baja DESPUÉS del
+            // envío correcto y nunca antes; si el correo falla, la persona sigue
+            // en la lista y se puede reintentar.
+            if (targetUser?.wants_beta_notification) {
+              const { error: errAviso } = await supabaseAdmin
+                .from('users')
+                .update({ wants_beta_notification: false })
+                .eq('id', userId)
+
+              if (errAviso) {
+                console.error('⚠️ [Admin Beta] Aviso enviado pero no se pudo bajar wants_beta_notification:', errAviso.message)
+              } else {
+                console.log('✅ [Admin Beta] wants_beta_notification a false para', userId)
+              }
+            }
+
             // Broadcast a Discord/Telegram
             await broadcastNewUser(userName, userId)
             console.log(`✅ [Admin Beta] Broadcast enviado para: ${userName}`)
