@@ -4,10 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { enviarEvento } from '@/lib/analytics/eventos'
 
 interface EnrollButtonProps {
   courseId: string
   courseSlug: string
+  /** Nivel del curso, solo para el evento course_start de GA4. */
+  courseLevel: string
   isEnrolled: boolean
   isAuthenticated: boolean
   firstLessonSlug?: string
@@ -17,6 +20,7 @@ interface EnrollButtonProps {
 export default function EnrollButton({
   courseId,
   courseSlug,
+  courseLevel,
   isEnrolled,
   isAuthenticated,
   firstLessonSlug,
@@ -53,6 +57,13 @@ export default function EnrollButton({
       }
 
       setEnrolled(true)
+
+      // Matriculado de verdad: va DESPUES del response.ok, para no contar como
+      // inicio de curso un clic que acabo en error.
+      enviarEvento('course_start', {
+        course_slug: courseSlug,
+        course_level: courseLevel,
+      })
 
       // Redirigir a primera lección si existe
       if (firstLessonSlug) {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Providers } from "./providers";
 import SiteHeaderServer from "@/components/navigation/SiteHeader/SiteHeaderServer";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
-import { GoogleAnalytics } from "@/components/analytics";
+import { GoogleAnalytics, SignUpTracker } from "@/components/analytics";
 import "./globals.css";
 import { ScrollToTopOnNavigate } from '@/components/navigation/ScrollToTopOnNavigate';
 
@@ -65,6 +65,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen antialiased bg-dark text-white">
         <GoogleAnalytics />
+        {/* Emite sign_up al volver de un registro por OAuth o enlace magico.
+            Va aqui y no en /dashboard porque el callback redirige a donde
+            estuviera el usuario antes de entrar. */}
+        <SignUpTracker />
         {/* Skip to main content - accessibility */}
         <a
           href="#main-content"

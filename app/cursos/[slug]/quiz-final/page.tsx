@@ -141,6 +141,7 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
         {/* Quiz Component */}
         <CourseFinalQuiz
           courseId={course.id}
+          courseSlug={course.slug}
           courseTitle={course.title}
           questions={questions}
           redirectTo="/dashboard/certificados"
