@@ -1,5 +1,3 @@
-import { OG_IMAGEN_PROVISIONAL } from '@/lib/seo/og-image'
-
 interface JsonLdProps {
   data: Record<string, unknown>
 }
@@ -72,12 +70,11 @@ export function CourseJsonLd({
         url: `${baseUrl}/cursos/${slug}`,
         educationalLevel: level,
         isAccessibleForFree: isFree,
-        // La mitad de los cursos publicados no tiene thumbnail_url, asi que el
-        // suplente se usa de verdad. Apuntaba a og-nodo360.png, que NO existe
-        // en public/: un Course con una image rota es peor que uno sin image,
-        // porque Google la valida y la marca como error. Cambiar por la imagen
-        // definitiva cuando se creen (ver @/lib/seo/og-image).
-        image: thumbnailUrl || `${baseUrl}${OG_IMAGEN_PROVISIONAL}`,
+        // La tarjeta Open Graph del propio curso, que lleva su titulo, su nivel
+        // y su numero de lecciones. Antes apuntaba a og-nodo360.png, que no
+        // existia: un Course con una image rota es peor que uno sin image,
+        // porque Google la valida y la marca como error.
+        image: `${baseUrl}/cursos/${slug}/opengraph-image`,
         inLanguage: 'es',
         courseMode: 'online',
         offers: {

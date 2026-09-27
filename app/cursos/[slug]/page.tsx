@@ -74,13 +74,15 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
       description,
       url: `${baseUrl}/cursos/${slug}`,
       type: 'article',
-      images: course.thumbnail_url ? [{ url: course.thumbnail_url }] : [],
+      // Sin images: la pone app/cursos/[slug]/opengraph-image.tsx, que lleva el
+      // titulo, el nivel y el numero de lecciones. La portada del curso puede ser
+      // una foto remota (Unsplash), y una vista previa no deberia depender de un
+      // tercero ni salir sin texto.
     },
     twitter: {
       card: 'summary_large_image',
       title: `${title} | Nodo360`,
       description,
-      images: course.thumbnail_url ? [course.thumbnail_url] : [],
     },
     alternates: {
       canonical: `${baseUrl}/cursos/${slug}`,

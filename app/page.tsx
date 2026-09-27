@@ -21,7 +21,6 @@ import { HomeFooter } from '@/components/home/HomeFooter'
 import { brandConfig } from '@/lib/brand-config'
 import { blogPosts, blogCategories } from '@/lib/blog-data'
 import { glossaryTerms, glossaryCategories } from '@/lib/glossary-data'
-import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 const TITULO_HOME = `${brandConfig.name} | ${brandConfig.tagline}`
 
@@ -44,7 +43,6 @@ export const metadata: Metadata = {
     description: brandConfig.description,
     // openGraph NO se hereda campo a campo: si un hijo lo define, sustituye
     // entero al del layout. Por eso van aqui tambien la imagen y el resto.
-    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',
@@ -52,7 +50,6 @@ export const metadata: Metadata = {
     creator: '@nodo360',
     title: TITULO_HOME,
     description: brandConfig.description,
-    images: [OG_IMAGEN_PROVISIONAL],
   },
 }
 

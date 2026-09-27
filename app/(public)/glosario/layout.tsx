@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { glossaryTerms } from '@/lib/glossary-data'
-import { OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 // El numero sale del propio glosario. Escrito a mano ponia "+50" con 72
 // terminos publicados: un titulo que se queda corto cada vez que se anade uno.
@@ -25,7 +24,6 @@ export const metadata: Metadata = {
     description: `${TOTAL_TERMINOS} términos de Bitcoin, Blockchain, DeFi y Web3 explicados en español.`,
     type: 'website',
     url: 'https://nodo360.com/glosario',
-    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',

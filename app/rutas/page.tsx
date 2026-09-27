@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/Button'
 import { Footer } from '@/components/navigation/Footer'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
-import { OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 /**
  * Obtiene la URL de la primera lección incompleta de una ruta
@@ -112,7 +111,6 @@ export const metadata: Metadata = {
     description: 'Rutas guiadas paso a paso para aprender Bitcoin, Blockchain y Web3 en español.',
     type: 'website',
     url: 'https://nodo360.com/rutas',
-    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',

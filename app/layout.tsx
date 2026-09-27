@@ -5,7 +5,6 @@ import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics, SignUpTracker } from "@/components/analytics";
 import "./globals.css";
 import { ScrollToTopOnNavigate } from '@/components/navigation/ScrollToTopOnNavigate';
-import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from "@/lib/seo/og-image";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com"),
@@ -31,7 +30,6 @@ export const metadata: Metadata = {
     siteName: "Nodo360",
     title: "Nodo360 - Aprende Bitcoin y Blockchain",
     description: "Cursos gratuitos de Bitcoin, Blockchain y Web3 en español, con certificado verificable al completarlos",
-    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: "summary_large_image",
@@ -39,7 +37,6 @@ export const metadata: Metadata = {
     creator: "@nodo360",
     title: "Nodo360 - Aprende Bitcoin y Blockchain",
     description: "Cursos gratuitos de Bitcoin, Blockchain y Web3 en español, con certificado verificable al completarlos",
-    images: [OG_IMAGEN_PROVISIONAL],
   },
   robots: {
     index: true,

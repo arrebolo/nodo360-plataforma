@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 export const metadata: Metadata = {
   title: 'Preguntas Frecuentes sobre Bitcoin, Blockchain y Crypto',
@@ -21,13 +20,11 @@ export const metadata: Metadata = {
     description: 'Resolvemos tus dudas sobre Bitcoin, criptomonedas, blockchain y Web3. Respuestas claras y sencillas.',
     type: 'website',
     url: 'https://nodo360.com/faq',
-    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'FAQ Bitcoin y Crypto | Nodo360',
     description: 'Resolvemos tus dudas sobre Bitcoin, criptomonedas y blockchain.',
-    images: [OG_IMAGEN_PROVISIONAL],
   },
   alternates: {
     canonical: '/faq',

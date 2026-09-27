@@ -921,6 +921,14 @@ const nextConfig: NextConfig = {
     ]
   },
 
+  // Las imagenes Open Graph se generan en el servidor y leen tres ficheros del
+  // disco: las dos fuentes y el logo. El trazado automatico no los ve, porque
+  // las rutas se construyen con process.cwd() y no con un import. Sin esto, en
+  // Vercel la funcion se despliega sin ellos y cada tarjeta falla al generarse.
+  outputFileTracingIncludes: {
+    '/**': ['./lib/og/*.woff', './public/imagenes/logo-nodo360.png'],
+  },
+
   // Configuración experimental para mejor performance
   experimental: {
     optimizePackageImports: ['lucide-react'],

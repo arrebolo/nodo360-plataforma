@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Check, ArrowRight, Mail } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
-import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 /**
  * /pricing
@@ -37,13 +36,11 @@ export const metadata: Metadata = {
     url: '/pricing',
     title: TITULO,
     description: DESCRIPCION,
-    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',
     title: TITULO,
     description: DESCRIPCION,
-    images: [OG_IMAGEN_PROVISIONAL],
   },
 }
 
