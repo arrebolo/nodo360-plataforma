@@ -121,6 +121,16 @@ export default async function CertificatePage({
               ? `el módulo "${certificate.module?.title}"`
               : `el curso "${certificate.course?.title ?? certificate.title}"`}
           </p>
+          {/* Mismo criterio que la pagina publica de verificacion: se dice
+              sobre que temario se emitio, para que una ampliacion posterior
+              del curso no haga dudar del certificado. */}
+          <p className="mt-3 text-sm text-white/50">
+            Acredita el temario vigente el{" "}
+            {new Date(certificate.issued_at).toLocaleDateString("es-ES", {
+              day: "numeric", month: "long", year: "numeric",
+            })}
+            . El curso puede haberse ampliado después; eso no afecta a su validez.
+          </p>
         </div>
 
         {/* Certificate Preview Component */}

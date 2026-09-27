@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { LessonForm } from '@/components/admin/LessonForm'
+import { recalcularMatriculasDelCurso } from '@/lib/progress/recalcularMatriculas'
 
 interface PageProps {
   params: Promise<{
@@ -90,6 +91,10 @@ export default async function NewLessonPage({ params }: PageProps) {
     }
 
     console.log('✅ [Create Lesson] Lección creada correctamente')
+
+    // El curso acaba de cambiar de tamano: las matriculas que decian 100%
+    // sobre el total anterior dejan de ser ciertas en este mismo instante.
+    await recalcularMatriculasDelCurso(courseId)
 
     revalidatePath(`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones`)
     redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/lecciones`)
