@@ -202,7 +202,7 @@ export default function SobreNosotrosPage() {
               ¿Quieres formar parte del equipo? Estamos buscando talento apasionado por la educación y blockchain.
             </p>
             <a
-              href="mailto:team@nodo360.com"
+              href="mailto:soporte@nodo360.com"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-light to-brand text-white font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-brand-light/50 transition-all duration-300 hover:scale-105"
             >
               <MessageCircle className="w-5 h-5" />
