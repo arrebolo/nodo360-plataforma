@@ -2,16 +2,20 @@ import Link from 'next/link'
 import { GraduationCap, Shield, Users, BookOpen, Award, ArrowRight, Star, MessageCircle } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
 import type { Metadata } from 'next'
+import { OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 export const metadata: Metadata = {
-  title: 'Mentoría Bitcoin y Blockchain | Nodo360',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/mentoria' },
+  title: 'Mentoría Bitcoin y Blockchain',
   description: 'Aprende de los mejores instructores y mentores de la comunidad Nodo360. Acelera tu carrera con guía personalizada.',
   openGraph: {
     title: 'Mentoría Bitcoin y Blockchain | Nodo360',
     description: 'Conecta con expertos certificados en Bitcoin, Blockchain y Web3.',
     type: 'website',
     url: 'https://nodo360.com/mentoria',
-    images: [{ url: '/imagenes/og-mentoria.png', width: 1200, height: 630 }],
+    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',

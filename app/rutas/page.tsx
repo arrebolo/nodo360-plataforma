@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Footer } from '@/components/navigation/Footer'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
+import { OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 /**
  * Obtiene la URL de la primera lección incompleta de una ruta
@@ -101,14 +102,17 @@ async function getNextLessonUrl(
 }
 
 export const metadata: Metadata = {
-  title: 'Rutas de Aprendizaje Crypto | Nodo360',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/rutas' },
+  title: 'Rutas de Aprendizaje Crypto',
   description: 'Elige tu ruta de aprendizaje personalizada. Desde Bitcoin hasta desarrollo Web3 avanzado. Guía paso a paso.',
   openGraph: {
     title: 'Rutas de Aprendizaje Crypto | Nodo360',
     description: 'Rutas guiadas paso a paso para aprender Bitcoin, Blockchain y Web3 en español.',
     type: 'website',
     url: 'https://nodo360.com/rutas',
-    images: [{ url: '/imagenes/og-rutas.png', width: 1200, height: 630 }],
+    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',

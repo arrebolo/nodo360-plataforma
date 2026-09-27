@@ -4,7 +4,10 @@ import Link from 'next/link'
 import { Footer } from '@/components/navigation/Footer'
 
 export const metadata: Metadata = {
-  title: 'Sobre Nosotros - Nodo360 | Misión, Visión y Valores',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/sobre-nosotros' },
+  title: 'Sobre Nosotros: Misión, Visión y Valores',
   description: 'Conoce la historia de Nodo360, nuestra misión de democratizar la educación en Bitcoin y Blockchain, y el equipo detrás de la plataforma.',
   openGraph: {
     title: 'Sobre Nodo360',

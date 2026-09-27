@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Suspense } from 'react'
@@ -20,10 +21,39 @@ import { HomeFooter } from '@/components/home/HomeFooter'
 import { brandConfig } from '@/lib/brand-config'
 import { blogPosts, blogCategories } from '@/lib/blog-data'
 import { glossaryTerms, glossaryCategories } from '@/lib/glossary-data'
+import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
-export const metadata = {
-  title: `${brandConfig.name} | ${brandConfig.tagline}`,
+const TITULO_HOME = `${brandConfig.name} | ${brandConfig.tagline}`
+
+export const metadata: Metadata = {
+  // `absolute` deja escrito lo que hoy pasa de todas formas: la plantilla
+  // template: "%s | Nodo360" de app/layout.tsx NO se aplica a la pagina del
+  // mismo segmento que la define, solo a los segmentos hijos, asi que la home
+  // nunca duplico la marca (se comprobo sirviendo el sitio). Ponerlo explicito
+  // es lo que evita que empiece a hacerlo el dia que la home se mueva a un
+  // grupo de rutas.
+  title: { absolute: TITULO_HOME },
   description: brandConfig.description,
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    locale: 'es_ES',
+    siteName: brandConfig.name,
+    url: '/',
+    title: TITULO_HOME,
+    description: brandConfig.description,
+    // openGraph NO se hereda campo a campo: si un hijo lo define, sustituye
+    // entero al del layout. Por eso van aqui tambien la imagen y el resto.
+    images: OG_IMAGENES_PROVISIONALES,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@nodo360',
+    creator: '@nodo360',
+    title: TITULO_HOME,
+    description: brandConfig.description,
+    images: [OG_IMAGEN_PROVISIONAL],
+  },
 }
 
 // Diferenciadores

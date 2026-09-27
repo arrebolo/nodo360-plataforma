@@ -8,6 +8,8 @@ import { Footer } from '@/components/navigation/Footer'
 import { PathUnavailable } from '@/components/learning-path/PathUnavailable'
 import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
 import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
+import { CourseListJsonLd } from '@/components/seo/JsonLd'
+import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -29,9 +31,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const courses = await getCoursesByLearningPathSlug(slug)
   const hayPublicados = courses.some((c) => c.status === 'published')
 
+  // Sin "| Nodo360" al final: lo pone la plantilla de app/layout.tsx
+  // (template: "%s | Nodo360"), que se aplica sobre todo title de hijo. Con la
+  // marca escrita aqui salia "... | Rutas | Nodo360 | Nodo360".
+  const titulo = `${path.name} | Rutas`
+  const descripcion =
+    path.short_description || `Ruta de aprendizaje en Nodo360: ${path.name}.`
+  const url = `/rutas/${slug}`
+
   return {
-    title: `${path.name} | Rutas | Nodo360`,
-    description: path.short_description || 'Ruta de aprendizaje en Nodo360',
+    title: titulo,
+    description: descripcion,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      locale: 'es_ES',
+      siteName: 'Nodo360',
+      url,
+      title: titulo,
+      description: descripcion,
+      images: OG_IMAGENES_PROVISIONALES,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: titulo,
+      description: descripcion,
+      images: [OG_IMAGEN_PROVISIONAL],
+    },
     ...(hayPublicados ? {} : { robots: { index: false, follow: false } }),
   }
 }
@@ -77,6 +103,21 @@ export default async function RutaDetallePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-dark">
+      {/* La ruta, para un buscador: una secuencia ordenada de cursos y no una
+          pagina con enlaces sueltos. Solo cuando hay algo publicado; una lista
+          vacia no describe nada. */}
+      {hayPublicados && (
+        <CourseListJsonLd
+          name={path.name}
+          description={path.short_description}
+          courses={courses.map((curso) => ({
+            slug: curso.slug,
+            title: curso.title,
+            description: curso.description,
+            is_free: curso.is_free ?? true,
+          }))}
+        />
+      )}
       {!hayPublicados && (
         <CoursePreviewBanner message="esta ruta no tiene cursos publicados y no aparece en el listado." />
       )}

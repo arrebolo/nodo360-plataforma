@@ -4,7 +4,10 @@ import { createClient } from '@/lib/supabase/server'
 import { GraduationCap, Star, Users, BookOpen, Award, Search } from 'lucide-react'
 
 export const metadata = {
-  title: 'Instructores | Nodo360',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/instructores' },
+  title: 'Instructores',
   description: 'Conoce a los instructores certificados de Nodo360',
 }
 

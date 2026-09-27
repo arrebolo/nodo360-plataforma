@@ -28,7 +28,9 @@ export async function generateMetadata({ params }: TermPageProps): Promise<Metad
     }
   }
 
-  const title = `¿Qué es ${term.term}? Definición y Explicación | Glosario Nodo360`
+  // Sin "Nodo360" al final: la plantilla del layout raiz ya anade "| Nodo360",
+  // y asi salia "... | Glosario Nodo360 | Nodo360".
+  const title = `¿Qué es ${term.term}? Definición y Explicación | Glosario`
   const description = term.definition
 
   return {

@@ -6,7 +6,10 @@ import { getAllPosts, blogCategories, type BlogPost } from '@/lib/blog-data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Blog Bitcoin y Blockchain | Nodo360',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/blog' },
+  title: 'Blog Bitcoin y Blockchain',
   description: 'Artículos educativos sobre Bitcoin, Blockchain, DeFi y Web3. Guías completas en español para principiantes y avanzados.',
   openGraph: {
     title: 'Blog Bitcoin y Blockchain | Nodo360',

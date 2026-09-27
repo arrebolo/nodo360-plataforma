@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/privacidad' },
   title: 'Política de Privacidad',
   description: 'Política de privacidad de Nodo360 - Cómo recopilamos y usamos tu información.',
 }

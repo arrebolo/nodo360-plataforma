@@ -5,6 +5,7 @@ import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics, SignUpTracker } from "@/components/analytics";
 import "./globals.css";
 import { ScrollToTopOnNavigate } from '@/components/navigation/ScrollToTopOnNavigate';
+import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from "@/lib/seo/og-image";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com"),
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
     siteName: "Nodo360",
     title: "Nodo360 - Aprende Bitcoin y Blockchain",
     description: "Cursos gratuitos de Bitcoin, Blockchain y Web3 en español, con certificado verificable al completarlos",
-    images: [{ url: "/imagenes/og-nodo360.png", width: 1200, height: 630, alt: "Nodo360" }],
+    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: "summary_large_image",
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
     creator: "@nodo360",
     title: "Nodo360 - Aprende Bitcoin y Blockchain",
     description: "Cursos gratuitos de Bitcoin, Blockchain y Web3 en español, con certificado verificable al completarlos",
-    images: ["/imagenes/og-nodo360.png"],
+    images: [OG_IMAGEN_PROVISIONAL],
   },
   robots: {
     index: true,
@@ -51,9 +52,17 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com",
-  },
+  // OJO: aqui NO va alternates.canonical.
+  //
+  // Los metadatos se heredan, asi que una canonica en el layout raiz se la queda
+  // toda pagina que no declare la suya. Se comprobo sirviendo el sitio: /cursos,
+  // /rutas, /mentoria y /sobre-nosotros emitian
+  // <link rel="canonical" href="https://nodo360.com">, es decir, le decian a
+  // Google que son copias de la portada y que no hace falta indexarlas.
+  //
+  // Sin esta linea, cada pagina lleva la suya (ver alternates en cada page.tsx)
+  // y las que no declaren ninguna se autocanonizan por su propia URL, que es el
+  // comportamiento correcto.
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

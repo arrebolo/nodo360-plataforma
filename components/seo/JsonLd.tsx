@@ -1,3 +1,5 @@
+import { OG_IMAGEN_PROVISIONAL } from '@/lib/seo/og-image'
+
 interface JsonLdProps {
   data: Record<string, unknown>
 }
@@ -70,7 +72,12 @@ export function CourseJsonLd({
         url: `${baseUrl}/cursos/${slug}`,
         educationalLevel: level,
         isAccessibleForFree: isFree,
-        image: thumbnailUrl || `${baseUrl}/imagenes/og-nodo360.png`,
+        // La mitad de los cursos publicados no tiene thumbnail_url, asi que el
+        // suplente se usa de verdad. Apuntaba a og-nodo360.png, que NO existe
+        // en public/: un Course con una image rota es peor que uno sin image,
+        // porque Google la valida y la marca como error. Cambiar por la imagen
+        // definitiva cuando se creen (ver @/lib/seo/og-image).
+        image: thumbnailUrl || `${baseUrl}${OG_IMAGEN_PROVISIONAL}`,
         inLanguage: 'es',
         courseMode: 'online',
         offers: {
@@ -105,6 +112,61 @@ export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
           position: index + 1,
           name: item.name,
           item: item.url,
+        })),
+      }}
+    />
+  )
+}
+
+// Lista ordenada de cursos: los de una ruta de aprendizaje, en el orden en que
+// se estudian. Es lo que convierte una ruta en algo entendible para un buscador:
+// sin esto, una ruta es una pagina con enlaces sueltos y no se sabe que hay una
+// secuencia ni cual es.
+interface CursoDeLaLista {
+  slug: string
+  title: string
+  description: string | null
+  is_free: boolean
+}
+
+interface CourseListJsonLdProps {
+  name: string
+  description?: string | null
+  courses: CursoDeLaLista[]
+}
+
+export function CourseListJsonLd({ name, description, courses }: CourseListJsonLdProps) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com'
+
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name,
+        ...(description ? { description } : {}),
+        numberOfItems: courses.length,
+        itemListOrder: 'https://schema.org/ItemListOrderAscending',
+        // La posicion va 1..n y NO es learning_path_courses.position: la lista
+        // llega ya ordenada por ese campo, pero sus valores pueden tener huecos
+        // y schema.org espera un orden correlativo desde 1.
+        itemListElement: courses.map((curso, indice) => ({
+          '@type': 'ListItem',
+          position: indice + 1,
+          url: `${baseUrl}/cursos/${curso.slug}`,
+          item: {
+            '@type': 'Course',
+            name: curso.title,
+            description: curso.description || `Curso de ${curso.title}`,
+            url: `${baseUrl}/cursos/${curso.slug}`,
+            provider: {
+              '@type': 'Organization',
+              name: 'Nodo360',
+              url: baseUrl,
+            },
+            inLanguage: 'es',
+            isAccessibleForFree: curso.is_free,
+          },
         })),
       }}
     />
