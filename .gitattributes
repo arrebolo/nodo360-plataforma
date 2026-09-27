@@ -1,0 +1,10 @@
+# Los scripts de shell SIEMPRE con finales de linea LF.
+#
+# El repositorio trabaja con core.autocrlf=true, asi que Windows recibe CRLF al
+# hacer checkout. En un .sh eso rompe la primera linea: bash lee
+# "#!/usr/bin/env bash\r" y responde "bad interpreter: ...^M". El script no
+# llega a ejecutarse ni una vez.
+*.sh text eol=lf
+
+# El SQL tambien: se pega en el editor de Supabase y los \r sobran.
+*.sql text eol=lf
