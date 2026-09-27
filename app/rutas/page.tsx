@@ -16,13 +16,21 @@ async function getNextLessonUrl(
   userId: string,
   pathId: string
 ): Promise<string> {
+  // `!inner` y el filtro por status: sin ellos esta consulta recogía también los
+  // cursos archivados de la ruta, y el "continuar por aquí" podía mandar a una
+  // lección de un curso retirado. Hasta la 071 los archivados tenían position 0,
+  // así que salían antes que los publicados: era el caso probable, no el raro.
+  //
+  // El resto de la aplicación ya filtraba (lib/db/learning-paths.ts), así que
+  // los listados no los mostraban. Solo este cálculo los veía.
   const { data: pathCourses } = await supabase
     .from('learning_path_courses')
     .select(`
       position,
-      course:courses (
+      course:courses!inner (
         id,
         slug,
+        status,
         modules (
           id,
           order_index,
@@ -35,6 +43,7 @@ async function getNextLessonUrl(
       )
     `)
     .eq('learning_path_id', pathId)
+    .eq('course.status', 'published')
     .order('position', { ascending: true })
 
   if (!pathCourses?.length) return '/dashboard'
@@ -44,6 +53,11 @@ async function getNextLessonUrl(
   for (const pc of pathCourses) {
     const course = pc.course as any
     if (!course) continue
+    // Doble comprobación, como en lib/db/learning-paths.ts: si algún día el
+    // filtro del embed deja de aplicarse —cambia el nombre de la relación, se
+    // reescribe la consulta—, el fallo sería silencioso y mandaría gente a
+    // contenido retirado.
+    if (course.status !== 'published') continue
 
     const sortedModules = (course.modules || []).sort(
       (a: any, b: any) => a.order_index - b.order_index
