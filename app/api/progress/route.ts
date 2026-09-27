@@ -161,6 +161,41 @@ export async function POST(request: NextRequest) {
 
         const isCompleted = progressPercentage >= 100
 
+        // QUE PASA CON completed_at CUANDO EL PORCENTAJE BAJA
+        //
+        // Nada: si ya habia fecha, se respeta. Aqui se escribia
+        //     completed_at: isCompleted ? new Date().toISOString() : null
+        // y ese null borraba la fecha de quien SI habia terminado el curso, en
+        // cuanto el curso crecia y esa persona completaba una leccion mas.
+        //
+        // Paso de verdad el 27/09/2026 a las 18:51: una cuenta con certificado
+        // de "Fundamentos de Bitcoin" (NODO-20260115-B3M20) completo una de las
+        // tres lecciones nuevas, el porcentaje quedo en 78 y su completed_at se
+        // borro. Se quedo con el certificado y sin la marca de haberlo
+        // terminado. La migracion 076 lo restaura.
+        //
+        // Contradecia ademas la postura que fijo la migracion 047 y que siguen
+        // la 052 y recalcularMatriculasDelCurso: el certificado congela lo que
+        // se completo entonces y sigue valiendo; el porcentaje refleja el
+        // presente. Dos criterios distintos segun por donde pasara el dato.
+        //
+        // El caso de "curso ampliado" ya lo cubre la pantalla:
+        // estadoDeLaMatricula() no deduce "completado" de este campo, lo cuenta
+        // contra las lecciones de hoy, y el aviso dice cuantas se han anadido.
+        //
+        // Y cuando se completa por primera vez, la fecha es la de ahora. Si ya
+        // la habia, se conserva la original: es la que acredita el certificado.
+        const { data: matriculaPrevia } = await supabase
+          .from('course_enrollments')
+          .select('completed_at')
+          .eq('user_id', user.id)
+          .eq('course_id', courseId)
+          .maybeSingle()
+
+        const completadoEn =
+          matriculaPrevia?.completed_at ??
+          (isCompleted ? new Date().toISOString() : null)
+
         console.log('📊 [Progress] Actualizando enrollment:', {
           courseId: courseId.substring(0, 8),
           totalLessons,
@@ -174,7 +209,7 @@ export async function POST(request: NextRequest) {
           .from('course_enrollments')
           .update({
             progress_percentage: progressPercentage,
-            completed_at: isCompleted ? new Date().toISOString() : null,
+            completed_at: completadoEn,
             last_accessed_at: new Date().toISOString(),
           })
           .eq('user_id', user.id)
