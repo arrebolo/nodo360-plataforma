@@ -3132,7 +3132,7 @@ Lo que sí es seguro: solo habrá 21 millones de bitcoins, y cada halving nos ac
     content: `
 **Nota de corrección (27 de septiembre de 2026).** Una versión anterior de este artículo decía que una passphrase robusta dejaba la cartera fuera del problema. No es exacto: el aviso del fabricante indica que añade una barrera independiente pero **no repara la semilla**, y recomienda migrar también en ese caso. El texto está corregido más abajo.
 
-El 30 de julio de 2026 se produjo un barrido coordinado de fondos desde carteras cuya semilla se había generado en dispositivos Coldcard. En ese movimiento se transfirieron alrededor de 594 BTC. Días después, un investigador independiente identificó transacciones anteriores con la misma huella, que situarían el total en torno a 1.082 BTC; esa segunda cifra no está confirmada. <!-- REVISAR -->
+El 30 de julio de 2026 se produjo un barrido coordinado de fondos desde carteras cuya semilla se había generado en dispositivos Coldcard: cientos de carteras de firma única vaciadas en cuestión de minutos. Las estimaciones publicadas del total sustraído no coinciden entre sí y el fabricante no ha dado ninguna, así que aquí no se reproduce una cifra.
 
 Conviene descartar de entrada la explicación intuitiva: nadie entró en los dispositivos. No hubo acceso remoto, ni programas maliciosos en los equipos de las víctimas, ni una base de datos filtrada. Los aparatos afectados siguieron haciendo exactamente lo que se esperaba de ellos, sin conexión, hasta el final. Los atacantes no necesitaron tocarlos: reconstruyeron las semillas por su cuenta, también sin conexión, aprovechando un defecto en cómo se habían generado años antes.
 
@@ -3173,7 +3173,9 @@ Vale la pena señalar cómo se cerró el episodio, porque también es informaci�
 
 ## Si tienes uno de los modelos afectados
 
-El fabricante ha publicado qué modelos quedaron alcanzados y qué hacer con cada uno. Esa lista se ha ido precisando conforme avanzaba la investigación, así que la referencia válida es su comunicación oficial, no lo que se reproduzca en cualquier otro sitio, incluido este artículo. <!-- REVISAR -->
+Los modelos alcanzados son **Mk2, Mk3, Mk4, Mk5 y Q**. Quedaron fuera TAPSIGNER, OPENDIME y SATSCARD, que usan otra base de código. Las versiones afectadas son la **4.0.1 a la 4.1.9** en Mk2 y Mk3, y en Mk4, Mk5 y Q cualquiera anterior al parche del 31 de julio de 2026.
+
+La versión de firmware que hay que instalar no la reproducimos aquí: ha cambiado tres veces en cinco semanas. Está en el [aviso oficial del fabricante](https://blog.coinkite.com/coldcard-mk3-seed-generation-warning/) y en su [página de actualización](https://coldcard.com/docs/upgrade/), que es la referencia válida, no lo que se reproduzca en cualquier otro sitio, incluido este artículo.
 
 Sí conviene entender un detalle antes de leerla, porque cambia lo que significa actualizar: **el firmware corregido repara la generación futura, no las semillas ya creadas**. Una semilla débil sigue siendo débil después de actualizar. Cuando una semilla se generó con una versión afectada, el camino pasa por crear una nueva en un dispositivo ya corregido y mover los fondos, no por actualizar y quedarse quieto.
 
@@ -3187,7 +3189,7 @@ Las lecciones no son sobre una marca. Son sobre dónde está apoyado todo lo dem
 
 **La aleatoriedad es el cimiento.** Toda la seguridad de una cartera descansa en que el número del que nace la semilla sea imposible de adivinar. Si esa pieza falla, no hay contraseña, ni caja fuerte, ni placa de acero que lo compense. Es el único punto del sistema donde un fallo silencioso lo invalida todo aguas abajo.
 
-**Mezclar fuentes de aleatoriedad evita depender de una sola.** Un diseño que combina varias fuentes independientes y las une sigue funcionando aunque una de ellas se degrade o se desactive. Varios fabricantes trabajan así por este motivo exacto. <!-- REVISAR --> Como usuario no se elige la arquitectura interna, pero sí se puede preguntar por ella, y es una pregunta mucho más útil que la mayoría de las que se hacen al comparar aparatos.
+**Mezclar fuentes de aleatoriedad evita depender de una sola.** Un diseño que combina varias fuentes independientes y las une sigue funcionando aunque una de ellas se degrade o se desactive. Es una práctica documentada por varios fabricantes, aunque no todos expliquen por qué la siguen: [Trezor](https://trezor.io/guides/trezor-devices/trezor-fundamentals/what-is-entropy-and-how-does-trezor-generate-your-wallet) combina la aleatoriedad del aparato con la del ordenador o el teléfono y lo justifica exactamente así, que la copia siga siendo segura aunque una de las fuentes tenga un defecto; [Jade](https://help.blockstream.com/blockstream-jade/faqs/how-does-jade-generate-my-recovery-phrase) acumula la de varios sensores y contadores internos junto con la de su aplicación de acompañamiento, sin declarar el motivo. Como usuario no se elige la arquitectura interna, pero sí se puede preguntar por ella, y es una pregunta mucho más útil que la mayoría de las que se hacen al comparar aparatos.
 
 **Los dados aportan aleatoriedad verificable.** Varios dispositivos permiten aportar tiradas de dados al generar la semilla. Son lentas y tediosas, y por eso casi nadie las usa. Su valor es que la aleatoriedad la aporta quien va a custodiar los fondos, con un proceso físico que puede observar, en vez de confiarla entera a un componente cuyo funcionamiento no puede comprobar. En este incidente marcaron la diferencia.
 
