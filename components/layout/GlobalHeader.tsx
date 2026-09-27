@@ -21,7 +21,9 @@ const navLinks = [
   { href: '/rutas', label: 'Rutas' },
   { href: '/cursos', label: 'Cursos' },
   { href: '/comunidad', label: 'Comunidad' },
-  { href: '/mentoria', label: 'Mentoría' },
+  // Mentoria fuera del menu: las tablas estan a 0 y la pagina promete algo
+  // que no existe. No se borra el codigo; se deja de anunciar. Ver la
+  // migracion 078, que lo explica tabla por tabla.
 ]
 
 export function GlobalHeader() {
