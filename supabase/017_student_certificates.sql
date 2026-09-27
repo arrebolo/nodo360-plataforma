@@ -1,3 +1,31 @@
+-- ============================================================================
+-- HISTORICO. APLICADO A MANO, NUNCA ENTRO EN supabase/migrations/.
+-- SUPERSEDIDO POR supabase/migrations/070_fuera_el_trigger_de_certificados.sql
+-- ============================================================================
+-- Este fichero se ejecuto a mano contra produccion en enero de 2026 y se quedo
+-- suelto en supabase/, fuera de la carpeta numerada. Por eso su trigger no
+-- aparecia al revisar las migraciones: la carpeta va de la 001 a la 069 y este
+-- no esta en ella.
+--
+-- QUE HIZO DANO
+--   trigger_auto_certificate_on_completion emitia el certificado al poner
+--   completed_at en course_enrollments, sin mirar ningun examen. El 26/09/2026
+--   una cuenta nueva recibio el certificado de Fundamentos de Bitcoin con el
+--   examen suspendido (33), 38 segundos antes de intentarlo siquiera. La
+--   exigencia del examen estaba desplegada desde el 25/09 y era correcta: el
+--   trigger insertaba la fila 28 lineas antes de que el codigo llegara a
+--   evaluarla.
+--
+-- QUE QUEDA VIVO DE AQUI, TRAS LA 070
+--   get_user_certificates_summary(uuid)   solo lectura, con search_path fijado
+--
+--   Todo lo demas se elimina en la 070: el trigger, auto_issue_course_certificate,
+--   issue_course_certificate_manual y backfill_missing_certificates.
+--
+-- NO REAPLIQUES ESTE FICHERO salvo que quieras volver atras a proposito. El SQL
+-- de abajo se conserva intacto como registro historico y como via de reversion.
+-- ============================================================================
+
 -- =====================================================
 -- NODO360 PLATFORM - AUTO CERTIFICATE GENERATION
 -- Migration: 017_student_certificates.sql
