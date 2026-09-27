@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { crearImagenOg, TAMANO_OG, TIPO_OG } from '@/lib/og/plantilla'
 import { nivelEnCastellano } from '@/lib/og/texto'
 
-export const alt = 'Ficha de un curso de Nodo360: título, nivel, número de lecciones y precio'
+export const alt = 'Ficha de un curso de Nodo360: título, nivel, número de lecciones y acceso gratuito'
 export const size = TAMANO_OG
 export const contentType = TIPO_OG
 

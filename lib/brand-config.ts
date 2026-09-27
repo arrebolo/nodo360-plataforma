@@ -13,7 +13,10 @@ export const brandConfig = {
     }
   },
   name: 'Nodo360',
-  tagline: 'Domina Bitcoin y Blockchain',
+  // El mismo texto que el H1 de la home. Decia 'Domina Bitcoin y Blockchain'
+  // cuando el H1 ya no lo decia: el titulo de la pestana y la tarjeta que se
+  // comparte prometian una cosa y la pagina, otra.
+  tagline: 'Aprende Bitcoin y Web3 en español',
   description: 'Cursos gratuitos de Bitcoin, Blockchain y Web3 en español',
   colors: {
     primary: '#ff6b35',

@@ -30,27 +30,23 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     keywords: post.keywords,
     authors: [{ name: post.author }],
     openGraph: {
-      title: post.title,
+      // og:title no pasa por la plantilla del layout: la marca va escrita.
+      title: `${post.title} | Nodo360`,
       description: post.description,
       type: 'article',
       url: `${baseUrl}/blog/${post.slug}`,
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt || post.publishedAt,
       authors: [post.author],
-      // Las 16 entradas tienen su portada en public/blog/. Si alguna se quedara
-      // sin ella, aqui NO se pone nada a proposito: Next rellena entonces con la
-      // imagen de la seccion (app/(public)/blog/opengraph-image.tsx). Su URL
-      // lleva un hash que cambia con el contenido, asi que no se puede escribir
-      // a mano.
-      ...(post.image
-        ? { images: [{ url: post.image, width: 1200, height: 630, alt: post.title }] }
-        : {}),
+      // Sin images: la pone opengraph-image.tsx de este mismo segmento, que
+      // dibuja el titulo del articulo sobre la plantilla de la casa. Antes se
+      // compartia la portada de public/blog/, una foto sin una palabra encima.
+      // La portada sigue abriendo el articulo dentro de la pagina.
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
+      title: `${post.title} | Nodo360`,
       description: post.description,
-      ...(post.image ? { images: [post.image] } : {}),
     },
     alternates: {
       canonical: `${baseUrl}/blog/${post.slug}`,

@@ -22,7 +22,9 @@ import { brandConfig } from '@/lib/brand-config'
 import { blogPosts, blogCategories } from '@/lib/blog-data'
 import { glossaryTerms, glossaryCategories } from '@/lib/glossary-data'
 
-const TITULO_HOME = `${brandConfig.name} | ${brandConfig.tagline}`
+// Mismo formato que el resto del sitio: <titulo> | Nodo360. Estaba al reves,
+// y con un tagline que la home ya no decia.
+const TITULO_HOME = `${brandConfig.tagline} | ${brandConfig.name}`
 
 export const metadata: Metadata = {
   // `absolute` deja escrito lo que hoy pasa de todas formas: la plantilla

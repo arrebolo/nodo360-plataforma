@@ -20,6 +20,8 @@ import { Footer } from '@/components/navigation/Footer'
  */
 
 const TITULO = '¿Cuánto cuesta Nodo360?'
+// og:title no pasa por la plantilla del layout: la marca va escrita.
+const TITULO_CON_MARCA = `${TITULO} | Nodo360`
 const DESCRIPCION =
   'Hoy todo el contenido de Nodo360 es gratuito: los cursos, las rutas de aprendizaje, los exámenes y los certificados. Sin tarjeta y sin periodo de prueba.'
 
@@ -34,12 +36,12 @@ export const metadata: Metadata = {
     locale: 'es_ES',
     siteName: 'Nodo360',
     url: '/pricing',
-    title: TITULO,
+    title: TITULO_CON_MARCA,
     description: DESCRIPCION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: TITULO,
+    title: TITULO_CON_MARCA,
     description: DESCRIPCION,
   },
 }
