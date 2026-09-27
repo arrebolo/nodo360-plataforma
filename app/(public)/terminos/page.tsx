@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/terminos' },
   title: 'Términos de Servicio',
   description: 'Términos y condiciones de uso de Nodo360.',
 }

@@ -6,7 +6,10 @@ import { Footer } from '@/components/navigation/Footer'
 import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
 
 export const metadata: Metadata = {
-  title: 'Comunidad Nodo360 - Conecta con Expertos en Bitcoin y Blockchain',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/comunidad' },
+  title: 'Comunidad: conecta con expertos en Bitcoin y Blockchain',
   description: 'Comunidad abierta de Nodo360 en Discord y Telegram: dudas, conversación y grupos de estudio sobre Bitcoin, Blockchain y Web3.',
   openGraph: {
     title: 'Comunidad Nodo360',

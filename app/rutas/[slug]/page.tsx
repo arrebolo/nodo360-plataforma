@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
-import { ChevronRight, BookOpen, Layers } from 'lucide-react'
+import { notFound } from 'next/navigation'
+import { ChevronRight, BookOpen, Layers, GraduationCap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getLearningPathBySlug, getCoursesByLearningPathSlug } from '@/lib/db/learning-paths'
 import { Footer } from '@/components/navigation/Footer'
 import { PathUnavailable } from '@/components/learning-path/PathUnavailable'
 import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
 import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
+import { CourseListJsonLd } from '@/components/seo/JsonLd'
+import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -29,10 +31,48 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const courses = await getCoursesByLearningPathSlug(slug)
   const hayPublicados = courses.some((c) => c.status === 'published')
 
+  // Sin "| Nodo360" al final: lo pone la plantilla de app/layout.tsx
+  // (template: "%s | Nodo360"), que se aplica sobre todo title de hijo. Con la
+  // marca escrita aqui salia "... | Rutas | Nodo360 | Nodo360".
+  const titulo = `${path.name} | Rutas`
+  const descripcion =
+    path.short_description || `Ruta de aprendizaje en Nodo360: ${path.name}.`
+  const url = `/rutas/${slug}`
+
   return {
-    title: `${path.name} | Rutas | Nodo360`,
-    description: path.short_description || 'Ruta de aprendizaje en Nodo360',
+    title: titulo,
+    description: descripcion,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      locale: 'es_ES',
+      siteName: 'Nodo360',
+      url,
+      title: titulo,
+      description: descripcion,
+      images: OG_IMAGENES_PROVISIONALES,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: titulo,
+      description: descripcion,
+      images: [OG_IMAGEN_PROVISIONAL],
+    },
     ...(hayPublicados ? {} : { robots: { index: false, follow: false } }),
+  }
+}
+
+/** El nivel del curso, en la palabra que lee el alumno. */
+function etiquetaDeNivel(nivel: string | null): string {
+  switch (nivel) {
+    case 'beginner':
+      return 'Principiante'
+    case 'intermediate':
+      return 'Intermedio'
+    case 'advanced':
+      return 'Avanzado'
+    default:
+      return ''
   }
 }
 
@@ -40,12 +80,11 @@ export default async function RutaDetallePage({ params }: PageProps) {
   const { slug } = await params
   const supabase = await createClient()
 
-  // Verificar autenticación obligatoria
+  // Pagina publica: se puede leer sin sesion. Antes redirigia a /login, de modo
+  // que un buscador indexaba el formulario de acceso en lugar de la ruta y un
+  // visitante no llegaba a ver nunca que se estudia en ella. La sesion solo
+  // hace falta para la accion de empezar la ruta, mas abajo.
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect(`/login?redirect=/rutas/${slug}`)
-  }
 
   // Obtener ruta
   const path = await getLearningPathBySlug(slug)
@@ -60,23 +99,41 @@ export default async function RutaDetallePage({ params }: PageProps) {
   // Una ruta sin ningun curso publicado no tiene nada que ofrecer todavia.
   // Los admin si la ven, vacia, para poder gestionarla.
   const hayPublicados = courses.some((c) => c.status === 'published')
-  const esAdmin = await isCurrentUserAdmin(user.id)
+  const esAdmin = user ? await isCurrentUserAdmin(user.id) : false
 
   if (!hayPublicados && !esAdmin) {
     return <PathUnavailable pathName={path.name} pathSlug={slug} />
   }
 
-  // Verificar si el usuario tiene esta ruta activa
-  const { data: userData } = await supabase
-    .from('users')
-    .select('active_path_id')
-    .eq('id', user.id)
-    .single()
+  // Verificar si el usuario tiene esta ruta activa. Sin sesion no hay ruta
+  // activa que comprobar, y la consulta se ahorra.
+  const { data: userData } = user
+    ? await supabase
+        .from('users')
+        .select('active_path_id')
+        .eq('id', user.id)
+        .single()
+    : { data: null }
 
   const isActive = userData?.active_path_id === path.id
 
   return (
     <div className="min-h-screen bg-dark">
+      {/* La ruta, para un buscador: una secuencia ordenada de cursos y no una
+          pagina con enlaces sueltos. Solo cuando hay algo publicado; una lista
+          vacia no describe nada. */}
+      {hayPublicados && (
+        <CourseListJsonLd
+          name={path.name}
+          description={path.short_description}
+          courses={courses.map((curso) => ({
+            slug: curso.slug,
+            title: curso.title,
+            description: curso.description,
+            is_free: curso.is_free ?? true,
+          }))}
+        />
+      )}
       {!hayPublicados && (
         <CoursePreviewBanner message="esta ruta no tiene cursos publicados y no aparece en el listado." />
       )}
@@ -125,9 +182,17 @@ export default async function RutaDetallePage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Estado */}
+            {/* Estado. Sin sesion, lo unico que pide login es esta accion, y
+                vuelve aqui despues de entrar. Con sesion, lo de siempre. */}
             <div className="flex flex-col items-start sm:items-end gap-3">
-              {isActive ? (
+              {!user ? (
+                <Link
+                  href={`/login?redirect=/rutas/${slug}`}
+                  className="px-4 py-2 bg-brand-light hover:bg-brand text-white font-medium rounded-lg transition-colors"
+                >
+                  Empezar esta ruta
+                </Link>
+              ) : isActive ? (
                 <div className="px-4 py-2 bg-success/20 border border-success/30 rounded-lg">
                   <span className="text-success font-medium">Ruta activa</span>
                 </div>
@@ -197,7 +262,13 @@ export default async function RutaDetallePage({ params }: PageProps) {
                           </p>
                         )}
 
-                        <div className="mt-4 flex items-center gap-3 text-xs text-white/50">
+                        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-white/50">
+                          {etiquetaDeNivel(course.level) && (
+                            <span className="inline-flex items-center gap-1">
+                              <GraduationCap className="h-3.5 w-3.5" />
+                              {etiquetaDeNivel(course.level)}
+                            </span>
+                          )}
                           <span className="inline-flex items-center gap-1">
                             <Layers className="h-3.5 w-3.5" />
                             {course.total_modules || 0} módulos

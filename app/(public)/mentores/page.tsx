@@ -4,7 +4,10 @@ import { createClient } from '@/lib/supabase/server'
 import { Shield, Star, Users, MessageCircle, Award, Search, CheckCircle } from 'lucide-react'
 
 export const metadata = {
-  title: 'Mentores | Nodo360',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/mentores' },
+  title: 'Mentores',
   description: 'Conoce a los mentores de la comunidad Nodo360',
 }
 

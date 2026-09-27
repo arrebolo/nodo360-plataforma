@@ -68,9 +68,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
+  // Sin "| Nodo360": lo anade la plantilla del layout raiz. Escrito tambien
+  // aqui, la pestana y el resultado de busqueda decian la marca dos veces.
   return {
-    title: `${lesson.title} | ${courseTitle} | Nodo360`,
+    title: `${lesson.title} | ${courseTitle}`,
     description: `Lección: ${lesson.title}`,
+    alternates: { canonical: `/cursos/${slug}/${lessonSlug}` },
   }
 }
 

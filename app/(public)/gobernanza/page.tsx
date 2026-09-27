@@ -5,7 +5,10 @@ import { Vote, Users, CheckCircle, Clock, TrendingUp } from 'lucide-react'
 import { GovernanceEmptyState } from '@/components/governance/GovernanceEmptyState'
 
 export const metadata = {
-  title: 'Gobernanza | Nodo360',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/gobernanza' },
+  title: 'Gobernanza',
   description: 'Participa en las decisiones de la comunidad Nodo360',
 }
 

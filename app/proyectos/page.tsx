@@ -4,7 +4,10 @@ import Link from 'next/link'
 import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
 
 export const metadata: Metadata = {
-  title: 'Espacio de Proyectos - Nodo360',
+  // Propio, y no el del layout raiz: ese decia que esta pagina era una
+  // copia de la home.
+  alternates: { canonical: '/proyectos' },
+  title: 'Espacio de Proyectos',
   description: 'Un espacio donde los estudiantes de Nodo360 colaboran en proyectos Web3 reales y aprenden construyendo. En preparación.',
   openGraph: {
     title: 'Espacio de Proyectos - Nodo360',
