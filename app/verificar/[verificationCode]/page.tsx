@@ -63,7 +63,16 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
   const expiresAt = cert.expires_at ? formatLongEs(cert.expires_at) : null
   const isExpired = !!cert.expires_at && new Date(cert.expires_at).getTime() < Date.now()
 
-  const status: 'valid' | 'expired' = isExpired ? 'expired' : 'valid'
+  // revocado lo devuelve verificar_certificado desde la migracion 074. Si el
+  // codigo se despliega antes que la migracion, el campo llega undefined y
+  // cae en false: el certificado se ve como estaba. Esa es la caida buena.
+  const revocado = cert.revocado === true
+
+  const status: 'valid' | 'expired' | 'revoked' = revocado
+    ? 'revoked'
+    : isExpired
+      ? 'expired'
+      : 'valid'
 
   return (
     <div className="min-h-screen bg-dark">
@@ -87,16 +96,35 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
             status === 'valid'
               ? 'bg-success/20 border border-success/30'
-              : 'bg-warning/20 border border-warning/30'
+              : status === 'revoked'
+                ? 'bg-red-500/20 border border-red-500/30'
+                : 'bg-warning/20 border border-warning/30'
           }`}>
-            <svg className={`w-5 h-5 ${status === 'valid' ? 'text-success' : 'text-warning'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-5 h-5 ${status === 'valid' ? 'text-success' : status === 'revoked' ? 'text-red-400' : 'text-warning'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
-            <span className={`font-medium ${status === 'valid' ? 'text-success' : 'text-warning'}`}>
-              {status === 'valid' ? 'Certificado Verificado' : 'Certificado Expirado'}
+            <span className={`font-medium ${status === 'valid' ? 'text-success' : status === 'revoked' ? 'text-red-300' : 'text-warning'}`}>
+              {status === 'valid'
+                ? 'Certificado Verificado'
+                : status === 'revoked'
+                  ? 'Certificado retirado'
+                  : 'Certificado Expirado'}
             </span>
           </div>
         </div>
+
+        {/* El motivo guardado en revoked_reason NO se pinta: este texto es el
+            mismo para todos los casos. Quien verifica necesita saber que el
+            certificado no vale y de quien fue el fallo; no necesita saber
+            nada de la persona que lo tiene. */}
+        {revocado && (
+          <div className="mb-8 rounded-xl border border-red-500/30 bg-red-500/10 p-5">
+            <p className="text-red-100">
+              Este certificado se emitió por un error de la plataforma y ha sido
+              retirado. No acredita la finalización del curso.
+            </p>
+          </div>
+        )}
 
         {/* Card principal */}
         <div className="bg-dark-surface border border-white/10 rounded-2xl overflow-hidden">
@@ -168,7 +196,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                     tener 9 hoy. El certificado no caduca por eso, pero quien
                     lo verifica tiene derecho a saber sobre que se emitio, y
                     quien lo presenta, a que no parezca incompleto. */}
-                {issuedAt && (
+                {issuedAt && !revocado && (
                   <p className="mt-6 text-sm text-white/50 border-t border-white/10 pt-4">
                     Acredita el temario vigente el {issuedAt}. El curso puede haberse
                     ampliado después; eso no afecta a la validez de este certificado.
