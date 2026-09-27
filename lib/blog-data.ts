@@ -3124,11 +3124,14 @@ Lo que sí es seguro: solo habrá 21 millones de bitcoins, y cada halving nos ac
     author: 'Equipo Nodo360',
     authorRole: 'Educadores Bitcoin',
     publishedAt: '2026-09-23',
+    updatedAt: '2026-09-27',
     readingTime: 7,
     image: '/blog/fallo-entropia-coldcard-semillas-bitcoin.webp',
     keywords: ['entropía', 'seed phrase', 'hardware wallet', 'cold storage', 'seguridad bitcoin', 'coldcard'],
     relatedSlugs: ['seguridad-crypto-proteger-criptomonedas', 'que-es-wallet-crypto-tipos'],
     content: `
+**Nota de corrección (27 de septiembre de 2026).** Una versión anterior de este artículo decía que una passphrase robusta dejaba la cartera fuera del problema. No es exacto: el aviso del fabricante indica que añade una barrera independiente pero **no repara la semilla**, y recomienda migrar también en ese caso. El texto está corregido más abajo.
+
 El 30 de julio de 2026 se produjo un barrido coordinado de fondos desde carteras cuya semilla se había generado en dispositivos Coldcard. En ese movimiento se transfirieron alrededor de 594 BTC. Días después, un investigador independiente identificó transacciones anteriores con la misma huella, que situarían el total en torno a 1.082 BTC; esa segunda cifra no está confirmada. <!-- REVISAR -->
 
 Conviene descartar de entrada la explicación intuitiva: nadie entró en los dispositivos. No hubo acceso remoto, ni programas maliciosos en los equipos de las víctimas, ni una base de datos filtrada. Los aparatos afectados siguieron haciendo exactamente lo que se esperaba de ellos, sin conexión, hasta el final. Los atacantes no necesitaron tocarlos: reconstruyeron las semillas por su cuenta, también sin conexión, aprovechando un defecto en cómo se habían generado años antes.
@@ -3176,7 +3179,7 @@ Sí conviene entender un detalle antes de leerla, porque cambia lo que significa
 
 No detallamos aquí el procedimiento a propósito. Es el tipo de operación en la que un paso mal explicado cuesta dinero, y el fabricante es quien puede describirlo para cada modelo y cada versión.
 
-Según la información publicada, dos situaciones quedaron fuera del problema: las semillas generadas aportando suficiente aleatoriedad externa mediante tiradas de dados, y las protegidas con una palabra adicional robusta. <!-- REVISAR -->
+Según la información publicada, las semillas generadas con **al menos 50 tiradas de dados** independientes y no registradas quedaron fuera del problema, porque su aleatoriedad no venía del generador defectuoso. Con la palabra adicional conviene ser más preciso de lo que se ha repetido: **añade una barrera independiente, pero no repara la semilla**, y el fabricante recomienda migrar igualmente.
 
 ## Qué se aprende para cualquier dispositivo
 
@@ -3188,7 +3191,9 @@ Las lecciones no son sobre una marca. Son sobre dónde está apoyado todo lo dem
 
 **Los dados aportan aleatoriedad verificable.** Varios dispositivos permiten aportar tiradas de dados al generar la semilla. Son lentas y tediosas, y por eso casi nadie las usa. Su valor es que la aleatoriedad la aporta quien va a custodiar los fondos, con un proceso físico que puede observar, en vez de confiarla entera a un componente cuyo funcionamiento no puede comprobar. En este incidente marcaron la diferencia.
 
-**La palabra adicional añade un factor independiente.** La passphrase —una palabra o frase que se suma a las palabras de la semilla y produce una cartera distinta— no vive dentro del dispositivo. Cuando es robusta y se elige fuera, no la alcanza un fallo en la generación, porque no salió de ahí. Tiene su propio coste: si se pierde, los fondos se pierden con ella, sin excepción y sin recuperación posible.
+**La palabra adicional añade un factor independiente.** La passphrase —una palabra o frase que se suma a las palabras de la semilla y produce una cartera distinta— no vive dentro del dispositivo. Eso la convierte en una capa que un fallo de generación no anula por sí solo, pero **tampoco arregla la semilla de debajo**, y el propio fabricante pidió migrar también a quien la usara. Tiene su coste: si se pierde, los fondos se pierden con ella, sin excepción y sin recuperación posible.
+
+Hay un epílogo que da la razón al argumento. En las dos revisiones de firmware posteriores al parche, el fabricante dejó de permitir que la semilla saliera solo del aparato: ahora **exige** una aportación del usuario —65 pulsaciones, 50 tiradas de dado o 128 lanzamientos de moneda— y muestra las palabras que codifican la aportación del dispositivo antes de mezclarlas, con una herramienta para verificar el resultado. Mezclar fuentes dejó de ser una opción para quien se molestara en usarla y pasó a ser el comportamiento por defecto.
 
 ## Lo que queda
 
