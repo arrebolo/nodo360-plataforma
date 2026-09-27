@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { cx } from '@/lib/design/tokens'
 import { FileText, Download, StickyNote, ExternalLink, BookOpen, ArrowRight } from 'lucide-react'
 import { LessonNotes } from './LessonNotes'
+import { RequiereCuenta } from './RequiereCuenta'
 import { LessonCallout } from './LessonCallout'
 import { CodeBlock } from './CodeBlock'
 import { InteractiveList } from './InteractiveList'
@@ -12,6 +13,8 @@ import type { LessonContent as LessonContentType, ContentBlock } from '@/types/l
 
 type LessonLike = {
   id: string
+  /** Para volver a esta misma leccion despues de entrar. */
+  slug?: string | null
   title?: string | null
   description?: string | null
   slides_url?: string | null
@@ -294,9 +297,22 @@ export function LessonContent({ lesson, userId, courseSlug, onTabChange, request
           </div>
         )}
 
-        {/* NOTAS */}
+        {/* NOTAS
+            Sin cuenta, LessonNotes sigue funcionando en local (el borrador vive
+            en el navegador), pero eso no se veia por ninguna parte: se podia
+            escribir una nota larga creyendo que quedaba guardada. El aviso va
+            encima, sin quitar el editor. */}
         {activeTab === 'notes' && (
-          <LessonNotes lessonId={lesson.id} userId={userId} />
+          <div className="space-y-4">
+            {!userId && (
+              <RequiereCuenta
+                titulo="Tus notas, en tu cuenta"
+                queSeGana="Puedes escribir aquí ahora mismo, pero sin cuenta la nota se queda en este navegador y no la verás desde otro dispositivo. Con una cuenta gratuita se guardan y te acompañan por todo el curso."
+                volverA={`/cursos/${courseSlug}/${lesson.slug}`}
+              />
+            )}
+            <LessonNotes lessonId={lesson.id} userId={userId} />
+          </div>
         )}
       </div>
     </div>

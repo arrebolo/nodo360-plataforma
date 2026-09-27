@@ -12,6 +12,7 @@ import { LessonSidebar } from '@/components/lesson/LessonSidebar'
 import { LessonFooter } from '@/components/lesson/LessonFooter'
 import { SlidesEmbed } from '@/components/lesson/SlidesEmbed'
 import LessonComments from '@/components/lesson/LessonComments'
+import { RequiereCuenta } from '@/components/lesson/RequiereCuenta'
 import { useCourseCompletion } from '@/hooks/useCourseCompletion'
 import type { LessonPlayerProps } from '@/types/lesson-player'
 import { enviarEvento } from '@/lib/analytics/eventos'
@@ -315,13 +316,20 @@ export default function LessonPlayer({
               onTabChange={setActiveContentTab}
             />
 
-            {/* Comments section - only for authenticated users */}
-            {userId && (
+            {/* Comentarios. Sin cuenta no se esconden sin mas -eso es lo que
+                se hacia antes-: se dice que hay ahi y como entrar. */}
+            {userId ? (
               <LessonComments
                 lessonId={lesson.id}
                 courseInstructorId={courseInstructorId}
                 userId={userId}
                 userRole={userRole}
+              />
+            ) : (
+              <RequiereCuenta
+                titulo="Preguntas y comentarios"
+                queSeGana="Aquí se plantean las dudas de esta lección y responden el instructor y el resto de alumnos. Hace falta una cuenta gratuita para escribir."
+                volverA={`/cursos/${course.slug}/${lesson.slug}`}
               />
             )}
 
