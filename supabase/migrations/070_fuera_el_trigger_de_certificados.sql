@@ -2,7 +2,8 @@
 -- 070: fuera el trigger que emitia certificados sin pasar por el codigo
 -- ============================================================================
 -- ESTADO: PENDIENTE DE APLICAR. Es DDL, no se puede ejecutar por PostgREST.
---   Fichero listo para el editor SQL de Supabase.
+--   Fichero listo para el editor SQL: C:/Users/alber/070-aplicar.sql
+--   Estado antes y despues, solo lectura:  C:/Users/alber/070-comprobar.sql
 --
 -- EL FALLO, CON SU CASO
 --   El 26/09/2026 a las 23:49:26 una cuenta creada ese mismo dia recibio el
