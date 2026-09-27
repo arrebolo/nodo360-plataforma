@@ -2,7 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Calendar, Clock, ArrowLeft, ArrowRight, User, BookOpen } from 'lucide-react'
+import { Calendar, Clock, ArrowLeft, ArrowRight, User, BookOpen, History } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
 import { getPostBySlug, getRelatedPosts, blogCategories, getAllPosts, type InlineImage } from '@/lib/blog-data'
 import { JsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
@@ -385,6 +385,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <Calendar className="w-4 h-4" />
               {formatDate(post.publishedAt)}
             </span>
+            {post.updatedAt && post.updatedAt !== post.publishedAt && (
+              <span className="flex items-center gap-2">
+                <History className="w-4 h-4" />
+                Actualizado el {formatDate(post.updatedAt)}
+              </span>
+            )}
             <span className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               {post.readingTime} min de lectura
