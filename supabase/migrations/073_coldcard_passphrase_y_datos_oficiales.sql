@@ -3,7 +3,7 @@
 -- ============================================================================
 -- ESTADO: PENDIENTE DE APLICAR.
 --   Fichero listo para el editor SQL: C:/Users/alber/073-aplicar.sql
---   Este fichero YA ES la version llana: cuatro UPDATE sueltos con replace() y
+--   Este fichero YA ES la version llana: seis UPDATE sueltos con replace() y
 --   una unica consulta de verificacion al final. Sin bloque DO, sin PL/pgSQL y
 --   sin dollar-quoting anidado, que es lo que hizo fallar a la 072 en su primera
 --   forma.
@@ -39,6 +39,10 @@
 --      Y los pasos de migracion, con el que faltaba y es el que evita perder
 --      dinero: la transaccion de prueba antes de mover el resto.
 --   4. Entran las 50 tiradas de dados, que antes era "un numero suficiente".
+--   5. El bloque "En resumen", que repetia la cifra y la guia incompleta.
+--   6. Los enlaces oficiales. Antes se decia "la comunicacion oficial del
+--      fabricante" sin dar forma de llegar a ella: un alumno leia que la
+--      referencia valida esta en otro sitio y se quedaba sin el sitio.
 --
 -- QUE NO SE NOMBRA, Y POR QUE
 --   La version de firmware vigente. Ha cambiado TRES veces en cinco semanas:
@@ -113,8 +117,28 @@ $nuevo$<li><p>La entropía es el cimiento: una semilla mal generada es indisting
  WHERE slug = 'seed-phrases-tu-llave-maestra'
    AND course_id = (SELECT id FROM public.courses WHERE slug = 'cold-storage-protege-tus-bitcoin');
 
+-- ----------------------------------------------------------------------------
+-- 6. Los enlaces oficiales.
+--
+--    OJO CON EL ORDEN: la cadena que busca este UPDATE la escribe el UPDATE 3.
+--    Dentro de este fichero se ejecutan en orden, asi que encaja. Y es
+--    idempotente en los dos sentidos: al reejecutar el fichero, el 3 ya no
+--    encuentra su cadena y este si; y si alguien ejecutara solo este sobre la
+--    leccion sin parchear, no encontraria nada y no haria nada.
+--
+--    Se enlazan los dos sitios que hacen falta para actuar: el aviso, que lleva
+--    el procedimiento, y la pagina de actualizacion, que lleva la version
+--    vigente por modelo. Son URL de seccion, no de una version concreta, asi
+--    que no caducan con el proximo firmware.
+-- ----------------------------------------------------------------------------
+UPDATE public.lessons SET content = replace(content,
+$viejo$<p>No damos aquí el número de versión a propósito: desde el parche inicial ha habido dos revisiones más, cada una con la suya. La lista vigente por modelo y el procedimiento están en la comunicación oficial del fabricante, y es la única fuente que conviene seguir para eso.</p>$viejo$,
+$nuevo$<p>No damos aquí el número de versión a propósito: desde el parche inicial ha habido dos revisiones más, cada una con la suya. La lista vigente por modelo está en la <a href="https://coldcard.com/docs/upgrade/" target="_blank" rel="noopener noreferrer">página de actualización del fabricante</a> y el procedimiento completo, en su <a href="https://blog.coinkite.com/coldcard-mk3-seed-generation-warning/" target="_blank" rel="noopener noreferrer">aviso de seguridad</a>. Es la única fuente que conviene seguir para esto.</p>$nuevo$), updated_at = NOW()
+ WHERE slug = 'seed-phrases-tu-llave-maestra'
+   AND course_id = (SELECT id FROM public.courses WHERE slug = 'cold-storage-protege-tus-bitcoin');
+
 -- ############################################################################
--- LA VERIFICACION. Un solo SELECT: cinco comprobaciones y un resumen.
+-- LA VERIFICACION. Un solo SELECT: seis comprobaciones y un resumen.
 -- ############################################################################
 WITH comprobaciones (n, que, viejo, nuevo) AS (
   VALUES
@@ -132,7 +156,10 @@ WITH comprobaciones (n, que, viejo, nuevo) AS (
         'añade una barrera independiente, pero no repara la semilla'),
     (5, 'El resumen, sin la cifra y con el matiz',
         'Un fallo así en 2026 costó unos 594 BTC',
-        'Una passphrase robusta añade una barrera, pero no repara la semilla')
+        'Una passphrase robusta añade una barrera, pero no repara la semilla'),
+    (6, 'Los enlaces oficiales (aviso y actualización)',
+        'están en la comunicación oficial del fabricante, y es la única fuente',
+        'href="https://blog.coinkite.com/coldcard-mk3-seed-generation-warning/"')
 ),
 estado AS (
   SELECT c.n, c.que,
@@ -140,7 +167,8 @@ estado AS (
          cu.status::text                                  AS estado_curso,
          position(c.nuevo IN coalesce(l.content, '')) > 0 AS nuevo_presente,
          position(c.viejo IN coalesce(l.content, '')) = 0 AS viejo_ausente,
-         (position('REVISAR' IN coalesce(l.content, '')) = 0) AS sin_revisar
+         (position('REVISAR' IN coalesce(l.content, '')) = 0) AS sin_revisar,
+         (position('https://coldcard.com/docs/upgrade/' IN coalesce(l.content, '')) > 0) AS con_descargas
     FROM comprobaciones c
     LEFT JOIN public.courses cu ON cu.slug = 'cold-storage-protege-tus-bitcoin'
     LEFT JOIN public.lessons l  ON l.course_id = cu.id AND l.slug = 'seed-phrases-tu-llave-maestra'
@@ -162,8 +190,10 @@ SELECT n::text AS "#",
 UNION ALL
 SELECT '=',
        'RESUMEN',
-       (SELECT CASE WHEN bool_and(sin_revisar) THEN 'sin REVISAR pendiente'
-                    ELSE 'QUEDA UN REVISAR' END FROM estado),
+       (SELECT CASE WHEN bool_and(sin_revisar) AND bool_and(con_descargas)
+                    THEN 'sin REVISAR y con los dos enlaces'
+                    WHEN NOT bool_and(sin_revisar) THEN 'QUEDA UN REVISAR'
+                    ELSE 'FALTA EL ENLACE DE DESCARGAS' END FROM estado),
        (SELECT CASE WHEN count(*) FILTER (
                       WHERE NOT (nuevo_presente AND viejo_ausente AND leccion_existe)) = 0
                     THEN 'TODO CORRECTO'
