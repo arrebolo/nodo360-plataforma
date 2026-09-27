@@ -43,6 +43,7 @@ export default async function CertificatePage({
     .select(
       `
       *,
+      revoked_at,
       course:courses(id, title, slug),
       module:modules(id, title, slug)
     `
@@ -58,6 +59,10 @@ export default async function CertificatePage({
   if (certificate.user_id !== user.id) {
     notFound();
   }
+
+  // revoked_at lo anade la migracion 074. Antes de aplicarla el campo llega
+  // undefined y todo se ve como siempre.
+  const revocado = !!(certificate as { revoked_at?: string | null }).revoked_at
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
@@ -113,17 +118,26 @@ export default async function CertificatePage({
             </svg>
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">
-            ¡Felicitaciones!
+            {revocado ? "Certificado retirado" : "¡Felicitaciones!"}
           </h1>
+          {revocado ? (
+            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+              Este certificado se emitió por un error de la plataforma y ha sido
+              retirado. No acredita la finalización del curso.
+            </p>
+          ) : (
           <p className="text-xl text-white/70">
             Has completado exitosamente{" "}
             {certificate.type === "module"
               ? `el módulo "${certificate.module?.title}"`
               : `el curso "${certificate.course?.title ?? certificate.title}"`}
           </p>
+          )}
           {/* Mismo criterio que la pagina publica de verificacion: se dice
               sobre que temario se emitio, para que una ampliacion posterior
-              del curso no haga dudar del certificado. */}
+              del curso no haga dudar del certificado. En uno retirado no se
+              pone: no acredita ningun temario. */}
+          {!revocado && (
           <p className="mt-3 text-sm text-white/50">
             Acredita el temario vigente el{" "}
             {new Date(certificate.issued_at).toLocaleDateString("es-ES", {
@@ -131,6 +145,7 @@ export default async function CertificatePage({
             })}
             . El curso puede haberse ampliado después; eso no afecta a su validez.
           </p>
+          )}
         </div>
 
         {/* Certificate Preview Component */}
