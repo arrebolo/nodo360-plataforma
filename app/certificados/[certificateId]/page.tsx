@@ -89,38 +89,20 @@ export default async function CertificatePage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
-      {/* Header */}
-      <header className="border-b border-white/10 bg-dark-surface/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
-                <span className="text-white font-bold text-xl">N</span>
-              </div>
-              <span className="text-white font-bold text-xl">NODO360</span>
-            </Link>
-            <Link
-              href="/dashboard/certificados"
-              className="text-white/70 hover:text-white transition flex items-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              Mis certificados
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Sin cabecera propia: app/layout.tsx ya pinta SiteHeaderServer, asi
+          que esta pagina salia con DOS cabeceras, una encima de otra. El
+          enlace de vuelta si hacia falta, y se queda como enlace normal. */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Link
+          href="/dashboard/certificados"
+          className="inline-flex items-center gap-2 text-sm text-white/60 transition hover:text-white"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Mis certificados
+        </Link>
+      </div>
 
       <div className="max-w-4xl mx-auto px-4 py-16">
         {/* Success Message */}
@@ -161,6 +143,7 @@ export default async function CertificatePage({
               del curso no haga dudar del certificado. En uno retirado no se
               pone: no acredita ningun temario. */}
           {!revocado && (
+            <>
           <p className="mt-3 text-sm text-white/50">
             Acredita el temario vigente el {enEspanol(fechaQueAcredita)}, fecha en que
             completaste el curso. El curso puede haberse ampliado después; eso no
@@ -169,11 +152,15 @@ export default async function CertificatePage({
           <p className="mt-1 text-sm text-white/40">
             Fecha de emisión del certificado: {enEspanol(certificate.issued_at)}.
           </p>
+            </>
           )}
         </div>
 
-        {/* Certificate Preview Component */}
-        {certificate.certificate_url && (
+        {/* La vista del certificado, con su descarga en PDF y su boton de
+            LinkedIn. En uno retirado no se pinta: el PDF dice "CERTIFICADO DE
+            FINALIZACION" y el boton invita a publicarlo, las dos cosas a un
+            palmo del aviso que dice que no acredita nada. */}
+        {!revocado && certificate.certificate_url && (
           <CertificatePreview
             certificateUrl={certificate.certificate_url}
             certificateNumber={certificate.certificate_number}

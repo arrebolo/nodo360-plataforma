@@ -85,18 +85,9 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-dark">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-dark-surface">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">
-              <span className="text-white font-bold text-sm">N</span>
-            </div>
-            <span className="font-bold text-white">Nodo360</span>
-          </Link>
-          <span className="text-sm text-white/50">Verificación de Certificado</span>
-        </div>
-      </div>
+      {/* Sin cabecera propia: app/layout.tsx ya pinta SiteHeaderServer, asi que
+          esta pagina salia con DOS cabeceras, una encima de otra, y la segunda
+          con un logo distinto. */}
 
       {/* Contenido principal */}
       <div className="max-w-4xl mx-auto px-4 py-12">
@@ -148,7 +139,9 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 </div>
                 <div>
                   <p className="text-xs text-white/50 uppercase tracking-wider mb-1">
-                    Certificado de {cert.tipo === 'module' ? 'Modulo' : 'Finalizacion'}
+                    {revocado
+                      ? 'Certificado retirado'
+                      : `Certificado de ${cert.tipo === 'module' ? 'Modulo' : 'Finalizacion'}`}
                   </p>
                   <h1 className="text-xl font-bold text-white">{displayTitle}</h1>
                 </div>
@@ -174,7 +167,11 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 {/* Curso */}
                 <div>
                   <p className="text-xs text-white/40 uppercase tracking-wider mb-2">
-                    {cert.tipo === 'module' ? 'Módulo del curso' : 'Curso completado'}
+                    {revocado
+                      ? 'Curso'
+                      : cert.tipo === 'module'
+                        ? 'Módulo del curso'
+                        : 'Curso completado'}
                   </p>
                   <p className="text-lg text-white font-medium">{courseTitle}</p>
                   {courseDescription && (
@@ -213,14 +210,18 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                   </p>
                 )}
 
-                {/* Acciones compartir */}
-                <div className="pt-4 border-t border-white/10">
-                  <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Compartir este logro</p>
-                  <ShareButtons
-                    courseTitle={displayTitle}
-                    verificationUrl={verificationUrl}
-                  />
-                </div>
+                {/* Compartir. En uno retirado no: no hay ningun logro que
+                    compartir, y ofrecer el boton al lado del aviso de que se
+                    retiro es una contradiccion en la misma pantalla. */}
+                {!revocado && (
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Compartir este logro</p>
+                    <ShareButtons
+                      courseTitle={displayTitle}
+                      verificationUrl={verificationUrl}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* QR Code */}
@@ -241,7 +242,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                <span>Verificado por Nodo360</span>
+                <span>{revocado ? 'Estado comprobado por Nodo360' : 'Verificado por Nodo360'}</span>
               </div>
               <Link
                 href="/cursos"
@@ -266,9 +267,13 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">Verificación segura</h3>
+                <h3 className="font-medium text-white mb-1">
+                  {revocado ? 'Comprobación' : 'Verificación segura'}
+                </h3>
                 <p className="text-sm text-white/50">
-                  Este certificado ha sido verificado. El código QR y el número único garantizan su autenticidad.
+                  {revocado
+                    ? 'El número de certificado existe y su estado es el que se muestra arriba: retirado. Esta página es la fuente oficial de ese estado.'
+                    : 'Este certificado ha sido verificado. El código QR y el número único garantizan su autenticidad.'}
                 </p>
               </div>
             </div>
