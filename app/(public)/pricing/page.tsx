@@ -20,8 +20,6 @@ import { Footer } from '@/components/navigation/Footer'
  */
 
 const TITULO = '¿Cuánto cuesta Nodo360?'
-// og:title no pasa por la plantilla del layout: la marca va escrita.
-const TITULO_CON_MARCA = `${TITULO} | Nodo360`
 const DESCRIPCION =
   'Hoy todo el contenido de Nodo360 es gratuito: los cursos, las rutas de aprendizaje, los exámenes y los certificados. Sin tarjeta y sin periodo de prueba.'
 
@@ -29,19 +27,25 @@ export const metadata: Metadata = {
   // Indexable a proposito: es una de las preguntas que la gente escribe tal
   // cual en un buscador antes de registrarse en ningun sitio.
   alternates: { canonical: '/pricing' },
-  title: TITULO,
+  // Absoluto, sin el "| Nodo360" de la plantilla: la marca ya esta dentro del
+  // titulo. Con el sufijo salia "¿Cuánto cuesta Nodo360? | Nodo360", que dice
+  // la marca dos veces. Es la unica publica que se sale del formato comun, y
+  // se sale por la razon que el formato pretende garantizar.
+  title: { absolute: TITULO },
   description: DESCRIPCION,
   openGraph: {
     type: 'website',
     locale: 'es_ES',
     siteName: 'Nodo360',
     url: '/pricing',
-    title: TITULO_CON_MARCA,
+    // Sin sufijo tambien aqui: la tarjeta que se comparte es donde mas se
+    // nota la marca repetida.
+    title: TITULO,
     description: DESCRIPCION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: TITULO_CON_MARCA,
+    title: TITULO,
     description: DESCRIPCION,
   },
 }
