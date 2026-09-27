@@ -20,6 +20,16 @@ type Props = {
   examenPendiente?: boolean
   /** Slug del curso, para enlazar el examen cuando esta pendiente. */
   cursoSlug?: string | null
+  /**
+   * Lecciones anadidas al curso DESPUES de que lo terminara.
+   *
+   * Con 0 el aviso es el de siempre. Por encima de 0 cambia de mensaje: decir
+   * "ya has completado este curso" cuando quedan lecciones nuevas por leer es
+   * falso, y decir "te faltan 3 lecciones" a quien ya tiene su certificado
+   * tambien. El estado lo calcula estadoDeLaMatricula() en
+   * @/lib/progress/estadoMatricula.
+   */
+  leccionesNuevas?: number
 }
 
 function formatearFecha(iso: string) {
@@ -53,8 +63,10 @@ export function CourseAlreadyCompleted({
   contexto = 'curso',
   examenPendiente = false,
   cursoSlug = null,
+  leccionesNuevas = 0,
 }: Props) {
   const fecha = completedAt ? formatearFecha(completedAt) : null
+  const ampliado = leccionesNuevas > 0 && !examenPendiente
   // Si falta el examen, el certificado no existe todavia: no se enlaza.
   const mostrarCertificado = !!certificateId && !examenPendiente
 
@@ -77,14 +89,18 @@ export function CourseAlreadyCompleted({
           <p className={`font-semibold ${examenPendiente ? 'text-amber-300' : 'text-green-300'}`}>
             {examenPendiente
               ? 'Has terminado las lecciones. Queda el examen final'
-              : 'Ya has completado este curso'}
+              : ampliado
+                ? 'Completaste este curso, y desde entonces ha crecido'
+                : 'Ya has completado este curso'}
           </p>
 
           {fecha && (
             <p className="mt-0.5 text-sm text-white/70">
               {examenPendiente
                 ? `Terminaste las lecciones el ${fecha}.`
-                : `Lo terminaste el ${fecha}.`}
+                : ampliado
+                  ? `Lo terminaste el ${fecha}, sobre el temario de entonces.`
+                  : `Lo terminaste el ${fecha}.`}
             </p>
           )}
 
@@ -99,6 +115,21 @@ export function CourseAlreadyCompleted({
                 Las preguntas se sortean entre las de todos los módulos, se aprueba con un
                 70% y puedes intentarlo tantas veces como quieras. Al fallar verás la
                 respuesta correcta y por qué lo es.
+              </p>
+            </>
+          ) : ampliado ? (
+            <>
+              <p className="mt-2 text-sm text-white/80">
+                {leccionesNuevas === 1
+                  ? 'Se ha añadido una lección nueva'
+                  : `Se han añadido ${leccionesNuevas} lecciones nuevas`}{' '}
+                después de que lo terminaras.{' '}
+                <strong className="text-white/95">Tu certificado sigue siendo válido</strong>:
+                acredita el temario que había el día que lo completaste.
+              </p>
+              <p className="mt-2 text-sm text-white/70">
+                Puedes leer lo nuevo cuando quieras. No vuelve a sumar experiencia:
+                cada recompensa se concede una sola vez.
               </p>
             </>
           ) : (

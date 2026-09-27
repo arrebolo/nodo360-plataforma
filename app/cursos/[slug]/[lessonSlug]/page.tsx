@@ -11,6 +11,7 @@ import { CoursePreviewBanner } from "@/components/course/CoursePreviewBanner"
 import { CourseAlreadyCompleted } from "@/components/course/CourseAlreadyCompleted"
 import { CourseUnavailable } from "@/components/course/CourseUnavailable"
 import { checkLessonAccess } from "@/lib/progress/checkLessonAccess"
+import { estadoDeLaMatricula } from "@/lib/progress/estadoMatricula"
 import { LessonLocked } from "@/components/course/LessonLocked"
 
 export const dynamic = 'force-dynamic'
@@ -329,6 +330,7 @@ export default async function LessonPage({ params }: PageProps) {
   const esPrimeraLeccion = !navigation.prevLesson
 
   let yaCompletado = false
+  let leccionesNuevas = 0
   let matricula: { completed_at: string | null } | null = null
   let certificado: { id: string; certificate_number: string | null; issued_at: string } | null = null
 
@@ -340,7 +342,22 @@ export default async function LessonPage({ params }: PageProps) {
       .eq('course_id', course.id)
       .maybeSingle()
 
-    yaCompletado = !!e?.completed_at || (e?.progress_percentage ?? 0) >= 100
+    // Igual que en la ficha del curso: el estado sale de contar las lecciones
+    // de hoy, no del completed_at guardado, que sobrevive a que el curso
+    // crezca. Ver @/lib/progress/estadoMatricula.
+    const hechasAqui = allLessons.filter((l) => completedLessonIds.includes(
+      modules.flatMap((m) => m.lessons).find((x) => x.slug === l.slug)?.id ?? ''
+    )).length
+
+    const estado = estadoDeLaMatricula({
+      completadoEn: e?.completed_at ?? null,
+      leccionesTotales: allLessons.length,
+      leccionesHechas: hechasAqui,
+      matriculado: !!e,
+    })
+
+    yaCompletado = estado.loTermino
+    leccionesNuevas = estado.leccionesNuevas
     matricula = e ? { completed_at: e.completed_at } : null
 
     if (yaCompletado) {
@@ -367,6 +384,7 @@ export default async function LessonPage({ params }: PageProps) {
             certificateNumber={certificado?.certificate_number ?? null}
             examenPendiente={!certificado && quizStatus.hasQuiz && !quizStatus.userPassed}
             cursoSlug={course.slug}
+            leccionesNuevas={leccionesNuevas}
           />
         </div>
       )}

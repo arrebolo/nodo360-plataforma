@@ -3,6 +3,7 @@ import { AvisoEducativo } from '@/components/legal/AvisoEducativo'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getCourseProgressForUser, getCourseSyllabus } from '@/lib/progress/getCourseProgress'
+import { estadoDeLaMatricula } from '@/lib/progress/estadoMatricula'
 import { hasEntitlement } from '@/lib/billing/entitlements'
 import ModuleList from '@/components/course/ModuleList'
 import EnrollButton from '@/components/course/EnrollButton'
@@ -207,9 +208,30 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const isEnrolled = !!enrollment
 
-  // Curso ya terminado: por fecha de finalizacion o por progreso al 100 %.
-  const yaCompletado =
-    !!enrollment?.completed_at || (enrollment?.progress_percentage ?? 0) >= 100
+  // Curso ya terminado. NO se deduce de completed_at ni del porcentaje
+  // guardado: los dos se quedan viejos cuando el curso crece, y la pagina
+  // acababa anunciando "ya has completado este curso" encima de un 67 %.
+  // Se cuenta contra las lecciones que el curso tiene hoy.
+  const totalLecciones = actualLessonsCount
+  const hechasDelCurso = user
+    ? ((
+        await supabase
+          .from('user_progress')
+          .select('lesson_id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_completed', true)
+          .in('lesson_id', (course.modules ?? []).flatMap((m: any) => (m.lessons ?? []).map((l: any) => l.id)))
+      ).count ?? 0)
+    : 0
+
+  const matricula = estadoDeLaMatricula({
+    completadoEn: enrollment?.completed_at ?? null,
+    leccionesTotales: totalLecciones,
+    leccionesHechas: hechasDelCurso,
+    matriculado: !!enrollment,
+  })
+
+  const yaCompletado = matricula.loTermino
 
   // Su certificado, para enlazarlo desde el aviso
   const { data: certificado } = user && yaCompletado
@@ -304,6 +326,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               certificateNumber={certificado?.certificate_number ?? null}
               examenPendiente={examenPendiente}
               cursoSlug={course.slug}
+              leccionesNuevas={matricula.leccionesNuevas}
             />
           </div>
         )}

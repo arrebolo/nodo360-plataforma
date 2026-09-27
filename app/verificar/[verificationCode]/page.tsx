@@ -163,6 +163,18 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                   </div>
                 </div>
 
+                {/* Que acredita exactamente este certificado.
+                    Los cursos se amplian: uno que tenia 6 lecciones puede
+                    tener 9 hoy. El certificado no caduca por eso, pero quien
+                    lo verifica tiene derecho a saber sobre que se emitio, y
+                    quien lo presenta, a que no parezca incompleto. */}
+                {issuedAt && (
+                  <p className="mt-6 text-sm text-white/50 border-t border-white/10 pt-4">
+                    Acredita el temario vigente el {issuedAt}. El curso puede haberse
+                    ampliado después; eso no afecta a la validez de este certificado.
+                  </p>
+                )}
+
                 {/* Acciones compartir */}
                 <div className="pt-4 border-t border-white/10">
                   <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Compartir este logro</p>

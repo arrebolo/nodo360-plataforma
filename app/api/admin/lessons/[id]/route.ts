@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin/auth'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { recalcularMatriculasDelCurso } from '@/lib/progress/recalcularMatriculas'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -21,6 +22,16 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     console.log('🗑️ [Delete Lesson API] ID de la lección:', resolvedParams.id)
 
+    // Hay que saber de que curso era ANTES de borrarla: despues ya no hay
+    // fila que preguntar. Y borrar una leccion arrastra su user_progress
+    // por ON DELETE CASCADE, asi que el progreso de otras personas cambia
+    // sin que ellas hagan nada.
+    const { data: leccion } = await supabase
+      .from('lessons')
+      .select('course_id')
+      .eq('id', resolvedParams.id)
+      .maybeSingle()
+
     const { error } = await supabase
       .from('lessons')
       .delete()
@@ -29,6 +40,10 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     if (error) {
       console.error('❌ [Delete Lesson API] Error:', error)
       return NextResponse.json({ error: 'Error al eliminar: ' + error.message }, { status: 500 })
+    }
+
+    if (leccion?.course_id) {
+      await recalcularMatriculasDelCurso(leccion.course_id)
     }
 
     console.log('✅ [Delete Lesson API] Lección eliminada correctamente')
