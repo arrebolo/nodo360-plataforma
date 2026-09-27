@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { User } from "@/types/database";
+import { getMiPerfil } from "./miPerfil";
 
 /**
  * Get the currently authenticated user from the server session
@@ -34,18 +35,28 @@ export async function getUser(): Promise<User | null> {
     return null;
   }
 
-  // Fetch full user profile from the users table
-  const { data: userProfile, error: profileError } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", authUser.id)
-    .single();
+  // El perfil va por mi_perfil(), NO por select("*") sobre users.
+  //
+  // Desde la migracion 049, `authenticated` solo tiene GRANT SELECT sobre seis
+  // columnas de public.users (id, full_name, avatar_url, role, bio,
+  // created_at). Un select("*") pide todas, asi que lo deniega Postgres: esta
+  // funcion devolvia null con la sesion perfectamente viva, y requireAuth leia
+  // ese null como "no ha iniciado sesion" y mandaba a /login.
+  //
+  // Se noto en /certificados/[id], que es el unico sitio que usa requireAuth:
+  // el resto de paginas leen columnas sueltas, y por eso ninguna se rompio.
+  // Con sesion iniciada, la cabecera pintaba al usuario y la pagina redirigia
+  // al login, que es lo mas parecido a un fallo aleatorio que puede haber.
+  //
+  // mi_perfil() es la puerta que la propia 049 dejo para esto: SECURITY
+  // DEFINER, devuelve la fila de auth.uid() entera y solo esa.
+  const perfil = await getMiPerfil();
 
-  if (profileError || !userProfile) {
+  if (!perfil) {
     return null;
   }
 
-  return userProfile;
+  return perfil as unknown as User;
 }
 
 /**

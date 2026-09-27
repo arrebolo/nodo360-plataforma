@@ -60,6 +60,15 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
   const displayTitle = cert.tipo === 'module' && moduleTitle ? moduleTitle : courseTitle
 
   const issuedAt = cert.issued_at ? formatLongEs(cert.issued_at) : null
+  // La fecha que ACREDITA el certificado es la de finalizacion del curso, no
+  // la de emision: pueden separarse dias y son cosas distintas. completado_en
+  // lo devuelve verificar_certificado desde la migracion 075; si el codigo se
+  // despliega antes, llega undefined y se cae a la de emision, que es lo que
+  // se mostraba hasta ahora.
+  const fechaQueAcredita = cert.completado_en
+    ? formatLongEs(cert.completado_en)
+    : issuedAt
+
   const expiresAt = cert.expires_at ? formatLongEs(cert.expires_at) : null
   const isExpired = !!cert.expires_at && new Date(cert.expires_at).getTime() < Date.now()
 
@@ -198,8 +207,9 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                     quien lo presenta, a que no parezca incompleto. */}
                 {issuedAt && !revocado && (
                   <p className="mt-6 text-sm text-white/50 border-t border-white/10 pt-4">
-                    Acredita el temario vigente el {issuedAt}. El curso puede haberse
-                    ampliado después; eso no afecta a la validez de este certificado.
+                    Acredita el temario vigente el {fechaQueAcredita}, fecha en que se
+                    completó el curso. El curso puede haberse ampliado después; eso no
+                    afecta a la validez de este certificado.
                   </p>
                 )}
 

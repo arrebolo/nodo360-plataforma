@@ -6,7 +6,13 @@ import { glossaryTerms } from '@/lib/glossary-data'
 const TOTAL_TERMINOS = glossaryTerms.length
 
 export const metadata: Metadata = {
-  title: `Glosario Crypto: ${TOTAL_TERMINOS} Términos de Bitcoin, Blockchain y Web3`,
+  // Con title de cadena suelta, los hijos de este segmento se quedaban sin la
+  // plantilla del layout raiz: los terminos salian como "¿Qué es X?…" a secas,
+  // sin "| Nodo360". Con plantilla propia, cada termino la lleva una vez.
+  title: {
+    default: `Glosario Crypto: ${TOTAL_TERMINOS} Términos de Bitcoin, Blockchain y Web3`,
+    template: '%s | Nodo360',
+  },
   description: 'Diccionario completo de criptomonedas en español. Definiciones claras de Bitcoin, Blockchain, DeFi, NFT, Web3, minería, wallets y más. Tu guía definitiva.',
   keywords: [
     'glosario crypto',

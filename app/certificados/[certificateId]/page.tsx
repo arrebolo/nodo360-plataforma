@@ -64,6 +64,29 @@ export default async function CertificatePage({
   // undefined y todo se ve como siempre.
   const revocado = !!(certificate as { revoked_at?: string | null }).revoked_at
 
+  // QUE FECHA ACREDITA EL CERTIFICADO
+  //
+  // La de finalizacion del curso, no la de emision. Son distintas y pueden
+  // separarse dias: la ficha del curso decia "lo terminaste el 27 de enero" y
+  // el certificado, "acredita el temario vigente el 29". Dos fechas para el
+  // mismo hecho, sin explicar cual es cual.
+  //
+  // El temario que se acredita es el que habia cuando se completo. La emision
+  // es un tramite posterior -aprobar el examen, o un reproceso- y se muestra
+  // aparte y etiquetada.
+  const { data: matricula } = await supabase
+    .from("course_enrollments")
+    .select("completed_at")
+    .eq("user_id", user.id)
+    .eq("course_id", certificate.course_id)
+    .maybeSingle()
+
+  // Sin fecha de finalizacion queda la de emision, que es lo mas cercano.
+  const fechaQueAcredita = matricula?.completed_at ?? certificate.issued_at
+
+  const enEspanol = (iso: string) =>
+    new Date(iso).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
       {/* Header */}
@@ -139,11 +162,12 @@ export default async function CertificatePage({
               pone: no acredita ningun temario. */}
           {!revocado && (
           <p className="mt-3 text-sm text-white/50">
-            Acredita el temario vigente el{" "}
-            {new Date(certificate.issued_at).toLocaleDateString("es-ES", {
-              day: "numeric", month: "long", year: "numeric",
-            })}
-            . El curso puede haberse ampliado después; eso no afecta a su validez.
+            Acredita el temario vigente el {enEspanol(fechaQueAcredita)}, fecha en que
+            completaste el curso. El curso puede haberse ampliado después; eso no
+            afecta a su validez.
+          </p>
+          <p className="mt-1 text-sm text-white/40">
+            Fecha de emisión del certificado: {enEspanol(certificate.issued_at)}.
           </p>
           )}
         </div>

@@ -24,13 +24,15 @@ export async function generateMetadata({ params }: TermPageProps): Promise<Metad
 
   if (!term) {
     return {
-      title: 'Término no encontrado | Glosario Nodo360',
+      title: 'Término no encontrado',
     }
   }
 
-  // Sin "Nodo360" al final: la plantilla del layout raiz ya anade "| Nodo360",
-  // y asi salia "... | Glosario Nodo360 | Nodo360".
-  const title = `¿Qué es ${term.term}? Definición y Explicación | Glosario`
+  // Sin sufijo propio: el "| Nodo360" lo pone la plantilla del layout raiz,
+  // igual que en el resto de paginas publicas.
+  const title = `¿Qué es ${term.term}? Definición y Explicación`
+  // og:title no pasa por la plantilla del layout: la marca va escrita.
+  const titleConMarca = `${title} | Nodo360`
   const description = term.definition
 
   return {
@@ -38,14 +40,14 @@ export async function generateMetadata({ params }: TermPageProps): Promise<Metad
     description,
     keywords: [term.term.toLowerCase(), `qué es ${term.term.toLowerCase()}`, term.category, 'crypto', 'criptomonedas'],
     openGraph: {
-      title,
+      title: titleConMarca,
       description,
       type: 'article',
       url: `${baseUrl}/glosario/${term.slug}`,
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: titleConMarca,
       description,
     },
     alternates: {
