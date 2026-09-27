@@ -33,6 +33,7 @@ const ZONAS_CERRADAS = ['/api/', '/dashboard/', '/admin/']
  * tres cosas es que si.
  */
 const RASTREADORES_IA = [
+  'CCBot',              // Common Crawl, del que beben muchos otros modelos
   'GPTBot',             // OpenAI, entrenamiento
   'OAI-SearchBot',      // OpenAI, indice de busqueda de ChatGPT
   'ChatGPT-User',       // OpenAI, visita en directo al responder
