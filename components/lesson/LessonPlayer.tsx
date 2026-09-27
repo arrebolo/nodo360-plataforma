@@ -13,6 +13,8 @@ import { LessonFooter } from '@/components/lesson/LessonFooter'
 import { SlidesEmbed } from '@/components/lesson/SlidesEmbed'
 import LessonComments from '@/components/lesson/LessonComments'
 import { RequiereCuenta } from '@/components/lesson/RequiereCuenta'
+import { InvitacionFinDeModulo } from '@/components/lesson/InvitacionFinDeModulo'
+import { useLeccionesLeidas } from '@/hooks/useLeccionesLeidas'
 import { useCourseCompletion } from '@/hooks/useCourseCompletion'
 import type { LessonPlayerProps } from '@/types/lesson-player'
 import { enviarEvento } from '@/lib/analytics/eventos'
@@ -47,6 +49,19 @@ export default function LessonPlayer({
   const [activeContentTab, setActiveContentTab] = useState<TabKey>('content')
 
   const isCompleted = completedIds.includes(lesson.id)
+
+  // Cuantas lecciones lleva leidas en esta visita. Se cuenta siempre, tenga
+  // sesion o no: es barato y asi la cifra esta lista cuando hace falta.
+  const leccionesLeidas = useLeccionesLeidas(lesson.id)
+
+  // Ultima leccion del modulo actual: el momento de cerrar un bloque.
+  const moduloActual = useMemo(
+    () => modules.find((m) => m.lessons.some((l) => l.id === lesson.id)),
+    [modules, lesson.id]
+  )
+  const esFinDeModulo =
+    !!moduloActual &&
+    moduloActual.lessons[moduloActual.lessons.length - 1]?.id === lesson.id
 
   // Detectar si es la última lección del curso
   const isLastLesson = useMemo(() => {
@@ -173,6 +188,12 @@ export default function LessonPlayer({
     router.push(`/login?redirect=/cursos/${course.slug}/${lesson.slug}`)
   }, [course.slug, lesson.slug, router])
 
+  // Handler: fin del curso sin sesion. Al registro, y de vuelta al examen,
+  // que es lo que esa persona estaba intentando hacer.
+  const handleRegistrarseParaExamen = useCallback(() => {
+    router.push(`/login?mode=register&redirect=/cursos/${course.slug}/quiz-final`)
+  }, [course.slug, router])
+
   // Handler: Next lesson
   const handleNext = useCallback(() => {
     if (navigation.nextLesson) {
@@ -266,6 +287,7 @@ export default function LessonPlayer({
     onPrev: handlePrev,
     onLogin: handleLogin,
     onFinishCourse: handleFinishCourse,
+    onRegistrarseParaExamen: handleRegistrarseParaExamen,
   }
 
   return (
@@ -315,6 +337,17 @@ export default function LessonPlayer({
               courseSlug={course.slug}
               onTabChange={setActiveContentTab}
             />
+
+            {/* Fin de modulo sin cuenta: invitacion que no bloquea nada. Solo
+                si hay leccion siguiente; en la ultima del curso manda el boton
+                del pie, que lleva al examen. */}
+            {!userId && esFinDeModulo && navigation.nextLesson && (
+              <InvitacionFinDeModulo
+                moduloTitulo={moduloActual?.title ?? module.title}
+                leccionesLeidas={leccionesLeidas}
+                siguienteUrl={`/cursos/${course.slug}/${navigation.nextLesson.slug}`}
+              />
+            )}
 
             {/* Comentarios. Sin cuenta no se esconden sin mas -eso es lo que
                 se hacia antes-: se dice que hay ahi y como entrar. */}

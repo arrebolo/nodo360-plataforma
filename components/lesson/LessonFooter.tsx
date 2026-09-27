@@ -19,6 +19,8 @@ type Props = {
   onPrev: () => void
   onLogin: () => void
   onFinishCourse: () => void
+  /** Sin sesion, en la ultima leccion: lleva al registro con el examen delante. */
+  onRegistrarseParaExamen: () => void
 }
 
 // Mensajes motivacionales para variedad
@@ -45,6 +47,7 @@ export function LessonFooter({
   onPrev,
   onLogin,
   onFinishCourse,
+  onRegistrarseParaExamen,
 }: Props) {
   const [isNavigating, setIsNavigating] = useState(false)
 
@@ -57,8 +60,12 @@ export function LessonFooter({
 
   // Handler combinado: marcar completada + navegar
   const handleNextAndComplete = async () => {
+    // Sin sesion se navega y punto. Antes esto mandaba al login, y era
+    // incoherente con el temario lateral, desde el que se podia abrir
+    // cualquier leccion sin que nadie preguntara nada: el mismo sitio se
+    // alcanzaba por un camino y no por el otro.
     if (!userId) {
-      onLogin()
+      if (hasNext) onNext()
       return
     }
 
@@ -83,8 +90,11 @@ export function LessonFooter({
 
   // Handler para finalizar curso (última lección)
   const handleFinishAndComplete = async () => {
+    // Fin del curso sin sesion: aqui SI hace falta cuenta, porque lo que
+    // viene es el examen y el certificado. Se dice, en vez de mandar a un
+    // login pelado que no explica por que.
     if (!userId) {
-      onLogin()
+      onRegistrarseParaExamen()
       return
     }
 
@@ -144,7 +154,8 @@ export function LessonFooter({
         {/* Navegacion derecha - Boton principal */}
         <div className="flex-1 flex justify-end">
           {isLastLesson ? (
-            // Ultima leccion → Finalizar curso
+            // Ultima leccion → finalizar curso, o registrarse si no hay sesion
+            <div className="flex flex-col items-end gap-1.5">
             <button
               onClick={handleFinishAndComplete}
               disabled={isProcessing}
@@ -163,10 +174,17 @@ export function LessonFooter({
               ) : (
                 <>
                   <Trophy className="h-4 w-4" />
-                  <span>Finalizar curso</span>
+                  <span>{userId ? 'Finalizar curso' : 'Crear cuenta y hacer el examen'}</span>
                 </>
               )}
             </button>
+            {!userId && (
+              <span className="text-xs text-white/40 text-right max-w-[15rem]">
+                Has llegado al final. El examen y el certificado son lo único que
+                necesita cuenta.
+              </span>
+            )}
+            </div>
           ) : hasNext ? (
             // Tiene siguiente → Siguiente (marca completada automaticamente)
             <button
