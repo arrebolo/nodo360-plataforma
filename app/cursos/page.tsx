@@ -2,7 +2,6 @@ import { getAllCourses } from '@/lib/db/courses-queries'
 import { CursosClient } from '@/components/cursos/CursosClient'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
-import { OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 export const metadata: Metadata = {
   // Propio, y no el del layout raiz: ese decia que esta pagina era una
@@ -15,7 +14,6 @@ export const metadata: Metadata = {
     description: 'Aprende Bitcoin, Blockchain, DeFi y Web3 con cursos en español.',
     type: 'website',
     url: 'https://nodo360.com/cursos',
-    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',

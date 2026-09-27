@@ -37,13 +37,20 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt || post.publishedAt,
       authors: [post.author],
-      images: [{ url: post.image || '/imagenes/og-blog.png', width: 1200, height: 630 }],
+      // Las 16 entradas tienen su portada en public/blog/. Si alguna se quedara
+      // sin ella, aqui NO se pone nada a proposito: Next rellena entonces con la
+      // imagen de la seccion (app/(public)/blog/opengraph-image.tsx). Su URL
+      // lleva un hash que cambia con el contenido, asi que no se puede escribir
+      // a mano.
+      ...(post.image
+        ? { images: [{ url: post.image, width: 1200, height: 630, alt: post.title }] }
+        : {}),
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.description,
-      images: [post.image || '/imagenes/og-blog.png'],
+      ...(post.image ? { images: [post.image] } : {}),
     },
     alternates: {
       canonical: `${baseUrl}/blog/${post.slug}`,
@@ -306,7 +313,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     '@type': 'Article',
     headline: post.title,
     description: post.description,
-    image: post.image || '/imagenes/og-blog.png',
+    // La portada del articulo; si faltara, la tarjeta del sitio, cuya URL si
+    // es estable (no esta dentro de un grupo de rutas).
+    image: post.image || `${baseUrl}/opengraph-image`,
     datePublished: post.publishedAt,
     dateModified: post.updatedAt || post.publishedAt,
     author: {

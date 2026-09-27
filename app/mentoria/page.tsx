@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { GraduationCap, Shield, Users, BookOpen, Award, ArrowRight, Star, MessageCircle } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
 import type { Metadata } from 'next'
-import { OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 export const metadata: Metadata = {
   // Propio, y no el del layout raiz: ese decia que esta pagina era una
@@ -15,7 +14,6 @@ export const metadata: Metadata = {
     description: 'Conecta con expertos certificados en Bitcoin, Blockchain y Web3.',
     type: 'website',
     url: 'https://nodo360.com/mentoria',
-    images: OG_IMAGENES_PROVISIONALES,
   },
   twitter: {
     card: 'summary_large_image',

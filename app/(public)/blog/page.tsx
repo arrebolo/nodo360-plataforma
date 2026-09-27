@@ -16,7 +16,6 @@ export const metadata: Metadata = {
     description: 'Artículos educativos sobre Bitcoin, Blockchain, DeFi y Web3 en español.',
     type: 'website',
     url: 'https://nodo360.com/blog',
-    images: [{ url: '/imagenes/og-blog.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',

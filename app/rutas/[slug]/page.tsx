@@ -9,7 +9,6 @@ import { PathUnavailable } from '@/components/learning-path/PathUnavailable'
 import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
 import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
 import { CourseListJsonLd } from '@/components/seo/JsonLd'
-import { OG_IMAGEN_PROVISIONAL, OG_IMAGENES_PROVISIONALES } from '@/lib/seo/og-image'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -50,13 +49,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url,
       title: titulo,
       description: descripcion,
-      images: OG_IMAGENES_PROVISIONALES,
     },
     twitter: {
       card: 'summary_large_image',
       title: titulo,
       description: descripcion,
-      images: [OG_IMAGEN_PROVISIONAL],
     },
     ...(hayPublicados ? {} : { robots: { index: false, follow: false } }),
   }
