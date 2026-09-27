@@ -163,6 +163,13 @@ const nextConfig: NextConfig = {
       // Páginas con sufijos numéricos de WordPress
       { source: '/comunidad-2', destination: '/comunidad', permanent: true },
       { source: '/comunidad-2/', destination: '/comunidad', permanent: true },
+      // La pagina de formacion de WordPress es el catalogo de hoy. El sufijo -2
+      // lo puso WordPress al duplicarla, y ambas siguen recibiendo visitas por
+      // enlaces antiguos.
+      { source: '/formacion', destination: '/cursos', permanent: true },
+      { source: '/formacion/', destination: '/cursos', permanent: true },
+      { source: '/formacion-2', destination: '/cursos', permanent: true },
+      { source: '/formacion-2/', destination: '/cursos', permanent: true },
       { source: '/cart-2', destination: '/cursos', permanent: true },
       { source: '/cart-2/', destination: '/cursos', permanent: true },
       { source: '/cart', destination: '/cursos', permanent: true },
@@ -893,6 +900,8 @@ const nextConfig: NextConfig = {
       { source: '/privacy/', destination: '/privacidad', permanent: true },
       { source: '/privacy-policy', destination: '/privacidad', permanent: true },
       { source: '/privacy-policy/', destination: '/privacidad', permanent: true },
+      { source: '/privacy-policy-2', destination: '/privacidad', permanent: true },
+      { source: '/privacy-policy-2/', destination: '/privacidad', permanent: true },
       { source: '/politica-privacidad', destination: '/privacidad', permanent: true },
       { source: '/politica-privacidad/', destination: '/privacidad', permanent: true },
 

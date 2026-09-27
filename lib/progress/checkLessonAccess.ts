@@ -27,6 +27,7 @@ export type LessonAccess = {
     | 'modulo_anterior_completo'
     | 'ya_completada'
     | 'vista_previa'
+    | 'sin_sesion'
     | 'curso_completado'
     | 'admin_o_instructor'
     | 'modulo_anterior_incompleto'
@@ -65,10 +66,19 @@ export async function checkLessonAccess(
     return { canAccess: true, reason: 'vista_previa' }
   }
 
-  // Sin sesion no hay progreso que consultar; la pagina ya exige login antes
-  // de llegar aqui, asi que esto solo cubre llamadas sueltas.
+  // --- Sin sesion ---------------------------------------------------------
+  // Esta rama era inalcanzable: la pagina de leccion redirigia a /login antes
+  // de llamar aqui, y el comentario anterior decia justamente eso. Desde que
+  // las lecciones se leen sin cuenta es el caso normal, y la respuesta sigue
+  // siendo que si, pero ahora a proposito.
+  //
+  // El escalonado se apoya en user_progress. Sin cuenta no hay progreso que
+  // consultar, de modo que no hay forma de abrir un modulo: aplicar la regla
+  // dejaria a todo visitante encerrado en el modulo 1 para siempre, sin
+  // ninguna manera de avanzar salvo registrarse. El escalonado existe para que
+  // el alumno no se salte pasos, no para esconder el material.
   if (!userId) {
-    return { canAccess: true, reason: 'vista_previa' }
+    return { canAccess: true, reason: 'sin_sesion' }
   }
 
   const { data: modulos, error: errorModulos } = await supabase

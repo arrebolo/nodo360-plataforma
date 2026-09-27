@@ -81,15 +81,20 @@ export default async function LessonPage({ params }: PageProps) {
   const { slug: courseSlug, lessonSlug } = await params
   const supabase = await createClient()
 
-  // 1) Get authenticated user
+  // 1) Sesion, si la hay.
+  //
+  // La leccion se LEE sin cuenta. Antes habia aqui un redirect a /login, y
+  // ademas uno que no funcionaba como parecia: la respuesta ya se habia
+  // empezado a enviar, asi que Next no podia mandar un 307 y lo resolvia en el
+  // navegador. Resultado: 200 con el armazon vacio y sin una linea de la
+  // leccion, que es la peor combinacion posible para un buscador.
+  //
+  // Lo que sigue pidiendo cuenta es todo lo que guarda estado: progreso,
+  // examen, certificado, XP, notas y comentarios. Cada uno lo pide en su sitio
+  // y con un aviso que dice que se gana.
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Verificar autenticación obligatoria para ver lecciones
-  if (!user) {
-    redirect(`/login?redirect=/cursos/${courseSlug}/${lessonSlug}`)
-  }
-
-  const userId = user.id
+  const userId = user?.id ?? null
 
   // 2) Fetch course with modules and lessons in one query
   const { data: course, error: courseError } = await supabase
@@ -142,7 +147,9 @@ export default async function LessonPage({ params }: PageProps) {
 
   // 2b) Verificar entitlement para cursos premium
   if (course.is_premium) {
-    const entitled = await hasEntitlement(userId, course.id)
+    // El muro premium se mantiene tal cual. Sin sesion no hay entitlement
+    // posible, asi que una leccion premium sigue sin abrirse.
+    const entitled = userId ? await hasEntitlement(userId, course.id) : false
     if (!entitled) {
       redirect(`/cursos/${courseSlug}`)
     }

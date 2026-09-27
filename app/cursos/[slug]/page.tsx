@@ -2,13 +2,12 @@ import Link from 'next/link'
 import { AvisoEducativo } from '@/components/legal/AvisoEducativo'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getCourseProgressForUser } from '@/lib/progress/getCourseProgress'
+import { getCourseProgressForUser, getCourseSyllabus } from '@/lib/progress/getCourseProgress'
 import { hasEntitlement } from '@/lib/billing/entitlements'
 import ModuleList from '@/components/course/ModuleList'
 import EnrollButton from '@/components/course/EnrollButton'
 import CourseHero from '@/components/course/CourseHero'
 import { Footer } from '@/components/navigation/Footer'
-import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import { CourseJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { resolveCourseAccess } from '@/lib/courses/access'
@@ -103,6 +102,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
       slug,
       title,
       description,
+      long_description,
       level,
       status,
       thumbnail_url,
@@ -156,67 +156,52 @@ export default async function CoursePage({ params }: CoursePageProps) {
     0
   ) || 0
 
-  // 2. Verificar autenticación
+  // 2. Sesion, si la hay.
+  //
+  // La ficha del curso es PUBLICA: titulo, descripcion, temario y JSON-LD se
+  // leen sin cuenta. Antes, quien llegaba sin sesion recibia un sucedaneo con
+  // el titulo y un boton de acceso, de modo que un buscador veia una pagina
+  // practicamente vacia y un visitante no podia saber que se estudia aqui.
+  // Lo que sigue pidiendo cuenta es matricularse y todo lo que guarda estado.
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // 3. Si no hay usuario, mostrar vista de login
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-dark">
-        <div className={cx(tokens.layout.container, tokens.layout.sectionGap)}>
-          {/* Hero compacto para no autenticado */}
-          <div className="bg-dark-surface border border-white/10 rounded-2xl p-6 sm:p-8">
-            <div className="space-y-4">
-              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
-                {course.title}
-              </h1>
-              <p className="text-white/60 text-sm max-w-2xl">
-                {course.description}
-              </p>
-              <div className="pt-4">
-                <Button variant="primary" href={`/login?redirect=/cursos/${slug}`}>
-                  Iniciar sesión para ver el curso
-                  <span aria-hidden className="text-white/80">→</span>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    )
-  }
-
-  // 4. Verificar entitlement para cursos premium
+  // 3. Verificar entitlement para cursos premium
+  // Se mantiene el muro tal cual: sin sesion no hay entitlement posible, asi
+  // que un curso premium sigue sin ensenar su contenido.
   const isPremium = course.is_premium === true
   const hasPremiumAccess = isPremium
-    ? await hasEntitlement(user.id, course.id)
+    ? user
+      ? await hasEntitlement(user.id, course.id)
+      : false
     : true // cursos no-premium no requieren entitlement
 
   // Quien puede gestionar el curso ve los avisos de gestión (por ejemplo, que
   // falta la imagen de portada). Un visitante no debe leerlos nunca.
   // isPreview solo cubre los cursos sin publicar; estos tres están publicados,
   // así que hace falta comprobar el rol también aquí.
-  const { data: perfil } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
+  const { data: perfil } = user
+    ? await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle()
+    : { data: null }
 
   const canManage =
-    isPreview ||
-    perfil?.role === 'admin' ||
-    course.instructor_id === user.id
+    !!user &&
+    (isPreview || perfil?.role === 'admin' || course.instructor_id === user.id)
 
-  // 5. Verificar inscripción
-  const { data: enrollment } = await supabase
-    .from('course_enrollments')
-    .select('id, completed_at, progress_percentage')
-    .eq('user_id', user.id)
-    .eq('course_id', course.id)
-    .maybeSingle()
+  // 4. Verificar inscripción
+  const { data: enrollment } = user
+    ? await supabase
+        .from('course_enrollments')
+        .select('id, completed_at, progress_percentage')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .maybeSingle()
+    : { data: null }
 
   const isEnrolled = !!enrollment
 
@@ -225,7 +210,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
     !!enrollment?.completed_at || (enrollment?.progress_percentage ?? 0) >= 100
 
   // Su certificado, para enlazarlo desde el aviso
-  const { data: certificado } = yaCompletado
+  const { data: certificado } = user && yaCompletado
     ? await supabase
         .from('certificates')
         .select('id, certificate_number, issued_at')
@@ -239,18 +224,18 @@ export default async function CoursePage({ params }: CoursePageProps) {
   // examen final, que desde el 25/09/2026 es condicion para emitirlo. Hay que
   // saberlo para poder decirselo, porque un aviso que se calla se parece
   // demasiado a un fallo.
-  const estadoQuiz = yaCompletado && !certificado
+  const estadoQuiz = user && yaCompletado && !certificado
     ? await getCourseQuizStatus(course.id, user.id)
     : null
   const examenPendiente = !!estadoQuiz?.hasQuiz && !estadoQuiz.userPassed
 
-  // 6. Obtener progreso completo
-  const courseProgress = isEnrolled
+  // 5. El temario.
+  // Con matricula, con su progreso y sus candados. Sin ella -haya sesion o
+  // no- el temario a secas: los titulos de las lecciones, que es justo lo que
+  // alguien necesita para decidir si el curso le sirve.
+  const courseProgress = user && isEnrolled
     ? await getCourseProgressForUser(course.id, user.id)
-    : {
-        modules: [],
-        globalProgress: { totalLessons: 0, completedLessons: 0, percentage: 0 },
-      }
+    : await getCourseSyllabus(course.id)
 
   // 7. Obtener primera lección del curso
   let firstLessonSlug: string | undefined
@@ -349,6 +334,21 @@ export default async function CoursePage({ params }: CoursePageProps) {
           hrefDashboard="/dashboard"
         />
 
+        {/* SOBRE ESTE CURSO
+            La descripcion larga estaba en la base de datos y no se pintaba en
+            ninguna parte. Es el texto que explica de verdad de que va el curso,
+            y es lo que mas peso tiene para quien todavia esta decidiendo. */}
+        {course.long_description && (
+          <div className="mt-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-3">
+              Sobre este curso
+            </h2>
+            <p className="text-white/70 whitespace-pre-wrap leading-relaxed">
+              {course.long_description}
+            </p>
+          </div>
+        )}
+
         {/* CONTENIDO DEL CURSO */}
         <div className="mt-6">
           <PageHeader
@@ -382,40 +382,42 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   </p>
                 </div>
               </div>
-            ) : isEnrolled ? (
-              <ModuleList courseSlug={course.slug} modules={courseProgress.modules} />
             ) : (
-              <div className="relative overflow-hidden bg-dark-surface border border-white/10 rounded-2xl p-8 text-center">
-                {/* Efecto de fondo sutil */}
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-light/5 to-transparent pointer-events-none" />
+              <>
+                {/* El temario se ve siempre: con o sin sesion, con o sin
+                    matricula. Antes solo lo veia quien ya se habia inscrito,
+                    asi que para decidir si el curso te sirve habia que
+                    inscribirse primero. */}
+                <ModuleList courseSlug={course.slug} modules={courseProgress.modules} />
 
-                <div className="relative">
-                  {/* Icono */}
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-light/10 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
+                {!isEnrolled && (
+                  <div className="mt-4 relative overflow-hidden bg-dark-surface border border-white/10 rounded-2xl p-6 sm:p-8 text-center">
+                    <div className="absolute inset-0 bg-gradient-to-br from-brand-light/5 to-transparent pointer-events-none" />
+
+                    <div className="relative">
+                      <h3 className="text-lg font-semibold text-white mb-2">
+                        Las lecciones se leen sin cuenta
+                      </h3>
+                      <p className="text-white/60 mb-6 max-w-md mx-auto">
+                        Con una cuenta gratuita se guarda tu progreso y se
+                        desbloquean las notas, el examen final y el certificado
+                        verificable al terminar.
+                      </p>
+
+                      <div className="max-w-xs mx-auto">
+                        <EnrollButton
+                          courseId={course.id}
+                          courseSlug={course.slug}
+                          courseLevel={course.level || 'beginner'}
+                          isEnrolled={false}
+                          isAuthenticated={!!user}
+                          firstLessonSlug={firstLessonSlug}
+                        />
+                      </div>
+                    </div>
                   </div>
-
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    Contenido del curso
-                  </h3>
-                  <p className="text-white/60 mb-6 max-w-sm mx-auto">
-                    Inscríbete en el curso para acceder a todo el contenido
-                  </p>
-
-                  <div className="max-w-xs mx-auto">
-                    <EnrollButton
-                      courseId={course.id}
-                      courseSlug={course.slug}
-                      courseLevel={course.level || 'beginner'}
-                      isEnrolled={false}
-                      isAuthenticated={true}
-                      firstLessonSlug={firstLessonSlug}
-                    />
-                  </div>
-                </div>
-              </div>
+                )}
+              </>
             )}
           </div>
         </div>

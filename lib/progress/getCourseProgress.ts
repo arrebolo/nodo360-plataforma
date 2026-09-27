@@ -238,6 +238,89 @@ export async function getCourseProgressForUser(
   }
 }
 
+/**
+ * El temario del curso, sin nadie detras.
+ *
+ * Mismos modulos y lecciones que getCourseProgressForUser, pero sin progreso:
+ * nada completado y todo abierto. Es lo que se le ensena a quien no ha entrado
+ * y a quien ha entrado pero no se ha matriculado.
+ *
+ * POR QUE TODO ABIERTO
+ *   El escalonado (el modulo N se abre al completar el N-1) se apoya en el
+ *   progreso, y sin cuenta no hay progreso que consultar. Pintar candados que
+ *   no se pueden abrir de ninguna manera solo sirve para esconder el indice a
+ *   quien esta decidiendo si el curso le interesa. Lo que hay aqui son titulos
+ *   de leccion, no su contenido.
+ */
+export async function getCourseSyllabus(courseId: string): Promise<CourseProgress> {
+  const supabase = await createClient()
+
+  const { data: modules, error } = await supabase
+    .from('modules')
+    .select(`
+      id,
+      title,
+      description,
+      order_index,
+      lessons:lessons(
+        id,
+        title,
+        slug,
+        order_index,
+        video_url,
+        video_duration_minutes,
+        is_free_preview
+      )
+    `)
+    .eq('course_id', courseId)
+    .order('order_index')
+
+  if (error || !modules) {
+    console.error('❌ [getCourseSyllabus] Error modules:', error?.message)
+    return {
+      modules: [],
+      globalProgress: { totalLessons: 0, completedLessons: 0, percentage: 0 },
+    }
+  }
+
+  let totalLessons = 0
+
+  const modulesWithState: ModuleWithState[] = modules.map((mod) => {
+    const lessons: LessonWithState[] = ((mod.lessons || []) as any[])
+      .sort((a, b) => a.order_index - b.order_index)
+      .map((lesson) => {
+        totalLessons++
+        return {
+          id: lesson.id,
+          title: lesson.title,
+          slug: lesson.slug,
+          order_index: lesson.order_index,
+          video_url: lesson.video_url,
+          video_duration_minutes: lesson.video_duration_minutes,
+          is_free_preview: lesson.is_free_preview,
+          isCompleted: false,
+          isUnlocked: true,
+        }
+      })
+
+    return {
+      id: mod.id,
+      title: mod.title,
+      description: mod.description,
+      order_index: mod.order_index,
+      lessons,
+      isCompleted: false,
+      isUnlocked: true,
+      progress: { completed: 0, total: lessons.length, percentage: 0 },
+    }
+  })
+
+  return {
+    modules: modulesWithState,
+    globalProgress: { totalLessons, completedLessons: 0, percentage: 0 },
+  }
+}
+
 // ============================================
 // TIPOS EXPORTADOS
 // ============================================
