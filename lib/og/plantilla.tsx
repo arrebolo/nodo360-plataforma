@@ -73,13 +73,21 @@ export interface DatosTarjeta {
    * cabecera pequena. Solo la usa app/opengraph-image.tsx.
    */
   portada?: boolean
+  /**
+   * Cuanto texto cabe en el subtitulo. Por defecto 120, que es el limite que
+   * pide el glosario para las definiciones. Las descripciones del blog rondan
+   * los 155 y con 120 se cortaban a media frase, asi que esa tarjeta pide mas.
+   */
+  maximoSubtitulo?: number
 }
 
 export async function crearImagenOg(datos: DatosTarjeta): Promise<ImageResponse> {
   const [{ regular, negrita }, logoDataUri] = await Promise.all([fuentes(), logo()])
 
   const titular = recortar(datos.titular, MAXIMO_TITULAR)
-  const subtitulo = datos.subtitulo ? recortar(datos.subtitulo, MAXIMO_SUBTITULO) : null
+  const subtitulo = datos.subtitulo
+    ? recortar(datos.subtitulo, datos.maximoSubtitulo ?? MAXIMO_SUBTITULO)
+    : null
   const etiquetas = (datos.etiquetas ?? []).filter(Boolean)
 
   return new ImageResponse(

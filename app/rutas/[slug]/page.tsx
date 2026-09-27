@@ -30,10 +30,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const courses = await getCoursesByLearningPathSlug(slug)
   const hayPublicados = courses.some((c) => c.status === 'published')
 
-  // Sin "| Nodo360" al final: lo pone la plantilla de app/layout.tsx
-  // (template: "%s | Nodo360"), que se aplica sobre todo title de hijo. Con la
-  // marca escrita aqui salia "... | Rutas | Nodo360 | Nodo360".
-  const titulo = `${path.name} | Rutas`
+  // Solo el nombre: el "| Nodo360" lo pone la plantilla de app/layout.tsx.
+  // Llevaba ademas un "| Rutas" propio, asi que estas paginas acababan en
+  // "| Rutas | Nodo360" y los terminos del glosario en "| Glosario | Nodo360",
+  // cada seccion con un formato distinto.
+  const titulo = path.name
+  // og:title no pasa por la plantilla del layout: la marca se pone aqui para
+  // que la tarjeta compartida diga lo mismo que la pestana.
+  const tituloConMarca = `${titulo} | Nodo360`
   const descripcion =
     path.short_description || `Ruta de aprendizaje en Nodo360: ${path.name}.`
   const url = `/rutas/${slug}`
@@ -47,12 +51,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       locale: 'es_ES',
       siteName: 'Nodo360',
       url,
-      title: titulo,
+      title: tituloConMarca,
       description: descripcion,
     },
     twitter: {
       card: 'summary_large_image',
-      title: titulo,
+      title: tituloConMarca,
       description: descripcion,
     },
     ...(hayPublicados ? {} : { robots: { index: false, follow: false } }),
