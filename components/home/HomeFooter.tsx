@@ -88,14 +88,8 @@ export function HomeFooter() {
                   Únete
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/mentoria"
-                  className="hover:text-white transition-colors"
-                >
-                  Mentoría
-                </Link>
-              </li>
+              {/* Mentoria fuera del pie: la tabla esta a 0 y la pagina promete
+                  algo que no existe. El codigo se queda; ver la migracion 078. */}
               <li>
                 <a
                   href={brandConfig.social.discord}

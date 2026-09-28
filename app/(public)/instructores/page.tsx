@@ -1,303 +1,246 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
-import { createClient } from '@/lib/supabase/server'
-import { GraduationCap, Star, Users, BookOpen, Award, Search } from 'lucide-react'
+import { Mail, FileText, Users, CheckCircle2, RotateCcw, XCircle } from 'lucide-react'
+import { Footer } from '@/components/navigation/Footer'
 
-export const metadata = {
-  // Propio, y no el del layout raiz: ese decia que esta pagina era una
-  // copia de la home.
+/**
+ * /instructores  ·  "Hazte instructor"
+ *
+ * Antes era un listado de instructores certificados. Dos problemas:
+ *
+ *   1. instructor_profiles tiene UNA fila, y es interna. La pagina anunciaba un
+ *      claustro que no existe.
+ *   2. Consultaba learning_paths.title, columna que no existe -se llama name-,
+ *      asi que la consulta fallaba, learningPaths quedaba en null y el filtro
+ *      por ruta se pintaba vacio sin que nada avisara.
+ *
+ * Un listado de una persona no es un listado. Lo que si hay que contar es como
+ * se entra, porque eso si funciona: el circuito de revision por mentores esta
+ * construido y en uso (paginas de revision en admin y mentor, y los tres
+ * correos de aprobado, cambios solicitados y rechazado).
+ *
+ * NADA DE INGRESOS. No hay pagos, ni reparto, ni cursos de pago. Prometer
+ * cualquier cosa en esa direccion seria exactamente lo que este proyecto dice
+ * no hacer.
+ */
+
+const TITULO = 'Hazte instructor'
+const DESCRIPCION =
+  'Cómo publicar un curso en Nodo360: qué se espera del material, cómo lo revisan los mentores y cómo proponer el tuyo.'
+
+export const metadata: Metadata = {
   alternates: { canonical: '/instructores' },
-  title: 'Instructores',
-  description: 'Conoce a los instructores certificados de Nodo360',
+  title: TITULO,
+  description: DESCRIPCION,
+  openGraph: {
+    type: 'website',
+    locale: 'es_ES',
+    siteName: 'Nodo360',
+    url: '/instructores',
+    title: `${TITULO} | Nodo360`,
+    description: DESCRIPCION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${TITULO} | Nodo360`,
+    description: DESCRIPCION,
+  },
 }
 
-export default async function InstructoresPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ ruta?: string; orden?: string }>
-}) {
-  const { ruta, orden = 'rating' } = await searchParams
-  const supabase = await createClient()
+const LO_QUE_SE_ESPERA = [
+  {
+    titulo: 'Se explica, no se recomienda',
+    texto:
+      'El material cuenta cómo funcionan las cosas. No dice qué comprar, ni cuándo, ni promete rentabilidades. Un curso que termina en una recomendación de inversión no entra.',
+  },
+  {
+    titulo: 'Con fuentes, y citadas',
+    texto:
+      'Las cifras y los hechos llevan de dónde salen. Cuando una fuente oficial no da un dato, se dice que no lo da en lugar de rellenarlo con una estimación de terceros.',
+  },
+  {
+    titulo: 'Español neutro',
+    texto:
+      'Válido en España y en Latinoamérica. Sin localismos que obliguen a media clase a buscar qué significa una palabra.',
+  },
+  {
+    titulo: 'Sin hype',
+    texto:
+      'Ni «domina», ni «de cero a experto», ni «el futuro del dinero». El tema ya es interesante; el adjetivo sobra y resta credibilidad.',
+  },
+  {
+    titulo: 'Lo que no se sabe, se dice',
+    texto:
+      'En Bitcoin y Web3 hay preguntas abiertas y cosas que cambian. Un curso que las esquiva envejece peor que uno que las señala.',
+  },
+]
 
-  // Obtener rutas de aprendizaje para el filtro
-  const { data: learningPaths } = await supabase
-    .from('learning_paths')
-    .select('id, title, slug, icon')
-    .eq('is_active', true)
-    .order('title')
+const REVISION = [
+  {
+    icono: FileText,
+    titulo: 'Propones el curso',
+    texto:
+      'Un guion: a quién va dirigido, qué sabrá hacer quien lo termine, los módulos y las lecciones. No hace falta tenerlo escrito para proponerlo.',
+  },
+  {
+    icono: Users,
+    titulo: 'Lo revisa un mentor',
+    texto:
+      'Una persona con experiencia en el tema lee el material entero antes de que lo vea ningún alumno. No es un trámite: es el filtro del que depende que esto se pueda leer sin desconfiar.',
+  },
+  {
+    icono: RotateCcw,
+    titulo: 'Casi siempre hay cambios',
+    texto:
+      'Lo normal es una ronda de correcciones con comentarios concretos. Se recibe por correo, se corrige y se vuelve a enviar. Las veces que hagan falta.',
+  },
+  {
+    icono: CheckCircle2,
+    titulo: 'Se publica',
+    texto:
+      'El curso entra en el catálogo con tu nombre, tu biografía y el enlace que quieras. Gratuito para cualquiera, como todos los demás.',
+  },
+]
 
-  // Construir query de instructores
-  let query = supabase
-    .from('instructor_profiles')
-    .select(`
-      id,
-      user_id,
-      bio,
-      headline,
-      specialties,
-      certified_paths,
-      total_courses,
-      total_students,
-      average_rating,
-      total_reviews,
-      is_verified,
-      created_at,
-      users (
-        id,
-        full_name,
-        avatar_url
-      )
-    `)
-    .eq('is_active', true)
+const HOY_RECIBES = [
+  'Tu nombre y tu biografía en la ficha del curso y en cada lección.',
+  'Una revisión seria de tu material, con comentarios concretos, la haya escrito quien la haya escrito.',
+  'El curso alojado, mantenido y traducido al formato de la plataforma: módulos, examen y certificado verificable para tus alumnos.',
+  'Acceso al panel de instructor para ver cuánta gente lo está haciendo y por dónde va.',
+]
 
-  // Filtrar por ruta si está seleccionada
-  if (ruta) {
-    const selectedPath = learningPaths?.find(p => p.slug === ruta)
-    if (selectedPath) {
-      query = query.contains('certified_paths', [selectedPath.id])
-    }
-  }
-
-  // Ordenar
-  switch (orden) {
-    case 'estudiantes':
-      query = query.order('total_students', { ascending: false })
-      break
-    case 'reciente':
-      query = query.order('created_at', { ascending: false })
-      break
-    case 'rating':
-    default:
-      query = query.order('average_rating', { ascending: false })
-      break
-  }
-
-  const { data: instructors, error: instructorsError } = await query
-
-  // DEBUG: Ver qué devuelve la query
-  console.log('🔍 [instructores] Query result:', {
-    count: instructors?.length || 0,
-    error: instructorsError?.message,
-    firstItem: instructors?.[0]
-  })
-
-  // Obtener certificaciones activas para mostrar badges
-  const { data: certifications } = await supabase
-    .from('instructor_certifications')
-    .select(`
-      user_id,
-      learning_path_id,
-      learning_paths (
-        id,
-        title,
-        icon
-      )
-    `)
-    .eq('status', 'active')
-
-  // Crear mapa de certificaciones por usuario
-  const certMap = new Map<string, Array<{ id: string; title: string; icon: string }>>()
-  certifications?.forEach((cert: any) => {
-    if (!certMap.has(cert.user_id)) {
-      certMap.set(cert.user_id, [])
-    }
-    if (cert.learning_paths) {
-      const lp = cert.learning_paths as { id: string; title: string; icon: string }
-      certMap.get(cert.user_id)!.push({
-        id: lp.id,
-        title: lp.title,
-        icon: lp.icon,
-      })
-    }
-  })
-
+export default function InstructoresPage() {
   return (
     <div className="min-h-screen bg-dark">
-      {/* Hero */}
-      <div className="bg-gradient-to-b from-orange-500/10 via-transparent to-transparent py-16">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-orange-500/20 rounded-xl">
-              <GraduationCap className="w-8 h-8 text-orange-400" />
-            </div>
-            <h1 className="text-4xl font-bold text-white">Instructores</h1>
-          </div>
-          <p className="text-xl text-white/70 max-w-2xl">
-            Aprende de los mejores. Nuestros instructores certificados comparten su conocimiento y experiencia.
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+        <p className="text-sm font-semibold uppercase tracking-widest text-brand-light mb-3">
+          Instructores
+        </p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-5">
+          {TITULO}
+        </h1>
+        <p className="text-lg text-white/70 leading-relaxed max-w-2xl">
+          Nodo360 publica cursos de Bitcoin, blockchain y Web3 en español. Si
+          sabes de algo de esto y quieres enseñarlo, esta página cuenta qué se
+          espera del material, quién lo revisa y cómo proponerlo.
+        </p>
+
+        {/* Aviso de tamaño: mejor decirlo que dejar que se descubra */}
+        <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5">
+          <p className="text-sm text-white/70 leading-relaxed">
+            Conviene saberlo antes de escribir nada:{' '}
+            <strong className="text-white/90">
+              esto es un proyecto pequeño y todos los cursos son gratuitos
+            </strong>
+            . No hay pagos a instructores ni reparto de ingresos, porque no hay
+            ingresos que repartir. Lo que hay es un catálogo cuidado, gente
+            estudiándolo y una revisión que se toma en serio.
           </p>
         </div>
-      </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Filtros */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          {/* Filtro por ruta */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-400">Ruta:</label>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/instructores"
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  !ruta
-                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                    : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
-                }`}
-              >
-                Todas
-              </Link>
-              {learningPaths?.map((path) => (
-                <Link
-                  key={path.id}
-                  href={`/instructores?ruta=${path.slug}${orden !== 'rating' ? `&orden=${orden}` : ''}`}
-                  className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                    ruta === path.slug
-                      ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                      : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  {path.icon} {path.title}
-                </Link>
-              ))}
-            </div>
+        {/* Qué se espera */}
+        <section className="mt-14">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Qué se espera de un curso
+          </h2>
+          <p className="text-white/60 mb-8">
+            Son los mismos criterios con los que se revisa el material que ya
+            está publicado.
+          </p>
+          <div className="space-y-5">
+            {LO_QUE_SE_ESPERA.map((c) => (
+              <div key={c.titulo} className="border-l-2 border-brand-light/40 pl-5">
+                <h3 className="font-semibold text-white mb-1">{c.titulo}</h3>
+                <p className="text-white/65 leading-relaxed">{c.texto}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Cómo funciona la revisión */}
+        <section className="mt-14">
+          <h2 className="text-2xl font-bold text-white mb-8">
+            Cómo funciona la revisión
+          </h2>
+          <div className="space-y-6">
+            {REVISION.map(({ icono: Icono, titulo, texto }, i) => (
+              <div key={titulo} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-light/10">
+                    <Icono className="h-5 w-5 text-brand-light" aria-hidden />
+                  </div>
+                  {i < REVISION.length - 1 && (
+                    <div className="mt-2 w-px flex-1 bg-white/10" />
+                  )}
+                </div>
+                <div className="pb-2">
+                  <h3 className="font-semibold text-white mb-1">{titulo}</h3>
+                  <p className="text-white/65 leading-relaxed">{texto}</p>
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* Ordenar */}
-          <div className="flex items-center gap-2 ml-auto">
-            <label className="text-sm text-gray-400">Ordenar:</label>
-            <div className="flex gap-2">
-              <Link
-                href={`/instructores${ruta ? `?ruta=${ruta}` : ''}`}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  orden === 'rating'
-                    ? 'bg-white/10 text-white border border-white/20'
-                    : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
-                }`}
-              >
-                Calificación
-              </Link>
-              <Link
-                href={`/instructores?orden=estudiantes${ruta ? `&ruta=${ruta}` : ''}`}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  orden === 'estudiantes'
-                    ? 'bg-white/10 text-white border border-white/20'
-                    : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
-                }`}
-              >
-                Estudiantes
-              </Link>
-              <Link
-                href={`/instructores?orden=reciente${ruta ? `&ruta=${ruta}` : ''}`}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  orden === 'reciente'
-                    ? 'bg-white/10 text-white border border-white/20'
-                    : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
-                }`}
-              >
-                Reciente
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Grid de instructores */}
-        {!instructors || instructors.length === 0 ? (
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-12 text-center">
-            <Search className="w-12 h-12 mx-auto text-gray-600 mb-4" />
-            <p className="text-gray-400 font-medium">No se encontraron instructores</p>
-            <p className="text-sm text-gray-500 mt-1">
-              {ruta ? 'Prueba quitando el filtro de ruta' : 'Aun no hay instructores certificados'}
+          <div className="mt-8 flex items-start gap-3 rounded-xl border border-white/10 bg-dark-surface p-5">
+            <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-white/40" aria-hidden />
+            <p className="text-sm text-white/60 leading-relaxed">
+              También se rechazan cursos, y se explica por qué. Casi siempre es
+              por tono —material que vende en vez de explicar— o por afirmaciones
+              sin respaldo. No es un juicio sobre quien lo escribió.
             </p>
           </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {instructors.map((instructor: any) => {
-              const user = instructor.users
-              const certs = certMap.get(instructor.user_id) || []
+        </section>
 
-              return (
-                <Link
-                  key={instructor.id}
-                  href={`/instructores/${instructor.user_id}`}
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-6 hover:border-orange-500/30 hover:bg-white/[0.07] transition-all"
-                >
-                  {/* Header con avatar */}
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="relative">
-                      {user?.avatar_url ? (
-                        <Image
-                          src={user.avatar_url}
-                          alt={user.full_name || 'Instructor'}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 rounded-xl object-cover"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-white">
-                            {user?.full_name?.[0]?.toUpperCase() || '?'}
-                          </span>
-                        </div>
-                      )}
-                      {instructor.is_verified && (
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-dark">
-                          <Award className="w-3 h-3 text-white" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors truncate">
-                        {user?.full_name || 'Instructor'}
-                      </h3>
-                      {instructor.headline && (
-                        <p className="text-sm text-gray-400 truncate">{instructor.headline}</p>
-                      )}
-                      {/* Rating */}
-                      {instructor.total_reviews > 0 && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                          <span className="text-sm font-medium text-white">
-                            {instructor.average_rating?.toFixed(1)}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            ({instructor.total_reviews} reviews)
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+        {/* Qué recibes hoy */}
+        <section className="mt-14">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Qué recibes hoy
+          </h2>
+          <p className="text-white/60 mb-6">
+            Literalmente lo que hay ahora mismo, sin contar planes.
+          </p>
+          <ul className="space-y-3">
+            {HOY_RECIBES.map((t) => (
+              <li key={t} className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-400" aria-hidden />
+                <span className="text-white/70 leading-relaxed">{t}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-                  {/* Badges de certificaciones */}
-                  {certs.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {certs.map((cert) => (
-                        <span
-                          key={cert.id}
-                          className="px-2 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs text-orange-400"
-                          title={cert.title}
-                        >
-                          {cert.icon}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+        {/* Cómo aplicar */}
+        <section className="mt-14 rounded-2xl border border-brand-light/25 bg-brand-light/[0.06] p-6 sm:p-8">
+          <h2 className="text-xl font-semibold text-white mb-3">
+            Cómo proponer un curso
+          </h2>
+          <p className="text-white/70 leading-relaxed mb-2">
+            Por ahora, escribiendo. No hay formulario todavía y preferimos
+            decirlo a poner uno que no lleve a ninguna parte.
+          </p>
+          <p className="text-white/70 leading-relaxed mb-6">
+            Cuéntanos quién eres, sobre qué querrías escribir y a quién va
+            dirigido. Con tres párrafos basta para empezar a hablar.
+          </p>
+          <a
+            href="mailto:instructores@nodo360.com?subject=Propuesta%20de%20curso"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-light px-6 py-3 font-medium text-white transition-colors hover:bg-brand"
+          >
+            <Mail className="h-4 w-4" aria-hidden />
+            instructores@nodo360.com
+          </a>
+        </section>
 
-                  {/* Stats */}
-                  <div className="flex items-center gap-4 text-sm text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="w-4 h-4" />
-                      <span>{instructor.total_courses} cursos</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>{instructor.total_students?.toLocaleString()} estudiantes</span>
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-      </div>
+        <p className="mt-10 text-sm text-white/40">
+          ¿Prefieres empezar estudiando?{' '}
+          <Link href="/cursos" className="text-white/60 underline hover:text-white">
+            Mira el catálogo
+          </Link>
+          .
+        </p>
+      </main>
+
+      <Footer />
     </div>
   )
 }
