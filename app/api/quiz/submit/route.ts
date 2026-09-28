@@ -257,6 +257,9 @@ export async function POST(request: NextRequest) {
     // NUEVO: Marcar curso completado + Generar certificado
     // ========================================
     let certificate = null
+    // Lecciones que le faltan para el certificado. Viaja en la respuesta para
+    // que la pantalla diga QUE falta y no solo que falta algo.
+    let leccionesPendientes: Array<{ slug: string; title: string }> = []
     let courseUserData: { email?: string | null; full_name?: string | null } | null = null
     let courseTitle = 'Curso'
 
@@ -281,13 +284,52 @@ export async function POST(request: NextRequest) {
         courseTitle = courseData?.title || 'Curso'
         const userName = userData?.full_name || userData?.email?.split('@')[0] || 'Usuario'
 
-        // 1. Marcar curso como completado en enrollments
+        // 1. El curso se marca completado SOLO si las lecciones lo estan.
+        //
+        // Antes esto escribia progress_percentage: 100 y completed_at sin
+        // mirar una sola leccion. Aprobar el examen con 3 de 6 leidas dejaba
+        // la matricula al 100 % y createCertificate emitia. Es el origen de
+        // los certificados de enero que hubo que retirar: tres personas con
+        // 3 de 6 lecciones y la matricula diciendo 100 %.
+        //
+        // El examen mide lo que sabes; las lecciones, lo que has hecho. El
+        // certificado exige las dos cosas, asi que ninguna puede inventar la
+        // otra.
+        const { data: leccionesDelCurso } = await admin
+          .from('lessons')
+          .select('id, slug, title, order_index, module_id')
+          .eq('course_id', course_id)
+
+        const idsLeccion = (leccionesDelCurso ?? []).map((l) => l.id)
+
+        const { data: hechas } = idsLeccion.length
+          ? await admin
+              .from('user_progress')
+              .select('lesson_id')
+              .eq('user_id', user_id)
+              .eq('is_completed', true)
+              .in('lesson_id', idsLeccion)
+          : { data: [] }
+
+        const idsHechas = new Set((hechas ?? []).map((h) => h.lesson_id))
+        const pendientes = (leccionesDelCurso ?? []).filter((l) => !idsHechas.has(l.id))
+        const totalLecciones = idsLeccion.length
+        const porcentajeReal = totalLecciones
+          ? Math.round((idsHechas.size / totalLecciones) * 100)
+          : 0
+        const leccionesCompletas = totalLecciones > 0 && pendientes.length === 0
+
+        leccionesPendientes = pendientes
+          .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+          .map((l) => ({ slug: l.slug, title: l.title }))
+
         const { error: enrollmentError } = await admin
           .from('course_enrollments')
-          .update({
-            completed_at: new Date().toISOString(),
-            progress_percentage: 100,
-          })
+          .update(
+            leccionesCompletas
+              ? { completed_at: new Date().toISOString(), progress_percentage: 100 }
+              : { progress_percentage: porcentajeReal }
+          )
           .eq('user_id', user_id)
           .eq('course_id', course_id)
 
@@ -305,13 +347,15 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // 2. Generar certificado (idempotente - no duplica si ya existe)
-        const certResult = await createCertificate({
-          userId: user_id,
-          courseId: course_id,
-        })
+        // 2. El certificado, solo si ademas estan las lecciones. Si faltan,
+        //    no se intenta: createCertificate devolveria "El curso no ha sido
+        //    completado" y esa frase no llegaba a ninguna pantalla. Ahora la
+        //    respuesta lleva la lista de lo que falta, con sus enlaces.
+        const certResult = leccionesCompletas
+          ? await createCertificate({ userId: user_id, courseId: course_id })
+          : { success: false as const, error: 'Faltan lecciones por completar' }
 
-        if (certResult.success && certResult.certificate) {
+        if ('certificate' in certResult && certResult.success && certResult.certificate) {
           certificate = certResult.certificate
           if (certResult.alreadyExists) {
             console.log('[quiz/submit] Certificado ya existia:', certificate.certificate_number)
@@ -434,6 +478,7 @@ export async function POST(request: NextRequest) {
       passed,
       correct_answers: correctAnswers,
       total_questions: totalQuestions,
+      lecciones_pendientes: leccionesPendientes,
       // Desglose por pregunta: si se acerto o no. NO incluye la respuesta
       // correcta, solo el veredicto, para que el cliente pinte el resumen.
       results: formattedAnswers.map(a => ({
