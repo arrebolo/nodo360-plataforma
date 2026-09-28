@@ -45,11 +45,16 @@ set -euo pipefail
 DESTINO="${DESTINO:-../nodo360-copias}"
 FECHA="$(date +%Y-%m-%d_%H%M)"
 
+# La versión de Windows (scripts/copia-de-seguridad.ps1) usa NODO360_DB_URL.
+# Se acepta aquí también para que la misma variable sirva en los dos sistemas y
+# nadie se encuentre un "falta DATABASE_URL" teniéndola puesta.
+DATABASE_URL="${DATABASE_URL:-${NODO360_DB_URL:-}}"
+
 # ── Comprobaciones antes de empezar ─────────────────────────────────────────
 
 if [ -z "${DATABASE_URL:-}" ]; then
   cat >&2 <<'AYUDA'
-❌ Falta DATABASE_URL.
+❌ Falta DATABASE_URL (o NODO360_DB_URL).
 
    export DATABASE_URL='postgresql://postgres:CLAVE@db.xxxx.supabase.co:5432/postgres'
    ./scripts/copia-de-seguridad.sh
