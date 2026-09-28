@@ -12,7 +12,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "migrate-courses": "tsx scripts/migrate-courses.ts"
+    "migrate-courses": "tsx scripts/migrate-courses.ts",
+    "prebuild": "tsx scripts/validar-enlazado.ts",
+    "generar:cursos": "node scripts/generar-cursos-publicados.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

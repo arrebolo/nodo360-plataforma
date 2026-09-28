@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
 import { JsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
+import { BloqueCursoDelTermino } from '@/components/enlazado/BloqueCursoDelTermino'
 import {
   getTermBySlug,
   getAllTerms,
@@ -169,6 +170,10 @@ export default async function TermPage({ params }: TermPageProps) {
             </div>
           </div>
         )}
+
+        {/* El curso donde se explica. Antes ningun termino del glosario
+            enlazaba a ningun curso: 0 de 72. */}
+        <BloqueCursoDelTermino term={term} />
 
         {/* Related Terms */}
         {relatedTerms.length > 0 && (
