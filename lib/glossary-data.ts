@@ -179,7 +179,7 @@ Los "hodlers" creen en el potencial a largo plazo de Bitcoin y prefieren acumula
 
 Las formas más comunes de cold storage incluyen hardware wallets (Ledger, Trezor, Coldcard), paper wallets (claves impresas en papel), y soluciones más avanzadas como steel plates (semillas grabadas en metal). Cada método tiene sus pros y contras en términos de seguridad y usabilidad.
 
-Para cantidades significativas de Bitcoin, el cold storage es considerado esencial. Muchos expertos recomiendan mantener solo pequeñas cantidades para uso diario en hot wallets, mientras el grueso del patrimonio permanece en cold storage con copias de seguridad en múltiples ubicaciones.`,
+La diferencia con una hot wallet no es de grado, es de sitio: en cold storage las llaves nunca tocan un dispositivo conectado, así que el malware y el phishing no llegan a ellas. En cambio hace falta el dispositivo físico para firmar, y la copia de la semilla pasa a ser el punto que hay que proteger.`,
     category: 'bitcoin',
     relatedTerms: ['hardware-wallet', 'seed-phrase', 'clave-privada', 'hot-wallet'],
     relatedArticle: 'soberania-financiera-bitcoin',
@@ -632,9 +632,9 @@ Mientras que la clave privada debe mantenerse secreta, la clave pública está d
     definition: 'Wallet conectada a Internet, conveniente para uso frecuente pero menos segura.',
     explanation: `Una hot wallet es cualquier wallet de criptomonedas que está conectada a Internet. Incluye aplicaciones móviles (Trust Wallet, BlueWallet), extensiones de navegador (MetaMask, Rabby), y wallets de escritorio. Son "calientes" porque están en línea y listas para transaccionar.
 
-Las ventajas de las hot wallets son su conveniencia: puedes enviar y recibir crypto en segundos, interactuar con aplicaciones DeFi, y acceder a tus fondos desde cualquier lugar. Son ideales para cantidades pequeñas de uso diario.
+Las ventajas de las hot wallets son su conveniencia: puedes enviar y recibir crypto en segundos, interactuar con aplicaciones DeFi, y acceder a tus fondos desde cualquier lugar. A cambio, las llaves están en un dispositivo con conexión: lo que compromete el dispositivo compromete las llaves.
 
-El riesgo principal es que al estar conectadas a Internet, son vulnerables a hackeos, malware, y phishing. Si tu equipo o teléfono se compromete, un atacante podría robar tus fondos. Por eso se recomienda mantener solo pequeñas cantidades en hot wallets y el grueso del patrimonio en cold storage.`,
+El riesgo principal es que al estar conectadas a Internet, son vulnerables a hackeos, malware, y phishing. Si tu equipo o teléfono se compromete, un atacante podría robar tus fondos. Es la contrapartida de su comodidad: las llaves tienen que estar en el dispositivo para poder firmar desde el, y ahi es donde el atacante las busca.`,
     category: 'wallets',
     relatedTerms: ['cold-wallet', 'wallet', 'seguridad', 'metamask'],
   },
@@ -646,7 +646,7 @@ El riesgo principal es que al estar conectadas a Internet, son vulnerables a hac
 
 Las hardware wallets son dispositivos especializados que generan y almacenan claves privadas en un chip seguro. Cuando quieres hacer una transacción, conectas el dispositivo, verificas los detalles en su pantalla, y firmas. La clave privada nunca sale del dispositivo.
 
-Las cold wallets son esenciales para cantidades significativas de criptomonedas. La inversión en una hardware wallet (€50-200) es trivial comparada con el valor que puede proteger. La desventaja es menor conveniencia: necesitas tener el dispositivo físicamente para transaccionar.`,
+Una cold wallet mantiene las llaves fuera de cualquier dispositivo conectado, que es lo que las deja fuera del alcance del malware y del phishing. La desventaja es la conveniencia: necesitas tener el dispositivo físicamente para transaccionar, y si se pierde el dispositivo y la copia de la semilla, no hay forma de recuperar los fondos.`,
     category: 'wallets',
     relatedTerms: ['hot-wallet', 'hardware-wallet', 'seed-phrase', 'cold-storage'],
     relatedArticle: 'soberania-financiera-bitcoin',
@@ -684,7 +684,7 @@ Sin embargo, "not your keys, not your coins" (no son tus llaves, no son tus mone
 
 La autocustodia es el principio fundamental de Bitcoin: ser tu propio banco. Elimina el riesgo de contraparte (que el custodio falle) pero traslada toda la responsabilidad de seguridad a ti. Si pierdes tu seed phrase, pierdes acceso permanente a tus fondos.
 
-Para practicar autocustodia de forma segura: usa una hardware wallet para cantidades significativas, guarda múltiples copias de tu seed phrase en ubicaciones seguras, nunca la compartas con nadie, y practica con pequeñas cantidades antes de mover sumas importantes.`,
+Qué sostiene la autocustodia, en la práctica: la semilla, porque quien la tiene tiene los fondos y quien la pierde los pierde; el dispositivo donde viven las llaves, porque si está conectado está expuesto; y la dirección de destino de cada envío, porque en cadena un envío equivocado no se deshace. Nadie puede recuperar nada de eso en tu nombre: no hay servicio de atención al cliente.`,
     category: 'wallets',
     relatedTerms: ['custodial', 'seed-phrase', 'descentralizacion', 'wallet'],
     relatedArticle: 'soberania-financiera-bitcoin',
@@ -837,7 +837,7 @@ Para protegerte: nunca introduzcas tu seed phrase en ningún sitio web (los serv
 
 Las señales de alerta incluyen: equipos anónimos sin historial verificable, promesas de rendimientos extraordinarios, liquidez que puede ser retirada por los creadores, contratos no verificados o no auditados, y presión para invertir rápidamente antes de que sea "tarde".
 
-Para protegerte: investiga el equipo y su historial, verifica si el contrato está auditado por firmas reconocidas, comprueba si la liquidez está bloqueada, no inviertas más de lo que puedes perder en proyectos nuevos, y desconfía de tokens con marketing agresivo pero sin utilidad real.`,
+Qué se puede comprobar antes: el equipo y su historial, si el contrato está auditado por firmas reconocidas, si la liquidez está bloqueada, y si el token tiene alguna utilidad más allá del marketing. Y lo que ninguna comprobación evita: en un rug pull el token puede quedarse en cero de un día para otro, la operación es irreversible y no hay nadie a quien reclamar.`,
     category: 'seguridad',
     relatedTerms: ['defi', 'scam', 'liquidity-pool', 'smart-contract'],
     relatedArticle: 'defi-para-principiantes',

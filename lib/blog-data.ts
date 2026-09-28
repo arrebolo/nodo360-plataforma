@@ -133,7 +133,7 @@ Puedes llevar millones de dólares en Bitcoin en tu teléfono móvil o memorizar
 ## Cómo empezar con Bitcoin
 
 ### Paso 1: Educarte
-Antes de invertir un solo euro, dedica tiempo a entender:
+Lo que hay que entender antes, porque es donde se pierde el dinero:
 - Cómo funciona la tecnología
 - Los riesgos involucrados
 - Cómo proteger tus bitcoins
@@ -315,9 +315,9 @@ España tiene más de 200 cajeros Bitcoin. Aunque son convenientes, las comision
 - No hagas clic en enlaces de emails sospechosos
 
 ### Autocustodia
-- No dejes grandes cantidades en exchanges
-- Transfiere tus Bitcoin a una wallet personal
-- Considera una hardware wallet para cantidades significativas
+- En un exchange las llaves no son tuyas: si quiebra o bloquea las retiradas, el saldo no se mueve
+- Una wallet propia pone las llaves de tu lado, y con ellas la responsabilidad de no perderlas
+- Una hardware wallet mantiene las llaves fuera de cualquier dispositivo conectado
 - Guarda tu seed phrase de forma segura y offline
 
 ## Impuestos en España
@@ -336,7 +336,7 @@ Debes declarar:
 
 ## Conclusión
 
-Comprar Bitcoin en España es un proceso sencillo si sigues los pasos correctos. Recuerda siempre priorizar la seguridad y educarte antes de invertir cantidades significativas.
+Comprar Bitcoin en España es un proceso sencillo. Lo que no es sencillo, y es donde se pierde el dinero, es lo que viene después: la custodia de las llaves, la verificación de las direcciones y el reconocimiento de las estafas.
 
 ¿Quieres aprender más sobre Bitcoin y criptomonedas? Explora nuestros cursos gratuitos en Nodo360.
 `
@@ -631,7 +631,7 @@ La autocustodia significa guardar tus propias llaves privadas. Es la diferencia 
 
 ### Paso 1: Educarte
 
-Antes de tomar custodia de cantidades significativas:
+Antes de tomar custodia de las llaves:
 - Entiende cómo funcionan las transacciones
 - Aprende sobre seed phrases y llaves privadas
 - Conoce los riesgos y cómo mitigarlos
@@ -711,8 +711,8 @@ Con gran poder viene gran responsabilidad:
 **Mitigación:**
 - Educación continua
 - Múltiples backups
-- Transacciones de prueba pequeñas
-- Hardware wallet para cantidades grandes
+- Una transacción de prueba a una dirección nueva, antes del envío real
+- Una hardware wallet, que deja las llaves fuera del ordenador y del móvil
 
 ## Bitcoin vs oro: Soberanía comparada
 
@@ -729,7 +729,7 @@ Con gran poder viene gran responsabilidad:
 
 La soberanía financiera no es paranoia, es prudencia. Bitcoin ofrece por primera vez en la historia la posibilidad de que cualquier persona, en cualquier lugar, tenga control total sobre su dinero.
 
-No tienes que ir "all-in" de inmediato. Comienza poco a poco, aprende, y ve incrementando tu soberanía a medida que te sientas cómodo.
+La autocustodia no es un interruptor: es una serie de piezas -wallet propia, copia de la semilla, verificación de direcciones, un nodo si se quiere- que se pueden aprender y montar por separado. Cada una tiene su propio fallo posible, y ninguna obliga a las demás.
 
 ¿Quieres aprender a practicar la autocustodia de forma segura? Nuestros cursos en Nodo360 te guían paso a paso.
 `
@@ -878,9 +878,9 @@ Bloquear tokens para asegurar la red y ganar recompensas.
 
 ### Primeros pasos seguros
 
-1. **Empieza con poco dinero**
-   - Aprende con cantidades que puedas perder
-   - Entiende los costos de gas
+1. **Todo cuesta gas, y nada se deshace**
+   - Cada operación en cadena tiene un coste, también las que fallan
+   - Un envío o una aprobación equivocados no se pueden revertir
 
 2. **Usa redes de prueba primero**
    - Testnets permiten practicar gratis
@@ -942,12 +942,12 @@ Bloquear tokens para asegurar la red y ganar recompensas.
 - **DeFiSafety**: Scores de seguridad
 - **Etherscan**: Verificar contratos
 
-## Consejos para mantenerte seguro
+## Riesgos y medidas de seguridad
 
-1. **Nunca inviertas más de lo que puedes perder**
-2. **Diversifica entre protocolos**
+1. **Un protocolo puede quedarse a cero.** En cadena no hay devoluciones ni reclamaciones: si el contrato falla o lo vacían, el dinero no vuelve
+2. **Un fallo en un protocolo afecta a todo lo que esté depositado en él**, y cada protocolo tiene su propio código y sus propios errores
 3. **Revoca aprobaciones que no uses**
-4. **Usa hardware wallet para cantidades grandes**
+4. **Una hardware wallet guarda las llaves fuera de cualquier dispositivo conectado**, que es lo que las pone fuera del alcance del malware y del phishing
 5. **Verifica URLs antes de conectar wallet**
 6. **No confíes en rendimientos "demasiado buenos"**
 7. **Mantente informado sobre hacks y exploits**
@@ -1206,7 +1206,7 @@ Están conectadas a Internet permanentemente. Son convenientes para uso diario p
 **Desventajas:**
 - Mayor riesgo de hackeo
 - Vulnerables a malware y phishing
-- No recomendadas para grandes cantidades
+- Las llaves viven en un dispositivo conectado: lo que compromete el dispositivo compromete las llaves
 
 **Tipos de hot wallets:**
 
@@ -1216,12 +1216,12 @@ Están conectadas a Internet permanentemente. Son convenientes para uso diario p
 
 ### Cold Wallets (Wallets Frías)
 
-Almacenan las llaves privadas offline, sin conexión a Internet. Son la opción más segura para guardar grandes cantidades a largo plazo.
+Almacenan las llaves privadas offline, sin conexión a Internet. Las llaves nunca tocan un dispositivo conectado, y eso es lo que las deja fuera del alcance del malware y del phishing.
 
 **Ventajas:**
 - Máxima seguridad contra hackeos online
 - Inmunes a malware
-- Ideales para hodling a largo plazo
+- Pensadas para saldos que no se mueven a diario
 
 **Desventajas:**
 - Menos convenientes para uso frecuente
@@ -1289,20 +1289,20 @@ La seed phrase (frase semilla) es una lista de 12-24 palabras que permite recupe
 ## ¿Cuál Wallet Elegir Según Tu Perfil?
 
 ### Principiante
-Empieza con una hot wallet móvil gratuita como BlueWallet o Trust Wallet. Aprende con cantidades pequeñas.
+Una hot wallet móvil gratuita como BlueWallet o Trust Wallet, que no cuesta nada y permite ver cómo funciona una transacción de principio a fin.
 
 ### Usuario DeFi/NFTs
 MetaMask conectado a un Ledger o Trezor. Comodidad con seguridad.
 
 ### Hodler a largo plazo
-Hardware wallet dedicada (Ledger o Trezor). El costo es mínimo comparado con lo que proteges.
+Hardware wallet dedicada (Ledger o Trezor): las llaves quedan fuera del ordenador y del móvil, y firmar exige tener el dispositivo delante.
 
 ### Usuario avanzado
 Coldcard air-gapped o configuración multisig con múltiples dispositivos.
 
 ## Mejores Prácticas de Seguridad
 
-1. **Diversifica**: Hot wallet para uso diario, hardware wallet para ahorros
+1. **Separa por uso**: lo que se mueve a diario y lo que no se toca no tienen por qué estar en la misma wallet; así un dispositivo comprometido no alcanza a todo
 2. **Verifica direcciones**: Siempre verifica completa antes de enviar
 3. **Transacciones de prueba**: Primero envía cantidad pequeña a direcciones nuevas
 4. **Actualiza firmware**: Solo de fuentes oficiales
@@ -1325,7 +1325,7 @@ Coldcard air-gapped o configuración multisig con múltiples dispositivos.
 
 ## Conclusión
 
-Elegir la wallet correcta es fundamental para tu seguridad cripto. Para cantidades significativas, una hardware wallet no es un lujo sino una necesidad. El costo de 70-150€ es insignificante comparado con el riesgo de perder tus fondos.
+La wallet decide dónde viven las llaves, y eso decide quién puede gastar. Una hardware wallet las mantiene fuera del ordenador y del móvil, y exige tener el dispositivo delante para firmar; una hot wallet las guarda en un dispositivo conectado, con lo que eso implica. Las dos cosas son ciertas a la vez y no dependen de cuánto guardes.
 
 ¿Quieres aprender más sobre autocustodia y seguridad cripto? Nuestros cursos en Nodo360 te guían paso a paso para proteger tus activos digitales.
 `
@@ -1692,9 +1692,9 @@ ETH u otra cripto nativa de la blockchain donde quieras comprar.
 - **Magic Eden**: Popular para Solana
 - **Foundation**: Curado para arte
 
-### 5. Empezar pequeño
+### 5. Qué puede pasar con el valor
 
-No inviertas más de lo que puedas perder. Muchos NFTs van a cero.
+Muchos NFTs han acabado sin ningún comprador dispuesto a pagar por ellos, y un NFT sin comprador no vale nada: no hay precio de referencia ni nadie obligado a recomprarlo. La corrección del mercado dejó colecciones enteras en cero.
 
 ## Conclusión
 
@@ -2074,7 +2074,7 @@ Un "rug pull" es cuando los creadores de un proyecto desaparecen con los fondos 
 - Celebrities promocionando (muchas veces falsas o pagadas)
 - No puedes vender (honeypot)
 
-### 6. Usa Hardware Wallet para Cantidades Significativas
+### 6. Qué protege una hardware wallet
 
 Si tienes más de 500-1000€ en crypto, una hardware wallet es esencial.
 
@@ -2104,7 +2104,7 @@ El malware "clipboard hijacker" cambia las direcciones crypto que copias. Puedes
 **Siempre:**
 - Verifica la dirección COMPLETA antes de enviar
 - Usa direcciones de libreta guardadas cuando sea posible
-- Para cantidades grandes, envía primero una transacción de prueba pequeña
+- A una dirección nueva, una transacción de prueba confirma que es correcta antes del envío real
 
 ### 9. Mantén Software Actualizado
 
@@ -3082,7 +3082,7 @@ Nadie sabe qué hará el precio después del próximo halving. Quien asegure lo 
 
 El halving es un hecho verificable del protocolo: cada 210.000 bloques la recompensa se divide entre dos, y eso se puede comprobar en el código y en la cadena. Todo lo que se afirme sobre lo que hará el precio a partir de ahí es una opinión, por muy elaborado que sea el gráfico que la acompañe.
 
-**Importante**: No inviertas más de lo que puedas perder. El pasado no garantiza el futuro.
+**Importante**: el pasado no garantiza el futuro. El precio puede caer después de un halving y quedarse ahí el tiempo que sea: nada en el protocolo impide que eso ocurra, y ningún ciclo anterior obliga al siguiente.
 
 ## Preguntas Frecuentes
 
