@@ -41,10 +41,11 @@ const faqs: FAQ[] = [
   {
     id: 'es-seguro-invertir-bitcoin',
     question: '¿Es seguro invertir en Bitcoin?',
-    answer: 'Bitcoin es una inversión de alto riesgo debido a su volatilidad. El precio puede subir o bajar significativamente en cortos periodos. Sin embargo, la tecnologia subyacente es extremadamente segura: la red Bitcoin nunca ha sido hackeada en sus más de 15 años de existencia. Los riesgos principales vienen de: 1) Volatilidad del precio, 2) Pérdida de claves privadas por descuido, 3) Estafas y phishing. La recomendacion es invertir solo lo que puedas permitirte perder, educarte antes de invertir, y usar almacenamiento seguro (hardware wallets) para cantidades significativas.',
+    answer: 'La pregunta junta dos cosas que conviene separar. Una es si el protocolo funciona: lleva más de quince años en marcha sin que nadie haya conseguido alterar el registro de transacciones, y los fallos graves que ha tenido se detectaron y se corrigieron, como el desbordamiento de 2010 que creó más de 184.000 millones de BTC y se arregló en horas. Otra cosa distinta son los riesgos que asume quien tiene bitcoin, y son cinco, concretos. VOLATILIDAD: el precio se mueve mucho y deprisa, en los dos sentidos, y no hay nada que lo respalde ni nadie que garantice un valor. CUSTODIA: si guardas tú las claves y las pierdes, no existe ningún servicio de recuperación ni nadie a quien reclamar; si las guarda un tercero, dependes de que ese tercero siga existiendo y siendo solvente. ESTAFAS: es el riesgo más frecuente con diferencia, y no ataca a la red sino a las personas, con plataformas falsas, suplantaciones y páginas que imitan a las reales. REGULACIÓN: las reglas cambian y no son iguales en cada país, y lo que hoy basta puede exigir mañana requisitos nuevos. FISCALIDAD: en la mayoría de países, vender, permutar o gastar criptomonedas es un hecho que hay que declarar, y puede haber obligaciones de información aunque no vendas nada; las reglas concretas son las de tu país. Nodo360 explica cómo funciona cada una de esas piezas. No te dice qué hacer con tu dinero, ni cuánto, ni cuándo: eso sería asesoramiento, y no lo hacemos.',
     category: 'bitcoin',
     links: [
-      { text: 'Soberania financiera con Bitcoin', url: '/blog/soberania-financiera-bitcoin' },
+      { text: 'Seguridad básica en Bitcoin y criptomonedas', url: '/cursos/seguridad-basica-en-bitcoin-y-criptomonedas' },
+      { text: 'Fundamentos de Bitcoin', url: '/cursos/fundamentos-de-bitcoin' },
     ],
   },
   {
