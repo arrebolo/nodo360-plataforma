@@ -43,6 +43,17 @@ export function Footer() {
                   Cursos
                 </Link>
               </li>
+              {/* /pricing estaba huerfana: solo se llegaba desde una respuesta
+                  del FAQ y desde el panel de instructor. Va junto a Cursos
+                  porque es la pregunta que se hace quien los mira. */}
+              <li>
+                <Link
+                  href="/pricing"
+                  className="hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 rounded"
+                >
+                  Precio
+                </Link>
+              </li>
               <li>
                 <Link
                   href="/blog"

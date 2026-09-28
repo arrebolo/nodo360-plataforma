@@ -224,7 +224,7 @@ const faqs: FAQ[] = [
   {
     id: 'que-es-nodo360',
     question: '¿Que es Nodo360?',
-    answer: 'Nodo360 es una plataforma educativa en español especializada en Bitcoin, blockchain, criptomonedas y Web3. Ofrecemos cursos estructurados que te llevan de principiante a experto, con rutas de aprendizaje claras, ejercicios prácticos y certificados verificables. Nuestro enfoque es educación real sin humo: explicamos tanto las oportunidades como los riesgos del ecosistema crypto. La plataforma incluye cursos gratuitos para empezar, comunidad de estudiantes, mentoría, y contenido actualizado constantemente.',
+    answer: 'Nodo360 es una plataforma educativa en español especializada en Bitcoin, blockchain, criptomonedas y Web3. Ofrecemos cursos estructurados con rutas de aprendizaje, ejercicios prácticos, examen final y certificados verificables, además de blog, glosario y comunidad. Nuestro enfoque es educación real sin humo: explicamos tanto las oportunidades como los riesgos del ecosistema. Hoy todo el contenido es gratuito, y las lecciones se pueden leer sin crear una cuenta.',
     category: 'nodo360',
     links: [
       { text: 'Explorar cursos', url: '/cursos' },
@@ -234,17 +234,17 @@ const faqs: FAQ[] = [
   {
     id: 'cursos-nodo360-gratuitos',
     question: '¿Los cursos de Nodo360 son gratuitos?',
-    answer: 'Nodo360 ofrece contenido tanto gratuito como premium. Los cursos introductorios y mucho contenido educativo (blog, glosario, recursos) son completamente gratuitos. Los cursos avanzados y especializados, mentoría personalizada, y certificaciones premium tienen costo. Nuestra filosofía es que cualquiera pueda empezar a aprender sobre Bitcoin y crypto sin barreras económicas. Los cursos de pago ofrecen contenido más profundo, soporte directo, y certificados reconocidos.',
+    answer: 'Sí. Hoy todo el contenido de Nodo360 es gratuito: los cursos completos, las rutas de aprendizaje, los exámenes y los certificados. No pedimos tarjeta ni hay periodo de prueba. Las lecciones se pueden leer sin crear una cuenta; la cuenta, también gratuita, sirve para guardar el progreso, hacer el examen final y recibir el certificado.',
     category: 'nodo360',
     links: [
-      { text: 'Ver cursos gratuitos', url: '/cursos' },
-      { text: 'Planes y precios', url: '/pricing' },
+      { text: 'Explorar cursos', url: '/cursos' },
+      { text: '¿Cuánto cuesta Nodo360?', url: '/pricing' },
     ],
   },
   {
     id: 'como-registrarse-nodo360',
     question: '¿Como me registro en Nodo360?',
-    answer: 'Registrarte es simple y gratuito: 1) Haz clic en "Crear cuenta" en la esquina superior derecha, 2) Introduce tu email y crea una contraseña, 3) Confirma tu email haciendo clic en el enlace que te enviamos, 4) Completa tu perfil y elige tu primera ruta de aprendizaje. Una vez registrado, tendras acceso inmediato a todos los cursos gratuitos, el glosario, blog, y la comunidad. Puedes empezar a aprender en minutos.',
+    answer: 'Las lecciones se pueden leer sin cuenta, así que puedes empezar ahora mismo. Si quieres guardar el progreso, hacer los exámenes y recibir los certificados, crear la cuenta es gratis: 1) pulsa "Crear cuenta" en la esquina superior derecha, 2) introduce tu correo y crea una contraseña, 3) confirma el correo con el enlace que te enviamos, 4) elige tu primera ruta de aprendizaje. No se pide ningún dato de pago.',
     category: 'nodo360',
     links: [
       { text: 'Crear cuenta gratis', url: '/login?mode=register' },
@@ -253,7 +253,7 @@ const faqs: FAQ[] = [
   {
     id: 'certificado-completar-curso',
     question: '¿Obtengo certificado al completar un curso?',
-    answer: 'Si, al completar un curso en Nodo360 recibes un certificado digital verificable. Cada certificado incluye: tu nombre, el curso completado, fecha de finalizacion, y un codigo unico de verificacion. Los certificados pueden añadirse a LinkedIn y compartirse para demostrar tus conocimientos. Para cursos premium, los certificados tienen validacion adicional y pueden incluir evaluaciones practicas. Nuestro objetivo es que tus certificados tengan valor real en el mercado laboral.',
+    answer: 'Si, al completar un curso en Nodo360 recibes un certificado digital verificable. Cada certificado incluye: tu nombre, el curso completado, fecha de finalizacion, y un codigo unico de verificacion. Los certificados pueden añadirse a LinkedIn y compartirse para demostrar tus conocimientos. Son gratuitos, como el resto del contenido.',
     category: 'nodo360',
     links: [
       { text: 'Ver mis certificados', url: '/dashboard/certificados' },
