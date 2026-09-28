@@ -460,14 +460,12 @@ export default async function InstructorPage() {
                             <AlertCircle className="w-4 h-4" />
                             {eligibility?.reason || 'No elegible actualmente'}
                           </p>
-                          {!eligibility?.has_premium && (
-                            <Link
-                              href="/pricing"
-                              className="inline-flex items-center gap-1 mt-2 text-xs text-brand-light hover:text-brand transition-colors"
-                            >
-                              Ver planes premium →
-                            </Link>
-                          )}
+                          {/* Aqui habia un enlace "Ver planes premium" a
+                              /pricing, que aparecia justamente a quien NO
+                              tenia premium: ofrecia comprar algo que no se
+                              puede comprar. No hay pasarela de pago, ningun
+                              curso tiene is_premium y /pricing dice desde la
+                              #220 que hoy todo es gratuito. */}
                           {eligibility?.has_premium && !eligibility?.courses_complete && exam.learning_paths?.slug && (
                             <Link
                               href={`/rutas/${exam.learning_paths.slug}`}
