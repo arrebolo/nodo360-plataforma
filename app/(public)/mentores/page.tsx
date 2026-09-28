@@ -7,6 +7,10 @@ export const metadata = {
   // Propio, y no el del layout raiz: ese decia que esta pagina era una
   // copia de la home.
   alternates: { canonical: '/mentores' },
+  // noindex: la pagina sigue accesible por si alguien tiene el enlace, pero no
+  // se ofrece a un buscador. Anuncia una funcion cuyas tablas estan a 0, y un
+  // resultado de busqueda que lleva a una promesa vacia es peor que ninguno.
+  robots: { index: false, follow: true },
   title: 'Mentores',
   description: 'Conoce a los mentores de la comunidad Nodo360',
 }

@@ -36,9 +36,13 @@ const navItems: NavItem[] = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', isPrivate: true },
   { href: '/dashboard/instructor', icon: Award, label: 'Instructor', isPrivate: true },
   { href: '/dashboard/mentor', icon: Shield, label: 'Mentor', isPrivate: true },
-  { href: '/gobernanza', icon: Vote, label: 'Gobernanza' },
+  // Gobernanza fuera del menu: las tablas estan a 0 y la pagina promete algo
+  // que no existe. No se borra el codigo; se deja de anunciar. Ver la
+  // migracion 078, que lo explica tabla por tabla.
   { href: '/comunidad', icon: Users, label: 'Comunidad' },
-  { href: '/mentoria', icon: MessageCircle, label: 'Mentoria' },
+  // Mentoria fuera del menu: las tablas estan a 0 y la pagina promete algo
+  // que no existe. No se borra el codigo; se deja de anunciar. Ver la
+  // migracion 078, que lo explica tabla por tabla.
 ]
 
 // Items inferiores (todos privados)
@@ -80,7 +84,7 @@ export function Sidebar() {
 
   // Rutas que deben ser "startsWith"
   const activePrefixes = useMemo(
-    () => new Set(['/dashboard/rutas', '/dashboard', '/cursos', '/gobernanza']),
+    () => new Set(['/dashboard/rutas', '/dashboard', '/cursos']),
     []
   )
 
