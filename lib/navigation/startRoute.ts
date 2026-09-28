@@ -48,40 +48,6 @@ export async function getStartRoute(): Promise<string> {
   }
 }
 
-/**
- * Version para usar en Server Components (recibe supabase client)
- * - No logueado -> / (landing)
- * - Logueado sin ruta activa -> /dashboard/rutas
- * - Logueado con ruta activa -> /dashboard
- *
- * IMPORTANTE: Esta funcion NUNCA debe fallar.
- */
-export async function getStartRouteServer(
-  supabase: { from: (table: string) => any },
-  userId: string | null
-): Promise<string> {
-  if (!userId) {
-    return '/'
-  }
-
-  try {
-    const { data: activePath, error } = await supabase
-      .from('user_selected_paths')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('is_active', true)
-      .maybeSingle()
-
-    if (error) {
-      console.error('[getStartRouteServer] Error:', error.message)
-      return '/dashboard/rutas' // Fallback seguro para usuarios logueados
-    }
-
-    return activePath ? '/dashboard' : '/dashboard/rutas'
-  } catch (error) {
-    console.error('[getStartRouteServer] Exception:', error)
-    return '/dashboard/rutas' // Fallback seguro para usuarios logueados
-  }
-}
-
-
+// La version de servidor vive en ./startRouteServer, no aqui: necesita
+// mi_perfil(), que arrastra next/headers, y este modulo lo importa LogoLink,
+// que es un componente de cliente.

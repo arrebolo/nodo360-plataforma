@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Footer } from '@/components/navigation/Footer'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
+import { getMiPerfil } from '@/lib/auth/miPerfil'
 
 /**
  * Obtiene la URL de la primera lección incompleta de una ruta
@@ -126,15 +127,14 @@ export default async function RutasPublicPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // active_path_id NO es una columna publica desde la 049: va por mi_perfil().
+  // Un select directo sobre users falla por privilegios de columna, y como el
+  // error se descartaba, activePathId quedaba en null y la ruta activa no se
+  // marcaba nunca. Mismo fallo que tenia /certificados/[id] en la #224.
   let activePathId: string | null = null
   if (user) {
-    const { data: userData } = await supabase
-      .from('users')
-      .select('active_path_id')
-      .eq('id', user.id)
-      .single()
-
-    activePathId = userData?.active_path_id ?? null
+    const perfil = await getMiPerfil()
+    activePathId = perfil?.active_path_id ?? null
   }
 
   const paths = await getLearningPaths()

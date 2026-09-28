@@ -8,6 +8,7 @@ import { Footer } from '@/components/navigation/Footer'
 import { PathUnavailable } from '@/components/learning-path/PathUnavailable'
 import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
 import { isCurrentUserAdmin } from '@/lib/auth/isAdmin'
+import { getMiPerfil } from '@/lib/auth/miPerfil'
 import { CourseListJsonLd } from '@/components/seo/JsonLd'
 
 export const dynamic = 'force-dynamic'
@@ -108,15 +109,13 @@ export default async function RutaDetallePage({ params }: PageProps) {
 
   // Verificar si el usuario tiene esta ruta activa. Sin sesion no hay ruta
   // activa que comprobar, y la consulta se ahorra.
-  const { data: userData } = user
-    ? await supabase
-        .from('users')
-        .select('active_path_id')
-        .eq('id', user.id)
-        .single()
-    : { data: null }
-
-  const isActive = userData?.active_path_id === path.id
+  //
+  // active_path_id NO es una columna publica desde la 049: va por mi_perfil().
+  // Antes esto hacia un select directo sobre users, que falla por privilegios
+  // de columna; como el error se descartaba, isActive salia SIEMPRE false y el
+  // aviso "Ruta activa" no aparecia nunca, ni teniendo la ruta activa.
+  const perfil = user ? await getMiPerfil() : null
+  const isActive = perfil?.active_path_id === path.id
 
   return (
     <div className="min-h-screen bg-dark">
