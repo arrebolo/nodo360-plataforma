@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, ArrowRight, Trophy, RotateCcw, Loader2 } from 'lucide-react'
 import type { QuizQuestion } from '@/types/database'
@@ -33,6 +34,8 @@ interface QuizResult {
   // de las preguntas falladas. Antes no se mostraba nunca: el alumno sabia que
   // habia fallado la 3 y la 7, y no por que.
   fallos?: Array<{ question_id: string; correcta: string; explicacion: string }>
+  /** Lecciones que faltan para el certificado. Vacio = no falta ninguna. */
+  leccionesPendientes?: Array<{ slug: string; title: string }>
 }
 
 export function CourseFinalQuiz({
@@ -110,6 +113,7 @@ export function CourseFinalQuiz({
         certificate: data.certificate || null,
         results: resultsMap,
         fallos: data.fallos || [],
+        leccionesPendientes: data.lecciones_pendientes || [],
       })
 
       // Aprobado o suspendido lo decide el servidor, no el cliente, así que
@@ -124,8 +128,11 @@ export function CourseFinalQuiz({
         notifyBadges(data.awarded_badges)
       }
 
-      // Auto-redirect si aprobó (con delay para ver resultado)
-      if (data.passed) {
+      // Auto-redirect si aprobó Y no falta nada. Si faltan lecciones, la
+      // pantalla se queda: llevarse a la persona a /dashboard/certificados,
+      // donde no hay ningun certificado suyo, seria la peor forma de
+      // contarselo.
+      if (data.passed && (data.lecciones_pendientes ?? []).length === 0) {
         setTimeout(() => {
           router.push(redirectTo)
         }, 2500) // 2.5 segundos para ver el resultado
@@ -312,6 +319,33 @@ export function CourseFinalQuiz({
               <Loader2 className="w-4 h-4 animate-spin" />
               Guardando tu resultado y generando certificado...
             </p>
+          </div>
+        ) : passed && (score.leccionesPendientes?.length ?? 0) > 0 ? (
+          /* Aprobado, pero el certificado necesita ademas las lecciones. Se
+             dice cuales son y se enlazan: antes el certificado simplemente no
+             aparecia y nadie explicaba por que. */
+          <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
+            <p className="font-semibold text-amber-300 mb-1">
+              Has aprobado el examen. Falta terminar el curso
+            </p>
+            <p className="text-sm text-white/70 mb-4">
+              El examen ya está superado y no tendrás que repetirlo. El certificado
+              se emite cuando además estén leídas todas las lecciones. Te{' '}
+              {score.leccionesPendientes!.length === 1 ? 'queda esta' : `quedan estas ${score.leccionesPendientes!.length}`}:
+            </p>
+            <ul className="space-y-2">
+              {score.leccionesPendientes!.map((l) => (
+                <li key={l.slug}>
+                  <Link
+                    href={`/cursos/${courseSlug}/${l.slug}`}
+                    className="inline-flex items-center gap-2 text-sm text-amber-100 underline underline-offset-2 hover:text-white"
+                  >
+                    {l.title}
+                    <span aria-hidden>→</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : passed ? (
           <div className="text-center mb-8">

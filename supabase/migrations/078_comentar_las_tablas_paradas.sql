@@ -1,186 +1,237 @@
 -- ============================================================================
--- 078: dejar escrito que era cada tabla parada y por que se paro
+-- 078: dejar escrito qué era cada tabla parada y por qué se paró
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
+-- ESTADO: CORREGIDA el 28/09/2026. La versión anterior de este fichero FALLÓ:
+--
+--     ERROR 42P01: relation "public.mentors" does not exist
+--
+--   Falló en su PRIMERA sentencia, así que no dejó ni un comentario guardado.
+--   Comprobado leyendo el documento OpenAPI de PostgREST, que trae el
+--   COMMENT de cada tabla en el campo "description": ninguna de las 33 tenía
+--   comentario. No se aplicó a medias; no se aplicó en absoluto.
+--
 --   Copia para pegar: tmp/078-aplicar.sql
 --
--- NO BORRA NADA. Ni una tabla, ni una fila, ni una politica. Solo escribe
--- COMMENT ON TABLE.
+-- POR QUÉ FALLÓ: EL CENSO DE LA AUDITORÍA ESTABA MAL
+--   La auditoría del 27/09/2026 dijo «53 tablas, 30 vacías: el 57 %». Es falso,
+--   y la causa es una trampa de PostgREST que conviene dejar por escrito:
 --
--- POR QUE
---   La auditoria del 27/09/2026 conto 53 tablas y 30 vacias: el 57 %. Detras de
---   cada bloque hay semanas de trabajo -mentorias, gobernanza, proyectos,
---   pagos, referidos- y ninguna forma de saber, mirando la base, si eso estaba
---   a medias, abandonado o esperando algo.
+--       db.from('mentors').select('*', { count: 'exact', head: true })
+--         ->  error: NINGUNO,  count: null
 --
---   Borrarlas seria tirar trabajo por una limpieza estetica. Dejarlas mudas es
---   lo que obliga a alguien, dentro de un ano, a abrir cinco ficheros para
---   deducir si `mentor_reviews` se puede tocar. Un comentario cuesta una linea
---   y contesta la pregunta en el sitio donde se hace.
+--       db.from('mentors').select('*').limit(1)
+--         ->  Could not find the table 'public.mentors' in the schema cache
 --
---   Las paginas que las anunciaban salen del menu en la misma PR. El codigo se
+--   Con `head: true` una tabla INEXISTENTE no da error: devuelve count null,
+--   que el censo leyó como «existe y tiene 0 filas». Las 20 tablas que nunca
+--   existieron entraron en la cuenta como tablas vacías. El mismo resultado
+--   sale con un nombre inventado.
+--
+--   CENSO REAL, con select de verdad:
+--       existen              34
+--       de ellas vacías      10   ->  el 29 %, no el 57 %
+--       no existen           20
+--
+--   Así que el diagnóstico de fondo se mantiene -hay bloques enteros parados-
+--   pero es la mitad de grande de lo que dijo el informe.
+--
+-- LAS 20 QUE NO EXISTEN
+--   No se pueden comentar, pero conviene que quede escrito que no están, para
+--   que nadie las busque ni las dé por vacías otra vez:
+--
+--     mentorías    mentors, mentorship_requests, mentor_reviews
+--     gobernanza   proposals, proposal_votes, votes
+--     proyectos    project_applications
+--     cobro        payments, orders
+--     instructor   instructor_applications
+--     referidos    referrals
+--     social       comments, saved_lessons, streaks
+--     operación    email_log, audit_log, activity_log, feedback
+--     examen       quizzes, quiz_answers
+--
+--   Dos consecuencias que cambian conclusiones del informe:
+--
+--   1. De las mentorías solo existe `mentor_applications`. El bloque está
+--      MENOS construido de lo que parecía: no hay perfil de mentor, ni
+--      solicitudes de acompañamiento, ni valoraciones. Las páginas /mentores y
+--      /mentoria prometían sobre tablas que no se llegaron a crear.
+--
+--   2. No existe NINGUNA tabla de registro: ni email_log, ni audit_log, ni
+--      activity_log. Los 10 envíos de lib/email/ no es que no escriban en su
+--      registro: es que no hay registro. Se notó el 27/09 al enviar cinco
+--      avisos de certificado retirado y quedar solo el id de Resend en la
+--      consola. Esto es deuda a crear, no una tabla a terminar.
+--
+-- QUÉ HACE ESTE FICHERO
+--   Un COMMENT ON TABLE por cada una de las 13 tablas paradas que EXISTEN: las
+--   10 vacías más 3 con filas de prueba. NO BORRA NADA: ni una tabla, ni una
+--   fila, ni una política.
+--
+--   Cada comentario se escribe dentro de una guarda `to_regclass(...) IS NOT
+--   NULL`, porque COMMENT ON TABLE no admite IF EXISTS. Si una tabla se borra
+--   mañana, este fichero se salta su comentario en lugar de abortar y dejar el
+--   resto sin escribir, que es exactamente lo que pasó la primera vez.
+--
+--   Borrarlas sería tirar trabajo por una limpieza estética. Dejarlas mudas es
+--   lo que obliga a alguien, dentro de un año, a abrir cinco ficheros para
+--   deducir si `mentor_applications` se puede tocar. Un comentario cuesta una
+--   línea y contesta la pregunta en el sitio donde se hace.
+--
+--   Las páginas que las anunciaban salen del menú en la misma PR. El código se
 --   queda entero: esto no cierra ninguna puerta, solo deja de prometer.
 --
--- COMO SE LEEN DESPUES
+-- CÓMO SE LEEN DESPUÉS
 --   SELECT relname, obj_description(oid) FROM pg_class
 --    WHERE relkind = 'r' AND relnamespace = 'public'::regnamespace
 --      AND obj_description(oid) LIKE 'PARADA%';
 --
--- REEJECUTABLE: escribe siempre el mismo texto.
+-- REEJECUTABLE: escribe siempre el mismo texto y tolera que falte una tabla.
 -- ============================================================================
 
 
--- ----------------------------------------------------------------------------
--- Mentorias  ·  4 tablas, 0 filas
--- ----------------------------------------------------------------------------
-COMMENT ON TABLE public.mentors IS
-  'PARADA (078, 28/09/2026). Perfil de mentor. El bloque de mentorias se construyo entero -tablas, RLS y paginas /mentores y /mentoria- y nunca se puso en marcha: harian falta mentores reales y un circuito de solicitud. Con 20 alumnos externos no habia a quien acompanar. Las paginas salen del menu y llevan noindex; el codigo se conserva.';
+DO $do$
+DECLARE
+  t             RECORD;
+  v_escritas    INT := 0;
+  v_omitidas    TEXT[] := '{}';
+BEGIN
+  FOR t IN
+    SELECT *
+      FROM (VALUES
 
-COMMENT ON TABLE public.mentor_applications IS
-  'PARADA (078, 28/09/2026). Solicitudes para ser mentor. Ver public.mentors.';
+      -- ── Mentorías ──────────────────────────────────────────────────────────
+      -- Solo existe esta. Ver la cabecera: las otras tres nunca se crearon.
+      ('mentor_applications',
+       'PARADA (078, 28/09/2026). Solicitudes para ser mentor, y única tabla que'
+       || ' existe del bloque de mentorías: mentors, mentorship_requests y'
+       || ' mentor_reviews NO se crearon nunca. Se escribieron las páginas'
+       || ' /mentores y /mentoria y el circuito de votación de solicitudes, pero'
+       || ' no el acompañamiento en sí. Con 20 alumnos externos no había a quién'
+       || ' acompañar. Las páginas salen del menú y llevan noindex; el código se'
+       || ' conserva.'),
 
-COMMENT ON TABLE public.mentorship_requests IS
-  'PARADA (078, 28/09/2026). Peticiones de mentoria de un alumno. Ver public.mentors.';
+      -- ── Gobernanza ─────────────────────────────────────────────────────────
+      -- Solo existe esta. proposals, proposal_votes y votes no existen.
+      ('governance_proposals',
+       'PARADA (078, 28/09/2026). Propuestas de gobernanza; 1 fila de prueba, no'
+       || ' de uso real. Única tabla del bloque que existe: proposals,'
+       || ' proposal_votes y votes NO se crearon nunca. No tiene sentido a esta'
+       || ' escala: votar decisiones de la plataforma entre 20 personas, de las que'
+       || ' 12 han completado alguna lección, no es gobernanza. Se retoma cuando'
+       || ' haya una comunidad que gobernar. /gobernanza sale del menú y lleva'
+       || ' noindex.'),
 
-COMMENT ON TABLE public.mentor_reviews IS
-  'PARADA (078, 28/09/2026). Valoraciones de mentores. Ver public.mentors.';
+      -- ── Proyectos comunitarios ─────────────────────────────────────────────
+      ('projects',
+       'PARADA (078, 28/09/2026). Proyectos de la comunidad. Existen las tablas'
+       || ' (migración 023), 11 rutas API bajo /api/projects y todo lib/projects/,'
+       || ' pero la única página es /proyectos, que dice "en preparación": no hay'
+       || ' formulario, ni listado, ni panel de revisión. Se dejó a medias, no se'
+       || ' abandonó por decisión. project_applications NO existe.'),
 
+      ('project_collaborators',
+       'PARADA (078, 28/09/2026). Colaboradores de un proyecto. Ver'
+       || ' public.projects.'),
 
--- ----------------------------------------------------------------------------
--- Gobernanza  ·  3 tablas vacias + governance_proposals con 1 fila de prueba
--- ----------------------------------------------------------------------------
-COMMENT ON TABLE public.proposals IS
-  'PARADA (078, 28/09/2026). Propuestas de gobernanza. El bloque funciona pero no tiene sentido a esta escala: votar decisiones de la plataforma entre 20 personas, de las que 12 han completado alguna leccion, no es gobernanza. Se retoma cuando haya una comunidad que gobernar. /gobernanza sale del menu y lleva noindex.';
+      -- ── Cobro  ·  entitlements se CONSERVA; el resto, parado ───────────────
+      ('entitlements',
+       'SIN ESTRENAR (078, 28/09/2026). Permisos de acceso a cursos de pago. La'
+       || ' tabla y hasEntitlement() están escritos y el muro premium está puesto'
+       || ' en la ficha y en la lección, pero NO se ha ejercitado nunca: 0 filas y'
+       || ' is_premium = false en los 15 cursos. Un muro que no ha parado a nadie'
+       || ' no es un muro comprobado. NO se considera parada: es la pieza que haría'
+       || ' falta el día que haya contenido de pago.'),
 
-COMMENT ON TABLE public.proposal_votes IS
-  'PARADA (078, 28/09/2026). Votos de las propuestas. Ver public.proposals.';
+      ('pricing_plans',
+       'PARADA (078, 28/09/2026). Planes de precio. Tiene 2 filas de un plan'
+       || ' Premium de 23 EUR que nunca existió; /pricing dejó de leer esta tabla'
+       || ' en la #220. Las filas se conservan como registro de lo que se llegó a'
+       || ' anunciar. No hay pasarela de pago: payments y orders NO existen.'),
 
-COMMENT ON TABLE public.votes IS
-  'PARADA (078, 28/09/2026). Tabla de votos anterior a proposal_votes. Ver public.proposals.';
+      ('subscriptions',
+       'PARADA (078, 28/09/2026). Suscripciones; 1 fila de prueba. No hay'
+       || ' pasarela ni cobros, y /pricing dice que todo es gratuito. Ver'
+       || ' public.pricing_plans.'),
 
-COMMENT ON TABLE public.governance_proposals IS
-  'PARADA (078, 28/09/2026). Propuestas de gobernanza; tiene 1 fila de prueba, no de uso real. Ver public.proposals.';
+      -- ── Instructores y referidos ───────────────────────────────────────────
+      ('instructor_certifications',
+       'PARADA (078, 28/09/2026). Certificaciones de instructor. No existe el'
+       || ' circuito que las emitiría, ni la tabla instructor_applications que'
+       || ' recogería las solicitudes. Desde la #231 /instructores explica el'
+       || ' circuito y pide un correo a instructores@nodo360.com: con este'
+       || ' volumen, un correo funciona y un formulario con estado sería mantener'
+       || ' algo por mantenerlo.'),
 
+      ('referral_links',
+       'PARADA (078, 28/09/2026). Enlaces de referido. Hay páginas en el panel'
+       || ' de instructor, pero ningún enlace se ha creado nunca: sin tráfico que'
+       || ' referir, no había nada que medir. La tabla referrals, que guardaría las'
+       || ' conversiones, NO existe.'),
 
--- ----------------------------------------------------------------------------
--- Proyectos comunitarios  ·  3 tablas, 0 filas
--- ----------------------------------------------------------------------------
-COMMENT ON TABLE public.projects IS
-  'PARADA (078, 28/09/2026). Proyectos de la comunidad. Existen las tablas (migracion 023), 11 rutas API bajo /api/projects y todo lib/projects/, pero la unica pagina es /proyectos, que dice "en preparacion": no hay formulario, ni listado, ni panel de revision. Se dejo a medias, no se abandono por decision.';
+      -- ── Social  ·  los comentarios SE TERMINAN; el resto, parado ───────────
+      ('lesson_comments',
+       'PENDIENTE DE TERMINAR (078, 28/09/2026). Comentarios de cada lección. NO'
+       || ' es una tabla parada: el componente LessonComments existe y se pinta a'
+       || ' quien tiene sesión, y desde la #219 las lecciones se leen sin cuenta'
+       || ' con un aviso que invita a registrarse para comentar. Está a 0 porque'
+       || ' nadie ha escrito todavía, no porque el circuito falte.'),
 
-COMMENT ON TABLE public.project_collaborators IS
-  'PARADA (078, 28/09/2026). Colaboradores de un proyecto. Ver public.projects.';
+      ('bookmarks',
+       'PARADA (078, 28/09/2026). Marcadores de lecciones. Nunca tuvo interfaz.'
+       || ' La tabla saved_lessons, que la duplicaba, NO existe.'),
 
-COMMENT ON TABLE public.project_applications IS
-  'PARADA (078, 28/09/2026). Solicitudes para colaborar. Ver public.projects.';
+      ('user_notes',
+       'PARADA (078, 28/09/2026). Notas sueltas. Las notas que SÍ se usan son'
+       || ' user_lesson_notes, que cuelgan de una lección.'),
 
+      -- ── Examen  ·  tablas del diseño anterior ──────────────────────────────
+      ('course_quizzes',
+       'PARADA (078, 28/09/2026). Enlace curso-examen del diseño anterior, en el'
+       || ' que el quiz era una entidad propia; sus tablas quizzes y quiz_answers'
+       || ' NO existen. El diseño que funciona cuelga las preguntas del MÓDULO:'
+       || ' quiz_questions.module_id y quiz_attempts.module_id, y el examen final'
+       || ' de un curso se arma con las preguntas de todos sus módulos'
+       || ' (lib/quiz/checkCourseQuiz.ts). Las respuestas reales van en la columna'
+       || ' answers (jsonb) de quiz_attempts.')
 
--- ----------------------------------------------------------------------------
--- Cobro  ·  entitlements se CONSERVA; el resto, parado
--- ----------------------------------------------------------------------------
-COMMENT ON TABLE public.entitlements IS
-  'SIN ESTRENAR (078, 28/09/2026). Permisos de acceso a cursos de pago. La tabla y hasEntitlement() estan escritos y el muro premium esta puesto en la ficha y en la leccion, pero NO se ha ejercitado nunca: 0 filas y is_premium = false en los 15 cursos. Un muro que no ha parado a nadie no es un muro comprobado. NO se considera parada: es la pieza que haria falta el dia que haya contenido de pago.';
+      ) AS v(tabla, comentario)
+  LOOP
+    IF to_regclass('public.' || quote_ident(t.tabla)) IS NULL THEN
+      v_omitidas := v_omitidas || t.tabla;
+    ELSE
+      EXECUTE format('COMMENT ON TABLE public.%I IS %L', t.tabla, t.comentario);
+      v_escritas := v_escritas + 1;
+    END IF;
+  END LOOP;
 
-COMMENT ON TABLE public.payments IS
-  'PARADA (078, 28/09/2026). Pagos. No hay pasarela ni cobros, y /pricing dice que todo es gratuito. Ver public.entitlements para la parte que si se conserva.';
-
-COMMENT ON TABLE public.orders IS
-  'PARADA (078, 28/09/2026). Pedidos. Ver public.payments.';
-
-COMMENT ON TABLE public.pricing_plans IS
-  'PARADA (078, 28/09/2026). Planes de precio. Tiene 2 filas de un plan Premium de 23 EUR que nunca existio; /pricing dejo de leer esta tabla en la #220. Las filas se conservan como registro de lo que se llego a anunciar.';
-
-COMMENT ON TABLE public.subscriptions IS
-  'PARADA (078, 28/09/2026). Suscripciones. 1 fila de prueba. Ver public.payments.';
-
-
--- ----------------------------------------------------------------------------
--- Instructores y referidos  ·  4 tablas, 0 filas
--- ----------------------------------------------------------------------------
-COMMENT ON TABLE public.instructor_applications IS
-  'PARADA (078, 28/09/2026). Solicitudes para ser instructor. Desde la #228 /instructores explica el circuito y pide un correo a instructores@nodo360.com: con este volumen, un correo funciona y un formulario con estado seria mantener algo por mantenerlo.';
-
-COMMENT ON TABLE public.instructor_certifications IS
-  'PARADA (078, 28/09/2026). Certificaciones de instructor. No existe el circuito que las emitiria. Ver public.instructor_applications.';
-
-COMMENT ON TABLE public.referrals IS
-  'PARADA (078, 28/09/2026). Referidos. Hay paginas en el panel de instructor, pero ningun enlace se ha creado nunca. Sin trafico que referir, no habia nada que medir.';
-
-COMMENT ON TABLE public.referral_links IS
-  'PARADA (078, 28/09/2026). Enlaces de referido. Ver public.referrals.';
-
-
--- ----------------------------------------------------------------------------
--- Social  ·  los comentarios SE TERMINAN; el resto, parado
--- ----------------------------------------------------------------------------
-COMMENT ON TABLE public.lesson_comments IS
-  'PENDIENTE DE TERMINAR (078, 28/09/2026). Comentarios de cada leccion. NO es una tabla parada: el componente LessonComments existe y se pinta a quien tiene sesion, y desde la #219 las lecciones se leen sin cuenta con un aviso que invita a registrarse para comentar. Esta a 0 porque nadie ha escrito todavia, no porque el circuito falte.';
-
-COMMENT ON TABLE public.comments IS
-  'PARADA (078, 28/09/2026). Tabla de comentarios anterior a lesson_comments. Duplicada; no la usa nadie.';
-
-COMMENT ON TABLE public.bookmarks IS
-  'PARADA (078, 28/09/2026). Marcadores de lecciones. Nunca tuvo interfaz.';
-
-COMMENT ON TABLE public.saved_lessons IS
-  'PARADA (078, 28/09/2026). Lecciones guardadas. Duplica a bookmarks; ninguna de las dos tuvo interfaz.';
-
-COMMENT ON TABLE public.user_notes IS
-  'PARADA (078, 28/09/2026). Notas sueltas. Las notas que SI se usan son user_lesson_notes, que cuelgan de una leccion.';
-
-COMMENT ON TABLE public.streaks IS
-  'PARADA (078, 28/09/2026). Rachas de dias seguidos. La racha que se usa vive en user_gamification_stats.current_streak; esta tabla nunca llego a escribirse.';
-
-
--- ----------------------------------------------------------------------------
--- Operacion  ·  registros que convendria terminar
--- ----------------------------------------------------------------------------
-COMMENT ON TABLE public.email_log IS
-  'SIN ESTRENAR (078, 28/09/2026). Registro de correos enviados. Hay 10 plantillas en lib/email/ y ninguna escribe aqui. Se noto el 27/09 al enviar cinco avisos de certificado retirado: quedo el id de Resend en la consola y nada mas. Conviene terminarla antes de que haya volumen.';
-
-COMMENT ON TABLE public.audit_log IS
-  'PARADA (078, 28/09/2026). Registro de acciones. Sin escritores.';
-
-COMMENT ON TABLE public.activity_log IS
-  'PARADA (078, 28/09/2026). Registro de actividad. Sin escritores. Duplica a audit_log.';
-
-COMMENT ON TABLE public.feedback IS
-  'PARADA (078, 28/09/2026). Comentarios de usuarios. El que si se usa es beta_feedback, con 6 filas.';
-
-
--- ----------------------------------------------------------------------------
--- Examen  ·  tablas del diseño anterior
--- ----------------------------------------------------------------------------
-COMMENT ON TABLE public.quizzes IS
-  'PARADA (078, 28/09/2026). Diseno anterior del examen, con el quiz como entidad propia. El que funciona cuelga las preguntas del MODULO: quiz_questions.module_id y quiz_attempts.module_id, y el examen final de un curso se arma con las preguntas de todos sus modulos (lib/quiz/checkCourseQuiz.ts).';
-
-COMMENT ON TABLE public.course_quizzes IS
-  'PARADA (078, 28/09/2026). Enlace curso-examen del diseno anterior. Ver public.quizzes.';
-
-COMMENT ON TABLE public.quiz_answers IS
-  'PARADA (078, 28/09/2026). Respuestas del diseno anterior. Las respuestas reales van en la columna answers (jsonb) de quiz_attempts. Ver public.quizzes.';
+  RAISE NOTICE 'comentarios escritos: %', v_escritas;
+  IF array_length(v_omitidas, 1) > 0 THEN
+    RAISE NOTICE 'omitidas porque ya no existen: %', array_to_string(v_omitidas, ', ');
+  END IF;
+END
+$do$;
 
 
 -- ----------------------------------------------------------------------------
--- La comprobacion. Es lo ultimo, asi que es lo que muestra el editor.
+-- La comprobación. Es lo último, así que es lo que muestra el editor.
 -- ----------------------------------------------------------------------------
--- QUE TIENE QUE SALIR:
---     comentadas      -> 33   (30 vacias + 3 con filas de prueba)
---     paradas         -> 27
---     sin_estrenar    -> 2     (entitlements, email_log)
---     por_terminar    -> 1     (lesson_comments)
---     tablas_borradas -> 0     este fichero no borra nada
+-- QUÉ TIENE QUE SALIR, en una sola fila:
+--     comentadas      -> 13   (las 10 vacías que existen + 3 con filas de prueba)
+--     paradas         -> 11
+--     sin_estrenar    -> 1    (entitlements)
+--     por_terminar    -> 1    (lesson_comments)
+--     tablas_totales  -> 34   el censo real
 --     veredicto       -> TODO CORRECTO
 SELECT
   count(*)                                                          AS comentadas,
   count(*) FILTER (WHERE d LIKE 'PARADA%')                          AS paradas,
-  count(*) FILTER (WHERE d LIKE 'SIN ESTRENAR%')                    AS sin_estrenar,
-  count(*) FILTER (WHERE d LIKE 'PENDIENTE DE TERMINAR%')           AS por_terminar,
+  count(*) FILTER (WHERE d LIKE 'SIN ESTRENAR%')                     AS sin_estrenar,
+  count(*) FILTER (WHERE d LIKE 'PENDIENTE DE TERMINAR%')            AS por_terminar,
   (SELECT count(*) FROM information_schema.tables
     WHERE table_schema = 'public' AND table_type = 'BASE TABLE')    AS tablas_totales,
   CASE
-    WHEN count(*) = 33 THEN 'TODO CORRECTO'
-    ELSE 'REVISAR: se han comentado ' || count(*) || ', esperaba 33'
+    WHEN count(*) = 13 THEN 'TODO CORRECTO'
+    ELSE 'REVISAR: se han comentado ' || count(*) || ', esperaba 13'
   END                                                               AS veredicto
   FROM (
     SELECT obj_description(c.oid) AS d
