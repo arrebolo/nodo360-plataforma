@@ -77,6 +77,15 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
   // cae en false: el certificado se ve como estaba. Esa es la caida buena.
   const revocado = cert.revocado === true
 
+  // El escudo con el tick significa "verificado". En un certificado retirado
+  // dice lo contrario de lo que pone a su lado, asi que se cambia por un
+  // icono de informacion, que no afirma nada. Son los tres del mismo dibujo:
+  // la insignia de estado, el pie de la tarjeta y el recuadro de comprobacion.
+  const ESCUDO_VERIFICADO =
+    'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'
+  const CIRCULO_INFORMACION =
+    'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+  const iconoDeEstado = revocado ? CIRCULO_INFORMACION : ESCUDO_VERIFICADO
   const status: 'valid' | 'expired' | 'revoked' = revocado
     ? 'revoked'
     : isExpired
@@ -101,7 +110,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 : 'bg-warning/20 border border-warning/30'
           }`}>
             <svg className={`w-5 h-5 ${status === 'valid' ? 'text-success' : status === 'revoked' ? 'text-red-400' : 'text-warning'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconoDeEstado} />
             </svg>
             <span className={`font-medium ${status === 'valid' ? 'text-success' : status === 'revoked' ? 'text-red-300' : 'text-warning'}`}>
               {status === 'valid'
@@ -189,7 +198,9 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                   )}
                   <div>
                     <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Validez</p>
-                    <p className="text-white/80">{expiresAt || 'Permanente'}</p>
+                    <p className={revocado ? 'text-red-300' : 'text-white/80'}>
+                      {revocado ? 'Retirado' : expiresAt || 'Permanente'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Tipo</p>
@@ -240,7 +251,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
             <div className="flex items-center justify-between text-sm flex-wrap gap-3">
               <div className="flex items-center gap-2 text-white/40">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconoDeEstado} />
                 </svg>
                 <span>{revocado ? 'Estado comprobado por Nodo360' : 'Verificado por Nodo360'}</span>
               </div>
@@ -263,7 +274,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-lg bg-brand-light/10 flex items-center justify-center flex-shrink-0">
                 <svg className="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconoDeEstado} />
                 </svg>
               </div>
               <div>
