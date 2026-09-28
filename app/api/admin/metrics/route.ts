@@ -107,8 +107,10 @@ export async function GET() {
     // =====================================================
     // M5: Usuarios con ≥1 nota
     // =====================================================
+    // user_notes, no user_lesson_notes: la tabla viva es la que lee la
+    // interfaz (/api/notes). La 082 copio ahi las notas que quedaban.
     const { data: notesData } = await supabase
-      .from('user_lesson_notes')
+      .from('user_notes')
       .select('user_id')
 
     const usersWithNotes = new Set((notesData || []).map(n => n.user_id))
