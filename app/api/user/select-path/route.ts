@@ -63,32 +63,34 @@ export async function POST(req: Request) {
 
     console.log('✅ [API POST /user/select-path] Ruta encontrada:', path.name)
 
-    // 2) Guardar ruta activa en users.active_path_id
-    const { data: updated, error: updError } = await supabase
-      .from('users')
-      .update({ active_path_id: path.id })
-      .eq('id', userId)
-      // Solo `id`: active_path_id no es una columna publica desde la 049, asi
-      // que pedirla de vuelta hacia fallar el propio UPDATE por privilegios de
-      // columna. `id` basta para saber si la fila se ha actualizado.
-      .select('id')
-      .maybeSingle()
-
-    console.log('🧾 [API POST /user/select-path] Updated row:', updated)
+    // 2) Guardar la ruta activa, por activar_ruta()
+    //
+    // NO con un UPDATE sobre users: la 049 revoco ALL y solo devolvio SELECT de
+    // seis columnas, asi que `authenticated` no tiene UPDATE sobre esa tabla y
+    // este UPDATE fallaba con 42501. La 083 crea activar_ruta(), una funcion
+    // SECURITY DEFINER que escribe active_path_id y active_path_selected_at
+    // solo en la fila de auth.uid(), y solo si la ruta existe y esta activa.
+    //
+    // Se hace asi y no con un GRANT de columna porque un GRANT vale para todas
+    // las filas: dependeria de que exista una politica RLS de fila propia, y
+    // abrir UPDATE sobre users a authenticated es peligroso mientras
+    // /api/invites/consume escriba `role` por la misma via.
+    const { data: rutaActivada, error: updError } = await supabase
+      .rpc('activar_ruta', { p_slug: slug })
 
     if (updError) {
-      console.error('❌ [API POST /user/select-path] Error guardando active_path_id:', updError)
+      console.error('❌ [API POST /user/select-path] Error guardando la ruta activa:', updError)
       return NextResponse.json(
         { error: updError.message },
         { status: 500 }
       )
     }
 
-    if (!updated) {
-      console.error('⚠️ [API POST /user/select-path] UPDATE no afectó ninguna fila - posible RLS o WHERE incorrecto')
+    if (!rutaActivada) {
+      console.error('⚠️ [API POST /user/select-path] activar_ruta() no ha devuelto ninguna ruta')
       return NextResponse.json(
-        { error: 'No se pudo actualizar el usuario - verifica permisos' },
-        { status: 403 }
+        { error: 'No se pudo activar la ruta' },
+        { status: 500 }
       )
     }
 
