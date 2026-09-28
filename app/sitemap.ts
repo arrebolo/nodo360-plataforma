@@ -51,12 +51,13 @@ const PAGINAS_FIJAS: ReadonlyArray<{
   { ruta: '/faq', revisada: '2026-09-22', frecuencia: 'monthly', prioridad: 0.7 },
   // Comunidad y personas
   { ruta: '/comunidad', revisada: '2026-09-24', frecuencia: 'weekly', prioridad: 0.8 },
-  { ruta: '/mentoria', revisada: '2026-09-21', frecuencia: 'monthly', prioridad: 0.8 },
-  { ruta: '/mentores', revisada: '2026-02-06', frecuencia: 'weekly', prioridad: 0.7 },
+  // /mentoria, /mentores y /gobernanza NO entran: sus tablas estan a 0 y las
+  // paginas anuncian funciones que no existen. Llevan noindex, asi que
+  // listarlas en el sitemap seria pedirle a Google que indexe algo que le
+  // hemos dicho que no indexe. Ver la migracion 078.
   { ruta: '/instructores', revisada: '2026-09-22', frecuencia: 'weekly', prioridad: 0.7 },
   { ruta: '/proyectos', revisada: '2026-09-24', frecuencia: 'weekly', prioridad: 0.7 },
   // Gobernanza
-  { ruta: '/gobernanza', revisada: '2026-09-22', frecuencia: 'weekly', prioridad: 0.7 },
   // Informacion
   { ruta: '/sobre-nosotros', revisada: '2026-09-21', frecuencia: 'monthly', prioridad: 0.6 },
   { ruta: '/privacidad', revisada: '2026-01-15', frecuencia: 'yearly', prioridad: 0.3 },
