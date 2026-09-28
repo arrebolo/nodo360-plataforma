@@ -101,9 +101,13 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
       const supabase = createClient()
 
       // Preparar datos a actualizar
+      // Sin updated_at: la pone la base con el trigger trigger_users_updated_at
+      // (migracion 085). Mandarla desde aqui hacia fallar TODO el UPDATE con
+      // «permission denied for column updated_at», porque updated_at no esta
+      // entre las columnas que authenticated puede escribir, y no debe estarlo:
+      // una marca de tiempo de modificacion no la pone el cliente.
       const updates: Record<string, unknown> = {
         full_name: fullName.trim(),
-        updated_at: new Date().toISOString()
       }
 
       // Subir avatar si hay nuevo archivo
