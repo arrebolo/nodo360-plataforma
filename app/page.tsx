@@ -132,10 +132,16 @@ export default function HomePage() {
                 <CheckCircle className="h-4 w-4 text-success" />
                 100% en español
               </span>
-              <span className="flex items-center gap-2">
+              {/* "Contenido gratuito" enlaza a /pricing: es exactamente la
+                  pregunta que se hace quien lee ese reclamo, y esa pagina no
+                  se enlazaba desde ningun sitio de la portada. */}
+              <Link
+                href="/pricing"
+                className="flex items-center gap-2 hover:text-white/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 rounded"
+              >
                 <CheckCircle className="h-4 w-4 text-success" />
                 Contenido gratuito
-              </span>
+              </Link>
               <span className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-success" />
                 Certificados verificables
