@@ -68,6 +68,35 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
     redirect(`/login?redirect=/cursos/${course.slug}/quiz-final`)
   }
 
+  // MATRICULA AUTOMATICA AL ENTRAR AL EXAMEN
+  //
+  // Se podia aprobar el examen de un curso sin estar matriculado: el examen
+  // no lo comprobaba y createCertificate si, asi que dos personas aprobaron
+  // con un 100 y no recibieron nada. Los dos extremos de la misma promesa
+  // usaban reglas distintas.
+  //
+  // Matricular aqui no regala nada: quien llega a esta pantalla ya esta
+  // leyendo el curso, y la matricula es gratuita y automatica en el boton de
+  // inscribirse. Lo unico que hacia su ausencia era romper el certificado.
+  const { data: matricula } = await supabase
+    .from('course_enrollments')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .eq('course_id', course.id)
+    .maybeSingle()
+
+  if (!matricula) {
+    const { error: errorMatricula } = await supabase
+      .from('course_enrollments')
+      .insert({ user_id: user.id, course_id: course.id })
+
+    if (errorMatricula) {
+      console.error('❌ [quiz-final] No se pudo matricular:', errorMatricula.message)
+    } else {
+      console.log('✅ [quiz-final] Matricula creada al entrar al examen')
+    }
+  }
+
   // Obtener módulos del curso
   const { data: modules } = await supabase
     .from('modules')
