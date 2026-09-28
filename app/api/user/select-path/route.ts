@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { getMiPerfil } from '@/lib/auth/miPerfil'
 
 /**
  * POST /api/user/select-path
@@ -67,7 +68,10 @@ export async function POST(req: Request) {
       .from('users')
       .update({ active_path_id: path.id })
       .eq('id', userId)
-      .select('id, active_path_id')
+      // Solo `id`: active_path_id no es una columna publica desde la 049, asi
+      // que pedirla de vuelta hacia fallar el propio UPDATE por privilegios de
+      // columna. `id` basta para saber si la fila se ha actualizado.
+      .select('id')
       .maybeSingle()
 
     console.log('🧾 [API POST /user/select-path] Updated row:', updated)
@@ -128,25 +132,26 @@ export async function GET(request: Request) {
       )
     }
 
-    const userId = auth.user.id
-
     // 1) Obtener active_path_id del usuario
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('active_path_id')
-      .eq('id', userId)
-      .single()
+    //
+    // Por mi_perfil(), NO por un select sobre users: active_path_id no es una
+    // columna publica desde la 049, asi que el select directo fallaba y esta
+    // ruta contestaba activePath: null a todo el mundo. Quien la consume es
+    // LogoLink, que con esa respuesta mandaba a /dashboard/rutas a elegir una
+    // ruta a quien ya tenia una elegida.
+    const perfil = await getMiPerfil()
 
-    if (userError) {
-      console.error('[API GET /user/select-path] Error obteniendo usuario:', userError)
+    if (!perfil) {
+      console.error('[API GET /user/select-path] mi_perfil() no ha devuelto nada')
       return NextResponse.json({
         authenticated: true,
-        activePath: null,
-        _debug: { error: userError.message }
+        activePath: null
       })
     }
 
-    if (!userData?.active_path_id) {
+    const activePathId = perfil.active_path_id
+
+    if (!activePathId) {
       return NextResponse.json({
         authenticated: true,
         activePath: null
@@ -157,14 +162,14 @@ export async function GET(request: Request) {
     const { data: pathInfo, error: pathError } = await supabase
       .from('learning_paths')
       .select('id, slug, name, emoji, short_description')
-      .eq('id', userData.active_path_id)
+      .eq('id', activePathId)
       .single()
 
     if (pathError || !pathInfo) {
       console.error('[API GET /user/select-path] Error obteniendo ruta:', pathError)
       return NextResponse.json({
         authenticated: true,
-        activePath: { id: userData.active_path_id }
+        activePath: { id: activePathId }
       })
     }
 
