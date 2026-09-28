@@ -82,14 +82,8 @@ export function Footer() {
                   Únete
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/mentoria"
-                  className="hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 rounded"
-                >
-                  Mentoría
-                </Link>
-              </li>
+              {/* Mentoria fuera del pie: la tabla esta a 0 y la pagina promete
+                  algo que no existe. El codigo se queda; ver la migracion 078. */}
               <li>
                 <a
                   href={brandConfig.social.discord}
