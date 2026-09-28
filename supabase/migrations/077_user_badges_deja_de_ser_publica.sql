@@ -1,8 +1,21 @@
 -- ============================================================================
 -- 077: user_badges deja de exponer quien gano que
 -- ============================================================================
--- ESTADO: PROPUESTA. NO APLICADA. Pendiente de tu visto bueno.
---   Cuando se apruebe: tmp/077-aplicar.sql
+-- ESTADO: APLICADA el 28/09/2026, y NO BASTO. La sustituye la 079.
+--
+--   Su propia verificacion lo dijo al ejecutarla:
+--       politicas_select 4  ·  abiertas 2  ·  veredicto REVISAR
+--
+--   Este fichero hace DROP POLICY de UNA politica por su NOMBRE, el que le
+--   puso la 004. La base tiene cuatro politicas de SELECT sobre user_badges y
+--   el repositorio solo documenta dos: al menos dos se crearon a mano en el
+--   editor y nunca se versionaron, asi que no hay nombre que poner en un DROP.
+--   Comprobado despues con la clave anonima: la tabla seguia devolviendo las
+--   29 filas con user_id.
+--
+--   Se conserva tal cual porque es lo que se ejecuto. La 079 recorre
+--   pg_policies y retira las politicas por lo que HACEN, no por como se
+--   llaman, y ademas le quita a anon el GRANT.
 --
 -- LO QUE PASA HOY
 --   Con la clave anonima, sin sesion:
