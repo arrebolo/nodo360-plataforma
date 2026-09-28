@@ -67,6 +67,11 @@ rmdir
 tmpclaude-*
 .vercel
 
+# Volcados de la base de datos. El script los deja fuera del repositorio
+# (../nodo360-copias), pero si alguien cambia DESTINO esto lo para.
+/nodo360-copias/
+*.dump
+
 # Material de trabajo que se mira y se tira: muestras de las tarjetas Open
 # Graph, volcados, capturas. Nada de aqui entra en el repositorio.
 /tmp/
