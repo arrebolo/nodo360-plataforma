@@ -226,14 +226,25 @@ export async function POST(
     }
 
     // 6h. OPCIONAL: Eliminar notas
+    //
+    // user_notes, no user_lesson_notes: la tabla viva es la que lee la interfaz
+    // (/api/notes), y la 082 copio ahi las notas que quedaban en la otra.
+    //
+    // Y se filtra por lesson_id, no por course_id, porque user_notes NO tiene
+    // course_id: el curso sale de la leccion a traves de modules. lessonIds ya
+    // esta calculado arriba, en el paso 1.
     if (!preserveNotes) {
-      await admin
-        .from('user_lesson_notes')
-        .delete()
-        .eq('user_id', userId)
-        .eq('course_id', courseId)
+      if (lessonIds.length > 0) {
+        await admin
+          .from('user_notes')
+          .delete()
+          .eq('user_id', userId)
+          .in('lesson_id', lessonIds)
 
-      console.log('[Reset Course] Notas eliminadas')
+        console.log('[Reset Course] Notas eliminadas')
+      } else {
+        console.log('[Reset Course] El curso no tiene lecciones: ninguna nota que borrar')
+      }
     }
 
     // 7. Registrar evento de auditoría (XP negativo)
