@@ -1,8 +1,14 @@
 -- ============================================================================
 -- 081: user_badges deja de poder modificarse desde una sesión
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
---   Copia para pegar: tmp/081-aplicar.sql
+-- ESTADO: APLICADA el 28/09/2026. Resultado de su verificación:
+--     politicas_total 2 · politicas_update 0 · politicas_select 2
+--     auth_puede_update false · anon_puede_leer false
+--     is_featured_sigue_ahi TRUE · filas 29 · veredicto TODO CORRECTO
+--
+--   Con esto, user_badges solo se puede leer -la fila propia, o todas si eres
+--   administrador- y solo service_role escribe. La columna is_featured sigue
+--   ahí, intacta. Copia para pegar: tmp/081-aplicar.sql
 --
 -- QUÉ SE RETIRA
 --   La política "Users can update own badge features" (UPDATE, rol public).
