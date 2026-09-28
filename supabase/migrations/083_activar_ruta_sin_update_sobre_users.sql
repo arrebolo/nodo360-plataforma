@@ -9,13 +9,14 @@
 --   devolvio solo GRANT SELECT de seis columnas. No hay ningun GRANT UPDATE
 --   sobre public.users en ninguna de las 82 migraciones del repositorio.
 --
---   Y ocho sitios del codigo escriben en public.users con el cliente de SESION:
+--   Y ocho sitios del codigo escriben en public.users. CUATRO con el cliente
+--   de SESION (los marcados) y cuatro con service_role:
 --
---     app/api/user/select-path            active_path_id
---     app/api/user/avatar                 avatar_url
---     app/api/user/avatar/upload          avatar_url
---     components/profile/ProfileForm      el perfil, desde el navegador
---     app/api/invites/consume             role            <-- ojo a este
+--     app/api/user/select-path            active_path_id  <- sesion
+--     app/api/user/avatar                 avatar_url  <- sesion
+--     app/api/user/avatar/upload          avatar_url  <- sesion
+--     components/profile/ProfileForm      el perfil, desde el navegador  <- sesion
+--     app/api/invites/consume             role            (ya usa service_role)
 --     app/api/admin/users/[id]            varias
 --     app/api/admin/users/[id]/role       role
 --     app/api/admin/users/beta            is_beta, wants_beta_notification
@@ -58,12 +59,28 @@
 --   versionar- los otros siete sitios dependen de el y retirarlo dejaria a la
 --   gente sin poder editar su perfil ni su avatar.
 --
--- EL AVISO QUE IMPORTA, PARA CUANDO SE MIREN LOS OTROS SIETE
---   app/api/invites/consume escribe `role` con el cliente de SESION. Si alguna
---   vez se concede un GRANT UPDATE amplio sobre public.users a authenticated,
---   con una politica de fila propia, entonces CUALQUIER USUARIO podria ponerse
---   role = 'admin' llamando a PostgREST directamente: la clave anonima es
---   publica y la API REST es alcanzable sin pasar por la web.
+-- CORRECCION (084, 28/09/2026): AQUI HABIA UN AVISO FALSO
+--   Esta cabecera decia: «app/api/invites/consume escribe `role` con el cliente
+--   de SESION». NO ES CIERTO. Esa ruta usa supabaseAdmin, o sea service_role,
+--   que es exactamente lo correcto. El error vino de un grep que devolvio el
+--   primer cliente del fichero en lugar del de esa escritura.
+--
+--   Comprobado despues escritura por escritura: las CUATRO rutas que tocan
+--   columnas de privilegio -invites/consume, admin/users/[id],
+--   admin/users/[id]/role y admin/users/beta- usan todas service_role. Las
+--   cuatro que usan el cliente de sesion solo tocan columnas inocuas:
+--   full_name, updated_at, avatar_url, avatar_path y active_path_id.
+--
+-- EL RIESGO REAL, QUE SIGUE EN PIE
+--   Si alguna vez se concede un GRANT UPDATE amplio sobre public.users a
+--   authenticated, con una politica de fila propia, entonces CUALQUIER USUARIO
+--   podria ponerse role = 'admin' llamando a PostgREST directamente: la clave
+--   anonima es publica y la API REST es alcanzable sin pasar por la web, asi
+--   que la comprobacion de admin del codigo no protege nada ahi.
+--
+--   Y eso no era hipotetico: la comprobacion posterior encontro permisos de
+--   COLUMNA concedidos a mano y sin versionar sobre esta tabla. La 084 retira
+--   los de las columnas que dan privilegios.
 --
 --   Asi que la regla para esos siete es:
 --     · columnas inocuas que edita su dueno (full_name, bio, avatar_url,
