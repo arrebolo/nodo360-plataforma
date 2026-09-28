@@ -1,8 +1,45 @@
 -- ============================================================================
 -- 079: user_badges, cierre completo. La 077 no bastó
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
---   Copia para pegar: tmp/079-aplicar.sql
+-- ESTADO: APLICADA el 28/09/2026. Resultado de su verificación:
+--     politicas_select 2 · abiertas 0 · anon_puede_leer false · filas 29
+--     veredicto TODO CORRECTO
+--
+--   La fuga está cerrada. Copia para pegar: tmp/079-aplicar.sql
+--
+-- LOS NOMBRES DE LAS DOS POLÍTICAS RETIRADAS: NO SE CAPTURARON
+--   Los NOTICE de esta migración los escribió el editor SQL de Supabase en su
+--   pestaña de mensajes y no se recogieron antes de cerrarla. Ya no hay forma
+--   de recuperarlos: las políticas se borraron y PostgreSQL no guarda registro
+--   de lo que se borra.
+--
+--   Queda documentado así, que es lo único honesto que se puede decir:
+--
+--     DOS POLÍTICAS DE SELECT sobre public.user_badges, creadas a mano en el
+--     editor, NUNCA VERSIONADAS, con USING (true), de NOMBRE DESCONOCIDO.
+--     Retiradas por esta migración el 28/09/2026.
+--
+--   Si alguna vez hace falta saberlo, el único sitio donde podrían quedar es
+--   el historial del editor SQL del panel de Supabase.
+--
+-- LO QUE APARECIÓ AL APLICARLA: UNA TERCERA POLÍTICA SIN VERSIONAR
+--   La verificación listó, además de las dos que crea este fichero:
+--
+--     "Users can update own badge features"  (UPDATE, rol public)
+--
+--   Tampoco está en el repositorio. No la toca esta migración -solo se ocupa
+--   de SELECT- pero queda anotada aquí porque es el tercer objeto de esta
+--   tabla creado a mano:
+--
+--     1. y 2.  las dos políticas de SELECT abiertas, ya retiradas
+--     3.       esta política de UPDATE
+--     4.       la columna is_featured, que no está en ninguna migración
+--     5.       la columna created_at de la 004, que ya NO existe en la tabla
+--
+--   Sobre la de UPDATE hay un dato que decide qué hacer con ella: `is_featured`
+--   NO se lee ni se escribe en ningún sitio del código. Solo aparece en
+--   lib/supabase/types.ts, que es un fichero generado. Es decir, la política
+--   protege una función que no existe. Ver la 080.
 --
 -- QUÉ PASÓ CON LA 077
 --   Se aplicó el 28/09/2026 y su propia verificación dijo que no había

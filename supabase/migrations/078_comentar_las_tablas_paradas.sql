@@ -1,7 +1,13 @@
 -- ============================================================================
 -- 078: dejar escrito qué era cada tabla parada y por qué se paró
 -- ============================================================================
--- ESTADO: CORREGIDA el 28/09/2026. La versión anterior de este fichero FALLÓ:
+-- ESTADO: APLICADA el 28/09/2026. Resultado de su verificación:
+--     comentadas 13 · paradas 11 · sin_estrenar 1 · por_terminar 1
+--     tablas_totales 77 · veredicto TODO CORRECTO
+--
+--   Ese 77 corrige por segunda vez el censo. Ver más abajo: NO son 34.
+--
+-- Esta versión CORRIGE la anterior, que FALLÓ:
 --
 --     ERROR 42P01: relation "public.mentors" does not exist
 --
@@ -27,13 +33,43 @@
 --   existieron entraron en la cuenta como tablas vacías. El mismo resultado
 --   sale con un nombre inventado.
 --
---   CENSO REAL, con select de verdad:
+--   DE LAS 53 QUE COMPROBÉ, con select de verdad:
 --       existen              34
---       de ellas vacías      10   ->  el 29 %, no el 57 %
+--       de ellas vacías      10
 --       no existen           20
 --
---   Así que el diagnóstico de fondo se mantiene -hay bloques enteros parados-
---   pero es la mitad de grande de lo que dijo el informe.
+--   Y AQUÍ EL SEGUNDO ERROR, que salió al aplicar esta migración: ese 34 NO es
+--   el número de tablas de la base. Es cuántas existen DE LAS 53 QUE YO
+--   NOMBRÉ, y esa lista la escribí a mano, de memoria.
+--
+--   information_schema dice la verdad:
+--       tablas base en public   77
+--
+--   O sea que hay unas 43 tablas que nunca miré porque no se me ocurrió su
+--   nombre. «10 vacías de 34, el 29 %» no es un porcentaje de la base: es un
+--   porcentaje de mi muestra, y no se puede extrapolar.
+--
+--   LA LECCIÓN: un censo se hace enumerando el catálogo, no comprobando una
+--   lista de nombres que uno cree recordar. La consulta que había que ejecutar
+--   desde el principio, y que da el censo exacto en una sola fila:
+--
+--     SELECT count(*) AS tablas,
+--            count(*) FILTER (WHERE filas = 0) AS vacias,
+--            string_agg(relname, ', ' ORDER BY relname)
+--              FILTER (WHERE filas = 0)        AS las_vacias
+--       FROM (
+--         SELECT c.relname,
+--                (xpath('/row/c/text()', query_to_xml(
+--                   format('SELECT count(*) AS c FROM public.%I', c.relname),
+--                   false, true, '')))[1]::text::bigint AS filas
+--           FROM pg_class c
+--          WHERE c.relkind = 'r'
+--            AND c.relnamespace = 'public'::regnamespace
+--       ) t;
+--
+--   Lo que sí sigue en pie: los bloques que este fichero comenta están
+--   parados, y eso se comprobó tabla por tabla. Lo que no sigue en pie es
+--   cualquier porcentaje sobre el total.
 --
 -- LAS 20 QUE NO EXISTEN
 --   No se pueden comentar, pero conviene que quede escrito que no están, para
@@ -64,7 +100,7 @@
 --
 -- QUÉ HACE ESTE FICHERO
 --   Un COMMENT ON TABLE por cada una de las 13 tablas paradas que EXISTEN: las
---   10 vacías más 3 con filas de prueba. NO BORRA NADA: ni una tabla, ni una
+--   10 vacías DE ESA LISTA más 3 con filas de prueba. NO BORRA NADA: ni una
 --   fila, ni una política.
 --
 --   Cada comentario se escribe dentro de una guarda `to_regclass(...) IS NOT
@@ -220,7 +256,7 @@ $do$;
 --     paradas         -> 11
 --     sin_estrenar    -> 1    (entitlements)
 --     por_terminar    -> 1    (lesson_comments)
---     tablas_totales  -> 34   el censo real
+--     tablas_totales  -> 77   tablas base en public, el total de verdad
 --     veredicto       -> TODO CORRECTO
 SELECT
   count(*)                                                          AS comentadas,
