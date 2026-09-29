@@ -78,7 +78,7 @@ export default async function ResultadoExamenPage({
       .select('id, certification_number, issued_at, expires_at')
       .eq('user_id', user.id)
       .eq('learning_path_id', examInfo.learning_path_id)
-      .eq('status', 'active')
+      .eq('status', 'aprobada')
       .maybeSingle()
 
     certification = cert

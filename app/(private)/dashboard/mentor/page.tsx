@@ -197,7 +197,7 @@ export default async function MentorPage() {
       .from('instructor_certifications')
       .select('id')
       .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('status', 'aprobada')
       .limit(1)
     hasInstructorCert = (certs?.length || 0) > 0
 

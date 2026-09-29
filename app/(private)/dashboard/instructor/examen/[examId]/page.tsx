@@ -77,7 +77,7 @@ export default async function ExamenInfoPage({
     .select('id, certification_number, issued_at, expires_at')
     .eq('user_id', user.id)
     .eq('learning_path_id', exam.learning_path_id)
-    .eq('status', 'active')
+    .eq('status', 'aprobada')
     .maybeSingle()
 
   // Obtener historial de intentos
