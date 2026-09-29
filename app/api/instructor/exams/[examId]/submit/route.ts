@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 export const dynamic = 'force-dynamic'
@@ -78,10 +80,21 @@ export async function POST(
       )
     }
 
-    // Obtener preguntas con respuestas correctas
-    const { data: questions, error: questionsError } = await supabase
+    // Obtener preguntas con respuestas correctas.
+    //
+    // Con el cliente de SERVICIO (ver la 087) y con el nombre REAL de la
+    // columna: aqui decia correct_option, que NO EXISTE. La real es
+    // correct_answer. Con ese nombre la consulta fallaba con 42703 y la
+    // puntuacion salia 0 para todo el mundo.
+    // El casteo es necesario, y es un sintoma: lib/supabase/types.ts esta
+    // desfasado -47 entradas para 77 tablas- y NO conoce ninguna tabla
+    // instructor_*, asi que el cliente tipado rechaza esta consulta. Es la razon
+    // por la que este codigo usaba el cliente de sesion, que va sin tipos.
+    // Regenerar los tipos es su propia tarea; aqui se aisla en una linea.
+    const banco = createAdminClient() as unknown as SupabaseClient
+    const { data: questions, error: questionsError } = await banco
       .from('instructor_exam_questions')
-      .select('id, correct_option, points')
+      .select('id, correct_answer, points')
       .eq('model_id', model_id)
 
     if (questionsError || !questions) {
@@ -94,7 +107,7 @@ export async function POST(
 
     // Crear mapa de respuestas correctas
     const correctAnswersMap = new Map(
-      questions.map(q => [q.id, { correct: q.correct_option, points: q.points || 1 }])
+      questions.map(q => [q.id, { correct: q.correct_answer, points: q.points || 1 }])
     )
 
     // Calcular puntuación
