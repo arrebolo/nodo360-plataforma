@@ -166,6 +166,30 @@ export async function DELETE(
     )
   }
 
+  // Enclavamiento: el email escrito en el modal tiene que ser el de ESTE id.
+  //
+  // No es una barrera de seguridad: quien llama controla el cuerpo, y el
+  // permiso ya lo da verifyAdmin() mas arriba. Es lo que impide que un id
+  // equivocado —un copiar y pegar, un script, la fila de al lado en la tabla—
+  // borre a alguien que no se pretendia borrar. El 28/09/2026 desaparecio una
+  // cuenta con 31 filas asociadas y no quedo forma de saber si fue esto.
+  let confirmEmail: unknown
+  try {
+    const cuerpo = await req.json()
+    confirmEmail = cuerpo?.confirmEmail
+  } catch {
+    confirmEmail = undefined
+  }
+
+  const normalizar = (v: string) => v.trim().toLowerCase()
+  if (typeof confirmEmail !== 'string' || !targetUser.email ||
+      normalizar(confirmEmail) !== normalizar(targetUser.email)) {
+    return NextResponse.json(
+      { error: 'Para eliminar la cuenta hay que confirmar su email' },
+      { status: 400 }
+    )
+  }
+
   // Eliminar de auth.users (esto cascadea a public.users por FK)
   const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id)
 
