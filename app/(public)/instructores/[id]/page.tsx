@@ -94,7 +94,7 @@ export default async function InstructorProfilePage({
       )
     `)
     .eq('user_id', id)
-    .eq('status', 'active')
+    .eq('status', 'aprobada')
     .order('issued_at', { ascending: false })
 
   // Obtener cursos publicados del instructor

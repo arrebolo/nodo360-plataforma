@@ -139,7 +139,7 @@ export default async function InstructorPage() {
         .select('id, status, expires_at, certification_number, issued_at')
         .eq('user_id', user.id)
         .eq('learning_path_id', exam.learning_path_id)
-        .eq('status', 'active')
+        .eq('status', 'aprobada')
         .maybeSingle()
 
       return {
@@ -168,7 +168,9 @@ export default async function InstructorPage() {
     .eq('user_id', user.id)
     .order('issued_at', { ascending: false })
 
-  const activeCerts = certifications?.filter(c => c.status === 'active') || []
+  // 'active' ya no existe: la 092 dejo pendiente / aprobada / rechazada /
+  // retirada. Solo una aprobada habilita para enseñar.
+  const activeCerts = certifications?.filter(c => c.status === 'aprobada') || []
   const expiredCerts = certifications?.filter(c => c.status === 'expired') || []
 
   // Check if user has any published courses (for onboarding banner)

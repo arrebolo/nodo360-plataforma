@@ -39,9 +39,32 @@
 -- 'retirada' no necesita columnas nuevas: revoked_at y revoked_reason ya
 -- existian desde el principio.
 --
--- LONGITUDES
--- Comprobadas antes de escribir la autoprueba, que es lo que fallo en la 091:
--- certification_number, status y todas las columnas nuevas son `text`, sin
+-- CINCO COLUMNAS QUE EL EJE NUEVO OBLIGA A HACER OPCIONALES
+-- El primer intento de esta migracion murio con 23502 (null value in column
+-- exam_id). Mire las longitudes pero no las restricciones NOT NULL, y al
+-- mirarlas despues resulto que no era una columna: eran cinco. La tabla se
+-- diseño para un unico camino —aprobar un examen de una ruta— y el eje nuevo
+-- tiene mas de uno:
+--
+--   exam_id           hay especialidades SIN examen (lightning, defi), y en
+--                     fiscalidad y derecho la verificacion puede apoyarse en la
+--                     acreditacion y la entrevista, sin examen nuestro
+--   learning_path_id  cinco de las once especialidades no tienen ruta; ademas
+--                     es la columna en retirada
+--   attempt_id        sin examen no hay intento
+--   expires_at        mientras esta «pendiente» no hay fecha de caducidad: la
+--                     fija quien aprueba
+--   issued_at         nada se ha emitido todavia. Se le quita tambien el
+--                     DEFAULT now(): con el, una fila pendiente afirmaba una
+--                     fecha de emision que no existia
+--
+-- Las tres primeras las pidio el encargo; expires_at e issued_at salieron del
+-- mismo sitio y sin ellas la autoprueba habria vuelto a fallar, una por una.
+--
+-- LONGITUDES Y RESTRICCIONES
+-- Comprobadas ahora con el esquema completo delante —tipo, longitud, NOT NULL,
+-- defecto y claves ajenas— y no solo las longitudes, que fue el error de la
+-- 091: certification_number, status y las nueve columnas nuevas son `text`, sin
 -- limite. No hay ningun character varying en esta tabla.
 --
 -- NO BORRA NI UNA FILA. Es reejecutable. Y se prueba a si misma.
@@ -65,6 +88,32 @@ COMMENT ON COLUMN public.instructor_certifications.learning_path_id IS
 
 CREATE INDEX IF NOT EXISTS idx_instructor_certifications_specialty
   ON public.instructor_certifications (specialty_id);
+
+-- =====================================================
+-- 1b. Lo que el eje nuevo hace opcional
+-- =====================================================
+-- Nada se pierde: quitar un NOT NULL no toca ni una fila, y la tabla esta
+-- vacia. Lo que se gana es poder representar una verificacion que no venga de
+-- aprobar un examen.
+
+ALTER TABLE public.instructor_certifications ALTER COLUMN exam_id          DROP NOT NULL;
+ALTER TABLE public.instructor_certifications ALTER COLUMN learning_path_id DROP NOT NULL;
+ALTER TABLE public.instructor_certifications ALTER COLUMN attempt_id       DROP NOT NULL;
+ALTER TABLE public.instructor_certifications ALTER COLUMN expires_at       DROP NOT NULL;
+ALTER TABLE public.instructor_certifications ALTER COLUMN issued_at        DROP NOT NULL;
+ALTER TABLE public.instructor_certifications ALTER COLUMN issued_at        DROP DEFAULT;
+
+COMMENT ON COLUMN public.instructor_certifications.exam_id IS
+  'Nulo si la especialidad no tiene examen, o si la verificacion se apoya en la acreditacion y la entrevista, como en fiscalidad y derecho. Era NOT NULL: la tabla se diseño suponiendo que toda certificacion venia de aprobar un examen.';
+
+COMMENT ON COLUMN public.instructor_certifications.attempt_id IS
+  'El intento que la respalda, si lo hubo. Nulo cuando no hay examen.';
+
+COMMENT ON COLUMN public.instructor_certifications.issued_at IS
+  'Cuando se emitio. Nulo mientras la certificacion esta pendiente; lo pone quien aprueba. Se le quito el DEFAULT now() en la 092: con el, una fila pendiente afirmaba una fecha de emision que no existia.';
+
+COMMENT ON COLUMN public.instructor_certifications.expires_at IS
+  'Nulo mientras esta pendiente. La fija quien aprueba, a partir de certification_validity_years del examen o del criterio del evaluador.';
 
 -- =====================================================
 -- 2. Quien decide, y con que pruebas
@@ -186,6 +235,18 @@ BEGIN
   END IF;
   RAISE NOTICE 'PRUEBA 1  nace en «pendiente», sin evaluador                PASA';
 
+  -- 1b. Y nace coherente: sin examen, sin intento, sin emitir y sin caducar
+  IF EXISTS (
+    SELECT 1 FROM public.instructor_certifications
+     WHERE id = v_id
+       AND (exam_id IS NOT NULL OR attempt_id IS NOT NULL
+            OR issued_at IS NOT NULL OR expires_at IS NOT NULL
+            OR evaluator_id IS NOT NULL)
+  ) THEN
+    RAISE EXCEPTION 'PRUEBA 1b FALLIDA: una certificacion pendiente trae datos que no deberia.';
+  END IF;
+  RAISE NOTICE 'PRUEBA 1b sin examen, sin intento, sin emitir, sin caducar  PASA';
+
   -- 2. El estado viejo ya no cabe
   BEGIN
     UPDATE public.instructor_certifications SET status = 'active' WHERE id = v_id;
@@ -239,6 +300,16 @@ SELECT
   EXISTS (SELECT 1 FROM pg_constraint
            WHERE conname = 'instructor_certifications_status_check')           AS estado_con_restriccion,
 
+  -- Las cinco que el eje nuevo obliga a hacer opcionales
+  (SELECT count(*) FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'instructor_certifications'
+      AND column_name IN ('exam_id','learning_path_id','attempt_id','expires_at','issued_at')
+      AND is_nullable = 'YES')                                                AS opcionales_de_5,
+
+  (SELECT column_default FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'instructor_certifications'
+      AND column_name = 'issued_at')                                          AS defecto_de_issued_at,
+
   (SELECT count(*) FROM public.instructor_exams)                              AS examenes,
   (SELECT count(*) FROM public.instructor_exams WHERE specialty_id IS NOT NULL) AS examenes_con_especialidad,
   (SELECT count(*) FROM public.instructor_exam_models)                        AS modelos,
@@ -253,6 +324,10 @@ SELECT
                                  'oral_result','practical_result','accreditation_type','accreditation_ref',
                                  'accreditation_verified_at')) = 9
      AND EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'instructor_certifications_status_check')
+     AND (SELECT count(*) FROM information_schema.columns
+           WHERE table_schema = 'public' AND table_name = 'instructor_certifications'
+             AND column_name IN ('exam_id','learning_path_id','attempt_id','expires_at','issued_at')
+             AND is_nullable = 'YES') = 5
      AND (SELECT count(*) FROM public.instructor_exams WHERE specialty_id IS NULL) = 0
      AND (SELECT count(*) FROM public.instructor_exam_models) = 40
      AND (SELECT count(*) FROM public.instructor_certifications WHERE certification_number = 'PRUEBA-092') = 0

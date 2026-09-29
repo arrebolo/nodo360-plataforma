@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
           .select('id, status, expires_at, certification_number')
           .eq('user_id', user.id)
           .eq('learning_path_id', exam.learning_path_id)
-          .eq('status', 'active')
+          .eq('status', 'aprobada')
           .single()
 
         return {
