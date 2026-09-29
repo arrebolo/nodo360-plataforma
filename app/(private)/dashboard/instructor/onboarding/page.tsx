@@ -120,7 +120,7 @@ export default function InstructorOnboardingPage() {
           title: 'Envia a revision',
           description: 'Un mentor certificado revisara tu curso y te dara sus comentarios.',
           icon: Send,
-          link: '/guia-revision',
+          link: '/dashboard/instructor/guia',
           linkText: 'Ver guia de revision',
           isComplete: !!hasCoursePendingOrPublished,
           isLoading: false,
@@ -306,7 +306,7 @@ export default function InstructorOnboardingPage() {
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link
-              href="/guia-revision"
+              href="/dashboard/instructor/guia"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-white font-medium text-sm hover:bg-white/15 transition-colors"
             >
               <BookOpen className="w-4 h-4" />

@@ -65,7 +65,7 @@ export default async function NewInstructorCoursePage() {
             Un mentor lo revisara antes de publicarlo.
           </p>
           <Link
-            href="/guia-revision"
+            href="/dashboard/instructor/guia"
             className="inline-flex items-center gap-1 mt-2 text-blue-400 hover:text-blue-300 transition-colors"
           >
             Lee nuestra guia de revisión antes de enviar

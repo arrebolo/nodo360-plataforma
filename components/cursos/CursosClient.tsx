@@ -11,9 +11,15 @@ interface CursosClientProps {
   allCourses: CourseWithInstructor[]
   /** course_id -> progreso del usuario. Vacio si no hay sesion. */
   matriculas?: Record<string, { progreso: number; completado: boolean }>
+  /**
+   * Texto del sello por id de instructor. Lo resuelve el servidor con UNA
+   * consulta a la vista sellos_de_instructor para todos los de la pagina: una
+   * por tarjeta serian quince consultas para quince cursos.
+   */
+  sellos?: Record<string, string>
 }
 
-export function CursosClient({ allCourses, matriculas = {} }: CursosClientProps) {
+export function CursosClient({ allCourses, matriculas = {}, sellos = {} }: CursosClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'all' | 'free' | 'premium'>('all')
@@ -142,6 +148,7 @@ export function CursosClient({ allCourses, matriculas = {} }: CursosClientProps)
                     isComingSoon={course.status === 'coming_soon'}
                     learningPath={learningPath}
                     instructor={course.instructor as { id: string; full_name: string | null; avatar_url: string | null; role: string | null } | null}
+                    sello={sellos?.[(course.instructor as { id?: string } | null)?.id ?? ''] ?? null}
                     onView={() => router.push(`/cursos/${course.slug}`)}
                     onStart={() => router.push(`/cursos/${course.slug}`)}
                     onContinue={() => router.push(`/cursos/${course.slug}`)}
