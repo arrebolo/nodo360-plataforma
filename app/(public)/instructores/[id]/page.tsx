@@ -78,23 +78,19 @@ export default async function InstructorProfilePage({
 
   const user = profile.users as unknown as { id: string; full_name: string; avatar_url: string | null }
 
-  // Obtener certificaciones activas
+  // Los sellos, por la vista publica que creo la 093.
+  //
+  // Antes esto leia instructor_certifications directamente y pedia
+  // learning_paths (id, title, slug, icon). learning_paths NO tiene `title` ni
+  // `icon` —son `name` y `emoji`—, asi que la consulta fallaba y este sello no
+  // se ha pintado nunca. Mismo fallo que learning_paths.title en la #231.
+  //
+  // Y la tabla ya no es legible: llevaba dentro el numero de colegiacion y las
+  // notas del evaluador, y la leia hasta la clave anonima.
   const { data: certifications } = await supabase
-    .from('instructor_certifications')
-    .select(`
-      id,
-      certification_number,
-      issued_at,
-      expires_at,
-      learning_paths (
-        id,
-        title,
-        slug,
-        icon
-      )
-    `)
+    .from('sellos_de_instructor')
+    .select('certification_number, especialidad, especialidad_slug, issued_at, expires_at, vigente')
     .eq('user_id', id)
-    .eq('status', 'aprobada')
     .order('issued_at', { ascending: false })
 
   // Obtener cursos publicados del instructor
@@ -312,15 +308,18 @@ export default async function InstructorProfilePage({
               ) : (
                 <div className="space-y-3">
                   {certifications.map((cert: any) => {
-                    const lp = cert.learning_paths as { id: string; title: string; slug: string; icon: string }
+                    // La vista da la especialidad, no la ruta: el eje cambio en
+                    // la 092. El icono es fijo porque una especialidad no tiene
+                    // emoji, y cinco de las once no tienen ruta de la que
+                    // heredarlo.
                     return (
                       <div
-                        key={cert.id}
+                        key={cert.certification_number}
                         className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20"
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xl">{lp?.icon}</span>
-                          <span className="font-medium text-white">{lp?.title}</span>
+                          <Award className="w-5 h-5 text-orange-400" aria-hidden="true" />
+                          <span className="font-medium text-white">{cert.especialidad}</span>
                         </div>
                         <div className="text-xs text-gray-400">
                           <p>N.° {cert.certification_number}</p>
