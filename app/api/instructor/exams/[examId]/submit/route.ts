@@ -110,12 +110,43 @@ export async function POST(
     const banco = createAdminClient() as unknown as SupabaseClient
     const { data: servidas, error: questionsError } = await banco
       .from('instructor_exam_attempt_questions')
-      .select('question_id, instructor_exam_questions ( id, correct_answer, points )')
+      .select('question_id, orden_opciones, instructor_exam_questions ( id, correct_answer, points )')
       .eq('attempt_id', attempt_id)
 
-    const questions = (servidas ?? [])
-      .map((f: any) => f.instructor_exam_questions)
-      .filter(Boolean) as Array<{ id: string; correct_answer: number; points: number | null }>
+    // LAS OPCIONES SE BARAJARON AL SERVIRLAS, asi que lo que manda el candidato
+    // es la posicion EN SU PANTALLA, no el indice original. orden_opciones[k] es
+    // el indice original de la opcion que vio en la posicion k, y esa
+    // correspondencia se guardo en el servidor a proposito: mandarsela al cliente
+    // para que la deshiciera seria mandarle media respuesta.
+    type Pregunta = { id: string; correct_answer: number; points: number | null }
+
+    // PostgREST devuelve el embed como objeto cuando la relacion es de uno, pero
+    // el tipo inferido dice array. Se normaliza aqui en vez de forzar el tipo:
+    // si algun dia llega array de verdad, esto sigue funcionando.
+    const servidasTipadas = (servidas ?? []) as unknown as Array<{
+      question_id: string
+      orden_opciones: number[] | null
+      instructor_exam_questions: Pregunta | Pregunta[] | null
+    }>
+
+    const unaPregunta = (v: Pregunta | Pregunta[] | null): Pregunta | null =>
+      Array.isArray(v) ? (v[0] ?? null) : v
+
+    const questions = servidasTipadas
+      .map((f) => unaPregunta(f.instructor_exam_questions))
+      .filter((q): q is Pregunta => q !== null)
+
+    const barajadoPorPregunta = new Map<string, number[] | null>(
+      servidasTipadas.map((f) => [f.question_id, f.orden_opciones])
+    )
+
+    /** De la posicion que vio el candidato al indice original de la opcion. */
+    const indiceOriginal = (questionId: string, vista: number): number => {
+      const orden = barajadoPorPregunta.get(questionId)
+      // Sin barajado guardado, la posicion vista ES la original.
+      if (!orden || vista < 0 || vista >= orden.length) return vista
+      return orden[vista]
+    }
 
     if (questionsError || questions.length === 0) {
       console.error('[instructor/exams/submit] ❌ Error obteniendo preguntas:', questionsError)
@@ -141,7 +172,8 @@ export async function POST(
 
     for (const answer of answers) {
       const correct = correctAnswersMap.get(answer.question_id)
-      if (correct && answer.selected_option === correct.correct) {
+      const elegida = indiceOriginal(answer.question_id, answer.selected_option)
+      if (correct && elegida === correct.correct) {
         correctCount++
         earnedPoints += correct.points
       }
