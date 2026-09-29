@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Mentor | Nodo360',
+  title: 'Mentor',
   description: 'Panel de mentor y aplicaciones',
 }
 

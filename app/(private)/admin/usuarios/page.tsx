@@ -5,7 +5,7 @@ import { User, Mail, Calendar, TrendingUp, Shield, Search } from 'lucide-react'
 import BetaToggle from '@/components/admin/BetaToggle'
 
 export const metadata = {
-  title: 'Usuarios - Admin Panel | Nodo360',
+  title: 'Usuarios',
 }
 
 interface SearchParams {

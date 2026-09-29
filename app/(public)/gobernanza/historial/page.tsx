@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, Clock, Filter, TrendingUp } from 'lucide-react'
 
 export const metadata = {
-  title: 'Historial | Gobernanza | Nodo360',
+  title: 'Historial | Gobernanza',
   description: 'Historial de propuestas de gobernanza',
 }
 

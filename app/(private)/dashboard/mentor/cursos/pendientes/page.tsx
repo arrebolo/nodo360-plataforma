@@ -15,7 +15,7 @@ import {
 import { getReviewCounts } from '@/lib/courses/reviews'
 
 export const metadata = {
-  title: 'Cursos Pendientes | Mentor Nodo360',
+  title: 'Cursos Pendientes | Mentor',
   description: 'Revisa y aprueba cursos de instructores',
 }
 

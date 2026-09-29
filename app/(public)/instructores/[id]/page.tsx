@@ -32,7 +32,7 @@ export async function generateMetadata({
   const user = profile?.users as unknown as { full_name: string } | null
 
   return {
-    title: user?.full_name ? `${user.full_name} - Instructor | Nodo360` : 'Instructor | Nodo360',
+    title: user?.full_name ? `${user.full_name} - Instructor` : 'Instructor',
     description: `Perfil del instructor ${user?.full_name || ''} en Nodo360`,
   }
 }

@@ -10,7 +10,7 @@ interface EditModulePageProps {
 
 export async function generateMetadata() {
   return {
-    title: 'Editar Módulo | Instructor Nodo360',
+    title: 'Editar Módulo | Instructor',
   }
 }
 

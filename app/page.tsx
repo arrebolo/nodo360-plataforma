@@ -18,13 +18,9 @@ import {
 } from 'lucide-react'
 import { HomeFeaturedCourses } from '@/components/home/HomeFeaturedCourses'
 import { HomeFooter } from '@/components/home/HomeFooter'
-import { brandConfig } from '@/lib/brand-config'
+import { brandConfig, TITULO_POR_DEFECTO } from '@/lib/brand-config'
 import { blogPosts, blogCategories } from '@/lib/blog-data'
 import { glossaryTerms, glossaryCategories } from '@/lib/glossary-data'
-
-// Mismo formato que el resto del sitio: <titulo> | Nodo360. Estaba al reves,
-// y con un tagline que la home ya no decia.
-const TITULO_HOME = `${brandConfig.tagline} | ${brandConfig.name}`
 
 export const metadata: Metadata = {
   // `absolute` deja escrito lo que hoy pasa de todas formas: la plantilla
@@ -33,7 +29,7 @@ export const metadata: Metadata = {
   // nunca duplico la marca (se comprobo sirviendo el sitio). Ponerlo explicito
   // es lo que evita que empiece a hacerlo el dia que la home se mueva a un
   // grupo de rutas.
-  title: { absolute: TITULO_HOME },
+  title: { absolute: TITULO_POR_DEFECTO },
   description: brandConfig.description,
   alternates: { canonical: '/' },
   openGraph: {
@@ -41,7 +37,7 @@ export const metadata: Metadata = {
     locale: 'es_ES',
     siteName: brandConfig.name,
     url: '/',
-    title: TITULO_HOME,
+    title: TITULO_POR_DEFECTO,
     description: brandConfig.description,
     // openGraph NO se hereda campo a campo: si un hijo lo define, sustituye
     // entero al del layout. Por eso van aqui tambien la imagen y el resto.
@@ -50,7 +46,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@nodo360',
     creator: '@nodo360',
-    title: TITULO_HOME,
+    title: TITULO_POR_DEFECTO,
     description: brandConfig.description,
   },
 }

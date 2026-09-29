@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ExamAttemptClient } from './ExamAttemptClient'
 
 export const metadata = {
-  title: 'Examen en Curso | Nodo360',
+  title: 'Examen en Curso',
   description: 'Examen de certificación de instructor',
 }
 

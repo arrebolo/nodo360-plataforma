@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { AlertTriangle, Mail } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Cuenta Suspendida | Nodo360',
+  title: 'Cuenta Suspendida',
   description: 'Tu cuenta ha sido suspendida temporalmente.',
 }
 

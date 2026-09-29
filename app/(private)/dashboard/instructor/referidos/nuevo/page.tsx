@@ -5,7 +5,7 @@ import { ArrowLeft, Link2 } from 'lucide-react'
 import CreateReferralLinkForm from '@/components/instructor/CreateReferralLinkForm'
 
 export const metadata = {
-  title: 'Crear Enlace de Referido | Instructor Nodo360',
+  title: 'Crear Enlace de Referido | Instructor',
   description: 'Crea un nuevo enlace promocional para tus cursos',
 }
 

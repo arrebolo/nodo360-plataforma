@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Resultado del Examen | Nodo360',
+  title: 'Resultado del Examen',
   description: 'Resultado de tu examen de certificación',
 }
 

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Métricas | Admin Nodo360',
+  title: 'Métricas',
   description: 'Métricas principales de la plataforma',
 }
 

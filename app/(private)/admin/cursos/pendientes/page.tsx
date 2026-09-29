@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Clock, Eye, CheckCircle, XCircle, User, Calendar, BookOpen } from 'lucide-react'
 
 export const metadata = {
-  title: 'Cursos Pendientes | Admin Nodo360',
+  title: 'Cursos Pendientes',
 }
 
 export default async function PendingCoursesPage() {

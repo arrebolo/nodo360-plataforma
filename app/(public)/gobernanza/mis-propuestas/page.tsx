@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, Plus, FileText, Clock, CheckCircle, Edit, Eye } from 'lucide-react'
 
 export const metadata = {
-  title: 'Mis Propuestas | Gobernanza | Nodo360',
+  title: 'Mis Propuestas | Gobernanza',
   description: 'Gestiona tus propuestas de gobernanza',
 }
 

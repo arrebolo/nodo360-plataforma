@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { MessageSquare, Calendar, Globe, User } from 'lucide-react'
 
 export const metadata = {
-  title: 'Comentarios Beta | Admin Nodo360'
+  title: 'Comentarios Beta'
 }
 
 export default async function AdminFeedbackPage() {

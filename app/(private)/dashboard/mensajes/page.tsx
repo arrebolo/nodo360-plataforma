@@ -7,7 +7,7 @@ import { ArrowLeft, MessageCircle } from 'lucide-react'
 import ConversationList from '@/components/messages/ConversationList'
 
 export const metadata = {
-  title: 'Mis Mensajes | Nodo360',
+  title: 'Mis Mensajes',
   description: 'Tus conversaciones con instructores y estudiantes',
 }
 

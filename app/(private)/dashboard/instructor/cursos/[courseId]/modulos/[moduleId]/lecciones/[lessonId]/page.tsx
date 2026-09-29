@@ -15,7 +15,7 @@ interface PageProps {
 
 export async function generateMetadata() {
   return {
-    title: 'Editar Lección | Instructor Nodo360',
+    title: 'Editar Lección | Instructor',
   }
 }
 

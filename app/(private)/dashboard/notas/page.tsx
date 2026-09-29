@@ -5,7 +5,7 @@ import { ArrowLeft, FileText } from 'lucide-react'
 import { NotesList } from './NotesList'
 
 export const metadata = {
-  title: 'Mis Notas | Nodo360',
+  title: 'Mis Notas',
   description: 'Todas tus notas de las lecciones'
 }
 

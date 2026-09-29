@@ -27,7 +27,7 @@ interface ReviewCoursePageProps {
 
 export async function generateMetadata({ params }: ReviewCoursePageProps) {
   return {
-    title: 'Revisar Curso | Mentor Nodo360',
+    title: 'Revisar Curso | Mentor',
   }
 }
 

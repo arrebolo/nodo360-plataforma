@@ -13,7 +13,7 @@ interface EditModulePageProps {
 export async function generateMetadata({ params }: EditModulePageProps) {
   const resolvedParams = await params
   return {
-    title: `Editar Módulo | Admin Nodo360`,
+    title: 'Editar Módulo',
   }
 }
 

@@ -16,7 +16,7 @@ import {
 import { AdminActionButtons } from './AdminActionButtons'
 
 export const metadata = {
-  title: 'Gobernanza | Admin | Nodo360',
+  title: 'Gobernanza',
   description: 'Panel de administración de gobernanza',
 }
 

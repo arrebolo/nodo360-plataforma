@@ -2,7 +2,7 @@ import { requireAdmin } from '@/lib/admin/auth'
 import { BarChart3 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Reportes | Admin Nodo360',
+  title: 'Reportes',
 }
 
 export default async function ReportesPage() {

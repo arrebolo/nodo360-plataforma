@@ -18,7 +18,7 @@ interface EditCoursePageProps {
 export async function generateMetadata({ params }: EditCoursePageProps) {
   const resolvedParams = await params
   return {
-    title: `Editar Curso | Admin Nodo360`,
+    title: 'Editar Curso',
   }
 }
 

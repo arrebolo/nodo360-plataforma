@@ -6,7 +6,7 @@ import { ArrowLeft, MessageCircle } from 'lucide-react'
 import ChatView from '@/components/messages/ChatView'
 
 export const metadata = {
-  title: 'Conversación | Nodo360',
+  title: 'Conversación',
   description: 'Chat con instructor o estudiante',
 }
 

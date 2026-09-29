@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
   if (!post) {
     return {
-      title: 'Artículo no encontrado | Nodo360',
+      title: 'Artículo no encontrado',
     }
   }
 

@@ -14,7 +14,7 @@ import {
 import ReferralLinksClient from './ReferralLinksClient'
 
 export const metadata = {
-  title: 'Enlaces de Referido | Instructor Nodo360',
+  title: 'Enlaces de Referido | Instructor',
   description: 'Gestiona tus enlaces promocionales y mide conversiones',
 }
 
