@@ -43,6 +43,22 @@
 -- tipo de app/api/admin/settings y en lib/settings/getSetting, y quitarla es
 -- una decision aparte. Queda inerte, porque la funcion ya no lee ninguna tasa.
 --
+-- UN INTENTO FALLIDO, ANOTADO
+-- La primera version de la autoprueba genero un codigo de enlace de 21
+-- caracteres, 'PRUEBA-091-' + epoch, y referral_links.code es character
+-- varying(20). La migracion murio con 22001 (value too long) y, por estar todo
+-- dentro de BEGIN/COMMIT, no se aplico NADA: comprobado despues en la base,
+-- donde commission_rate seguia con DEFAULT 0.3 —y ese ALTER va ANTES del
+-- bloque de prueba, asi que si hubiera commiteado valdria 0— y las dos tablas
+-- seguian a cero filas, sin ninguna fila suelta.
+--
+-- Las columnas de texto que toca la prueba, medidas ahora una a una:
+--     referral_links.code                 character varying(20)
+--     referral_conversions.conversion_type character varying(20)
+-- El codigo nuevo mide 15 y 'enrollment' mide 10. Y la prueba comprueba su
+-- propia longitud contra information_schema antes de escribir, para que esto
+-- no dependa de que alguien se acuerde.
+--
 -- NO BORRA NI UNA FILA. Es reejecutable. Y se prueba a si misma.
 -- ============================================================================
 
@@ -170,7 +186,23 @@ DECLARE
   v_link    uuid;
   v_res     json;
   v_conv    referral_conversions%ROWTYPE;
+  -- referral_links.code es character varying(20). El primer intento uso
+  -- 'PRUEBA-091-' + epoch = 21 caracteres y la migracion entera murio con
+  -- 22001 (value too long). Con 'P091-' son 15. La comprobacion de abajo esta
+  -- para que un cambio futuro no vuelva a pasarse sin enterarse.
+  v_codigo  text := 'P091-' || extract(epoch from clock_timestamp())::bigint;
+  v_max     integer;
 BEGIN
+  SELECT character_maximum_length INTO v_max
+    FROM information_schema.columns
+   WHERE table_schema = 'public' AND table_name = 'referral_links' AND column_name = 'code';
+
+  IF v_max IS NOT NULL AND length(v_codigo) > v_max THEN
+    RAISE EXCEPTION
+      'El codigo de prueba mide % caracteres y referral_links.code admite %.',
+      length(v_codigo), v_max;
+  END IF;
+
   SELECT id INTO v_usuario FROM public.users ORDER BY created_at LIMIT 1;
   SELECT id INTO v_curso   FROM public.courses ORDER BY created_at LIMIT 1;
 
@@ -180,7 +212,7 @@ BEGIN
   END IF;
 
   INSERT INTO public.referral_links (instructor_id, code)
-  VALUES (v_usuario, 'PRUEBA-091-' || extract(epoch from clock_timestamp())::bigint)
+  VALUES (v_usuario, v_codigo)
   RETURNING id INTO v_link;
 
   -- 12345 centimos: si quedara rastro de aritmetica, se veria
@@ -246,7 +278,7 @@ SELECT
   (SELECT count(*) FROM public.referral_conversions
     WHERE instructor_commission_cents <> 0 OR revenue_cents <> 0)         AS conversiones_con_importe,
   (SELECT count(*) FROM public.referral_links)                            AS enlaces,
-  (SELECT count(*) FROM public.referral_links WHERE code LIKE 'PRUEBA-091-%') AS enlaces_de_prueba_que_quedan,
+  (SELECT count(*) FROM public.referral_links WHERE code LIKE 'P091-%') AS enlaces_de_prueba_que_quedan,
 
   CASE
     WHEN to_regprocedure('public.track_referral_conversion(uuid,uuid,uuid,character varying,integer,uuid)') IS NOT NULL
@@ -258,7 +290,7 @@ SELECT
            'public.track_referral_conversion(uuid,uuid,uuid,character varying,integer,uuid)', 'EXECUTE')
      AND (SELECT count(*) FROM public.referral_conversions
            WHERE instructor_commission_cents <> 0 OR revenue_cents <> 0) = 0
-     AND (SELECT count(*) FROM public.referral_links WHERE code LIKE 'PRUEBA-091-%') = 0
+     AND (SELECT count(*) FROM public.referral_links WHERE code LIKE 'P091-%') = 0
       THEN 'TODO CORRECTO'
     ELSE 'REVISAR: mira las columnas de esta misma fila'
   END                                                                     AS veredicto;
