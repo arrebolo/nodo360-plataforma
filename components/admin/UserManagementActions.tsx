@@ -28,6 +28,12 @@ export function UserManagementActions({ user }: Props) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [suspendReason, setSuspendReason] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  // El email que hay que escribir para confirmar el borrado. Dos clics eran
+  // poco para una accion que se lleva la cuenta y todo lo que cuelga de ella.
+  const [emailEscrito, setEmailEscrito] = useState('')
+
+  const normalizar = (v: string) => v.trim().toLowerCase()
+  const emailConfirmado = normalizar(emailEscrito) === normalizar(user.email)
   const router = useRouter()
 
   async function handleSuspend() {
@@ -84,16 +90,25 @@ export function UserManagementActions({ user }: Props) {
   }
 
   async function handleDelete() {
+    // La guarda tambien aqui, no solo en el `disabled` del boton.
+    if (!emailConfirmado) return
+
     setIsLoading(true)
     try {
+      // El email viaja al servidor, que comprueba que corresponde a ESE id.
+      // No es una barrera de seguridad —quien llama controla el cuerpo— sino un
+      // enclavamiento contra el error: un id equivocado ya no borra a nadie.
       const res = await fetch(`/api/admin/users/${user.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmEmail: emailEscrito.trim() }),
       })
 
       const data = await res.json()
 
       if (data.success) {
         setShowDeleteModal(false)
+        setEmailEscrito('')
         router.push('/admin/usuarios')
         router.refresh()
       } else {
@@ -142,7 +157,7 @@ export function UserManagementActions({ user }: Props) {
         )}
 
         <button
-          onClick={() => setShowDeleteModal(true)}
+          onClick={() => { setEmailEscrito(''); setShowDeleteModal(true) }}
           disabled={isLoading}
           className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition disabled:opacity-50"
           title="Eliminar cuenta"
@@ -241,21 +256,53 @@ export function UserManagementActions({ user }: Props) {
               </ul>
             </div>
 
-            <p className="text-gray-400 mb-4">
-              ¿Eliminar permanentemente a <strong className="text-white">{user.email}</strong>?
+            <p className="text-gray-400 mb-2">
+              Para confirmar, escribe el email de la cuenta:
+            </p>
+            <p className="mb-3">
+              <code className="text-white text-sm bg-white/5 px-2 py-1 rounded select-all">
+                {user.email}
+              </code>
+            </p>
+            <input
+              type="email"
+              value={emailEscrito}
+              onChange={(e) => setEmailEscrito(e.target.value)}
+              placeholder="Escribe el email para confirmar"
+              autoComplete="off"
+              spellCheck={false}
+              aria-label="Email de la cuenta que se va a eliminar"
+              aria-invalid={emailEscrito.length > 0 && !emailConfirmado}
+              className={`w-full px-3 py-2 mb-2 rounded-lg bg-white/5 text-white placeholder-gray-500 border outline-none transition ${
+                emailEscrito.length === 0
+                  ? 'border-white/10 focus:border-white/30'
+                  : emailConfirmado
+                    ? 'border-green-500/50 focus:border-green-500'
+                    : 'border-red-500/50 focus:border-red-500'
+              }`}
+            />
+            <p className="text-xs mb-4 min-h-[1rem]" aria-live="polite">
+              {emailEscrito.length === 0 ? (
+                <span className="text-gray-500">El botón se activa cuando el email coincide.</span>
+              ) : emailConfirmado ? (
+                <span className="text-green-400">Coincide.</span>
+              ) : (
+                <span className="text-red-400">No coincide con la cuenta.</span>
+              )}
             </p>
 
             <div className="flex gap-3">
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={() => { setShowDeleteModal(false); setEmailEscrito('') }}
                 className="flex-1 px-4 py-2 bg-white/10 text-gray-300 rounded-lg hover:bg-white/20 transition"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDelete}
-                disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+                disabled={isLoading || !emailConfirmado}
+                title={emailConfirmado ? undefined : 'Escribe el email de la cuenta para confirmar'}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Eliminando...' : 'Eliminar Permanentemente'}
               </button>
