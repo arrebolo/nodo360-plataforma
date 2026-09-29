@@ -7,6 +7,16 @@ import { checkRateLimit } from '@/lib/ratelimit'
 export const dynamic = 'force-dynamic'
 
 /**
+ * Cuantas preguntas lleva un intento.
+ *
+ * Quince, y no las 20 de instructor_exams.total_questions: el banco de una
+ * especialidad tendra 30 al principio, y con 20 por intento dos intentos
+ * compartirian dos tercios de las preguntas. Con 15 salen dos intentos limpios
+ * sin repetir ni una.
+ */
+const PREGUNTAS_POR_INTENTO = 15
+
+/**
  * GET /api/instructor/exams/[examId]/attempt
  * Verifica si el usuario puede intentar el examen
  */
@@ -95,45 +105,59 @@ export async function POST(
       }, { status: 403 })
     }
 
-    // Seleccionar modelo aleatorio
-    const { data: modelId, error: modelError } = await supabase
-      .rpc('select_exam_model', { p_user_id: user.id, p_exam_id: examId })
-
-    if (modelError || !modelId) {
-      console.error('[instructor/exams/attempt] ❌ Error seleccionando modelo:', modelError)
-      return NextResponse.json(
-        { error: 'Error al seleccionar modelo de examen' },
-        { status: 500 }
-      )
-    }
-
-    // Obtener preguntas del modelo.
+    // LAS PREGUNTAS SALEN DEL BANCO, Y LAS SIRVE LA BASE.
     //
-    // Con el cliente de SERVICIO, no con el de sesion: desde la 087 el banco no
-    // tiene politica de SELECT para el candidato ni GRANT para authenticated,
-    // porque la RLS filtra filas y no columnas y correct_answer quedaba en claro.
+    // Antes: select_exam_model() elegia un modelo aleatorio no usado y aqui se
+    // leian sus veinte preguntas con .eq('model_id', modelId). Con el banco por
+    // especialidad no hay modelo que elegir.
     //
-    // Y el select elige columnas: correct_answer NO SALE de aqui. Es lo unico
-    // que separa al candidato de las respuestas, asi que no se toca.
-    // El casteo es necesario, y es un sintoma: lib/supabase/types.ts esta
-    // desfasado -47 entradas para 77 tablas- y NO conoce ninguna tabla
-    // instructor_*, asi que el cliente tipado rechaza esta consulta. Es la razon
-    // por la que este codigo usaba el cliente de sesion, que va sin tipos.
-    // Regenerar los tipos es su propia tarea; aqui se aisla en una linea.
+    // servir_preguntas() hace tres cosas en una, y por eso esta en la base y no
+    // aqui: crea el intento, elige 15 preguntas que esta persona NO ha visto
+    // nunca en este examen, y apunta cuales le tocaron. Si se hiciera en tres
+    // pasos desde el servidor, un fallo en el segundo dejaria un intento
+    // huerfano que ademas cuenta como visto.
+    //
+    // Con el cliente de SERVICIO: la funcion exige auth.uid() IS NULL y
+    // authenticated no tiene EXECUTE. Si pudiera llamarla el candidato, tendria
+    // el banco entero repitiendo llamadas. Y NO devuelve correct_answer.
     const banco = createAdminClient() as unknown as SupabaseClient
-    const { data: questions, error: questionsError } = await banco
-      .from('instructor_exam_questions')
-      .select('id, question, options, order_index, difficulty, points, category')
-      .eq('model_id', modelId)
-      .order('order_index', { ascending: true })
+    const { data: servidas, error: errorServir } = await banco.rpc('servir_preguntas', {
+      p_user_id: user.id,
+      p_exam_id: examId,
+      p_cuantas: PREGUNTAS_POR_INTENTO,
+    })
 
-    if (questionsError) {
-      console.error('[instructor/exams/attempt] ❌ Error obteniendo preguntas:', questionsError)
+    if (errorServir) {
+      // P0001 es el «no quedan preguntas sin ver suficientes» de la funcion: no
+      // es un error del servidor, es que este candidato agoto el banco.
+      const agotado = errorServir.code === 'P0001'
+      console.error('[instructor/exams/attempt] ❌ Error sirviendo preguntas:', errorServir)
       return NextResponse.json(
-        { error: 'Error al obtener preguntas del examen' },
-        { status: 500 }
+        {
+          error: agotado
+            ? 'Has visto ya casi todas las preguntas del banco de esta especialidad. Hasta que se amplie, no se puede montar un examen completo sin repetirte preguntas.'
+            : 'Error al preparar el examen',
+        },
+        { status: agotado ? 409 : 500 }
       )
     }
+
+    const questions = (servidas ?? []) as Array<{
+      attempt_id: string
+      question_id: string
+      posicion: number
+      question: string
+      options: unknown
+      difficulty: string
+      points: number
+      category: string | null
+    }>
+
+    if (questions.length === 0) {
+      return NextResponse.json({ error: 'El banco de esta especialidad esta vacio' }, { status: 409 })
+    }
+
+    const attemptId = questions[0].attempt_id
 
     // Obtener configuración del examen
     const { data: exam } = await supabase
@@ -142,23 +166,27 @@ export async function POST(
       .eq('id', examId)
       .single()
 
-    console.log(`[instructor/exams/attempt] ✅ Intento iniciado: usuario ${user.id}, examen ${examId}, modelo ${modelId}, ${questions?.length} preguntas`)
+    console.log(`[instructor/exams/attempt] ✅ Intento ${attemptId} iniciado: usuario ${user.id}, examen ${examId}, ${questions.length} preguntas del banco`)
 
     return NextResponse.json({
       success: true,
       attempt: {
+        // attempt_id, y no model_id: el intento ya existe en la base, creado por
+        // servir_preguntas. submit corrige contra las preguntas de ESTE intento.
+        attempt_id: attemptId,
         exam_id: examId,
-        model_id: modelId,
         started_at: new Date().toISOString(),
         time_limit_minutes: exam?.time_limit_minutes ?? 30,
-        total_questions: exam?.total_questions ?? 20,
+        // Las que se han servido de verdad, no el total_questions del examen:
+        // ese sigue diciendo 20 y ahora se sirven 15.
+        total_questions: questions.length,
         pass_threshold: exam?.pass_threshold ?? 80,
       },
-      questions: questions?.map(q => ({
-        id: q.id,
+      questions: questions.map((q) => ({
+        id: q.question_id,
         question: q.question,
         options: q.options,
-        order_index: q.order_index,
+        order_index: q.posicion,
         difficulty: q.difficulty,
         points: q.points,
         category: q.category,

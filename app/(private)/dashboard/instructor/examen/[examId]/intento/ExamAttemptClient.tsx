@@ -31,7 +31,7 @@ interface ExamAttemptClientProps {
     pass_threshold: number
   }
   examId: string
-  modelId: string
+  attemptId: string
   questions: Question[]
   timeLimitMinutes: number
 }
@@ -39,7 +39,7 @@ interface ExamAttemptClientProps {
 export function ExamAttemptClient({
   exam,
   examId,
-  modelId,
+  attemptId,
   questions,
   timeLimitMinutes,
 }: ExamAttemptClientProps) {
@@ -92,7 +92,7 @@ export function ExamAttemptClient({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model_id: modelId,
+          attempt_id: attemptId,
           answers: Object.entries(answers).map(([questionId, optionIndex]) => ({
             question_id: questionId,
             selected_option: optionIndex,
@@ -113,7 +113,7 @@ export function ExamAttemptClient({
       setError(err instanceof Error ? err.message : 'Error desconocido')
       setIsSubmitting(false)
     }
-  }, [answers, examId, modelId, timeLeft, timeLimitMinutes, router, isSubmitting])
+  }, [answers, examId, attemptId, timeLeft, timeLimitMinutes, router, isSubmitting])
 
   const timeWarning = timeLeft < 300 // 5 minutes
   const timeCritical = timeLeft < 60 // 1 minute

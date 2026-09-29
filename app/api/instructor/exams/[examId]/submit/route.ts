@@ -12,7 +12,7 @@ interface SubmitAnswer {
 }
 
 interface SubmitRequest {
-  model_id: string
+  attempt_id: string
   answers: SubmitAnswer[]
   time_spent_seconds: number
   auto_submitted?: boolean
@@ -39,9 +39,9 @@ export async function POST(
 
     const { examId } = await params
     const body: SubmitRequest = await request.json()
-    const { model_id, answers, time_spent_seconds, auto_submitted = false } = body
+    const { attempt_id, answers, time_spent_seconds } = body
 
-    if (!model_id || !answers) {
+    if (!attempt_id || !answers) {
       return NextResponse.json(
         { error: 'Faltan datos requeridos' },
         { status: 400 }
@@ -49,18 +49,29 @@ export async function POST(
     }
 
     // Verificar que el modelo pertenece al examen
-    const { data: model, error: modelError } = await supabase
-      .from('instructor_exam_models')
-      .select('id, exam_id')
-      .eq('id', model_id)
-      .eq('exam_id', examId)
-      .single()
+    // EL INTENTO, y no el modelo. El intento ya existe: lo creo
+    // servir_preguntas() cuando la ruta de attempt sirvio las preguntas.
+    //
+    // Se comprueba que es de ESTA persona, de ESTE examen y que sigue en curso.
+    // Sin eso, alguien podria mandar el attempt_id de otro, o reenviar un
+    // intento ya corregido para mejorar su nota.
+    const { data: intento, error: errorIntento } = await supabase
+      .from('instructor_exam_attempts')
+      .select('id, user_id, exam_id, status, total_questions')
+      .eq('id', attempt_id)
+      .maybeSingle()
 
-    if (modelError || !model) {
-      console.error('[instructor/exams/submit] ❌ Modelo inválido:', modelError)
+    if (errorIntento || !intento) {
+      return NextResponse.json({ error: 'Intento no encontrado' }, { status: 404 })
+    }
+    if (intento.user_id !== user.id || intento.exam_id !== examId) {
+      console.warn(`[instructor/exams/submit] ⛔ ${user.id} intento enviar el intento ${attempt_id}`)
+      return NextResponse.json({ error: 'Intento no encontrado' }, { status: 404 })
+    }
+    if (intento.status !== 'in_progress') {
       return NextResponse.json(
-        { error: 'Modelo de examen inválido' },
-        { status: 400 }
+        { error: 'Este intento ya se envio' },
+        { status: 409 }
       )
     }
 
@@ -93,13 +104,20 @@ export async function POST(
     // instructor_*, asi que el cliente tipado rechaza esta consulta. Es la razon
     // por la que este codigo usaba el cliente de sesion, que va sin tipos.
     // Regenerar los tipos es su propia tarea; aqui se aisla en una linea.
+    // LAS PREGUNTAS DE ESTE INTENTO, no las de un modelo. Es la diferencia que
+    // importa: corrigiendo contra el banco entero, alguien podria responder a
+    // preguntas que no le tocaron y sumarlas.
     const banco = createAdminClient() as unknown as SupabaseClient
-    const { data: questions, error: questionsError } = await banco
-      .from('instructor_exam_questions')
-      .select('id, correct_answer, points')
-      .eq('model_id', model_id)
+    const { data: servidas, error: questionsError } = await banco
+      .from('instructor_exam_attempt_questions')
+      .select('question_id, instructor_exam_questions ( id, correct_answer, points )')
+      .eq('attempt_id', attempt_id)
 
-    if (questionsError || !questions) {
+    const questions = (servidas ?? [])
+      .map((f: any) => f.instructor_exam_questions)
+      .filter(Boolean) as Array<{ id: string; correct_answer: number; points: number | null }>
+
+    if (questionsError || questions.length === 0) {
       console.error('[instructor/exams/submit] ❌ Error obteniendo preguntas:', questionsError)
       return NextResponse.json(
         { error: 'Error al obtener preguntas' },
@@ -135,31 +153,38 @@ export async function POST(
       : 0
     const passed = score >= exam.pass_threshold
 
-    // Crear registro de intento
-    const { data: attempt, error: attemptError } = await supabase
+    // EL INTENTO SE ACTUALIZA, no se crea: ya existe desde que se sirvieron las
+    // preguntas.
+    //
+    // Y con los nombres REALES de las columnas. El insert que habia aqui
+    // escribia `answers_json` y `auto_submitted`, que NO EXISTEN en la tabla:
+    // son `answers`, y auto_submitted no esta. Habria fallado con 42703, como el
+    // correct_option de la 087 y el exam_attempt_id de la 092. Tercer nombre
+    // inventado en el mismo flujo.
+    const { error: attemptError } = await supabase
       .from('instructor_exam_attempts')
-      .insert({
-        user_id: user.id,
-        exam_id: examId,
-        model_id: model_id,
+      .update({
         score,
         correct_answers: correctCount,
         total_questions: totalQuestions,
         passed,
         time_spent_seconds: time_spent_seconds || 0,
-        answers_json: answers,
-        auto_submitted,
+        answers,
+        status: 'completed',
+        completed_at: new Date().toISOString(),
       })
-      .select('id')
-      .single()
+      .eq('id', attempt_id)
+      .eq('user_id', user.id)
+      .eq('status', 'in_progress')
 
-    if (attemptError || !attempt) {
-      console.error('[instructor/exams/submit] ❌ Error creando intento:', attemptError)
+    if (attemptError) {
+      console.error('[instructor/exams/submit] ❌ Error guardando el intento:', attemptError)
       return NextResponse.json(
         { error: 'Error al guardar resultado' },
         { status: 500 }
       )
     }
+    const attempt = { id: attempt_id }
 
     // EL EXAMEN MIDE; LA CERTIFICACION LA DECIDE UNA PERSONA.
     //
