@@ -88,21 +88,13 @@ export default async function MentorProfilePage({
   const totalResponses = monthlyStats?.reduce((sum, s) => sum + (s.community_responses || 0), 0) || 0
   const totalVotes = monthlyStats?.reduce((sum, s) => sum + (s.proposals_voted || 0), 0) || 0
 
-  // Obtener certificaciones de instructor (si también es instructor)
+  // Los sellos, por la vista publica que creo la 093: la tabla llevaba dentro
+  // el numero de colegiacion y las notas del evaluador, y la leia hasta la
+  // clave anonima. Y el eje es la especialidad desde la 092, no la ruta.
   const { data: instructorCerts } = await supabase
-    .from('instructor_certifications')
-    .select(`
-      id,
-      certification_number,
-      issued_at,
-      learning_paths (
-        id,
-        name,
-        emoji
-      )
-    `)
+    .from('sellos_de_instructor')
+    .select('certification_number, especialidad, especialidad_slug, issued_at, expires_at, vigente')
     .eq('user_id', id)
-    .eq('status', 'aprobada')
     .order('issued_at', { ascending: false })
 
   // Obtener últimos votos en propuestas de gobernanza
@@ -253,20 +245,19 @@ export default async function MentorProfilePage({
                   Este mentor también es instructor certificado en las siguientes rutas:
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {instructorCerts.map((cert: any) => {
-                    const lp = cert.learning_paths as { id: string; name: string; emoji: string }
-                    return (
-                      <div
-                        key={cert.id}
-                        className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{lp?.emoji}</span>
-                          <span className="font-medium text-white">{lp?.name}</span>
-                        </div>
+                  {instructorCerts.map((cert: any) => (
+                    // La vista da la especialidad, no la ruta. Icono fijo: una
+                    // especialidad no tiene emoji.
+                    <div
+                      key={cert.certification_number}
+                      className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Award className="w-5 h-5 text-orange-400" aria-hidden="true" />
+                        <span className="font-medium text-white">{cert.especialidad}</span>
                       </div>
-                    )
-                  })}
+                    </div>
+                  ))}
                 </div>
               </section>
             )}
@@ -365,15 +356,14 @@ export default async function MentorProfilePage({
                 </h2>
                 <div className="space-y-3">
                   {instructorCerts.map((cert: any) => {
-                    const lp = cert.learning_paths as { id: string; name: string; emoji: string }
                     return (
                       <div
-                        key={cert.id}
+                        key={cert.certification_number}
                         className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20"
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg">{lp?.emoji}</span>
-                          <span className="font-medium text-white text-sm">{lp?.name}</span>
+                          <Award className="w-4 h-4 text-orange-400" aria-hidden="true" />
+                          <span className="font-medium text-white text-sm">{cert.especialidad}</span>
                         </div>
                         <div className="text-xs text-gray-400">
                           <p>N.° {cert.certification_number}</p>
