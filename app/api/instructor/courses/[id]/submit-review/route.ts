@@ -25,7 +25,7 @@ export async function POST(
     // Verificar que el curso existe y pertenece al usuario
     const { data: course, error: courseError } = await supabase
       .from('courses')
-      .select('id, instructor_id, status, title')
+      .select('id, instructor_id, status, title, specialty_id')
       .eq('id', courseId)
       .single()
 
@@ -52,6 +52,35 @@ export async function POST(
       return NextResponse.json(
         { error: 'Solo se pueden enviar a revisión cursos en borrador, rechazados o con cambios solicitados' },
         { status: 400 }
+      )
+    }
+
+    // LA PUERTA DE LA ESPECIALIDAD.
+    //
+    // El trigger de la 098 ya la impone y no se puede esquivar, pero si se llega
+    // hasta el UPDATE el candidato recibe una excepcion de la base con un 500
+    // encima. Esto es para que lea una frase que le sirva.
+    //
+    // Estar verificado en una especialidad habilita SOLO en esa: verificado en
+    // Bitcoin no es verificado en fiscalidad.
+    if (!course.specialty_id) {
+      return NextResponse.json(
+        { error: 'Este curso no tiene especialidad asignada. Clasifícalo antes de enviarlo a revisión.' },
+        { status: 400 }
+      )
+    }
+
+    const { data: puede } = await supabase
+      .rpc('puede_ensenar', { p_specialty_id: course.specialty_id })
+
+    if (puede !== true) {
+      console.log(`⛔ [Submit Review] ${user.id} no esta verificado en ${course.specialty_id}`)
+      return NextResponse.json(
+        {
+          error: 'Para enviar este curso a revisión hace falta estar verificado en su especialidad. Puedes pedirlo en Mi verificación.',
+          necesita_verificacion: true,
+        },
+        { status: 403 }
       )
     }
 
