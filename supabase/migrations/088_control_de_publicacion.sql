@@ -177,6 +177,16 @@ BEGIN
         NEW.status
         USING ERRCODE = '42501';
     END IF;
+
+    -- Y no puede nacer ya revisado. 'none' es el valor por defecto de la
+    -- columna, y el de los 15 cursos que hay: se comprobo uno a uno.
+    IF NEW.review_status IS DISTINCT FROM 'none' THEN
+      RAISE EXCEPTION
+        'Un curso nuevo nace sin revisar; se intento review_status="%".',
+        NEW.review_status
+        USING ERRCODE = '42501';
+    END IF;
+
     RETURN NEW;
   END IF;
 
@@ -221,7 +231,9 @@ CREATE TRIGGER trg_controlar_publicacion
 -- Segunda cerradura, independiente del trigger. Solo tiene efecto si los
 -- privilegios de courses son de columna; con un GRANT de tabla no hace nada, y
 -- la verificacion final lo dice. Nada en la aplicacion lee ni escribe esta
--- columna: se busco en app, lib y components y no aparece una sola vez.
+-- columna: se busco en app, lib y components y no aparece una sola vez. Y en
+-- la base los 15 cursos estan en 'none', que es el valor por defecto: la
+-- columna no ha cambiado de valor una sola vez en toda la vida del proyecto.
 
 REVOKE INSERT (review_status), UPDATE (review_status) ON public.courses FROM authenticated;
 
