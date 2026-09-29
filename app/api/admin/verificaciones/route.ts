@@ -262,6 +262,41 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // APROBAR SUBE A INSTRUCTOR, Y NUNCA BAJA NADA.
+  //
+  // Sin esto, alguien con la verificacion aprobada seguia siendo `student` y no
+  // podia entrar en el panel de instructor: aprobar no servia de nada.
+  //
+  // Y solo sube a quien es student. A un admin, un mentor o un council NO se les
+  // toca el rol: para ellos «instructor» seria un descenso, y ademas la 100
+  // bloquea en la base cualquier cambio de rol sobre una cuenta admin, asi que
+  // intentarlo devolveria un error donde no hay ningun problema que resolver.
+  if (decision === 'aprobada') {
+    const { data: persona } = await db
+      .from('users')
+      .select('role')
+      .eq('id', exp.user_id)
+      .maybeSingle()
+
+    if (persona?.role === 'student') {
+      const { error: errorRol } = await db
+        .from('users')
+        .update({ role: 'instructor' })
+        .eq('id', exp.user_id)
+        .eq('role', 'student')   // cinturon: si cambio entre la lectura y esto, no se escribe
+
+      if (errorRol) {
+        // No se falla la peticion: la verificacion ya esta aprobada, que es lo
+        // que importa. Queda en el log para poder arreglarlo a mano.
+        console.error('[admin/verificaciones] Aprobada, pero no se pudo subir el rol:', errorRol)
+      } else {
+        console.log(`[admin/verificaciones] ${exp.user_id} sube de student a instructor`)
+      }
+    } else {
+      console.log(`[admin/verificaciones] ${exp.user_id} ya es ${persona?.role}: el rol no se toca`)
+    }
+  }
+
   console.log(`[admin/verificaciones] Expediente ${id} -> ${decision} por ${admin.id}`)
   return NextResponse.json({ success: true })
 }

@@ -42,11 +42,28 @@ export async function PUT(
       )
     }
 
-    // Prevenir que un admin se quite su propio rol
-    if (targetUserId === user.id && role !== 'admin') {
+    // NINGUNA cuenta de administracion cambia de rol desde aqui, ni la propia ni
+    // la de otro.
+    //
+    // Antes solo se protegia la propia —«no puedes quitarte tu rol»—, asi que un
+    // admin podia degradar a otro. Con una sola cuenta admin eso es academico;
+    // con dos, es la forma mas rapida de quedarse sin ninguna.
+    //
+    // El trigger de la 100 lo impide en la BASE y no se puede esquivar. Esto esta
+    // para que el mensaje sea util en vez de una excepcion con un 500 encima.
+    const { data: objetivo } = await createAdminClient()
+      .from('users')
+      .select('role')
+      .eq('id', targetUserId)
+      .maybeSingle()
+
+    if (objetivo?.role === 'admin') {
       return NextResponse.json(
-        { error: 'No puedes quitarte tu propio rol de administrador' },
-        { status: 400 }
+        {
+          error:
+            'El rol de una cuenta de administración no se cambia desde el panel. Está bloqueado en la base de datos; solo se puede desde el editor SQL, con el procedimiento de emergencia documentado.',
+        },
+        { status: 403 }
       )
     }
 

@@ -6,6 +6,7 @@ import {
   Ban,
   CheckCircle,
   Trash2,
+  ShieldAlert,
   AlertTriangle,
   X
 } from 'lucide-react'
@@ -122,12 +123,31 @@ export function UserManagementActions({ user }: Props) {
     }
   }
 
-  // No mostrar acciones para admins
+  // Una cuenta de administracion no se suspende, no cambia de rol y no se borra
+  // desde aqui. No es que los botones esten escondidos: es que la operacion esta
+  // bloqueada en la BASE por el trigger de la 100, y lo estaria igual si alguien
+  // llamara a la ruta a mano. Se dice, en vez de dejar un hueco sin explicacion.
   if (user.role === 'admin') {
     return (
-      <span className="text-xs text-gray-500 italic">
-        Administrador
-      </span>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs text-amber-300">
+            <ShieldAlert size={13} aria-hidden="true" />
+            Cuenta protegida
+          </span>
+          <span
+            className="text-xs text-gray-500"
+            title="El cambio de rol, la suspension y el borrado estan bloqueados en la base de datos para las cuentas de administracion"
+          >
+            sin acciones disponibles
+          </span>
+        </div>
+        <p className="text-[11px] leading-snug text-gray-500 max-w-xs">
+          Suspender, cambiar el rol o borrar una cuenta de administración está
+          bloqueado en la base de datos. Solo se puede desde el editor SQL, con el
+          procedimiento de emergencia documentado.
+        </p>
+      </div>
     )
   }
 
