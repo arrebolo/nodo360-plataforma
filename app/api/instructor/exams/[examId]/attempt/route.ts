@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 export const dynamic = 'force-dynamic'
@@ -105,8 +107,21 @@ export async function POST(
       )
     }
 
-    // Obtener preguntas del modelo
-    const { data: questions, error: questionsError } = await supabase
+    // Obtener preguntas del modelo.
+    //
+    // Con el cliente de SERVICIO, no con el de sesion: desde la 087 el banco no
+    // tiene politica de SELECT para el candidato ni GRANT para authenticated,
+    // porque la RLS filtra filas y no columnas y correct_answer quedaba en claro.
+    //
+    // Y el select elige columnas: correct_answer NO SALE de aqui. Es lo unico
+    // que separa al candidato de las respuestas, asi que no se toca.
+    // El casteo es necesario, y es un sintoma: lib/supabase/types.ts esta
+    // desfasado -47 entradas para 77 tablas- y NO conoce ninguna tabla
+    // instructor_*, asi que el cliente tipado rechaza esta consulta. Es la razon
+    // por la que este codigo usaba el cliente de sesion, que va sin tipos.
+    // Regenerar los tipos es su propia tarea; aqui se aisla en una linea.
+    const banco = createAdminClient() as unknown as SupabaseClient
+    const { data: questions, error: questionsError } = await banco
       .from('instructor_exam_questions')
       .select('id, question, options, order_index, difficulty, points, category')
       .eq('model_id', modelId)
