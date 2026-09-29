@@ -30,16 +30,20 @@ export const metadata = {
 
 const BENEFITS = [
   {
+    // Decia «Revenue Share 35/65» y «Gana el 35 % de cada venta (40 % con
+    // referidos)». No hay ventas, ni pasarela de pago, ni acuerdo de reparto.
     icon: DollarSign,
-    title: 'Revenue Share 35/65',
-    description: 'Gana el 35% de cada venta (40% con referidos)',
-    color: 'text-green-400',
-    bgColor: 'bg-green-500/20',
+    title: 'Sin reparto de ingresos, de momento',
+    description: 'Hoy todo el contenido de Nodo360 es gratuito y no hay remuneración para instructores. Si en el futuro hay monetización, las condiciones se acordarán por escrito antes de cualquier cobro.',
+    color: 'text-white/70',
+    bgColor: 'bg-white/10',
   },
   {
+    // Decia «Crea Cursos Premium: publica contenido de pago en tu
+    // especialidad». Todo el catalogo es gratuito, y /pricing lo dice.
     icon: BookOpen,
-    title: 'Crea Cursos Premium',
-    description: 'Publica contenido de pago en tu especialidad',
+    title: 'Publica en tu especialidad',
+    description: 'Tu curso entra en el catalogo, gratuito como el resto',
     color: 'text-blue-400',
     bgColor: 'bg-blue-500/20',
   },

@@ -29,14 +29,17 @@ async function trackReferralConversion(
       return
     }
 
-    // service_role, no la sesion del usuario: esta RPC registra la comision
-    // del instructor. Yendo por la sesion del usuario, cualquiera podia
-    // llamarla contra PostgREST y fabricarse una conversion. Desde la 034 la
-    // funcion exige auth.uid() IS NULL, o sea service_role.
+    // service_role, no la sesion del usuario: yendo por la sesion, cualquiera
+    // podia llamar a esta RPC contra PostgREST y fabricarse una conversion.
+    // Desde la 034 la funcion exige auth.uid() IS NULL, o sea service_role.
+    //
+    // Desde la 091 la RPC NO anota importes: guarda la atribucion (enlace,
+    // persona, curso, clic) y escribe los tres campos de dinero a cero.
     const admin = createAdminClient() as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: any; error: any }> }
 
-    // p_commission_rate ya no se envia: la tasa la lee la funcion de
-    // system_settings. Antes la elegia quien llamaba.
+    // p_commission_rate ya no se envia desde la 034, y desde la 091 no hay
+    // tasa que enviar: la funcion ya no calcula importes. p_revenue_cents se
+    // sigue mandando por compatibilidad de firma, y la funcion lo ignora.
     const { data: result, error } = await admin.rpc('track_referral_conversion', {
       p_link_id: link_id,
       p_user_id: userId,
@@ -49,7 +52,7 @@ async function trackReferralConversion(
     if (error) {
       console.error('❌ [enroll] Error tracking referral conversion:', error)
     } else if (result?.success) {
-      console.log(`✅ [enroll] Referral conversion tracked: link=${link_id}, commission=${result.commission_cents}c`)
+      console.log(`✅ [enroll] Referral conversion tracked: link=${link_id} (sin importe: la 091 no anota comisiones)`)
     } else {
       console.log(`ℹ️ [enroll] Referral conversion not tracked: ${result?.error}`)
     }

@@ -20,6 +20,12 @@ import {
 export const metadata = {
   title: 'Guia de Revision de Cursos',
   description: 'Conoce el proceso de revision de cursos, criterios de aprobacion y consejos para publicar tu curso en Nodo360.',
+  // Fuera de los buscadores. Es una pagina operativa del flujo de instructor:
+  // no esta en el sitemap y solo la enlazan cuatro pantallas del panel privado,
+  // asi que indexarla solo servia para que alguien llegase de fuera a un
+  // procedimiento interno. En el paso 7 se funde en la guia del instructor y
+  // esta ruta queda como redirección.
+  robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
 }
 
 const approvalCriteria = [
@@ -33,11 +39,10 @@ const approvalCriteria = [
     title: 'Minimo 3 modulos con lecciones',
     description: 'Estructura tu curso en al menos 3 modulos con contenido sustancial en cada uno.',
   },
-  {
-    icon: Video,
-    title: 'Video o contenido multimedia',
-    description: 'Incluye videos explicativos, presentaciones o recursos interactivos.',
-  },
+  // Habia un criterio «Video o contenido multimedia: incluye videos
+  // explicativos...». Las 111 lecciones publicadas tienen video_url a NULL: el
+  // criterio contradecia el catalogo entero y habria hecho rechazable todo lo
+  // que hay publicado.
   {
     icon: FileText,
     title: 'Descripcion clara del curso',
@@ -86,12 +91,18 @@ const tips = [
 
 const faqs = [
   {
+    // Decia «entre 24-48 horas habiles» y «+24 horas tras las correcciones».
+    // course_reviews tiene 0 filas: ningun curso ha pasado nunca por este
+    // flujo, asi que ese plazo no lo ha medido nadie.
     question: '¿Cuanto tiempo tarda la revisión?',
-    answer: 'La revisión inicial toma entre 24-48 horas habiles. Si tu curso requiere cambios, tendras 24 horas adicionales después de hacer las correcciones.',
+    answer: 'Cada curso se revisa antes de publicarse. Hoy lo revisa el equipo de Nodo360; no hay un plazo fijo, pero recibirás respuesta por correo.',
   },
   {
+    // Decia «mentores certificados de Nodo360».
+    // instructor_certifications tiene 0 filas y hay un unico mentor: no hay
+    // ninguna certificacion emitida detras de esa palabra.
     question: '¿Quien revisa los cursos?',
-    answer: 'Los cursos son revisados por mentores certificados de Nodo360 con experiencia en educación y conocimiento profundo de Bitcoin y blockchain.',
+    answer: 'Hoy la revisión la hace el equipo de Nodo360. Cuando haya mentores verificados, cada curso lo revisarán dos.',
   },
   {
     question: '¿Que pasa si mi curso es rechazado?',
@@ -102,8 +113,11 @@ const faqs = [
     answer: 'Si, pero los cambios significativos requeriran una nueva revisión para mantener la calidad de la plataforma.',
   },
   {
-    question: '¿Como funcionan las comisiones?',
-    answer: 'Los instructores reciben entre 35-40% de cada venta. Las comisiones se pagan mensualmente via transferencia bancaria o crypto.',
+    // Decia que los instructores reciben «entre 35-40 % de cada venta» y que se
+    // paga «mensualmente via transferencia bancaria o crypto». Nada de eso
+    // existe: no hay ventas, ni pasarela de pago, ni acuerdo con nadie.
+    question: '¿Cobro algo por publicar un curso?',
+    answer: 'Hoy todo el contenido de Nodo360 es gratuito y no hay remuneración para instructores. Si en el futuro hay monetización, las condiciones se acordarán por escrito antes de cualquier cobro.',
   },
 ]
 
@@ -164,9 +178,9 @@ export default function GuiaRevisionPage() {
                 <div className="w-12 h-12 rounded-full bg-brand-light/20 flex items-center justify-center mx-auto mb-3">
                   <span className="text-brand-light font-bold">2</span>
                 </div>
-                <h3 className="font-semibold text-white mb-2">Dos revisores lo evaluan</h3>
+                <h3 className="font-semibold text-white mb-2">Lo revisa el equipo</h3>
                 <p className="text-sm text-white/60">
-                  Dos revisores evaluarán tu contenido: dos mentores, o un mentor y un instructor especializado en la tematica del curso
+                  Hoy la revisión la hace el equipo de Nodo360. Cuando haya mentores verificados, cada curso lo revisarán dos
                 </p>
               </div>
               <div className="text-center">
@@ -184,7 +198,11 @@ export default function GuiaRevisionPage() {
               <div className="flex items-center gap-3 text-white/70">
                 <Users className="w-5 h-5 text-brand-light" />
                 <span>
-                  <strong className="text-white">Revisión colaborativa:</strong> Tu curso es evaluado por dos revisores (mentores o instructores especializados) para garantizar calidad y objetividad.
+                  {/* Decia «Tu curso es evaluado por dos revisores (mentores o
+                      instructores especializados)». Hay un unico mentor y cero
+                      certificaciones emitidas: la revisión a dos es el destino,
+                      no lo que pasa hoy. */}
+                  <strong className="text-white">A dos, cuando se pueda:</strong> la revisión con dos personas es el objetivo, para que la calidad no dependa de un solo criterio. Mientras no haya mentores verificados, la hace el equipo de Nodo360.
                 </span>
               </div>
             </div>
@@ -220,37 +238,27 @@ export default function GuiaRevisionPage() {
           </div>
         </section>
 
-        {/* Section 3: Timelines */}
+        {/* Section 3: Plazos */}
+        {/*
+          Aqui habia dos cifras en grande: «24-48 horas · Días habiles» para la
+          revisión inicial y «+24 horas» tras las correcciones. No salen de
+          ninguna medida: course_reviews tiene 0 filas. Un plazo inventado en
+          tipografia grande es una promesa, y se incumple sola.
+        */}
         <section className="mb-16">
           <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-warning/20">
               <Clock className="w-5 h-5 text-warning" />
             </div>
-            Tiempos estimados
+            Plazos
           </h2>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-light/20 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-brand-light" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white mb-1">Revisión inicial</h3>
-                  <p className="text-2xl font-bold text-brand-light">24-48 horas</p>
-                  <p className="text-sm text-white/60 mt-1">Días habiles</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-warning/20 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-warning" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white mb-1">Tras correcciones</h3>
-                  <p className="text-2xl font-bold text-warning">+24 horas</p>
-                  <p className="text-sm text-white/60 mt-1">Después de enviar cambios</p>
-                </div>
-              </div>
-            </div>
+            <p className="text-white/70 leading-relaxed">
+              Cada curso se revisa antes de publicarse. Hoy lo revisa el equipo de
+              Nodo360; <strong className="text-white/90">no hay un plazo fijo</strong>,
+              pero recibirás respuesta por correo. Si hay que corregir algo, te
+              decimos qué, y puedes volver a enviarlo sin límite de intentos.
+            </p>
           </div>
         </section>
 

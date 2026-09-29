@@ -58,8 +58,8 @@ export default async function NuevoReferidoPage() {
       <div className="text-sm text-white/50 space-y-2">
         <p>
           <strong className="text-white/70">Nota:</strong> Los enlaces de referido
-          rastrean automáticamente clics y conversiones. Recibirás el 30% de comisión
-          por cada venta atribuida a tu enlace durante los 7 días siguientes al clic.
+          rastrean automáticamente los clics y las inscripciones que lleguen por
+          ellos durante los 7 días siguientes al clic. Hoy todo el contenido de Nodo360 es gratuito y no hay remuneración para instructores. Si en el futuro hay monetización, las condiciones se acordarán por escrito antes de cualquier cobro.
         </p>
         <p>
           Puedes crear enlaces específicos para cada curso o enlaces generales que
