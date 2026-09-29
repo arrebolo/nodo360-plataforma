@@ -12,7 +12,7 @@ interface ModulosPageProps {
 
 export async function generateMetadata({ params }: ModulosPageProps) {
   return {
-    title: 'Gestión de Módulos | Admin Nodo360',
+    title: 'Gestión de Módulos',
   }
 }
 

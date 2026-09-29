@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Mis Badges | Nodo360',
+  title: 'Mis Badges',
   description: 'Todos tus badges y logros desbloqueados'
 }
 

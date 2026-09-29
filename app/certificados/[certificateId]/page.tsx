@@ -21,7 +21,7 @@ export async function generateMetadata({
   const resolvedParams = await params;
 
   return {
-    title: `Certificado | Nodo360`,
+    title: 'Certificado',
     description: "Descarga tu certificado de completación",
   };
 }

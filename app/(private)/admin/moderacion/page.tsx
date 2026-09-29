@@ -6,7 +6,7 @@ import ModerationPanel from '@/components/admin/ModerationPanel'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Moderación - Admin Panel | Nodo360',
+  title: 'Moderación',
   description: 'Panel de moderación de mensajes y reportes',
 }
 

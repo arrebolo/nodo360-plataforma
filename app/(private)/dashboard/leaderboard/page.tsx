@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Leaderboard | Nodo360',
+  title: 'Leaderboard',
   description: 'Ranking de los mejores estudiantes'
 }
 

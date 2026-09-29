@@ -10,7 +10,7 @@ import {
 import { MentorVoteCard } from './MentorVoteCard'
 
 export const metadata = {
-  title: 'Votaciones de Mentores | Nodo360',
+  title: 'Votaciones de Mentores',
   description: 'Vota en aplicaciones de nuevos mentores',
 }
 

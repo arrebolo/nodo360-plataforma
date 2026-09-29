@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { BookmarksList } from './BookmarksList'
 
 export const metadata = {
-  title: 'Guardados | Nodo360',
+  title: 'Guardados',
   description: 'Tus lecciones guardadas para ver después'
 }
 

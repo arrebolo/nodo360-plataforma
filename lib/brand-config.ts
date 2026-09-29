@@ -33,6 +33,24 @@ export const brandConfig = {
   }
 } as const
 
+/**
+ * El titulo por defecto del sitio. Un solo sitio, para que no vuelvan a
+ * divergir.
+ *
+ * Hacia de esto tres textos distintos a la vez: el `default` del layout raiz
+ * decia «Formacion profesional en Bitcoin, Blockchain y Web3», la home decia
+ * otra cosa y las tarjetas de openGraph una tercera. En GA4 se veian como
+ * paginas distintas.
+ *
+ * Se queda el de la tagline porque es el que repite el H1 de la home, y porque
+ * «formacion profesional» nombra en Espana una titulacion reglada que Nodo360
+ * no da.
+ *
+ * Vale tambien como `default` del raiz: es el que sale en las paginas que no
+ * declaran titulo propio (recuperar contrasena, onboarding).
+ */
+export const TITULO_POR_DEFECTO = `${brandConfig.tagline} | ${brandConfig.name}`
+
 export type BrandConfig = typeof brandConfig
 export type LogoSize = keyof typeof brandConfig.logo.sizes
 

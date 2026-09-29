@@ -5,7 +5,7 @@ import { CertificateCard } from '@/components/certificates/CertificateCard'
 import { Award, BookOpen, ArrowRight } from 'lucide-react'
 
 export const metadata = {
-  title: 'Mis Certificados | Nodo360',
+  title: 'Mis Certificados',
   description: 'Todos tus certificados obtenidos',
 }
 

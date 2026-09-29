@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { ArrowLeft, BookOpen, CheckCircle2, PlayCircle, Sparkles } from 'lucide-react'
 
 export const metadata = {
-  title: 'Mis Cursos | Nodo360',
+  title: 'Mis Cursos',
   description: 'Todos tus cursos inscritos y tu progreso',
 }
 

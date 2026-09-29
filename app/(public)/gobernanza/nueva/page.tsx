@@ -4,7 +4,7 @@ import { getCategories } from '@/lib/governance/queries'
 import { CreateProposalForm } from './CreateProposalForm'
 
 export const metadata = {
-  title: 'Crear Propuesta | Gobernanza | Nodo360',
+  title: 'Crear Propuesta | Gobernanza',
   description: 'Crea una nueva propuesta para la comunidad',
 }
 

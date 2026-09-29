@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Requisitos para ser Mentor | Nodo360',
+  title: 'Requisitos para ser Mentor',
   description: 'Conoce los requisitos y el proceso para convertirte en mentor de la comunidad Nodo360',
 }
 

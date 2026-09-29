@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Crear Nuevo Curso | Admin Nodo360',
+  title: 'Crear Nuevo Curso',
 }
 
 export default async function NuevoCursoPage() {

@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Certificaciones Instructor | Nodo360',
+  title: 'Certificaciones Instructor',
   description: 'Exámenes de certificación y credenciales de instructor',
 }
 

@@ -15,7 +15,7 @@ import {
 import { MentorApplicationForm } from './MentorApplicationForm'
 
 export const metadata = {
-  title: 'Aplicar a Mentor | Nodo360',
+  title: 'Aplicar a Mentor',
   description: 'Envía tu solicitud para convertirte en mentor de la comunidad',
 }
 

@@ -10,7 +10,7 @@ interface NuevoModuloPageProps {
 
 export async function generateMetadata() {
   return {
-    title: 'Nuevo Módulo | Instructor Nodo360',
+    title: 'Nuevo Módulo | Instructor',
   }
 }
 

@@ -19,7 +19,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   return {
-    title: 'Verificar Certificado | Nodo360',
+    title: 'Verificar Certificado',
     description: 'Verifica la autenticidad de un certificado de Nodo360',
   }
 }

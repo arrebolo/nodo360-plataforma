@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ProfileForm } from '@/components/profile/ProfileForm'
 
 export const metadata = {
-  title: 'Mi Perfil | Nodo360',
+  title: 'Mi Perfil',
   description: 'Actualiza tu información personal y foto de perfil',
 }
 

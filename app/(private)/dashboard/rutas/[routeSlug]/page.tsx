@@ -21,7 +21,7 @@ export async function generateMetadata({
   const path = paths.find((p) => p.slug === routeSlug)
 
   return {
-    title: path ? `${path.name} | Nodo360` : 'Ruta no encontrada',
+    title: path ? path.name : 'Ruta no encontrada',
     description: path?.short_description || 'Ruta de aprendizaje en Nodo360',
   }
 }

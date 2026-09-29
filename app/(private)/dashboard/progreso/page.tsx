@@ -6,7 +6,7 @@ import StatCard from '@/components/ui/StatCard'
 import { ArrowLeft, TrendingUp, BookOpen, Flame, Trophy, Target, Zap } from 'lucide-react'
 
 export const metadata = {
-  title: 'Mi Progreso | Nodo360',
+  title: 'Mi Progreso',
   description: 'Estadisticas detalladas de tu aprendizaje'
 }
 

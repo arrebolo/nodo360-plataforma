@@ -16,7 +16,10 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Dashboard Admin | Nodo360',
+  // `absolute` porque esta pagina vive en el MISMO segmento que el layout de
+  // admin, y la plantilla de un layout no se aplica a su propia pagina: sin
+  // esto heredaria la del raiz y saldria «Dashboard | Nodo360», sin «Admin».
+  title: { absolute: 'Panel Admin | Nodo360' },
 }
 
 export default async function AdminDashboardPage() {

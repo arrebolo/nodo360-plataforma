@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Guia de Revision de Cursos | Nodo360',
+  title: 'Guia de Revision de Cursos',
   description: 'Conoce el proceso de revision de cursos, criterios de aprobacion y consejos para publicar tu curso en Nodo360.',
 }
 

@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
     .single()
 
   return {
-    title: course ? `Preview: ${course.title} | Nodo360` : 'Preview | Nodo360',
+    title: course ? `Preview: ${course.title}` : 'Preview',
   }
 }
 

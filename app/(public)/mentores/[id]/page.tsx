@@ -33,7 +33,7 @@ export async function generateMetadata({
     .single()
 
   return {
-    title: user?.full_name ? `${user.full_name} - Mentor | Nodo360` : 'Mentor | Nodo360',
+    title: user?.full_name ? `${user.full_name} - Mentor` : 'Mentor',
     description: `Perfil del mentor ${user?.full_name || ''} en Nodo360`,
   }
 }

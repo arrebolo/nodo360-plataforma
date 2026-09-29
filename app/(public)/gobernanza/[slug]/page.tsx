@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps) {
   }
 
   return {
-    title: `${proposal.title} | Gobernanza | Nodo360`,
+    title: `${proposal.title} | Gobernanza`,
     description: proposal.description,
   }
 }

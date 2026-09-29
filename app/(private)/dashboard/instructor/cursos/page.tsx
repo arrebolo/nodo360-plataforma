@@ -9,7 +9,7 @@ import CourseTabs from "@/components/instructor/CourseTabs";
 import LoadMoreButton from "@/components/instructor/LoadMoreButton";
 
 export const metadata = {
-  title: "Mis Cursos | Instructor Nodo360",
+  title: "Mis Cursos | Instructor",
 };
 
 interface SearchParams {

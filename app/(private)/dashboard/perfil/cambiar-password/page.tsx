@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm'
 
 export const metadata = {
-  title: 'Cambiar Contraseña | Nodo360',
+  title: 'Cambiar Contraseña',
 }
 
 export default async function ChangePasswordPage() {

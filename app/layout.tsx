@@ -5,11 +5,15 @@ import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics, SignUpTracker } from "@/components/analytics";
 import "./globals.css";
 import { ScrollToTopOnNavigate } from '@/components/navigation/ScrollToTopOnNavigate';
+import { TITULO_POR_DEFECTO } from "@/lib/brand-config";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com"),
   title: {
-    default: "Nodo360 - Formación profesional en Bitcoin, Blockchain y Web3",
+    // El mismo texto que usa la home con `absolute`. Vive en lib/brand-config.
+    default: TITULO_POR_DEFECTO,
+    // Las paginas ponen su titulo SIN la marca: la pone esta plantilla. Ojo:
+    // una cadena suelta en un layout hijo la cancela para todo ese segmento.
     template: "%s | Nodo360",
   },
   description:
@@ -28,14 +32,16 @@ export const metadata: Metadata = {
     locale: "es_ES",
     url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nodo360.com",
     siteName: "Nodo360",
-    title: "Nodo360 - Aprende Bitcoin y Blockchain",
+    // La plantilla NO se aplica a openGraph ni a twitter, asi que aqui la marca
+    // va escrita. Es el mismo texto, no un cuarto.
+    title: TITULO_POR_DEFECTO,
     description: "Cursos gratuitos de Bitcoin, Blockchain y Web3 en español, con certificado verificable al completarlos",
   },
   twitter: {
     card: "summary_large_image",
     site: "@nodo360",
     creator: "@nodo360",
-    title: "Nodo360 - Aprende Bitcoin y Blockchain",
+    title: TITULO_POR_DEFECTO,
     description: "Cursos gratuitos de Bitcoin, Blockchain y Web3 en español, con certificado verificable al completarlos",
   },
   robots: {

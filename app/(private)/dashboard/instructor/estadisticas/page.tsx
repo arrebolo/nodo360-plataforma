@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Estadísticas de Alumnos | Nodo360',
+  title: 'Estadísticas de Alumnos',
   description: 'Métricas y estadísticas de tus alumnos',
 }
 
