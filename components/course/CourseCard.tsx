@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Layers, Route } from 'lucide-react'
+import { BookOpen, Layers, Route, BadgeCheck } from 'lucide-react'
 import { InstructorPreviewModal, useInstructorPreview } from '@/components/instructor/InstructorPreviewModal'
 
 type LearningPathInfo = {
@@ -34,6 +34,15 @@ type CourseCardProps = {
   isComingSoon?: boolean
   learningPath?: LearningPathInfo | null
   instructor?: InstructorInfo | null
+  /**
+   * El texto del sello de quien firma el curso, o nada.
+   *
+   * Va junto al NOMBRE y no junto al titulo a proposito: un sello pegado al
+   * curso se lee como «este curso esta certificado», y lo que dice es «quien lo
+   * firma esta verificado en esta materia». Son dos cosas distintas y la
+   * segunda es la unica que Nodo360 puede afirmar.
+   */
+  sello?: string | null
   onStart?: () => void
   onContinue?: () => void
   onView?: () => void
@@ -53,6 +62,7 @@ export function CourseCard({
   isComingSoon = false,
   learningPath,
   instructor,
+  sello,
   onStart,
   onContinue,
   onView,
@@ -199,6 +209,15 @@ export function CourseCard({
                 <span className="text-white/70 hover:text-orange-400 transition-colors">
                   {instructor.full_name}
                 </span>
+                {sello && (
+                  <span
+                    className="inline-flex items-center rounded-md bg-blue-500/15 px-1.5 py-0.5 text-blue-300"
+                    title={sello}
+                  >
+                    <BadgeCheck className="h-3 w-3" aria-hidden="true" />
+                    <span className="sr-only">{sello}</span>
+                  </span>
+                )}
               </button>
             </div>
           )

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Mail, FileText, Users, CheckCircle2, RotateCcw, XCircle } from 'lucide-react'
+import { Mail, FileText, Users, CheckCircle2, RotateCcw, XCircle, BadgeCheck, FileSearch, BookOpen, Sparkles } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
 
 /**
@@ -75,6 +75,33 @@ const LO_QUE_SE_ESPERA = [
   },
 ]
 
+const VERIFICACION = [
+  {
+    icono: FileSearch,
+    titulo: 'Eliges la especialidad',
+    texto:
+      'Hay once: fundamentos de Bitcoin, seguridad y custodia, nodos, Lightning, blockchain y consenso, Ethereum y contratos, DeFi, Web3, mercados, fiscalidad y derecho. Se pide una, no todas.',
+  },
+  {
+    icono: BookOpen,
+    titulo: 'Si la especialidad tiene examen, lo haces',
+    texto:
+      'Quince preguntas de su banco, distintas en cada intento, con las opciones en otro orden. Mide lo que sabes de la materia, no lo bien que se te da un test: la nota no decide nada por sí sola.',
+  },
+  {
+    icono: Users,
+    titulo: 'Y después hablamos',
+    texto:
+      'Repreguntas en voz alta sobre lo que respondiste, y una parte práctica. Es donde se distingue a quien entendió de quien recuerda cuál era la opción correcta, y sin las dos no hay verificación.',
+  },
+  {
+    icono: Sparkles,
+    titulo: 'Decide una persona, y lo escribe',
+    texto:
+      'No aprueba el examen: aprueba quien evalúa, con sus notas. Si te la deniegan te dicen por qué, y puedes volver a pedirla. Fiscalidad y derecho piden además acreditación profesional: ahí un examen nuestro no basta.',
+  },
+]
+
 const REVISION = [
   {
     icono: FileText,
@@ -84,9 +111,9 @@ const REVISION = [
   },
   {
     icono: Users,
-    titulo: 'Lo revisa un mentor',
+    titulo: 'Lo revisa una persona',
     texto:
-      'Una persona con experiencia en el tema lee el material entero antes de que lo vea ningún alumno. No es un trámite: es el filtro del que depende que esto se pueda leer sin desconfiar.',
+      'Alguien lee el material entero antes de que lo vea ningún alumno. Hoy lo hace el equipo de Nodo360; cuando haya mentores verificados, cada curso lo revisarán dos. No es un trámite: es el filtro del que depende que esto se pueda leer sin desconfiar.',
   },
   {
     icono: RotateCcw,
@@ -187,6 +214,45 @@ export default function InstructoresPage() {
               También se rechazan cursos, y se explica por qué. Casi siempre es
               por tono —material que vende en vez de explicar— o por afirmaciones
               sin respaldo. No es un juicio sobre quien lo escribió.
+            </p>
+          </div>
+        </section>
+
+        {/* La verificación, que es lo que habilita a publicar */}
+        <section className="mt-14">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            La verificación es por especialidad
+          </h2>
+          <p className="text-white/60 mb-6">
+            No se verifica «a instructores»: se verifica en una materia concreta.
+          </p>
+
+          <div className="space-y-6">
+            {VERIFICACION.map(({ icono: Icono, titulo, texto }, i) => (
+              <div key={titulo} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10">
+                    <Icono className="h-5 w-5 text-blue-300" aria-hidden />
+                  </div>
+                  {i < VERIFICACION.length - 1 && (
+                    <div className="mt-2 w-px flex-1 bg-white/10" />
+                  )}
+                </div>
+                <div className="pb-2">
+                  <h3 className="font-semibold text-white mb-1">{titulo}</h3>
+                  <p className="text-white/65 leading-relaxed">{texto}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex items-start gap-3 rounded-xl border border-white/10 bg-dark-surface p-5">
+            <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-blue-300" aria-hidden />
+            <p className="text-sm text-white/60 leading-relaxed">
+              Estar verificado en una especialidad no habilita en las demás.
+              Verificado en Bitcoin no es verificado en fiscalidad, y el sello
+              que aparece junto a tu nombre dice en qué, no «verificado» a secas.
+              Es la única forma de que signifique algo.
             </p>
           </div>
         </section>

@@ -65,7 +65,7 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
           </button>
         </div>
         <Link
-          href="/guia-revision"
+          href="/dashboard/instructor/guia"
           target="_blank"
           className="inline-flex items-center gap-1 text-xs text-brand-light hover:text-brand transition-colors"
         >
