@@ -67,7 +67,9 @@ export async function POST(
     // Obtener examen con configuración
     const { data: exam, error: examError } = await supabase
       .from('instructor_exams')
-      .select('id, pass_threshold, learning_path_id, certification_validity_years')
+      // learning_path_id y certification_validity_years ya no se piden: los
+      // usaba el bloque que emitia la certificacion sola.
+      .select('id, pass_threshold')
       .eq('id', examId)
       .eq('is_active', true)
       .single()
@@ -159,49 +161,26 @@ export async function POST(
       )
     }
 
-    // Si aprobó, crear certificación
-    let certificationId = null
-    if (passed && exam.learning_path_id) {
-      // Verificar que no existe certificación activa
-      const { data: existingCert } = await supabase
-        .from('instructor_certifications')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('learning_path_id', exam.learning_path_id)
-        .eq('status', 'active')
-        .maybeSingle()
-
-      if (!existingCert) {
-        // Generar número de certificación único
-        const certNumber = `NODO360-${exam.learning_path_id.slice(0, 4).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
-
-        // Calcular fecha de expiración
-        const validityYears = exam.certification_validity_years || 1
-        const expiresAt = new Date()
-        expiresAt.setFullYear(expiresAt.getFullYear() + validityYears)
-
-        const { data: certification, error: certError } = await supabase
-          .from('instructor_certifications')
-          .insert({
-            user_id: user.id,
-            learning_path_id: exam.learning_path_id,
-            exam_attempt_id: attempt.id,
-            certification_number: certNumber,
-            status: 'active',
-            issued_at: new Date().toISOString(),
-            expires_at: expiresAt.toISOString(),
-          })
-          .select('id')
-          .single()
-
-        if (certError) {
-          console.error('[instructor/exams/submit] ⚠️ Error creando certificación:', certError)
-          // No fallamos el request, el intento ya está guardado
-        } else {
-          certificationId = certification?.id
-        }
-      }
-    }
+    // EL EXAMEN MIDE; LA CERTIFICACION LA DECIDE UNA PERSONA.
+    //
+    // Aqui se emitia sola: si la puntuacion pasaba del umbral, se insertaba una
+    // fila en instructor_certifications con status 'active' y se acababa. Eso
+    // convierte un test de opcion multiple en la unica barrera para poder
+    // enseñar, y es justo lo que el diseño de la fase A decidio cambiar: hay
+    // repreguntas y parte practica, y las valora un evaluador.
+    //
+    // De paso, esto NUNCA funciono: el insert escribia `exam_attempt_id` y la
+    // columna se llama `attempt_id`. El error se registraba y se tragaba —«no
+    // fallamos el request, el intento ya esta guardado»— asi que nadie se
+    // entero de que no se emitia ninguna certificacion. Con cero intentos en
+    // la tabla, tampoco habia forma de notarlo.
+    //
+    // Lo que queda: el intento y su puntuacion, que es lo que el evaluador
+    // necesita delante. La certificacion la crea la pantalla del paso 4.
+    //
+    // Se sigue devolviendo certification_id, siempre null, porque la pantalla
+    // de resultado lo lee. Quitar la clave la dejaria con undefined.
+    const certificationId = null
 
     console.log(`[instructor/exams/submit] ✅ Examen enviado: usuario ${user.id}, examen ${examId}, score ${score}%, ${passed ? 'APROBADO' : 'NO APROBADO'}`)
 
