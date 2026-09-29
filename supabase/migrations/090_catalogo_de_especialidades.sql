@@ -39,6 +39,13 @@
 -- con is_active = false: la ruta existe, y el puntero describe donde vive la
 -- materia, no si esta publicada.
 --
+-- Son SEIS con ruta y CINCO sin ella. La primera version de la verificacion
+-- esperaba cinco con ruta: estaba contando las que NO la tienen y puso ese
+-- numero donde iba el complementario. Los datos siempre fueron los del diseño;
+-- lo que fallaba era el umbral, y por eso el veredicto salio REVISAR con la
+-- base perfectamente bien. Queda escrito porque una verificacion que da falsas
+-- alarmas se termina ignorando, que es peor que no tenerla.
+--
 -- NO BORRA NI UNA FILA. No cambia el estado de ningun curso.
 -- Es reejecutable: el catalogo va con ON CONFLICT y el mapeo por slug.
 -- ============================================================================
@@ -224,7 +231,7 @@ SELECT
   CASE
     WHEN (SELECT count(*) FROM public.instructor_specialties) = 11
      AND (SELECT count(*) FROM public.instructor_specialties WHERE requiere_acreditacion) = 2
-     AND (SELECT count(*) FROM public.instructor_specialties WHERE learning_path_id IS NOT NULL) = 5
+     AND (SELECT count(*) FROM public.instructor_specialties WHERE learning_path_id IS NOT NULL) = 6
      AND (SELECT count(*) FROM public.courses WHERE specialty_id IS NOT NULL) = 10
      AND (SELECT count(*) FROM public.courses WHERE status = 'published' AND specialty_id IS NULL) = 0
      AND (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.instructor_specialties'::regclass)
