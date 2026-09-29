@@ -106,7 +106,7 @@ export async function sendCourseApprovedEmail({
                 </a>
               </p>
               <p style="color: #4b5563; font-size: 12px; margin: 0;">
-                © 2026 Nodo360. Educación Bitcoin en Español.
+                © ${new Date().getFullYear()} Nodo360. Educación Bitcoin en Español.
               </p>
             </div>
 

@@ -369,7 +369,9 @@ export default function GuiaRevisionPage() {
       <footer className="border-t border-white/10 py-8 mt-12">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/40 text-sm">
-            2024 Nodo360. Todos los derechos reservados.
+            {/* El año estaba escrito a mano, y decia 2024. El resto de pies del
+                sitio ya lo calculan; este se habia quedado atras. */}
+            © {new Date().getFullYear()} Nodo360. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-6">
             <Link href="/privacidad" className="text-white/40 hover:text-white/60 text-sm transition-colors">
