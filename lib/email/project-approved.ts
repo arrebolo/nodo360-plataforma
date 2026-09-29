@@ -101,7 +101,7 @@ export async function sendProjectApprovedEmail({
                 </a>
               </p>
               <p style="color: #4b5563; font-size: 12px; margin: 0;">
-                2026 Nodo360. Educacion Bitcoin en Espanol.
+                ${new Date().getFullYear()} Nodo360. Educacion Bitcoin en Espanol.
               </p>
             </div>
 

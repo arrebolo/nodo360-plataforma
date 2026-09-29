@@ -24,7 +24,7 @@ QUÉ TIENES DISPONIBLE
 
 Si algo no funciona o tienes una duda, escríbenos a soporte@nodo360.com y te contestamos.
 
-© 2026 Nodo360. Educación sobre Bitcoin y Web3 en español.`
+© ${new Date().getFullYear()} Nodo360. Educación sobre Bitcoin y Web3 en español.`
 }
 
 /**
@@ -125,7 +125,7 @@ export async function sendAccessGrantedEmail(
                 y te contestamos.
               </p>
               <p style="color: #4b5563; font-size: 12px; margin: 0;">
-                © 2026 Nodo360. Educación sobre Bitcoin y Web3 en español.
+                © ${new Date().getFullYear()} Nodo360. Educación sobre Bitcoin y Web3 en español.
               </p>
             </div>
 
