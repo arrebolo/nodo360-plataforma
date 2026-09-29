@@ -223,6 +223,23 @@ export default async function InstructorPage() {
           </div>
         )}
 
+        {/* Mi verificacion: el camino del candidato hacia el sello */}
+        <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="font-medium text-white">Verificación por especialidad</p>
+            <p className="text-sm text-white/60 mt-0.5">
+              Pide que te verifiquen en una especialidad, y mira en qué estado va
+            </p>
+          </div>
+          <Link
+            href="/dashboard/instructor/verificacion"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-white font-medium text-sm hover:bg-white/20 transition whitespace-nowrap"
+          >
+            Mi verificación
+            <ArrowRight className="w-4 h-4" aria-hidden="true" />
+          </Link>
+        </div>
+
         {/* Header */}
         <PageHeader
           icon={GraduationCap}

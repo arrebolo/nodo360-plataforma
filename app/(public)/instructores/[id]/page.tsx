@@ -13,6 +13,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import SendMessageButton from '@/components/messages/SendMessageButton'
+import { textoDelSello, type Sello } from '@/lib/instructor/sellos'
 
 export async function generateMetadata({
   params,
@@ -93,6 +94,11 @@ export default async function InstructorProfilePage({
     .eq('user_id', id)
     .order('issued_at', { ascending: false })
 
+  // El tick de verificado, a partir de los sellos que ya se acaban de leer.
+  // Solo los vigentes: un sello caducado no es un sello, es un sello que fue.
+  const sellosVigentes = ((certifications ?? []) as Sello[]).filter((s) => s.vigente)
+  const textoSello = textoDelSello(sellosVigentes)
+
   // Obtener cursos publicados del instructor
   const { data: courses } = await supabase
     .from('courses')
@@ -148,9 +154,19 @@ export default async function InstructorProfilePage({
                   </span>
                 </div>
               )}
-              {profile.is_verified && (
-                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center border-4 border-dark">
-                  <Award className="w-5 h-5 text-white" />
+              {/*
+                El tick sale de los SELLOS, no de instructor_profiles.is_verified.
+                Esa columna tiene UNA fila en toda la base, con is_verified a
+                true y specialties a NULL: decia «verificado» sin nada detras.
+                Si no hay ninguna verificacion aprobada y viva, no se pinta nada.
+              */}
+              {textoSello && (
+                <div
+                  className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center border-4 border-dark"
+                  title={textoSello}
+                >
+                  <Award className="w-5 h-5 text-white" aria-hidden="true" />
+                  <span className="sr-only">{textoSello}</span>
                 </div>
               )}
             </div>
