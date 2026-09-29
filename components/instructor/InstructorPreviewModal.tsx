@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { X, Award, BookOpen, Users, Star, ExternalLink } from 'lucide-react'
 
 interface InstructorPreviewModalProps {
@@ -19,7 +20,13 @@ interface InstructorData {
   avatar_url: string | null
   bio: string | null
   headline: string | null
-  is_verified: boolean
+  /**
+   * El texto del sello, o null si no hay ninguno. Antes era un booleano
+   * `is_verified` que se calculaba con
+   *     user.role === 'instructor' || user.role === 'mentor'
+   * es decir: TENER EL ROL era estar verificado, y el tick no significaba nada.
+   */
+  sello: string | null
   total_courses: number
   total_students: number
   average_rating: number | null
@@ -61,6 +68,19 @@ export function InstructorPreviewModal({
         return
       }
 
+      // Los sellos, por la vista publica de la 093. La tabla de
+      // certificaciones no la lee ninguna sesion: lleva dentro el numero de
+      // colegiacion y las notas del evaluador.
+      // El casteo, porque lib/supabase/types.ts esta desfasado y no conoce la
+      // vista sellos_de_instructor. Se aisla en esta linea y no en el cliente
+      // entero, para no perder el tipado de las demas consultas de este
+      // fichero. Regenerar los tipos es su propia tarea.
+      const { data: sellos } = await (supabase as unknown as SupabaseClient)
+        .from('sellos_de_instructor')
+        .select('especialidad, vigente')
+        .eq('user_id', instructorId)
+      const vivos = (sellos ?? []).filter((x: { vigente: boolean }) => x.vigente)
+
       // Get course count for this instructor
       const { count: coursesCount } = await supabase
         .from('courses')
@@ -83,7 +103,12 @@ export function InstructorPreviewModal({
         avatar_url: user.avatar_url,
         bio: user.bio,
         headline: user.role === 'instructor' ? 'Instructor' : user.role === 'mentor' ? 'Mentor' : null,
-        is_verified: user.role === 'instructor' || user.role === 'mentor',
+        sello:
+          vivos.length === 0
+            ? null
+            : vivos.length === 1
+              ? `Verificado en ${vivos[0].especialidad}`
+              : `Verificado en ${vivos.length} especialidades: ${vivos.map((x: { especialidad: string }) => x.especialidad).join(', ')}`,
         total_courses: coursesCount || 0,
         total_students: totalStudents,
         average_rating: null,
@@ -220,9 +245,13 @@ export function InstructorPreviewModal({
                     </span>
                   </div>
                 )}
-                {instructor.is_verified && (
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-[#0a0f1a]">
-                    <Award className="w-3 h-3 text-white" />
+                {instructor.sello && (
+                  <div
+                    className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-[#0a0f1a]"
+                    title={instructor.sello}
+                  >
+                    <Award className="w-3 h-3 text-white" aria-hidden="true" />
+                    <span className="sr-only">{instructor.sello}</span>
                   </div>
                 )}
               </div>
