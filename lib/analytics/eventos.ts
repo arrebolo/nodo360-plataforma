@@ -41,6 +41,22 @@ type Eventos = {
   exam_passed: { course_slug: string }
   /** Examen final suspendido. Los intentos son ilimitados, así que puede repetirse. */
   exam_failed: { course_slug: string }
+  /**
+   * Clic en un enlace a un curso desde el blog o el glosario.
+   *
+   * `origen` dice desde qué sección se pulsó y `slug_origen` desde qué artículo
+   * o término concreto. Con los dos se puede saber qué contenido trae gente a
+   * los cursos y qué contenido no trae a nadie, que es la pregunta que hoy no
+   * se puede contestar.
+   *
+   * Solo slugs: ni identificadores de persona, ni sesión, ni nada que permita
+   * reconocer a nadie.
+   */
+  related_course_click: {
+    origen: 'blog' | 'glosario'
+    slug_origen: string
+    course_slug: string
+  }
 }
 
 export type NombreEvento = keyof Eventos

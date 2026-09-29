@@ -3,6 +3,8 @@
  * En el futuro, esto puede migrar a un CMS como Sanity o Contentful
  */
 
+import type { SlugCurso, SlugLeccion } from '@/lib/enlazado/cursos-publicados'
+
 export interface InlineImage {
   afterSection: number // Después de qué sección H2 (1-based index)
   src: string
@@ -16,6 +18,10 @@ export interface BlogPost {
   description: string
   content: string
   category: 'bitcoin' | 'blockchain' | 'defi' | 'web3'
+  /** Curso publicado al que lleva. Tipado: un slug inexistente es error de tsc. */
+  relatedCourse: SlugCurso
+  /** Leccion concreta, cuando hay una que explica justo esto. */
+  relatedLesson?: SlugLeccion
   author: string
   authorRole: string
   publishedAt: string
@@ -37,6 +43,8 @@ export const blogCategories = {
 export const blogPosts: BlogPost[] = [
   {
     slug: 'que-es-bitcoin-guia-completa',
+    relatedCourse: 'fundamentos-de-bitcoin',
+    relatedLesson: 'que-es-bitcoin',
     title: 'Qué es Bitcoin: Guía Completa para Principiantes 2025',
     description: 'Aprende qué es Bitcoin, cómo funciona, por qué es importante y cómo empezar. Guía completa en español para entender la primera criptomoneda.',
     category: 'bitcoin',
@@ -72,7 +80,7 @@ export const blogPosts: BlogPost[] = [
 
 Bitcoin es la primera criptomoneda descentralizada del mundo, creada en 2009 por una persona o grupo bajo el seudónimo de **Satoshi Nakamoto**. Representa una revolución en la forma en que entendemos y usamos el dinero.
 
-A diferencia del dinero tradicional controlado por bancos centrales, Bitcoin opera en una red descentralizada de equipos (nodos) que verifican y registran todas las transacciones en un libro público llamado **blockchain**.
+A diferencia del dinero tradicional controlado por bancos centrales, Bitcoin opera en una red descentralizada de equipos ([nodos](/glosario/nodo)) que verifican y registran todas las transacciones en un libro público llamado **[blockchain](/glosario/blockchain)**.
 
 ## ¿Por qué se creó Bitcoin?
 
@@ -88,7 +96,7 @@ Los principales problemas que Bitcoin busca resolver son:
 
 ### La Blockchain
 
-La blockchain es un registro público e inmutable de todas las transacciones de Bitcoin. Imagínala como un libro contable gigante que:
+La blockchain es un registro público e [inmutable](/glosario/inmutabilidad) de todas las transacciones de Bitcoin. Imagínala como un libro contable gigante que:
 
 1. **Es público**: Cualquiera puede ver todas las transacciones
 2. **Es inmutable**: Una vez registrada, una transacción no puede modificarse
@@ -100,7 +108,7 @@ Los mineros son equipos especializados que:
 
 - Verifican que las transacciones sean válidas
 - Agrupan transacciones en bloques
-- Resuelven problemas matemáticos complejos (Proof of Work)
+- Resuelven problemas matemáticos complejos ([Proof of Work](/glosario/proof-of-work))
 - Reciben bitcoins como recompensa por su trabajo
 
 ### Oferta Limitada
@@ -175,6 +183,8 @@ En Nodo360, ofrecemos cursos completos para que domines Bitcoin desde cero hasta
   },
   {
     slug: 'como-comprar-bitcoin-espana',
+    relatedCourse: 'uso-practico-de-bitcoin',
+    relatedLesson: 'como-se-consiguen-bitcoins',
     title: 'Cómo Comprar Bitcoin en España: Guía Paso a Paso 2025',
     description: 'Aprende a comprar Bitcoin en España de forma segura. Exchanges recomendados, métodos de pago, comisiones y consejos de seguridad.',
     category: 'bitcoin',
@@ -216,8 +226,8 @@ Antes de comprar Bitcoin, necesitarás:
 
 1. **Documento de identidad**: DNI, NIE o pasaporte para verificación KYC
 2. **Cuenta bancaria española**: Para transferencias SEPA
-3. **Correo electrónico**: Para registro en exchanges
-4. **Teléfono móvil**: Para autenticación en dos factores (2FA)
+3. **Correo electrónico**: Para registro en [exchanges](/glosario/exchange)
+4. **Teléfono móvil**: Para autenticación en dos factores ([2FA](/glosario/2fa))
 
 ## Métodos para comprar Bitcoin en España
 
@@ -296,7 +306,7 @@ España tiene más de 200 cajeros Bitcoin. Aunque son convenientes, las comision
 ### Paso 5: Retirar a tu wallet
 1. Ve a Financiación > Retirar
 2. Selecciona Bitcoin (BTC)
-3. Introduce la dirección de tu wallet personal
+3. Introduce la dirección de tu [wallet](/glosario/wallet) personal
 4. Confirma con 2FA
 5. Espera confirmación en la blockchain
 
@@ -318,7 +328,7 @@ España tiene más de 200 cajeros Bitcoin. Aunque son convenientes, las comision
 - En un exchange las llaves no son tuyas: si quiebra o bloquea las retiradas, el saldo no se mueve
 - Una wallet propia pone las llaves de tu lado, y con ellas la responsabilidad de no perderlas
 - Una hardware wallet mantiene las llaves fuera de cualquier dispositivo conectado
-- Guarda tu seed phrase de forma segura y offline
+- Guarda tu [seed phrase](/glosario/seed-phrase) de forma segura y offline
 
 ## Impuestos en España
 
@@ -338,11 +348,13 @@ Debes declarar:
 
 Comprar Bitcoin en España es un proceso sencillo. Lo que no es sencillo, y es donde se pierde el dinero, es lo que viene después: la custodia de las llaves, la verificación de las direcciones y el reconocimiento de las estafas.
 
-¿Quieres aprender más sobre Bitcoin y criptomonedas? Explora nuestros cursos gratuitos en Nodo360.
+Si quieres ver el proceso completo paso a paso, la lección [Cómo se consiguen bitcoins](/cursos/uso-practico-de-bitcoin/como-se-consiguen-bitcoins) del curso Uso práctico de Bitcoin recorre las mismas decisiones con más detalle.
 `
   },
   {
     slug: 'que-es-blockchain-explicado',
+    relatedCourse: 'fundamentos-blockchain',
+    relatedLesson: 'del-registro-al-estado-compartido',
     title: 'Qué es Blockchain: Tecnología Explicada de Forma Simple',
     description: 'Entiende qué es blockchain, cómo funciona y por qué está revolucionando industrias más allá de las criptomonedas.',
     category: 'blockchain',
@@ -376,7 +388,7 @@ Comprar Bitcoin en España es un proceso sencillo. Lo que no es sencillo, y es d
     content: `
 ## ¿Qué es Blockchain?
 
-Blockchain (cadena de bloques) es una tecnología de registro distribuido que permite almacenar información de forma transparente, segura e inmutable. Piensa en ella como un libro contable digital que:
+Blockchain (cadena de bloques) es una tecnología de [registro distribuido](/glosario/ledger-distribuido) que permite almacenar información de forma transparente, segura e [inmutable](/glosario/inmutabilidad). Piensa en ella como un libro contable digital que:
 
 - Es compartido por miles de equipos
 - Registra información en bloques encadenados
@@ -398,12 +410,12 @@ Esto es esencialmente cómo funciona blockchain.
 
 ### 1. Bloques
 
-Cada bloque contiene:
+Cada [bloque](/glosario/bloque) contiene:
 - **Datos**: Las transacciones o información a registrar
 - **Hash**: Una huella digital única del bloque
 - **Hash anterior**: Enlace al bloque previo (la "cadena")
 - **Timestamp**: Marca de tiempo
-- **Nonce**: Número usado en la minería
+- **Nonce**: Número usado en la [minería](/glosario/mineria)
 
 ### 2. La Cadena
 
@@ -530,6 +542,8 @@ Blockchain es más que la tecnología detrás de Bitcoin. Es una nueva forma de 
   },
   {
     slug: 'soberania-financiera-bitcoin',
+    relatedCourse: 'seguridad-basica-en-bitcoin-y-criptomonedas',
+    relatedLesson: 'que-significa-ser-tu-propio-banco',
     title: 'Soberanía Financiera: Por Qué Bitcoin Te Da el Control de Tu Dinero',
     description: 'Descubre qué es la soberanía financiera, por qué importa en el mundo actual y cómo Bitcoin te permite ser tu propio banco.',
     category: 'bitcoin',
@@ -606,7 +620,7 @@ En el sistema financiero tradicional:
 Bitcoin permite que cualquier persona sea su propio banco. Esto significa:
 
 **Control total de tus fondos**
-- Tus llaves privadas = tu dinero
+- Tus [llaves privadas](/glosario/clave-privada) = tu dinero
 - Nadie puede congelar tus bitcoins
 - Acceso 24/7, 365 días al año
 
@@ -624,7 +638,7 @@ Bitcoin permite que cualquier persona sea su propio banco. Esto significa:
 
 La autocustodia significa guardar tus propias llaves privadas. Es la diferencia entre:
 
-- **Custodia en exchange**: "No son tus llaves, no son tus bitcoins"
+- **Custodia en [exchange](/glosario/exchange)**: "No son tus llaves, no son tus bitcoins"
 - **Autocustodia**: Control total, responsabilidad total
 
 ## Cómo practicar la soberanía financiera con Bitcoin
@@ -651,7 +665,7 @@ Antes de tomar custodia de las llaves:
 
 ### Paso 3: Proteger tu seed phrase
 
-Tu seed phrase (12-24 palabras) es la llave maestra de tus fondos:
+Tu [seed phrase](/glosario/seed-phrase) (12-24 palabras) es la llave maestra de tus fondos:
 
 **Qué hacer:**
 - Escribirla en papel o metal
@@ -685,7 +699,7 @@ La filosofía de Bitcoin es "Don't trust, verify":
 - Practicar transacciones
 
 ### Nivel 3: Avanzado
-- Usar hardware wallet
+- Usar [hardware wallet](/glosario/hardware-wallet)
 - Correr nodo propio
 - Entender multisig
 
@@ -736,6 +750,8 @@ La autocustodia no es un interruptor: es una serie de piezas -wallet propia, cop
   },
   {
     slug: 'defi-para-principiantes',
+    relatedCourse: 'ethereum-y-contratos-inteligentes',
+    relatedLesson: 'las-cuatro-formas-de-perder-los-fondos',
     title: 'DeFi para Principiantes: Qué es y Cómo Empezar en 2025',
     description: 'Guía completa de DeFi (Finanzas Descentralizadas). Aprende qué es, cómo funciona, los principales protocolos y cómo empezar de forma segura.',
     category: 'defi',
@@ -769,7 +785,7 @@ La autocustodia no es un interruptor: es una serie de piezas -wallet propia, cop
     content: `
 ## ¿Qué es DeFi?
 
-DeFi (Decentralized Finance o Finanzas Descentralizadas) es un ecosistema de aplicaciones financieras construidas sobre blockchain que funcionan sin intermediarios tradicionales como bancos.
+[DeFi](/glosario/defi) (Decentralized Finance o Finanzas Descentralizadas) es un ecosistema de aplicaciones financieras construidas sobre blockchain que funcionan sin intermediarios tradicionales como bancos.
 
 En lugar de depender de instituciones centralizadas, DeFi usa:
 - **Smart contracts**: Código que ejecuta acuerdos automáticamente
@@ -862,7 +878,7 @@ Bloquear tokens para asegurar la red y ganar recompensas.
 
 3. **Conocimientos básicos**
    - Cómo funcionan las transacciones
-   - Qué son los smart contracts
+   - Qué son los [smart contracts](/glosario/smart-contract)
    - Riesgos involucrados
 
 ### Tu primera interacción DeFi
@@ -878,7 +894,7 @@ Bloquear tokens para asegurar la red y ganar recompensas.
 
 ### Primeros pasos seguros
 
-1. **Todo cuesta gas, y nada se deshace**
+1. **Todo cuesta [gas](/glosario/gas), y nada se deshace**
    - Cada operación en cadena tiene un coste, también las que fallan
    - Un envío o una aprobación equivocados no se pueden revertir
 
@@ -889,7 +905,7 @@ Bloquear tokens para asegurar la red y ganar recompensas.
 3. **Investiga antes de usar un protocolo**
    - ¿Está auditado?
    - ¿Cuánto tiempo lleva operando?
-   - ¿Cuánto TVL tiene?
+   - ¿Cuánto [TVL](/glosario/tvl) tiene?
 
 ## Riesgos en DeFi
 
@@ -973,6 +989,8 @@ La clave es educarte antes de actuar, empezar con poco, y nunca dejar de aprende
   },
   {
     slug: 'que-es-ethereum-guia-completa',
+    relatedCourse: 'ethereum-y-contratos-inteligentes',
+    relatedLesson: 'de-un-registro-a-un-ordenador-compartido',
     title: 'Qué es Ethereum: Guía Completa sobre la Plataforma de Smart Contracts',
     description: 'Aprende qué es Ethereum, cómo funciona, qué son los smart contracts y por qué es la segunda criptomoneda más importante. Guía completa en español.',
     category: 'blockchain',
@@ -1006,7 +1024,7 @@ La clave es educarte antes de actuar, empezar con poco, y nunca dejar de aprende
     content: `
 ## Introducción a Ethereum
 
-Ethereum es una plataforma blockchain descentralizada que permite crear y ejecutar aplicaciones descentralizadas (dApps) y contratos inteligentes (smart contracts). Lanzada en 2015 por Vitalik Buterin y su equipo, Ethereum ha revolucionado el mundo de las criptomonedas al ir más allá de ser simplemente dinero digital.
+Ethereum es una plataforma blockchain descentralizada que permite crear y ejecutar aplicaciones descentralizadas ([dApps](/glosario/dapp)) y contratos inteligentes (smart contracts). Lanzada en 2015 por Vitalik Buterin y su equipo, Ethereum ha revolucionado el mundo de las criptomonedas al ir más allá de ser simplemente dinero digital.
 
 Mientras Bitcoin fue diseñado principalmente como una reserva de valor y sistema de pagos, Ethereum fue concebido como una "world computer" (plataforma de cómputo global) donde cualquier desarrollador puede crear aplicaciones que funcionan sin intermediarios, censura ni tiempo de inactividad.
 
@@ -1058,7 +1076,7 @@ Los smart contracts (contratos inteligentes) son programas que se ejecutan autom
 
 ### Ejemplo práctico
 
-Imagina un contrato de alquiler tradicional vs un smart contract. En el tradicional necesitas firmar papel, pagar manualmente, y si hay problemas recurrir a abogados y tribunales. Con un smart contract, el contrato vive en la blockchain, los pagos se deducen automáticamente, y si no hay fondos el acceso se revoca sin intermediarios.
+Imagina un contrato de alquiler tradicional vs un [smart contract](/glosario/smart-contract). En el tradicional necesitas firmar papel, pagar manualmente, y si hay problemas recurrir a abogados y tribunales. Con un smart contract, el contrato vive en la blockchain, los pagos se deducen automáticamente, y si no hay fondos el acceso se revoca sin intermediarios.
 
 ### Lenguaje Solidity
 
@@ -1066,7 +1084,7 @@ Los smart contracts de Ethereum se escriben principalmente en **Solidity**, un l
 
 ## Gas Fees: El costo de usar Ethereum
 
-El "gas" es la unidad que mide el trabajo computacional necesario para ejecutar operaciones en Ethereum. Cada transacción o interacción con smart contracts requiere pagar gas.
+El "[gas](/glosario/gas)" es la unidad que mide el trabajo computacional necesario para ejecutar operaciones en Ethereum. Cada transacción o interacción con smart contracts requiere pagar gas.
 
 ### ¿Por qué existe el gas?
 
@@ -1121,7 +1139,7 @@ Ethereum popularizó los NFTs con estándares como ERC-721 para arte digital, co
 
 ### 3. DAOs
 
-Organizaciones gobernadas por código y votación de token holders como MakerDAO, Uniswap DAO y ENS DAO.
+Organizaciones gobernadas por código y votación de [token](/glosario/token) holders como MakerDAO, Uniswap DAO y ENS DAO.
 
 ### 4. Identidad descentralizada
 
@@ -1144,6 +1162,8 @@ Ethereum ha transformado lo que es posible con blockchain, pasando de simple din
   },
   {
     slug: 'que-es-wallet-crypto-tipos',
+    relatedCourse: 'cold-storage-protege-tus-bitcoin',
+    relatedLesson: 'hot-vs-cold-tu-modelo-de-amenazas',
     title: 'Qué es una Wallet Crypto: Tipos y Cómo Elegir la Mejor para Ti',
     description: 'Guía completa sobre wallets de criptomonedas. Aprende las diferencias entre hot y cold wallets, custodial y non-custodial, y cómo proteger tus fondos.',
     category: 'bitcoin',
@@ -1187,7 +1207,7 @@ Lo que realmente guarda una wallet son tus **llaves privadas**: códigos criptog
 - **Llave privada**: Como el PIN de tu tarjeta. NUNCA debes compartirla
 - **Dirección**: Versión simplificada de la llave pública
 
-**Regla de oro**: Quien controla la llave privada, controla las criptomonedas.
+**Regla de oro**: Quien controla la [llave privada](/glosario/clave-privada), controla las criptomonedas.
 
 ## Tipos de Wallets: Hot vs Cold
 
@@ -1248,7 +1268,7 @@ Un tercero (generalmente un exchange) guarda tus llaves privadas por ti. Ejemplo
 Tú controlas tus propias llaves privadas. Nadie más puede acceder a tus fondos.
 
 **Ventajas:** Control total, sin intermediarios, verdadera propiedad.
-**Desventajas:** Mayor responsabilidad, si pierdes la seed phrase pierdes todo.
+**Desventajas:** Mayor responsabilidad, si pierdes la [seed phrase](/glosario/seed-phrase) pierdes todo.
 
 ## Las Principales Hardware Wallets
 
@@ -1289,7 +1309,7 @@ La seed phrase (frase semilla) es una lista de 12-24 palabras que permite recupe
 ## ¿Cuál Wallet Elegir Según Tu Perfil?
 
 ### Principiante
-Una hot wallet móvil gratuita como BlueWallet o Trust Wallet, que no cuesta nada y permite ver cómo funciona una transacción de principio a fin.
+Una [hot wallet](/glosario/hot-wallet) móvil gratuita como BlueWallet o Trust Wallet, que no cuesta nada y permite ver cómo funciona una transacción de principio a fin.
 
 ### Usuario DeFi/NFTs
 MetaMask conectado a un Ledger o Trezor. Comodidad con seguridad.
@@ -1325,13 +1345,15 @@ Coldcard air-gapped o configuración multisig con múltiples dispositivos.
 
 ## Conclusión
 
-La wallet decide dónde viven las llaves, y eso decide quién puede gastar. Una hardware wallet las mantiene fuera del ordenador y del móvil, y exige tener el dispositivo delante para firmar; una hot wallet las guarda en un dispositivo conectado, con lo que eso implica. Las dos cosas son ciertas a la vez y no dependen de cuánto guardes.
+La wallet decide dónde viven las llaves, y eso decide quién puede gastar. Una [hardware wallet](/glosario/hardware-wallet) las mantiene fuera del ordenador y del móvil, y exige tener el dispositivo delante para firmar; una hot wallet las guarda en un dispositivo conectado, con lo que eso implica. Las dos cosas son ciertas a la vez y no dependen de cuánto guardes.
 
 ¿Quieres aprender más sobre autocustodia y seguridad cripto? Nuestros cursos en Nodo360 te guían paso a paso para proteger tus activos digitales.
 `
   },
   {
     slug: 'que-es-mineria-bitcoin',
+    relatedCourse: 'como-funciona-bitcoin-nivel-basico',
+    relatedLesson: 'mineria-y-prueba-de-trabajo',
     title: 'Qué es la Minería de Bitcoin: Cómo Funciona y Es Rentable en 2026',
     description: 'Aprende qué es la minería de Bitcoin, cómo funciona el Proof of Work, qué hardware se necesita y si sigue siendo rentable minar Bitcoin en 2026.',
     category: 'bitcoin',
@@ -1365,15 +1387,15 @@ La wallet decide dónde viven las llaves, y eso decide quién puede gastar. Una 
     content: `
 ## ¿Qué es la Minería de Bitcoin?
 
-La minería de Bitcoin es el proceso mediante el cual se verifican las transacciones y se añaden nuevos bloques a la blockchain de Bitcoin. Los mineros son equipos especializados que compiten por resolver un problema matemático complejo, y el ganador recibe bitcoins como recompensa.
+La minería de Bitcoin es el proceso mediante el cual se verifican las transacciones y se añaden nuevos bloques a la blockchain de Bitcoin. Los mineros son equipos especializados que compiten por resolver un problema matemático complejo, y el ganador recibe bitcoins como [recompensa](/glosario/recompensa-de-bloque).
 
-Este proceso cumple dos funciones fundamentales: seguridad (hace extremadamente costoso atacar la red) y emisión (es la única forma de crear nuevos bitcoins). La minería es el corazón del sistema de consenso de Bitcoin llamado **Proof of Work**.
+Este proceso cumple dos funciones fundamentales: seguridad (hace extremadamente costoso atacar la red) y emisión (es la única forma de crear nuevos bitcoins). La minería es el corazón del sistema de consenso de Bitcoin llamado **[Proof of Work](/glosario/proof-of-work)**.
 
 ## ¿Cómo Funciona el Proof of Work?
 
 ### El proceso paso a paso
 
-1. **Transacciones pendientes**: Los usuarios envían transacciones que esperan en la "mempool"
+1. **Transacciones pendientes**: Los usuarios envían transacciones que esperan en la "[mempool](/glosario/mempool)"
 2. **Selección**: Los mineros seleccionan transacciones priorizando las que pagan más fees
 3. **Construcción**: El minero crea un bloque con las transacciones y un número "nonce"
 4. **Búsqueda del hash**: Debe encontrar un hash que comience con cierto número de ceros
@@ -1390,7 +1412,7 @@ Se ajusta cada 2.016 bloques (~2 semanas) para mantener 10 minutos promedio entr
 **2009-2010: CPUs** - Satoshi minó los primeros bloques con su CPU.
 **2010-2013: GPUs** - Más eficientes para cálculos repetitivos.
 **2013-2014: FPGAs** - Mejor eficiencia energética.
-**2013-presente: ASICs** - Chips diseñados exclusivamente para minar Bitcoin, miles de veces más eficientes.
+**2013-presente: [ASICs](/glosario/asic)** - Chips diseñados exclusivamente para minar Bitcoin, miles de veces más eficientes.
 
 ### ASICs modernos
 
@@ -1459,11 +1481,13 @@ La minería individual en España suele ser difícil por el costo eléctrico. Es
 
 La minería de Bitcoin es fascinante y esencial para la seguridad de la red. Aunque ya no es rentable para individuos en la mayoría de situaciones, entender cómo funciona te ayuda a comprender por qué Bitcoin es seguro y valioso.
 
-¿Quieres profundizar en Bitcoin y su tecnología? Explora nuestros cursos en Nodo360.
+La lección [Minería y prueba de trabajo](/cursos/como-funciona-bitcoin-nivel-basico/mineria-y-prueba-de-trabajo), del curso Cómo funciona Bitcoin, explica el mecanismo desde dentro: qué se calcula, por qué cuesta y qué lo ajusta.
 `
   },
   {
     slug: 'nfts-que-son-para-que-sirven',
+    relatedCourse: 'introduccion-a-web3',
+    relatedLesson: 'tokens-y-nfts',
     title: 'NFTs: Qué Son, Para Qué Sirven y Tienen Futuro en 2026',
     description: 'Guía completa sobre NFTs. Aprende qué son los tokens no fungibles, cómo funcionan, sus casos de uso reales y si tienen futuro más allá del hype.',
     category: 'web3',
@@ -1502,7 +1526,7 @@ NFT significa **Non-Fungible Token** (Token No Fungible). Para entender qué sig
 - **Fungible**: Intercambiable por otro igual. Un Bitcoin es igual a otro Bitcoin. Un euro es igual a otro euro.
 - **No fungible**: Único e irrepetible. El Guernica de Picasso no es igual a cualquier otro cuadro.
 
-Un NFT es un activo digital único registrado en una blockchain que certifica propiedad y autenticidad. Piensa en él como un certificado digital de propiedad que no puede falsificarse.
+Un NFT es un activo digital único registrado en una [blockchain](/glosario/blockchain) que certifica propiedad y autenticidad. Piensa en él como un certificado digital de propiedad que no puede falsificarse.
 
 ### ¿Qué hace especial a un NFT?
 
@@ -1516,7 +1540,7 @@ Un NFT es un activo digital único registrado en una blockchain que certifica pr
 
 ### ERC-721
 
-El estándar original para NFTs en Ethereum, creado en 2018. Cada token es completamente único con su propio contrato.
+El estándar original para [NFTs](/glosario/nft) en Ethereum, creado en 2018. Cada token es completamente único con su propio contrato.
 
 **Características:**
 - Un token = un activo único
@@ -1525,7 +1549,7 @@ El estándar original para NFTs en Ethereum, creado en 2018. Cada token es compl
 
 ### ERC-1155
 
-Estándar más nuevo y eficiente que permite crear tokens fungibles y no fungibles en el mismo contrato.
+Estándar más nuevo y eficiente que permite crear [tokens](/glosario/token) fungibles y no fungibles en el mismo contrato.
 
 **Características:**
 - Múltiples tipos de tokens en un contrato
@@ -1679,7 +1703,7 @@ No compres nada sin entender qué estás comprando. Lee sobre el proyecto, el eq
 
 ### 2. Wallet compatible
 
-Necesitas una wallet como MetaMask que soporte NFTs.
+Necesitas una [wallet](/glosario/wallet) como MetaMask que soporte NFTs.
 
 ### 3. Fondos
 
@@ -1702,11 +1726,13 @@ Los NFTs son una tecnología poderosa para la propiedad digital, pero el mercado
 
 Entender NFTs te ayuda a navegar Web3 y las nuevas formas de propiedad, identidad y economía digital.
 
-¿Quieres profundizar en NFTs y Web3? Explora nuestros cursos en Nodo360 para aprender de forma estructurada y segura.
+La lección [Tokens y NFTs](/cursos/introduccion-a-web3/tokens-y-nfts), del curso Qué es Web3 y qué no, distingue qué representa cada cosa y qué no garantiza ninguna de las dos.
 `
   },
   {
     slug: 'staking-criptomonedas-guia',
+    relatedCourse: 'fundamentos-blockchain',
+    relatedLesson: 'otras-formas-de-consenso',
     title: 'Staking de Criptomonedas: Qué Es y De Dónde Sale la Recompensa',
     description: 'Guía sobre el staking de criptomonedas: qué es, cómo funciona, de dónde sale la recompensa, qué riesgos tiene y qué preguntar antes de usar cualquier servicio.',
     category: 'defi',
@@ -1740,11 +1766,11 @@ Entender NFTs te ayuda a navegar Web3 y las nuevas formas de propiedad, identida
     content: `
 ## ¿Qué es el Staking?
 
-El staking es el proceso de bloquear tus criptomonedas en una red blockchain para ayudar a validar transacciones y mantener la seguridad de la red. A cambio, recibes recompensas en forma de más criptomonedas.
+El [staking](/glosario/staking) es el proceso de bloquear tus criptomonedas en una red blockchain para ayudar a validar transacciones y mantener la seguridad de la red. A cambio, recibes recompensas en forma de más criptomonedas.
 
 Se compara a menudo con un depósito a plazo fijo, y la comparación engaña en lo esencial: un depósito conserva el capital y aquí no hay nada que lo garantice. Lo que hay es un activo cuyo precio se mueve, bloqueado durante un tiempo, que puede recibir unidades adicionales.
 
-El staking es posible en blockchains que usan el mecanismo de consenso **Proof of Stake (PoS)**, a diferencia de Bitcoin que usa Proof of Work (minería).
+El staking es posible en blockchains que usan el mecanismo de [consenso](/glosario/consenso) **[Proof of Stake](/glosario/proof-of-stake) (PoS)**, a diferencia de Bitcoin que usa Proof of Work (minería).
 
 ## Proof of Stake vs Proof of Work
 
@@ -1769,7 +1795,7 @@ El staking es posible en blockchains que usan el mecanismo de consenso **Proof o
 ### Proceso simplificado
 
 1. **Adquieres** la criptomoneda de la red en la que quieras participar
-2. **Bloqueas** tus tokens en un contrato de staking o con un validador
+2. **Bloqueas** tus [tokens](/glosario/token) en un contrato de staking o con un validador
 3. **El protocolo** te selecciona aleatoriamente para validar transacciones (ponderado por tu stake)
 4. **Validas** transacciones correctamente
 5. **Recibes** recompensas periódicamente
@@ -1961,6 +1987,8 @@ Si quieres entender qué hay debajo de todo esto, el curso *Blockchain: lo que B
   },
   {
     slug: 'seguridad-crypto-proteger-criptomonedas',
+    relatedCourse: 'seguridad-basica-en-bitcoin-y-criptomonedas',
+    relatedLesson: 'buenas-practicas-minimas-de-seguridad',
     title: 'Seguridad Crypto: 10 Consejos para Proteger tus Criptomonedas',
     description: 'Guía esencial de seguridad para proteger tus criptomonedas. Aprende a evitar estafas, phishing, rug pulls y los errores más comunes que hacen perder fondos.',
     category: 'bitcoin',
@@ -2002,7 +2030,7 @@ Cada año, miles de millones de dólares se pierden por hackeos, estafas y error
 
 ### 1. Protege tu Seed Phrase como tu Vida
 
-Tu seed phrase (12-24 palabras) es la llave maestra de tus fondos. Quien la tenga, controla tus criptomonedas.
+Tu [seed phrase](/glosario/seed-phrase) (12-24 palabras) es la llave maestra de tus fondos. Quien la tenga, controla tus criptomonedas.
 
 **Reglas de oro:**
 - Escríbela en papel o grábala en metal (nunca digital)
@@ -2018,7 +2046,7 @@ Tu seed phrase (12-24 palabras) es la llave maestra de tus fondos. Quien la teng
 
 ### 2. Activa Autenticación en Dos Factores (2FA)
 
-Activa 2FA en TODOS los servicios crypto que uses. Pero no cualquier 2FA.
+Activa [2FA](/glosario/2fa) en TODOS los servicios crypto que uses. Pero no cualquier 2FA.
 
 **Orden de preferencia:**
 1. **Llave hardware** (YubiKey) - Más seguro
@@ -2029,7 +2057,7 @@ Activa 2FA en TODOS los servicios crypto que uses. Pero no cualquier 2FA.
 
 ### 3. Cuidado con el Phishing
 
-El phishing es el ataque más común. Los estafadores crean sitios web falsos idénticos a los reales para robar tus credenciales.
+El [phishing](/glosario/phishing) es el ataque más común. Los estafadores crean sitios web falsos idénticos a los reales para robar tus credenciales.
 
 **Señales de alerta:**
 - URLs ligeramente diferentes (binannce.com vs binance.com)
@@ -2076,7 +2104,7 @@ Un "rug pull" es cuando los creadores de un proyecto desaparecen con los fondos 
 
 ### 6. Qué protege una hardware wallet
 
-Si tienes más de 500-1000€ en crypto, una hardware wallet es esencial.
+Si tienes más de 500-1000€ en crypto, una [hardware wallet](/glosario/hardware-wallet) es esencial.
 
 **Las llaves privadas NUNCA salen del dispositivo**, haciendo imposible que malware en tu ordenador las robe.
 
@@ -2197,6 +2225,8 @@ La buena noticia: siguiendo estas prácticas, puedes operar con confianza y prot
   },
   {
     slug: 'bitcoin-vs-oro-comparativa',
+    relatedCourse: 'fundamentos-de-bitcoin',
+    relatedLesson: 'es-bitcoin-dinero-las-tres-funciones',
     title: 'Bitcoin y oro: en qué se parecen y en qué no',
     description: 'Comparación propiedad por propiedad entre Bitcoin y el oro: escasez, portabilidad, divisibilidad, verificabilidad y resistencia a la confiscación. Qué se puede comprobar de cada uno y qué no.',
     category: 'bitcoin',
@@ -2218,7 +2248,7 @@ La buena noticia: siguiendo estas prácticas, puedes operar con confianza y prot
     content: `
 ## Bitcoin y el «oro digital»
 
-A Bitcoin se le llama «oro digital» desde sus primeros años. La comparación es útil porque los dos se proponen para lo mismo —guardar valor a lo largo del tiempo— y es engañosa porque lo consiguen de formas que no se parecen en nada.
+A [Bitcoin](/glosario/bitcoin) se le llama «oro digital» desde sus primeros años. La comparación es útil porque los dos se proponen para lo mismo —guardar valor a lo largo del tiempo— y es engañosa porque lo consiguen de formas que no se parecen en nada.
 
 Este artículo los compara propiedad por propiedad: de dónde viene el valor de cada uno, en qué se parecen, en qué no, y qué limitaciones tiene la propia comparación. No dice cuál conviene. Dice de qué depende cada cosa.
 
@@ -2350,7 +2380,7 @@ Quien te dé una cifra de rentabilidad futura para cualquiera de los dos está o
 - Se mueve mucho más, y las caídas grandes se han repetido varias veces
 - No hay nada en el protocolo que amortigüe el precio
 
-**La diferencia**: es la mayor de todas, y va en contra de Bitcoin para quien necesite estabilidad a corto plazo. Sobre si esa volatilidad bajará con el tiempo se puede tener una opinión, pero no un dato: solo se sabrá si ocurre.
+**La diferencia**: es la mayor de todas, y va en contra de Bitcoin para quien necesite estabilidad a corto plazo. Sobre si esa [volatilidad](/glosario/volatilidad) bajará con el tiempo se puede tener una opinión, pero no un dato: solo se sabrá si ocurre.
 
 ## Liquidez y accesibilidad
 
@@ -2432,6 +2462,8 @@ Cuál encaja mejor depende de para qué, de cuánto tiempo y de quién vaya a cu
   },
   {
     slug: 'layer-2-blockchain-escalabilidad',
+    relatedCourse: 'fundamentos-blockchain',
+    relatedLesson: 'capas-y-puentes',
     title: 'Layer 2 en Blockchain: Qué Son y Por Qué Son el Futuro de la Escalabilidad',
     description: 'Guía completa sobre soluciones Layer 2. Aprende qué son Lightning Network, Rollups, y cómo resuelven los problemas de escalabilidad de blockchain.',
     category: 'blockchain',
@@ -2472,9 +2504,9 @@ Las blockchains de primera generación tienen un problema fundamental: no pueden
 - Bitcoin: ~7 TPS
 - Ethereum: ~15-30 TPS
 
-Este "trilema de la escalabilidad" (descentralización, seguridad, escalabilidad - elige dos) ha limitado la adopción masiva de blockchain.
+Este "trilema de la escalabilidad" (descentralización, seguridad, escalabilidad - elige dos) ha limitado la adopción masiva de [blockchain](/glosario/blockchain).
 
-Las soluciones Layer 2 buscan resolver esto sin comprometer la seguridad de la capa base.
+Las soluciones [Layer 2](/glosario/layer-2) buscan resolver esto sin comprometer la seguridad de la capa base.
 
 ## ¿Qué es Layer 2?
 
@@ -2491,7 +2523,7 @@ Layer 2 (capa 2) se refiere a protocolos construidos "encima" de una blockchain 
 
 ## Lightning Network (Bitcoin)
 
-Lightning Network es la principal solución Layer 2 para Bitcoin. Permite pagos instantáneos y casi gratuitos.
+[Lightning Network](/glosario/lightning-network) es la principal solución Layer 2 para Bitcoin. Permite pagos instantáneos y casi gratuitos.
 
 ### ¿Cómo funciona?
 
@@ -2536,7 +2568,7 @@ Los rollups son la solución de escalabilidad preferida para Ethereum. Ejecutan 
 - Período de desafío (~7 días) para retirar a L1
 
 **Proyectos principales:**
-- **Arbitrum**: El más grande por TVL
+- **Arbitrum**: El más grande por [TVL](/glosario/tvl)
 - **Optimism**: Enfocado en simplicidad
 - **Base**: De Coinbase, crecimiento rápido
 
@@ -2628,11 +2660,13 @@ Las soluciones Layer 2 son fundamentales para que blockchain alcance adopción m
 
 Lightning Network para Bitcoin y los rollups para Ethereum están madurando rápidamente. Aprender a usarlos te permite aprovechar lo mejor de ambos mundos: la seguridad de L1 con la velocidad y bajos costos de L2.
 
-¿Quieres aprender a usar Layer 2 de forma práctica? Explora nuestros cursos en Nodo360.
+La lección [Capas y puentes](/cursos/fundamentos-blockchain/capas-y-puentes), del curso Blockchain: lo que Bitcoin no es, explica qué se gana al salir de la capa base y qué se cede al hacerlo.
 `
   },
   {
     slug: 'dao-organizaciones-descentralizadas',
+    relatedCourse: 'introduccion-a-web3',
+    relatedLesson: 'como-mirar-un-proyecto',
     title: 'DAOs: Qué Son las Organizaciones Autónomas Descentralizadas',
     description: 'Guía completa sobre DAOs. Aprende qué son las organizaciones descentralizadas, cómo funcionan, ejemplos reales, y cómo participar en gobernanza blockchain.',
     category: 'web3',
@@ -2668,9 +2702,9 @@ Lightning Network para Bitcoin y los rollups para Ethereum están madurando ráp
 
 DAO significa **Decentralized Autonomous Organization** (Organización Autónoma Descentralizada). Es una organización gobernada por código y decisiones colectivas de sus miembros, sin una estructura jerárquica tradicional.
 
-En lugar de directivos y consejos de administración, las DAOs usan:
+En lugar de directivos y consejos de administración, las [DAOs](/glosario/dao) usan:
 - **Smart contracts**: Reglas codificadas que se ejecutan automáticamente
-- **Tokens de gobernanza**: Votos proporcionales a los tokens que posees
+- **Tokens de gobernanza**: Votos proporcionales a los [tokens](/glosario/token) que posees
 - **Propuestas on-chain**: Cualquier miembro puede proponer cambios
 
 Piensa en una DAO como una empresa donde los accionistas votan directamente sobre cada decisión importante, y esas decisiones se ejecutan automáticamente.
@@ -2696,7 +2730,7 @@ Piensa en una DAO como una empresa donde los accionistas votan directamente sobr
 
 ### Mecanismos de votación
 
-- **Token voting**: 1 token = 1 voto (simple pero favorece ballenas)
+- **Token voting**: 1 token = 1 voto (simple pero favorece [ballenas](/glosario/ballena))
 - **Cuadrático**: Voto proporcional a la raíz cuadrada de tokens
 - **Delegación**: Puedes delegar tu voto a representantes
 - **Conviction voting**: Tu voto gana peso con el tiempo
@@ -2844,7 +2878,7 @@ Si no tienes tiempo para seguir todo, delega tu poder de voto a alguien de confi
 ### Pasos básicos
 
 1. Define el propósito y reglas
-2. Crea o elige un token de gobernanza
+2. Crea o elige un [token de gobernanza](/glosario/governance-token)
 3. Configura la tesorería (multisig)
 4. Establece el sistema de votación
 5. Construye la comunidad
@@ -2873,11 +2907,13 @@ Las DAOs representan un experimento radical en coordinación humana. Aunque tien
 
 No son perfectas, pero están iterando rápidamente. Participar en una DAO es una forma de experimentar el futuro de la gobernanza y las organizaciones.
 
-¿Quieres profundizar en Web3 y gobernanza descentralizada? Explora nuestros cursos en Nodo360.
+Todavía no tenemos un curso sobre gobernanza descentralizada. Lo más cercano es [Qué es Web3 y qué no](/cursos/introduccion-a-web3), donde la lección Cómo mirar un proyecto se ocupa de qué preguntar antes de entrar en uno.
 `
   },
   {
     slug: 'halving-bitcoin-que-es-cuando',
+    relatedCourse: 'como-funciona-bitcoin-nivel-basico',
+    relatedLesson: 'mineria-y-prueba-de-trabajo',
     title: 'Halving de Bitcoin: Qué Es, Cuándo Ocurre y Qué Cambia de Verdad',
     description: 'Guía sobre el halving de Bitcoin: qué es, cómo funciona la reducción de la recompensa cada 210.000 bloques, qué le ocurre al minero ese día y cuándo será el próximo.',
     category: 'bitcoin',
@@ -2911,7 +2947,7 @@ No son perfectas, pero están iterando rápidamente. Participar en una DAO es un
     content: `
 ## ¿Qué es el Halving de Bitcoin?
 
-El halving (también llamado "halvening") es un evento programado en el código de Bitcoin que reduce a la mitad la recompensa que reciben los mineros por validar bloques.
+El [halving](/glosario/halving) (también llamado "halvening") es un evento programado en el código de Bitcoin que reduce a la mitad la recompensa que reciben los [mineros](/glosario/mineria) por validar bloques.
 
 Ocurre cada 210.000 bloques, aproximadamente cada 4 años. Es uno de los eventos más importantes en el ecosistema Bitcoin porque afecta directamente la emisión de nuevos bitcoins.
 
@@ -3092,7 +3128,7 @@ Es una pregunta abierta y no tiene respuesta comprobable. La fecha del halving s
 
 ### ¿Qué le ocurre al minero el día del halving?
 
-Esta sí tiene respuesta concreta, con una precisión que conviene no saltarse: **lo que se reduce a la mitad de un día para otro es el subsidio por bloque, no sus ingresos**. Las comisiones de las transacciones que incluye no cambian por el halving, así que lo que cobra baja menos de la mitad, y cuánto menos depende de lo que se esté pagando en comisiones. Sus costes, mientras tanto, siguen iguales. Los equipos menos eficientes dejan de ser rentables y se apagan, y el ajuste de dificultad reacciona a eso en las semanas siguientes. Es el efecto directo y medible del halving.
+Esta sí tiene respuesta concreta, con una precisión que conviene no saltarse: **lo que se reduce a la mitad de un día para otro es el subsidio por bloque, no sus ingresos**. Las comisiones de las transacciones que incluye no cambian por el halving, así que lo que cobra baja menos de la mitad, y cuánto menos depende de lo que se esté pagando en comisiones. Sus costes, mientras tanto, siguen iguales. Los equipos menos eficientes dejan de ser rentables y se apagan, y el ajuste de [dificultad](/glosario/dificultad) reacciona a eso en las semanas siguientes. Es el efecto directo y medible del halving.
 
 ### ¿Puede cancelarse un halving?
 
@@ -3113,11 +3149,13 @@ Sin embargo, cada ciclo es diferente. La institucionalización, regulación, y f
 
 Lo que sí es seguro: solo habrá 21 millones de bitcoins, y cada halving nos acerca más a ese límite.
 
-¿Quieres entender mejor los ciclos de Bitcoin y estrategias de inversión? Explora nuestros cursos en Nodo360.
+La lección [Minería y prueba de trabajo](/cursos/como-funciona-bitcoin-nivel-basico/mineria-y-prueba-de-trabajo), del curso Cómo funciona Bitcoin, explica de dónde sale la recompensa que el halving reduce.
 `
   },
   {
     slug: 'fallo-entropia-coldcard-semillas-bitcoin',
+    relatedCourse: 'cold-storage-protege-tus-bitcoin',
+    relatedLesson: 'seed-phrases-tu-llave-maestra',
     title: 'El fallo de entropía de Coldcard: qué enseña sobre las semillas de Bitcoin',
     description: 'En julio de 2026 se vaciaron carteras creadas con dispositivos Coldcard por un error de firmware que debilitó la generación de semillas. Qué ocurrió y por qué la aleatoriedad es el cimiento de toda cartera.',
     category: 'bitcoin',
@@ -3134,7 +3172,7 @@ Lo que sí es seguro: solo habrá 21 millones de bitcoins, y cada halving nos ac
 
 El 30 de julio de 2026 se produjo un barrido coordinado de fondos desde carteras cuya semilla se había generado en dispositivos Coldcard: cientos de carteras de firma única vaciadas en cuestión de minutos. Las estimaciones publicadas del total sustraído no coinciden entre sí y el fabricante no ha dado ninguna, así que aquí no se reproduce una cifra.
 
-Conviene descartar de entrada la explicación intuitiva: nadie entró en los dispositivos. No hubo acceso remoto, ni programas maliciosos en los equipos de las víctimas, ni una base de datos filtrada. Los aparatos afectados siguieron haciendo exactamente lo que se esperaba de ellos, sin conexión, hasta el final. Los atacantes no necesitaron tocarlos: reconstruyeron las semillas por su cuenta, también sin conexión, aprovechando un defecto en cómo se habían generado años antes.
+Conviene descartar de entrada la explicación intuitiva: nadie entró en los dispositivos. No hubo acceso remoto, ni programas maliciosos en los equipos de las víctimas, ni una base de datos filtrada. Los aparatos afectados siguieron haciendo exactamente lo que se esperaba de ellos, sin conexión, hasta el final. Los atacantes no necesitaron tocarlos: reconstruyeron las [semillas](/glosario/seed-phrase) por su cuenta, también sin conexión, aprovechando un defecto en cómo se habían generado años antes.
 
 ## Un generador que dejó de funcionar sin avisar
 
@@ -3161,7 +3199,7 @@ No hay nada que mirar. No existe una comprobación que se pueda hacer sobre las 
 
 De ahí se sigue algo incómodo. Una semilla puede estar comprometida desde el instante en que nace, y el dispositivo puede no haber tocado internet jamás. Anotar las palabras en metal, repartir copias en dos ubicaciones y no fotografiarlas nunca —todo lo correcto— no cambia nada si el número del que salieron era adivinable. La custodia protege una semilla que existe; no puede arreglar su origen.
 
-En [la lección sobre seed phrases del curso de Cold Storage](/cursos/cold-storage-protege-tus-bitcoin/seed-phrases-tu-llave-maestra) desarrollamos esto en detalle: de dónde salen las palabras, qué errores detecta el checksum y cuáles se le escapan, y por qué la entropía sostiene todo lo que viene después.
+En [la lección sobre seed phrases del curso de Cold Storage](/cursos/cold-storage-protege-tus-bitcoin/seed-phrases-tu-llave-maestra) desarrollamos esto en detalle: de dónde salen las palabras, qué errores detecta el checksum y cuáles se le escapan, y por qué la [entropía](/glosario/criptografia) sostiene todo lo que viene después.
 
 ## Sin conexión no significa a salvo
 

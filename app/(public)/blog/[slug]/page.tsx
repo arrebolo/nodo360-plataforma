@@ -2,11 +2,12 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Calendar, Clock, ArrowLeft, ArrowRight, User, BookOpen, History } from 'lucide-react'
+import { Calendar, Clock, ArrowLeft, ArrowRight, User, History } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
 import { getPostBySlug, getRelatedPosts, blogCategories, getAllPosts, type InlineImage } from '@/lib/blog-data'
 import { JsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { BlogDisclaimer } from '@/components/blog/BlogDisclaimer'
+import { BloqueCursoDelArticulo } from '@/components/enlazado/BloqueCursoDelArticulo'
 import type { Metadata } from 'next'
 
 interface BlogPostPageProps {
@@ -442,33 +443,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <BlogDisclaimer />
       </article>
 
-      {/* CTA */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        <div className="bg-gradient-to-br from-brand/10 to-brand-light/5 border border-brand/20 rounded-2xl p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-2xl bg-brand-light/20 flex items-center justify-center">
-                <BookOpen className="w-8 h-8 text-brand-light" />
-              </div>
-            </div>
-            <div className="flex-1 text-center sm:text-left">
-              <h3 className="text-xl font-bold text-white mb-2">
-                ¿Quieres profundizar más?
-              </h3>
-              <p className="text-white/70">
-                Explora nuestros cursos completos con ejercicios prácticos y certificados.
-              </p>
-            </div>
-            <Link
-              href="/cursos"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-light to-brand text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-brand-light/25 transition whitespace-nowrap"
-            >
-              Ver Cursos
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* El curso concreto al que lleva este articulo. Antes habia aqui un
+          "Explora nuestros cursos" que no llevaba a ningun sitio en
+          particular y prometia cosas en general. */}
+      <BloqueCursoDelArticulo post={post} />
 
       {/* Related Posts */}
       {relatedPosts.length > 0 && (
