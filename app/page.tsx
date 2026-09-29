@@ -291,8 +291,11 @@ export default function HomePage() {
                       <DollarSign className="w-4 h-4 text-success" />
                     </div>
                     <span>
-                      Hoy todos los cursos son gratuitos. Si en el futuro hay
-                      monetización, los instructores participarán en los ingresos
+                      {/* Decia «los instructores participarán en los ingresos»:
+                          una promesa de reparto que nadie ha acordado. */}
+                      Hoy todos los cursos son gratuitos y no hay remuneración para
+                      instructores. Si en el futuro hay monetización, las condiciones
+                      se acordarán por escrito antes de cualquier cobro
                     </span>
                   </li>
                   <li className="flex items-center gap-3 text-white/80">

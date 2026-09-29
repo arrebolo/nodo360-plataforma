@@ -102,8 +102,11 @@ const faqs = [
     answer: 'Si, pero los cambios significativos requeriran una nueva revisión para mantener la calidad de la plataforma.',
   },
   {
-    question: '¿Como funcionan las comisiones?',
-    answer: 'Los instructores reciben entre 35-40% de cada venta. Las comisiones se pagan mensualmente via transferencia bancaria o crypto.',
+    // Decia que los instructores reciben «entre 35-40 % de cada venta» y que se
+    // paga «mensualmente via transferencia bancaria o crypto». Nada de eso
+    // existe: no hay ventas, ni pasarela de pago, ni acuerdo con nadie.
+    question: '¿Cobro algo por publicar un curso?',
+    answer: 'Hoy todo el contenido de Nodo360 es gratuito y no hay remuneración para instructores. Si en el futuro hay monetización, las condiciones se acordarán por escrito antes de cualquier cobro.',
   },
 ]
 

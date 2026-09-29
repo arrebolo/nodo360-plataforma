@@ -58,7 +58,7 @@ export function PricingToggles({
         <div>
           <LabelWithTooltip
             label="Precio (USD)"
-            tooltip="Precio en dolares. Usa 0 para curso gratuito. Los instructores reciben 35-40% de cada venta"
+            tooltip="Precio en dolares. Usa 0 para curso gratuito. Hoy no hay pasarela de pago: todo el catalogo es gratuito"
             htmlFor="course-price"
           />
           <input
@@ -72,8 +72,14 @@ export function PricingToggles({
             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition"
             placeholder="Ej: 49.99"
           />
+          {/*
+            Aqui se calculaba «Tu comisión: $X - $Y por venta» multiplicando el
+            precio por 0,35 y 0,40. Ni hay ventas ni hay acuerdo de reparto.
+          */}
           <p className="mt-2 text-sm text-white/50">
-            Tu comisión: ${price ? (price * 0.35).toFixed(2) : '0.00'} - ${price ? (price * 0.40).toFixed(2) : '0.00'} por venta
+            Hoy todo el contenido de Nodo360 es gratuito y no hay remuneración para
+            instructores. Si en el futuro hay monetización, las condiciones se
+            acordarán por escrito antes de cualquier cobro.
           </p>
           {errors?.price && <p className="mt-2 text-sm text-red-400">{errors.price}</p>}
         </div>
