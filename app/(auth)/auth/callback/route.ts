@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getMiPerfil } from '@/lib/auth/miPerfil'
+import { enviarBienvenidaUnaSolaVez } from '@/lib/email/bienvenida-una-sola-vez'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import type { EmailOtpType, User } from '@supabase/supabase-js'
@@ -310,6 +311,25 @@ async function handleSuccessfulAuth(
     await supabase.auth.signOut()
     return NextResponse.redirect(`${origin}/login?error=suspended`)
   }
+
+  // EL CORREO DE BIENVENIDA SE ENVIA AQUI, y no en el registro.
+  //
+  // Este es el punto por el que pasan los tres caminos que confirman una
+  // direccion: el enlace de confirmacion del registro con contraseña
+  // (token_hash + type=signup), la vuelta de Google —que trae la direccion ya
+  // verificada, asi que su momento es el primer acceso— y el enlace magico.
+  // Una sola llamada cubre los tres, y el cerrojo de la base decide si toca.
+  //
+  // VA AQUI, y no mas abajo, porque mas abajo hay un retorno anticipado para
+  // admin e instructor: puesto despues, esos dos roles no lo recibirian nunca.
+  // Y va DESPUES de la comprobacion de suspension, porque a una cuenta suspendida
+  // no se le da la bienvenida.
+  //
+  // Se espera el resultado a proposito. En una funcion sin servidor, una promesa
+  // suelta se muere cuando se devuelve la respuesta, y el correo se quedaria sin
+  // enviar unas veces de cada tantas sin que nada lo registre. Para quien
+  // simplemente vuelve, esto es UNA consulta que no encuentra fila.
+  await enviarBienvenidaUnaSolaVez(user.id)
 
   // Admin o instructor siempre pasan
   if (profile?.role === 'admin' || profile?.role === 'instructor') {

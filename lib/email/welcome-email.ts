@@ -6,6 +6,16 @@ interface WelcomeEmailProps {
   userName: string
 }
 
+/**
+ * La base de los enlaces del correo.
+ *
+ * Estaba escrita a mano como `https://nodo360.com`, y en un correo eso no se
+ * nota hasta que alguien lo dispara desde un entorno de vista previa y manda a
+ * la gente a produccion (o a un enlace que no existe todavia). Con la variable,
+ * cada entorno enlaza a lo suyo; el valor por defecto es el de siempre.
+ */
+const SITIO = (process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com').replace(/\/$/, '')
+
 export async function sendWelcomeEmail({ to, userName }: WelcomeEmailProps) {
   console.log('📧 [sendWelcomeEmail] Enviando a:', to)
 
@@ -21,7 +31,7 @@ export async function sendWelcomeEmail({ to, userName }: WelcomeEmailProps) {
     const { data, error } = await resend.emails.send({
       from: REMITENTE_NODO360,
       to,
-      subject: '🎉 ¡Bienvenido a Nodo360!',
+      subject: 'Bienvenido a Nodo360',
       html: `
         <!DOCTYPE html>
         <html>
@@ -46,30 +56,30 @@ export async function sendWelcomeEmail({ to, userName }: WelcomeEmailProps) {
               </h2>
 
               <p style="color: #d1d5db; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-                Bienvenido a <strong style="color: #f7931a;">Nodo360</strong>, tu plataforma de educación Bitcoin y Blockchain en español.
+                Tu cuenta de <strong style="color: #f7931a;">Nodo360</strong> ya está confirmada. Aquí se aprende sobre Bitcoin, blockchain y Web3 en español.
               </p>
 
               <p style="color: #d1d5db; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-                Estás a punto de comenzar un viaje increíble hacia el conocimiento descentralizado. Aquí encontrarás:
+                Esto es lo que vas a encontrar:
               </p>
 
               <ul style="color: #d1d5db; font-size: 15px; line-height: 1.8; margin: 0 0 24px 0; padding-left: 20px;">
-                <li>📚 Cursos estructurados desde principiante hasta avanzado</li>
-                <li>🏆 Sistema de gamificación con XP y badges</li>
-                <li>📜 Certificados al completar cursos</li>
-                <li>🗳️ Participación en gobernanza comunitaria</li>
+                <li>📚 Cursos de nivel principiante e intermedio</li>
+                <li>🏆 XP e insignias a medida que avanzas</li>
+                <li>📜 Certificado al completar un curso</li>
               </ul>
 
               <!-- CTA Button -->
               <div style="text-align: center; margin: 32px 0;">
-                <a href="https://nodo360.com/dashboard"
+                <a href="${SITIO}/dashboard"
                    style="display: inline-block; background: linear-gradient(135deg, #ff6b35 0%, #f7931a 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
                   Comenzar a aprender →
                 </a>
               </div>
 
               <p style="color: #9ca3af; font-size: 14px; line-height: 1.6; margin: 0;">
-                Tu primer paso: explora nuestro curso <strong style="color: #f7931a;">"Bitcoin para Principiantes"</strong> y gana tus primeros XP.
+                Si no sabes por dónde empezar, el primer curso de la ruta de fundamentos es
+                <a href="${SITIO}/cursos/fundamentos-de-bitcoin" style="color: #f7931a; text-decoration: none; font-weight: 600;">Fundamentos de Bitcoin</a>.
               </p>
             <!-- Comunidad -->
             <div style="background: rgba(88,101,242,0.12); border: 1px solid rgba(88,101,242,0.25); border-radius: 12px; padding: 24px; margin-top: 24px; text-align: center;">

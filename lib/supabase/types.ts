@@ -1676,6 +1676,7 @@ export type Database = {
           twitter: string | null
           updated_at: string
           wants_beta_notification: boolean | null
+          welcome_email_sent_at: string | null
           website: string | null
         }
         Insert: {
@@ -1698,6 +1699,7 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           wants_beta_notification?: boolean | null
+          welcome_email_sent_at?: string | null
           website?: string | null
         }
         Update: {
@@ -1720,6 +1722,7 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           wants_beta_notification?: boolean | null
+          welcome_email_sent_at?: string | null
           website?: string | null
         }
         Relationships: []
