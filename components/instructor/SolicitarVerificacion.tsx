@@ -30,6 +30,7 @@ export default function SolicitarVerificacion({
 }) {
   const router = useRouter()
   const [elegida, setElegida] = useState('')
+  const [consiente, setConsiente] = useState(false)
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,7 +44,7 @@ export default function SolicitarVerificacion({
       const res = await fetch('/api/instructor/verificacion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ specialty_id: elegida }),
+        body: JSON.stringify({ specialty_id: elegida, consentimiento_anuncio: consiente }),
       })
       const datos = await res.json()
       if (!res.ok || !datos.success) {
@@ -51,6 +52,7 @@ export default function SolicitarVerificacion({
         return
       }
       setElegida('')
+      setConsiente(false)
       router.refresh()
     } catch {
       setError('No se pudo enviar la solicitud')
@@ -106,6 +108,29 @@ export default function SolicitarVerificacion({
           )}
         </div>
       )}
+
+      {/*
+        EL CONSENTIMIENTO PARA EL ANUNCIO PUBLICO.
+        Opcional y desmarcado por defecto. Se pide AQUI, al solicitar, y vale solo
+        para esta solicitud: consentir una vez no consiente las siguientes. Si no
+        se marca, no se publica nada en ningun sitio.
+      */}
+      <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={consiente}
+          onChange={(e) => setConsiente(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-orange-500"
+        />
+        <span className="text-sm text-white/70">
+          Acepto que, si mi verificación se aprueba, se anuncie en los canales de Nodo360
+          (Discord y Telegram) con mi nombre público y mi especialidad.
+          <span className="block text-xs text-white/40 mt-1">
+            Opcional. Solo se publicaría tu nombre público, la especialidad y el enlace a tu
+            perfil. Si se rechaza, no se anuncia nada.
+          </span>
+        </span>
+      </label>
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 
