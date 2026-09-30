@@ -58,7 +58,7 @@ export function InstructorPreviewModal({
       // Get user data
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('id, full_name, avatar_url, bio, role')
+        .select('id, full_name, avatar_url, role')
         .eq('id', instructorId)
         .single()
 
@@ -67,6 +67,23 @@ export function InstructorPreviewModal({
         setLoading(false)
         return
       }
+
+      // LA BIOGRAFIA, DE LA VISTA, Y EN SU PROPIA CONSULTA.
+      //
+      // `users.bio` esta cerrada para anon y authenticated desde la 104. Aqui el
+      // autor entra en `perfiles_publicos` por tener al menos un curso publicado,
+      // que es justo la razon por la que este modal existe.
+      //
+      // Aparte del select de arriba a proposito: dentro, un 42501 pondria
+      // userError y este modal diria «No se pudo cargar el perfil» por no poder
+      // leer un parrafo. Fuera, el modal se abre sin biografia.
+      const { data: publico } = await (supabase as unknown as SupabaseClient)
+        .from('perfiles_publicos')
+        .select('bio')
+        .eq('id', instructorId)
+        .maybeSingle()
+
+      const biografia = (publico as { bio: string | null } | null)?.bio ?? null
 
       // Los sellos, por la vista publica de la 093. La tabla de
       // certificaciones no la lee ninguna sesion: lleva dentro el numero de
@@ -101,7 +118,7 @@ export function InstructorPreviewModal({
         id: user.id,
         full_name: user.full_name,
         avatar_url: user.avatar_url,
-        bio: user.bio,
+        bio: biografia,
         headline: user.role === 'instructor' ? 'Instructor' : user.role === 'mentor' ? 'Mentor' : null,
         sello:
           vivos.length === 0

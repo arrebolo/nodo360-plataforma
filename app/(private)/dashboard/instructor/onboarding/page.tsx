@@ -51,12 +51,15 @@ export default function InstructorOnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Fetch user profile
-      const { data: profile } = await supabase
-        .from('users')
-        .select('avatar_url, bio')
-        .eq('id', user.id)
-        .single() as { data: UserProfile | null }
+      // LA FILA PROPIA VA POR mi_perfil(), NO POR SELECT.
+      //
+      // `users.bio` esta cerrada para authenticated desde la 104, y un GRANT de
+      // columna es por rol: cerrar la bio de los demas cierra tambien la propia.
+      // mi_perfil() es la puerta para lo propio —SECURITY DEFINER, devuelve la
+      // fila de auth.uid() entera— y no depende de esos GRANT. Es el mismo camino
+      // que ya usa /dashboard/perfil.
+      const { data: filas } = await (supabase as unknown as SupabaseClient).rpc('mi_perfil')
+      const profile = (Array.isArray(filas) ? filas[0] : null) as UserProfile | null
 
       // LAS VERIFICACIONES DE INSTRUCTOR, y no los certificados de alumno.
       //
