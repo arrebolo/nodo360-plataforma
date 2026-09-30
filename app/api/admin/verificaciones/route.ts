@@ -54,6 +54,19 @@ function numeroDeVerificacion() {
 }
 
 const RESULTADOS = ['pendiente', 'apto', 'no_apto'] as const
+/**
+ * Lo minimo que puede medir una nota de evaluador para rechazar o retirar.
+ *
+ * Se acepto un rechazo con la nota «000», y esa nota LLEGA TAL CUAL al candidato
+ * en su correo: es lo unico que va a leer sobre por que no salio adelante. Tres
+ * ceros no explican nada, y un correo que dice «esto es lo que anoto quien la
+ * evaluo» seguido de «000» es peor que no decir nada.
+ *
+ * Veinte caracteres no garantizan una buena explicacion —nada lo garantiza— pero
+ * si descartan el relleno accidental y obligan a escribir una frase.
+ */
+const MINIMO_DE_LA_NOTA = 20
+
 const DECISIONES = ['aprobada', 'rechazada', 'retirada'] as const
 
 // ---------------------------------------------------------------------------
@@ -143,6 +156,17 @@ export async function PATCH(req: NextRequest) {
   const id = typeof c.id === 'string' ? c.id : null
   const decision = typeof c.decision === 'string' ? c.decision : null
   const notas = typeof c.evaluator_notes === 'string' ? c.evaluator_notes.trim() : ''
+
+  // APROBAR SIN ANUNCIAR.
+  //
+  // Una casilla del panel permite aprobar sin publicar en Discord ni en Telegram.
+  // Es para poder probar el flujo completo —correo, notificacion, rol— sin dejar
+  // un anuncio de prueba en un canal publico, que es justo lo que paso la primera
+  // vez y hubo que borrar a mano.
+  //
+  // Solo se acepta el booleano verdadero. Y NO marca anunciado_el: el anuncio se
+  // queda pendiente, asi que se puede publicar despues si se quiere.
+  const noAnunciar = c.no_anunciar === true
   const oral = typeof c.oral_result === 'string' ? c.oral_result : null
   const practica = typeof c.practical_result === 'string' ? c.practical_result : null
   const externo = c.evaluator_is_external === true
@@ -261,9 +285,11 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (decision === 'rechazada') {
-    if (!notas) {
+    if (notas.length < MINIMO_DE_LA_NOTA) {
       return NextResponse.json(
-        { error: 'Un rechazo necesita explicarse: escribe las notas' },
+        {
+          error: `Un rechazo necesita explicarse: escribe al menos ${MINIMO_DE_LA_NOTA} caracteres. Esta nota llega tal cual a la persona.`,
+        },
         { status: 400 }
       )
     }
@@ -275,9 +301,11 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (decision === 'retirada') {
-    if (!notas) {
+    if (notas.length < MINIMO_DE_LA_NOTA) {
       return NextResponse.json(
-        { error: 'Una retirada necesita explicarse: escribe el motivo' },
+        {
+          error: `Una retirada necesita explicarse: escribe al menos ${MINIMO_DE_LA_NOTA} caracteres. Queda registrado y es lo que se le podra decir a esa persona.`,
+        },
         { status: 400 }
       )
     }
@@ -408,7 +436,11 @@ export async function PATCH(req: NextRequest) {
   // aprobada, consentida y no anunciada todavia. Que el anuncio publique el
   // nombre de una persona es justo el motivo de no dejarlo en manos de una sola
   // comprobacion.
-  if (decision === 'aprobada' && exp.consentimiento_anuncio && !exp.anunciado_el) {
+  if (noAnunciar && decision === 'aprobada') {
+    console.log('[admin/verificaciones] «No anunciar» marcado: no se publica en ningun canal')
+  }
+
+  if (!noAnunciar && decision === 'aprobada' && exp.consentimiento_anuncio && !exp.anunciado_el) {
     try {
       const [{ data: persona }, { data: esp }] = await Promise.all([
         db.from('users').select('full_name').eq('id', exp.user_id).maybeSingle(),
