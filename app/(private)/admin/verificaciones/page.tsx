@@ -31,7 +31,8 @@ export default async function VerificacionesPage() {
     .select(`
       id, certification_number, status, issued_at, expires_at, revoked_at, revoked_reason,
       oral_result, practical_result, evaluator_notes, evaluator_is_external,
-      accreditation_type, accreditation_ref, attempt_id, created_at,
+      accreditation_type, accreditation_ref, attempt_id, created_at, updated_at,
+      rechazada_el,
       users!user_id ( id, full_name, email ),
       instructor_specialties ( id, nombre, slug, requiere_acreditacion, permite_evaluador_externo )
     `)
@@ -166,7 +167,40 @@ function Expediente({ e }: { e: any }) {
         </div>
       </dl>
 
-      {e.evaluator_notes && (
+      {/*
+        LO RESUELTO SE CUENTA, NO SE DEJA EN BLANCO.
+        Una rechazada o una retirada no ofrecen acciones —el formulario solo sale
+        para pendiente y aprobada—, asi que si no se dice aqui por que y cuando, la
+        tarjeta se queda muda justo en los dos casos en los que hay algo que
+        explicar. El motivo de una retirada vive en revoked_reason, no en
+        evaluator_notes: son campos distintos y antes solo se pintaba el segundo.
+      */}
+      {e.status === 'retirada' && (
+        <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3">
+          <p className="text-xs text-white/40">
+            Retirada el {fecha(e.revoked_at)}
+          </p>
+          <p className="mt-1 text-sm text-white/70">
+            {e.revoked_reason ?? 'Sin motivo registrado.'}
+          </p>
+        </div>
+      )}
+
+      {e.status === 'rechazada' && (
+        <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3">
+          <p className="text-xs text-white/40">
+            Rechazada el {fecha(e.rechazada_el ?? e.updated_at ?? e.created_at)}
+          </p>
+          <p className="mt-1 text-sm text-white/70">
+            {e.evaluator_notes ?? 'Sin motivo registrado.'}
+          </p>
+          <p className="mt-2 text-xs text-white/40">
+            Puede volver a solicitarla 30 días después del rechazo.
+          </p>
+        </div>
+      )}
+
+      {e.evaluator_notes && e.status !== 'rechazada' && (
         <p className="mt-3 text-sm text-white/60 border-l-2 border-white/10 pl-3">
           {e.evaluator_notes}
         </p>
