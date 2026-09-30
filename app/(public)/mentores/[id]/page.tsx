@@ -62,13 +62,30 @@ export default async function MentorProfilePage({
   // Obtener perfil del usuario
   const { data: user } = await supabase
     .from('users')
-    .select('id, full_name, avatar_url, bio, created_at')
+    .select('id, full_name, avatar_url, created_at')
     .eq('id', id)
     .single()
 
   if (!user) {
     notFound()
   }
+
+  // LA BIOGRAFIA, DE LA VISTA, Y APARTE.
+  //
+  // `users.bio` esta cerrada para anon y authenticated desde la 104: sale por
+  // `perfiles_publicos`, donde este mentor entra por tener fila activa en
+  // user_roles, que es exactamente la puerta que ya comprueba esta pagina.
+  //
+  // Y en consulta aparte, no en el select de arriba: ahi dentro, un 42501
+  // dejaria `user` a null y esta pagina responderia 404 por no poder leer un
+  // parrafo. Fuera, lo que falta es el parrafo.
+  const { data: publico } = await supabase
+    .from('perfiles_publicos')
+    .select('bio')
+    .eq('id', id)
+    .maybeSingle()
+
+  const biografia = (publico as { bio: string | null } | null)?.bio ?? null
 
   // Obtener puntos totales
   const { data: points } = await supabase
@@ -230,7 +247,7 @@ export default async function MentorProfilePage({
             <section className="rounded-2xl bg-white/5 border border-white/10 p-6">
               <h2 className="text-lg font-semibold text-white mb-4">Acerca de</h2>
               <p className="text-gray-400 whitespace-pre-line">
-                {user.bio || 'Este mentor aún no ha agregado una descripción.'}
+                {biografia || 'Este mentor aún no ha agregado una descripción.'}
               </p>
             </section>
 

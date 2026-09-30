@@ -66,8 +66,7 @@ export default async function InstructorProfilePage({
       users (
         id,
         full_name,
-        avatar_url,
-        bio
+        avatar_url
       )
     `)
     .eq('user_id', id)
@@ -82,38 +81,41 @@ export default async function InstructorProfilePage({
     id: string
     full_name: string
     avatar_url: string | null
-    bio: string | null
   }
 
-  // La biografia de USERS es la que edita la persona en /dashboard/perfil.
-  // instructor_profiles.bio existe, pero esa tabla tiene UNA fila en toda la base
-  // y nadie la escribe: si esta vacia, la de users es la real.
-  const biografia = user.bio?.trim() || profile.bio || null
-
-  // LOS ENLACES SALEN DE UNA VISTA, Y VAN EN SU PROPIA CONSULTA.
+  // LA BIOGRAFIA Y LOS ENLACES SALEN DE UNA VISTA, EN SU PROPIA CONSULTA.
   //
-  // La vista es `enlaces_publicos_de_instructor` (migracion 103): solo devuelve
-  // filas con perfil de instructor ACTIVO. En `users` esas cuatro columnas estan
-  // cerradas para anon y para authenticated, porque un GRANT de columna no
-  // distingue filas: la 101 las abrio para el perfil del instructor y con ellas
-  // quedaron abiertos los enlaces de cualquier cuenta no-estudiante.
+  // La vista es `perfiles_publicos` (migracion 104): solo devuelve a quien tiene
+  // pagina publica —perfil de instructor activo, mentor activo o autor de un
+  // curso publicado— y los enlaces solo si es instructor. En `users`, bio y los
+  // cuatro enlaces estan cerrados para anon y para authenticated, porque un GRANT
+  // de columna es por rol y no distingue filas.
   //
-  // Y van aparte del embed del perfil a proposito: pedirlas dentro hacia que un
-  // 42501 tumbase la consulta entera y esta pagina devolviese 404 —medido: el
-  // perfil existia y respondia 404 por cuatro redes sociales—. Separadas, lo que
-  // falta si algo va mal es la seccion de enlaces, no el instructor.
-  const { data: enlacesDeUsuario } = await supabase
-    .from('enlaces_publicos_de_instructor')
-    .select('website, twitter, linkedin, github')
-    .eq('user_id', id)
+  // VAN APARTE DEL EMBED DEL PERFIL, Y NO ES UN DETALLE: cuando `bio` estaba
+  // dentro del embed, un 42501 tumbaba la consulta entera y esta pagina
+  // respondia 404 —medido, con los enlaces: el perfil existia y devolvia 404 por
+  // cuatro redes sociales—. Separadas, si la vista no esta lo que falta es el
+  // texto, no el instructor.
+  const { data: perfilPublico } = await supabase
+    .from('perfiles_publicos')
+    .select('bio, website, twitter, linkedin, github')
+    .eq('id', id)
     .maybeSingle()
 
-  const redes = (enlacesDeUsuario ?? null) as {
+  const publico = (perfilPublico ?? null) as {
+    bio: string | null
     website: string | null
     twitter: string | null
     linkedin: string | null
     github: string | null
   } | null
+
+  const redes = publico
+
+  // La biografia de USERS es la que edita la persona en /dashboard/perfil.
+  // instructor_profiles.bio existe, pero esa tabla tiene UNA fila en toda la base
+  // y nadie la escribe: si esta vacia, la de users es la real.
+  const biografia = publico?.bio?.trim() || profile.bio || null
 
   // twitter admite la URL o el nombre con arroba, asi que se normaliza aqui: la
   // base no lo impone porque las dos formas son razonables de escribir.
