@@ -90,7 +90,8 @@ export async function getMyCourseForEdit(userId: string, courseId: string) {
     .select(`
       id, title, slug, description, long_description,
       level, status, is_free, is_premium, price,
-      thumbnail_url, banner_url, rejection_reason
+      thumbnail_url, banner_url, rejection_reason,
+      published_at
     `)
     .eq("id", courseId)
     .eq("instructor_id", userId)
