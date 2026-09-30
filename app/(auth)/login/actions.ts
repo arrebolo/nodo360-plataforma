@@ -3,6 +3,8 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { correoNormalizado } from '@/lib/auth/correo-normalizado'
 import { redirectAfterLogin } from '@/lib/auth/redirect-after-login'
 import {
   findSpanishErrorMessage,
@@ -259,6 +261,45 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
   try {
     const supabase = await createClient()
     const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+
+    // UN BUZON, UNA CUENTA.
+    //
+    // Supabase impide repetir el correo EXACTO, y eso no basta: en Gmail los
+    // puntos y el sufijo +algo llevan al mismo buzon, asi que la misma persona
+    // podria abrir cuentas sin limite y saltarse, por ejemplo, el limite de
+    // intentos del examen de instructor.
+    //
+    // LA BARRERA DE VERDAD NO ESTA AQUI, esta en la base: el trigger
+    // trg_un_buzon_una_cuenta de la 106, que ademas cubre el registro con Google,
+    // que no pasa por este codigo. Esto es para poder decir lo que pasa en vez de
+    // devolver un error opaco.
+    //
+    // Va con el cliente de servicio porque `users.email` esta cerrado para anon
+    // desde la 049. Y el mensaje es EL MISMO que para un correo repetido exacto,
+    // a proposito: asi no se revela mas de lo que Supabase ya revela por su
+    // cuenta en ese caso.
+    try {
+      const buzon = correoNormalizado(email)
+      const { data: yaExiste } = await createAdminClient()
+        .from('users')
+        .select('id')
+        .eq('email_normalizado', buzon)
+        .limit(1)
+
+      if (yaExiste && yaExiste.length > 0) {
+        console.log('[Auth Actions] Registro rechazado: el buzon ya tiene cuenta')
+        return {
+          success: false,
+          message: 'Este correo electrónico ya está registrado.',
+          error: 'user_already_exists',
+        }
+      }
+    } catch (errorBuzon) {
+      // Si la 106 no esta aplicada, la columna no existe y esto falla. No se
+      // corta el registro por eso: el trigger es quien decide, y mientras no
+      // exista el comportamiento es el de antes.
+      console.warn('[Auth Actions] No se pudo comprobar el buzon normalizado:', errorBuzon)
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email,
