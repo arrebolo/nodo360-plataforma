@@ -206,7 +206,8 @@ export async function enviarVerificacionRetirada({
     </ul>
 
     <p style="${PARRAFO}">
-      Si quieres comentarlo, responder a esto o entender mejor la decisión, escríbenos a
+      Si quieres comentarlo o entender mejor la decisión, responde a este correo o
+      escríbenos a
       <a href="mailto:soporte@nodo360.com" style="color: #f7931a; text-decoration: none;">soporte@nodo360.com</a>.
       Lo miramos con calma.
     </p>
