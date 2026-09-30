@@ -202,6 +202,12 @@ SELECT
        OR (github IS NOT NULL AND github <> '' AND github !~* '^https?://'))     AS enlaces_invalidos,
 
   (SELECT count(*) FROM public.users)                                            AS usuarios,
+
+  -- Informativo, NO una condicion del veredicto. Aqui ponia «= 1» copiado de la
+  -- 100, y el 30/09/2026 aparecio una segunda cuenta de administracion de
+  -- reserva: esta migracion habria dicho «REVISAR» por algo que no tiene nada
+  -- que ver con los enlaces del perfil, y peor, por algo que es una mejora. Un
+  -- recuento no es una identidad: lo que importa es que quede al menos una.
   (SELECT count(*) FROM public.users WHERE role = 'admin')                        AS admins,
 
   CASE
@@ -216,7 +222,7 @@ SELECT
      AND EXISTS (SELECT 1 FROM pg_constraint
                   WHERE conrelid = 'public.users'::regclass
                     AND conname = 'enlaces_del_perfil_son_enlaces')
-     AND (SELECT count(*) FROM public.users WHERE role = 'admin') = 1
+     AND (SELECT count(*) FROM public.users WHERE role = 'admin') >= 1
       THEN 'TODO CORRECTO'
     ELSE 'REVISAR: mira las columnas de esta misma fila'
   END                                                                            AS veredicto;

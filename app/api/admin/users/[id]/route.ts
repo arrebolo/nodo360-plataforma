@@ -78,6 +78,34 @@ export async function PATCH(
 
   const supabaseAdmin = createAdminClient()
 
+  // Una cuenta de administracion no se suspende ni se reactiva desde aqui.
+  //
+  // Faltaba: el borrado y el cambio de rol si lo comprobaban, la suspension no.
+  // Con una sola cuenta admin era inalcanzable, porque lo unico que se podia
+  // intentar era suspenderse a si mismo y eso ya lo corta la comprobacion de
+  // arriba. Desde que hay una segunda cuenta de administracion si es alcanzable:
+  // un admin puede pedir la suspension del otro.
+  //
+  // El trigger de la 100 lo para igualmente, y eso es lo que de verdad protege
+  // la cuenta. Esto esta aqui para que el panel conteste con una explicacion en
+  // vez de con un error de base de datos, y para que la regla se lea en el mismo
+  // sitio donde se hace la operacion.
+  const { data: objetivo } = await supabaseAdmin
+    .from('users')
+    .select('role')
+    .eq('id', id)
+    .maybeSingle()
+
+  if ((objetivo as { role: string } | null)?.role === 'admin') {
+    return NextResponse.json(
+      {
+        error:
+          'Una cuenta de administración no se suspende ni se reactiva desde el panel. Está bloqueado en la base de datos; solo se puede desde el editor SQL, con el procedimiento de emergencia documentado.',
+      },
+      { status: 403 }
+    )
+  }
+
   if (action === 'suspend') {
     // Suspender usuario
     const { error } = await supabaseAdmin
