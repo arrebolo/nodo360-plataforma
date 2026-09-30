@@ -33,10 +33,13 @@ export default async function MiVerificacionPage() {
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
+  // Por la vista de la 099, que ademas dice si la especialidad tiene examen
+  // UTILIZABLE: uno activo cuyo banco de para servir una tanda completa. Cuatro
+  // examenes antiguos existen con CERO preguntas, y prometer examen ahi dejaba a
+  // la persona contra una pared cuando lo intentaba.
   const { data: especialidades } = await supabase
-    .from('instructor_specialties')
-    .select('id, nombre, descripcion, requiere_acreditacion')
-    .eq('is_active', true)
+    .from('especialidades_publicas')
+    .select('id, nombre, descripcion, requiere_acreditacion, tiene_examen')
     .order('position')
 
   const lista = mias ?? []
