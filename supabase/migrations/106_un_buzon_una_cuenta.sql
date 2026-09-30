@@ -34,6 +34,14 @@
 -- El formulario de registro comprueba antes lo mismo para poder dar un mensaje
 -- claro; esto es la barrera de verdad, no el formulario.
 --
+-- LA PRUEBA 5, CORREGIDA DESPUES DE FALLAR
+-- La primera version insertaba con el id de una cuenta existente. Fallo con
+-- «duplicate key value violates unique constraint users_pkey», y el motivo no era
+-- el orden de los triggers: la condicion del trigger lleva `u.id <> NEW.id`
+-- —imprescindible para no compararse consigo misma en un UPDATE— y al reutilizar
+-- el id quedaba excluida justo la fila que habia que detectar. Ahora usa un id
+-- nuevo, y la barrera de reserva es la clave ajena a auth.users.
+--
 -- NO BORRA NI UNA FILA. No modifica ninguna. Es reejecutable. Y se prueba a si
 -- misma, incluido el caso que ya existe.
 -- ============================================================================
@@ -145,7 +153,6 @@ DECLARE
   ];
   v_caso     text[];
   v_obtenido text;
-  v_id       uuid;
   v_correo   text;
   v_buzon    text;
   v_n        integer;
@@ -184,38 +191,56 @@ BEGIN
   ) AS grupos;
   RAISE NOTICE 'PRUEBA 4  % buzon(es) con mas de una cuenta siguen intactos    PASA', v_n;
 
-  -- 5. UNA CUENTA NUEVA CON UN BUZON YA USADO SE RECHAZA.
+  -- 5 y 6. EL PAR QUE IMPORTA, CON UN ID NUEVO.
   --
-  -- Se prueba insertando con el id de una cuenta que ya existe. Los triggers BEFORE
-  -- corren ANTES de comprobar la clave primaria, asi que si el rechazo llega es
-  -- necesariamente del trigger y no del PK. Y si NO llegara, el INSERT moriria por
-  -- el PK, que es precisamente como se distingue un caso del otro en la prueba 6.
-  SELECT id, email INTO v_id, v_correo FROM public.users WHERE email IS NOT NULL ORDER BY created_at LIMIT 1;
+  -- La primera version de estas dos pruebas insertaba con el id de una cuenta que
+  -- YA existe, creyendo que la clave primaria serviria para distinguir los casos.
+  -- Fallo, y el motivo no era el orden de los triggers: era que la condicion del
+  -- propio trigger lleva `u.id <> NEW.id` —imprescindible para no compararse
+  -- consigo misma en un UPDATE— y al reutilizar el id quedaba excluida justo la
+  -- fila que tenia que detectar. El trigger miraba, no encontraba nada, dejaba
+  -- pasar, y moria la clave primaria.
+  --
+  -- Con un id NUEVO no hay nada excluido, y la barrera de reserva es la clave
+  -- ajena a auth.users (users_id_fkey, comprobada: 23503). Los triggers BEFORE
+  -- corren antes de que se comprueben las claves ajenas, asi que:
+  --
+  --     buzon ocupado  ->  23505 con MI mensaje      (lo rechazo la regla)
+  --     buzon libre    ->  23503 clave ajena          (la regla dejo pasar)
+  --
+  -- Dos errores distintos y reconocibles, y no hace falta crear nada en
+  -- auth.users, cuyas columnas obligatorias no estan en este repositorio.
+  SELECT email INTO v_correo FROM public.users WHERE email IS NOT NULL ORDER BY created_at LIMIT 1;
   v_buzon := public.correo_normalizado(v_correo);
 
   BEGIN
     INSERT INTO public.users (id, email, full_name, role)
-    VALUES (v_id, split_part(v_buzon, '@', 1) || '+prueba106@' || split_part(v_buzon, '@', 2),
+    VALUES (gen_random_uuid(),
+            split_part(v_buzon, '@', 1) || '+prueba106@' || split_part(v_buzon, '@', 2),
             'prueba 106', 'student');
     RAISE EXCEPTION 'PRUEBA 5 FALLIDA: se pudo crear una cuenta con un buzon ya usado.';
-  EXCEPTION WHEN unique_violation THEN
-    IF position('mismo buzon' in SQLERRM) = 0 AND position('mismo sitio' in SQLERRM) = 0 THEN
-      RAISE EXCEPTION 'PRUEBA 5 FALLIDA: el rechazo no vino del trigger, vino de: %', SQLERRM;
-    END IF;
-    RAISE NOTICE 'PRUEBA 5  un buzon ya usado se rechaza al crear la cuenta    PASA';
+  EXCEPTION
+    WHEN unique_violation THEN
+      IF position('mismo buzon' in SQLERRM) = 0 AND position('mismo sitio' in SQLERRM) = 0 THEN
+        RAISE EXCEPTION 'PRUEBA 5 FALLIDA: el rechazo fue un 23505 pero no del trigger: %', SQLERRM;
+      END IF;
+      RAISE NOTICE 'PRUEBA 5  un buzon ya usado se rechaza al crear la cuenta    PASA';
+    WHEN foreign_key_violation THEN
+      RAISE EXCEPTION 'PRUEBA 5 FALLIDA: llego a la clave ajena, o sea que el trigger dejo pasar un buzon ocupado.';
   END;
 
-  -- 6. Y un buzon LIBRE no lo rechaza el trigger: muere por el PK, que es otra cosa
+  -- 6. Y un buzon LIBRE no lo rechaza el trigger: llega hasta la clave ajena
   BEGIN
     INSERT INTO public.users (id, email, full_name, role)
-    VALUES (v_id, 'buzon-libre-106-' || floor(random() * 1000000)::text || '@ejemplo.invalid',
+    VALUES (gen_random_uuid(),
+            'buzon-libre-106-' || floor(random() * 1000000)::text || '@ejemplo.invalid',
             'prueba 106', 'student');
-    RAISE EXCEPTION 'PRUEBA 6 FALLIDA: el INSERT paso, y deberia morir por la clave primaria.';
-  EXCEPTION WHEN unique_violation THEN
-    IF position('mismo buzon' in SQLERRM) > 0 OR position('mismo sitio' in SQLERRM) > 0 THEN
-      RAISE EXCEPTION 'PRUEBA 6 FALLIDA: el trigger rechazo un buzon que esta libre.';
-    END IF;
-    RAISE NOTICE 'PRUEBA 6  un buzon libre NO lo rechaza el trigger            PASA';
+    RAISE EXCEPTION 'PRUEBA 6 FALLIDA: el INSERT paso entero, y deberia morir en la clave ajena.';
+  EXCEPTION
+    WHEN foreign_key_violation THEN
+      RAISE NOTICE 'PRUEBA 6  un buzon libre NO lo rechaza el trigger            PASA';
+    WHEN unique_violation THEN
+      RAISE EXCEPTION 'PRUEBA 6 FALLIDA: el trigger rechazo un buzon que esta libre: %', SQLERRM;
   END;
 
   RAISE NOTICE 'Las seis pruebas pasan. Ninguna fila creada ni modificada.';
