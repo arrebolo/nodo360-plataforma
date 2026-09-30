@@ -1,4 +1,5 @@
 import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
+import { escapar } from '@/lib/email/escapar'
 
 interface CourseChangesRequestedEmailProps {
   to: string
@@ -6,6 +7,12 @@ interface CourseChangesRequestedEmailProps {
   courseName: string
   courseId: string
   mentorComments: string[]
+  /**
+   * Quien ha pedido los cambios, tal como se le nombra al instructor. El correo
+   * decia siempre «los mentores», y desde el panel de administracion eso no es
+   * verdad: lo pide el equipo. Por omision se queda como estaba.
+   */
+  revisadoPor?: string
 }
 
 export async function sendCourseChangesRequestedEmail({
@@ -14,6 +21,7 @@ export async function sendCourseChangesRequestedEmail({
   courseName,
   courseId,
   mentorComments,
+  revisadoPor = 'Los mentores',
 }: CourseChangesRequestedEmailProps) {
   console.log('📧 [sendCourseChangesRequestedEmail] Enviando a:', to)
 
@@ -25,7 +33,12 @@ export async function sendCourseChangesRequestedEmail({
 
   const editUrl = `https://nodo360.com/dashboard/instructor/cursos/${courseId}`
 
+  // El comentario lo escribe una persona y entra en HTML: se escapa. Sin esto, un
+  // comentario con un `<` rompe el correo.
   const commentsHtml = mentorComments
+    .map(
+      (comment) => escapar(comment)
+    )
     .map(
       (comment) => `
         <div style="background: rgba(0,0,0,0.3); border-left: 4px solid #fbbf24; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 12px;">
@@ -62,7 +75,7 @@ export async function sendCourseChangesRequestedEmail({
             <div style="text-align: center; margin-bottom: 32px;">
               <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
               <h2 style="color: #ffffff; font-size: 24px; margin: 0;">
-                Hola ${instructorName || 'Instructor'}
+                Hola ${escapar(instructorName || 'Instructor')}
               </h2>
             </div>
 
@@ -70,16 +83,16 @@ export async function sendCourseChangesRequestedEmail({
             <div style="background: linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(247,147,26,0.1) 100%); border: 1px solid rgba(251,191,36,0.3); border-radius: 16px; padding: 32px;">
 
               <p style="color: #d1d5db; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
-                Los mentores han revisado tu curso y sugieren algunos cambios antes de poder publicarlo:
+                ${escapar(revisadoPor)} ${revisadoPor.toLowerCase().startsWith('el ') ? 'ha' : 'han'} revisado tu curso y sugiere${revisadoPor.toLowerCase().startsWith('el ') ? '' : 'n'} algunos cambios antes de poder publicarlo:
               </p>
 
               <h3 style="color: #fbbf24; font-size: 20px; margin: 0 0 20px 0;">
-                "${courseName}"
+                "${escapar(courseName)}"
               </h3>
 
               <!-- Comentarios de los mentores -->
               <p style="color: #9ca3af; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0;">
-                Comentarios de los mentores:
+                Qué hay que cambiar:
               </p>
               ${commentsHtml}
 

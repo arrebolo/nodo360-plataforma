@@ -17,8 +17,11 @@ import {
   Eye,
 } from 'lucide-react'
 import { sendCourseApprovedEmail } from '@/lib/email/course-approved'
+import { sendCourseChangesRequestedEmail } from '@/lib/email/course-changes-requested'
 import { sendCourseRejectedEmail } from '@/lib/email/course-rejected'
 import { notifyNewCourse } from '@/lib/discord/webhook'
+import { createInAppNotification, broadcastCourseChangesRequested } from '@/lib/notifications/broadcast'
+import { PedirCambiosEnCurso } from '@/components/admin/PedirCambiosEnCurso'
 
 interface ReviewCoursePageProps {
   params: Promise<{ id: string }>
@@ -44,6 +47,7 @@ async function approveCourse(courseId: string) {
     .select(`
       id, title, slug, description, level, thumbnail_url,
       users!courses_instructor_id_fkey (
+        id,
         email,
         full_name
       )
@@ -77,6 +81,19 @@ async function approveCourse(courseId: string) {
       courseSlug: course.slug,
     }).catch(err => console.error('Error enviando email de aprobación:', err))
 
+    // LA NOTIFICACION EN LA PLATAFORMA, que hasta ahora no se creaba.
+    // Al aprobar desde aqui el instructor recibia el correo y nada mas: si lo tenia
+    // en otra bandeja, se enteraba entrando a mirar. La pantalla del mentor si la
+    // creaba; esta no. Va sin bloquear, como el correo: que falle una notificacion
+    // no puede dejar el curso sin publicar.
+    createInAppNotification(
+      instructor.id,
+      'course_published',
+      '\ud83c\udf89 \u00a1Tu curso ya est\u00e1 publicado!',
+      `Tu curso "${course.title}" ha pasado la revisi\u00f3n y ya est\u00e1 publicado.`,
+      `/cursos/${course.slug}`
+    ).catch(err => console.error('Error creando notificacion de curso publicado:', err))
+
     // Notify Discord about new course
     notifyNewCourse({
       title: course.title,
@@ -91,6 +108,90 @@ async function approveCourse(courseId: string) {
   revalidatePath('/admin/cursos/pendientes')
   revalidatePath('/admin/cursos')
   revalidatePath('/cursos')
+  redirect('/admin/cursos/pendientes')
+}
+
+/**
+ * Lo minimo que puede medir el comentario, tras recortar espacios.
+ *
+ * Llega tal cual al instructor, en el correo y en la notificacion: un «000» no le
+ * dice nada a nadie. El mismo numero esta en PedirCambiosEnCurso para desactivar el
+ * boton, pero el que manda es este.
+ */
+const MINIMO_DEL_COMENTARIO = 20
+
+// Server Action: Pedir cambios
+//
+// PEDIR CAMBIOS NO ES RECHAZAR. El curso vuelve al instructor en
+// 'changes_requested' para que lo corrija y lo reenvie; no queda rechazado ni
+// archivado. El estado ya existia en el enum y la interfaz del instructor ya lo
+// entendia —la tarjeta dice «Cambios solicitados» y el boton pasa a «Editar y
+// reenviar»—, pero no habia forma de ponerlo: no existia este boton.
+async function requestChanges(courseId: string, formData: FormData) {
+  'use server'
+
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const comment = ((formData.get('comment') as string) ?? '').trim()
+
+  if (comment.length < MINIMO_DEL_COMENTARIO) {
+    throw new Error(
+      `El comentario llega tal cual al instructor: escribe al menos ${MINIMO_DEL_COMENTARIO} caracteres (van ${comment.length}).`
+    )
+  }
+
+  const { data: course } = await createAdminClient()
+    .from('courses')
+    .select(`
+      id, title,
+      users!courses_instructor_id_fkey (
+        id,
+        email,
+        full_name
+      )
+    `)
+    .eq('id', courseId)
+    .single()
+
+  const { error } = await supabase
+    .from('courses')
+    .update({
+      status: 'changes_requested',
+      rejection_reason: comment,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', courseId)
+
+  if (error) {
+    throw new Error('Error al pedir cambios: ' + error.message)
+  }
+
+  console.log(`📝 [Admin] Course ${courseId} changes requested`)
+
+  if (course?.users) {
+    const instructor = course.users as any
+
+    sendCourseChangesRequestedEmail({
+      to: instructor.email,
+      instructorName: instructor.full_name || 'Instructor',
+      courseName: course.title,
+      courseId: courseId,
+      mentorComments: [comment],
+      revisadoPor: 'El equipo de Nodo360',
+    }).catch(err => console.error('Error enviando email de cambios solicitados:', err))
+
+    broadcastCourseChangesRequested(
+      instructor.id,
+      course.title,
+      comment,
+      { inApp: true, discord: false, telegram: false },
+      'El equipo de Nodo360'
+    ).catch(err => console.error('Error creando notificacion de cambios:', err))
+  }
+
+  revalidatePath('/admin/cursos/pendientes')
+  revalidatePath('/admin/cursos')
   redirect('/admin/cursos/pendientes')
 }
 
@@ -215,6 +316,7 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
 
   const approveAction = approveCourse.bind(null, courseId)
   const rejectAction = rejectCourse.bind(null, courseId)
+  const requestChangesAction = requestChanges.bind(null, courseId)
 
   return (
     <div className="min-h-screen p-8">
@@ -410,8 +512,13 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
                 </button>
               </form>
 
+              {/* Pedir cambios: ni aprobado ni rechazado, vuelve al instructor */}
+              <div className="border-t border-white/10 pt-4">
+                <PedirCambiosEnCurso accion={requestChangesAction} />
+              </div>
+
               {/* Rechazar */}
-              <form action={rejectAction} className="space-y-3">
+              <form action={rejectAction} className="space-y-3 border-t border-white/10 pt-4">
                 <textarea
                   name="reason"
                   placeholder="Motivo del rechazo (mínimo 10 caracteres)..."

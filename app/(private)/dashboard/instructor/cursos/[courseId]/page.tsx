@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { Eye, ExternalLink, ArrowLeft, Layers, Clock, XCircle, AlertTriangle, Send } from "lucide-react";
+import { Eye, ExternalLink, ArrowLeft, Layers, Clock, XCircle, AlertTriangle, Send, MessageSquare } from "lucide-react";
 import CourseForm from "@/components/instructor/CourseForm";
 import { PublishChecklist } from "@/components/courses/PublishChecklist";
 import { SubmitForReviewButton } from "@/components/instructor/SubmitForReviewButton";
@@ -50,9 +50,11 @@ export default async function EditInstructorCoursePage({
                     ? 'bg-yellow-500/20 text-yellow-400'
                     : course.status === 'rejected'
                       ? 'bg-red-500/20 text-red-400'
-                      : course.status === 'archived'
-                        ? 'bg-white/10 text-white/60'
-                        : 'bg-warning/20 text-warning'
+                      : course.status === 'changes_requested'
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : course.status === 'archived'
+                          ? 'bg-white/10 text-white/60'
+                          : 'bg-warning/20 text-warning'
                 }
               `}>
                 {course.status === 'published' && 'Publicado'}
@@ -61,6 +63,9 @@ export default async function EditInstructorCoursePage({
                 )}
                 {course.status === 'rejected' && (
                   <><XCircle className="w-3.5 h-3.5" /> Rechazado</>
+                )}
+                {course.status === 'changes_requested' && (
+                  <><MessageSquare className="w-3.5 h-3.5" /> Cambios solicitados</>
                 )}
                 {course.status === 'archived' && 'Archivado'}
                 {course.status === 'draft' && 'Borrador'}
@@ -81,7 +86,7 @@ export default async function EditInstructorCoursePage({
             </Link>
 
             {/* Botón Enviar a revisión (solo si es borrador o rechazado) */}
-            {(course.status === 'draft' || course.status === 'rejected') && (
+            {(course.status === 'draft' || course.status === 'rejected' || course.status === 'changes_requested') && (
               <SubmitForReviewButton
                 courseId={courseId}
                 currentStatus={course.status}
@@ -141,6 +146,30 @@ export default async function EditInstructorCoursePage({
                 <h3 className="font-semibold text-amber-200 mb-1">Curso publicado</h3>
                 <p className="text-amber-200/80 text-sm">
                   Si guardas cambios en título, descripción, nivel o precio, el curso volverá a estado de revisión y deberá ser aprobado nuevamente por un administrador.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* QUE HAY QUE CAMBIAR
+            Pedir cambios no es rechazar, y no se le dice igual: el curso sigue en
+            pie y lo que falta es concreto. El comentario se ensena TAL CUAL lo
+            escribio quien reviso; si alguien va a discrepar, tiene que poder
+            discrepar de lo que de verdad se dijo. */}
+        {course.status === 'changes_requested' && course.rejection_reason && (
+          <div className="mb-8 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <MessageSquare className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-amber-400 mb-1">Cambios solicitados</h3>
+                <p className="text-white/70 text-sm whitespace-pre-line">
+                  {course.rejection_reason}
+                </p>
+                <p className="text-white/50 text-sm mt-2">
+                  Haz los cambios y vuelve a enviar el curso a revision. No hace falta
+                  empezar de cero: el curso sigue siendo tuyo y conserva todo lo que
+                  ya tenia.
                 </p>
               </div>
             </div>
