@@ -143,8 +143,8 @@ export default function SolicitarVerificacion({
       </button>
 
       <p className="text-xs text-white/40">
-        Queda pendiente hasta que alguien la evalúe. Si te la rechazan, puedes volver a
-        pedirla.
+        Queda pendiente hasta que el equipo de Nodo360 la evalúe. Si te la rechazan,
+        puedes volver a pedirla pasados 30 días.
       </p>
     </div>
   )
