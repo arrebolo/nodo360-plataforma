@@ -66,7 +66,8 @@ export default async function InstructorProfilePage({
       users (
         id,
         full_name,
-        avatar_url
+        avatar_url,
+        bio
       )
     `)
     .eq('user_id', id)
@@ -77,7 +78,54 @@ export default async function InstructorProfilePage({
     notFound()
   }
 
-  const user = profile.users as unknown as { id: string; full_name: string; avatar_url: string | null }
+  const user = profile.users as unknown as {
+    id: string
+    full_name: string
+    avatar_url: string | null
+    bio: string | null
+  }
+
+  // La biografia de USERS es la que edita la persona en /dashboard/perfil.
+  // instructor_profiles.bio existe, pero esa tabla tiene UNA fila en toda la base
+  // y nadie la escribe: si esta vacia, la de users es la real.
+  const biografia = user.bio?.trim() || profile.bio || null
+
+  // LOS ENLACES VAN EN SU PROPIA CONSULTA, Y A PROPOSITO.
+  //
+  // website, twitter, linkedin y github viven en `users`, y anon no los puede
+  // leer hasta que se aplique la 101. Pedirlos dentro del embed del perfil
+  // hacia que la consulta entera devolviese 42501 y esta pagina un 404
+  // —comprobado: el perfil existia y respondia 404 por cuatro redes sociales—.
+  // Separandolos, si el despliegue llega antes que la migracion lo que falta es
+  // la seccion de enlaces, no el instructor. No depende del orden.
+  const { data: enlacesDeUsuario } = await supabase
+    .from('users')
+    .select('website, twitter, linkedin, github')
+    .eq('id', id)
+    .single()
+
+  const redes = (enlacesDeUsuario ?? null) as {
+    website: string | null
+    twitter: string | null
+    linkedin: string | null
+    github: string | null
+  } | null
+
+  // twitter admite la URL o el nombre con arroba, asi que se normaliza aqui: la
+  // base no lo impone porque las dos formas son razonables de escribir.
+  const urlDeX = (v: string | null) => {
+    const t = v?.trim()
+    if (!t) return null
+    if (/^https?:\/\//i.test(t)) return t
+    return `https://x.com/${t.replace(/^@/, '')}`
+  }
+
+  const enlaces = [
+    { etiqueta: 'Web', url: redes?.website?.trim() || null },
+    { etiqueta: 'X', url: urlDeX(redes?.twitter ?? null) },
+    { etiqueta: 'LinkedIn', url: redes?.linkedin?.trim() || null },
+    { etiqueta: 'GitHub', url: redes?.github?.trim() || null },
+  ].filter((e) => e.url)
 
   // Los sellos, por la vista publica que creo la 093.
   //
@@ -224,11 +272,33 @@ export default async function InstructorProfilePage({
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Columna principal */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Bio */}
-            {profile.bio && (
+            {/* Bio: la de users, que es la que se edita en /dashboard/perfil */}
+            {biografia && (
               <section className="rounded-2xl bg-white/5 border border-white/10 p-6">
                 <h2 className="text-lg font-semibold text-white mb-4">Acerca de</h2>
-                <p className="text-gray-400 whitespace-pre-line">{profile.bio}</p>
+                <p className="text-gray-400 whitespace-pre-line">{biografia}</p>
+              </section>
+            )}
+
+            {/* Los enlaces que la persona ha publicado sobre si misma */}
+            {enlaces.length > 0 && (
+              <section className="rounded-2xl bg-white/5 border border-white/10 p-6">
+                <h2 className="text-lg font-semibold text-white mb-4">Dónde encontrarle</h2>
+                <ul className="flex flex-wrap gap-2">
+                  {enlaces.map((e) => (
+                    <li key={e.etiqueta}>
+                      <a
+                        href={e.url!}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white/70 transition-colors hover:border-white/25 hover:text-white"
+                      >
+                        {e.etiqueta}
+                        <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </section>
             )}
 
