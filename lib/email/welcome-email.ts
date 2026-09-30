@@ -1,4 +1,4 @@
-import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
+import { getResend, REMITENTE_NODO360, SITIO_PARA_CORREOS } from '@/lib/email/resend-client'
 import { DISCORD_INVITE_URL } from '@/lib/discord/invite'
 
 interface WelcomeEmailProps {
@@ -14,7 +14,7 @@ interface WelcomeEmailProps {
  * la gente a produccion (o a un enlace que no existe todavia). Con la variable,
  * cada entorno enlaza a lo suyo; el valor por defecto es el de siempre.
  */
-const SITIO = (process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com').replace(/\/$/, '')
+const SITIO = SITIO_PARA_CORREOS
 
 export async function sendWelcomeEmail({ to, userName }: WelcomeEmailProps) {
   console.log('📧 [sendWelcomeEmail] Enviando a:', to)
