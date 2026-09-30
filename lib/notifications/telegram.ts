@@ -18,7 +18,14 @@ export async function sendTelegramMessage(
   chatId?: string
 ): Promise<boolean> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN
-  const defaultChatId = process.env.TELEGRAM_CHAT_ID
+
+  // TELEGRAM_CHANNEL_ID primero, TELEGRAM_CHAT_ID despues.
+  //
+  // Este modulo ya existia y leia TELEGRAM_CHAT_ID. El canal de anuncios se
+  // configura como TELEGRAM_CHANNEL_ID, asi que se acepta ese nombre y se deja
+  // el viejo como respaldo: cambiarlo a secas habria apagado en silencio
+  // cualquier uso que dependiera del anterior.
+  const defaultChatId = process.env.TELEGRAM_CHANNEL_ID || process.env.TELEGRAM_CHAT_ID
 
   const targetChatId = chatId || defaultChatId
 
@@ -28,7 +35,7 @@ export async function sendTelegramMessage(
   }
 
   if (!targetChatId) {
-    console.error('❌ [Telegram] TELEGRAM_CHAT_ID no configurado')
+    console.error('❌ [Telegram] Falta TELEGRAM_CHANNEL_ID (o TELEGRAM_CHAT_ID)')
     return false
   }
 

@@ -770,7 +770,9 @@ export type NotificationType =
   | 'level_up'
   | 'feedback_reply'
   | 'welcome'
-  | 'system';
+  | 'system'
+  | 'verificacion_aprobada'
+  | 'verificacion_rechazada';
 
 export interface Notification {
   id: string;

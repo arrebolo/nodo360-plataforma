@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  let cuerpo: { specialty_id?: unknown }
+  let cuerpo: { specialty_id?: unknown; consentimiento_anuncio?: unknown }
   try {
     cuerpo = await req.json()
   } catch {
@@ -62,6 +62,13 @@ export async function POST(req: NextRequest) {
   if (!specialtyId) {
     return NextResponse.json({ error: 'Falta specialty_id' }, { status: 400 })
   }
+
+  // El consentimiento para el anuncio publico. Opcional, y por defecto NO.
+  //
+  // Solo se acepta el booleano verdadero: cualquier otra cosa que llegue en el
+  // cuerpo —una cadena, un 1, un objeto— cuenta como no consentido. Un
+  // consentimiento que se pueda dar por accidente no es un consentimiento.
+  const consiente = cuerpo.consentimiento_anuncio === true
 
   const db = createAdminClient() as unknown as SupabaseClient
 
@@ -83,6 +90,10 @@ export async function POST(req: NextRequest) {
       certification_number: numeroDeVerificacion(),
       oral_result: 'pendiente',
       practical_result: 'pendiente',
+      // La fecha va con el consentimiento o no va: lo exige el CHECK de la 108,
+      // porque un consentimiento sin fecha no se puede demostrar.
+      consentimiento_anuncio: consiente,
+      consentimiento_anuncio_el: consiente ? new Date().toISOString() : null,
     })
     .select('id, certification_number')
     .single()

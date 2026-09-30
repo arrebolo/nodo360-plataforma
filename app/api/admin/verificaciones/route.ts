@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/ratelimit'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { createInAppNotification } from '@/lib/notifications/broadcast'
+import { enviarVerificacionAprobada, enviarVerificacionRechazada } from '@/lib/email/verificacion'
+import { anunciarVerificacionAprobada } from '@/lib/anuncios/verificacion-de-instructor'
 
 /**
  * VERIFICACIONES DE INSTRUCTOR
@@ -156,11 +159,30 @@ export async function PATCH(req: NextRequest) {
 
   const db = createAdminClient() as unknown as SupabaseClient
 
-  const { data: exp } = await db
+  // Las columnas del consentimiento llegan con la 108, y pedirlas antes NO
+  // devuelve la fila sin ellas: devuelve 42703 y tumba la consulta, asi que este
+  // expediente saldria como «no existe» y NO SE PODRIA APROBAR NADA. Por eso se
+  // piden y, si fallan, se repite sin ellas: da igual si se despliega antes o
+  // despues de aplicar la migracion, y lo unico que falta mientras es el anuncio.
+  const CAMPOS = 'id, status, user_id, specialty_id, exam_id'
+  let { data: exp } = await db
     .from('instructor_certifications')
-    .select('id, status, user_id, specialty_id, exam_id')
+    .select(`${CAMPOS}, consentimiento_anuncio, anunciado_el`)
     .eq('id', id)
     .maybeSingle()
+
+  if (!exp) {
+    const reintento = await db
+      .from('instructor_certifications')
+      .select(CAMPOS)
+      .eq('id', id)
+      .maybeSingle()
+    if (reintento.data) {
+      console.warn('[admin/verificaciones] Sin columnas de consentimiento (¿falta la 108?): no se anunciara')
+      exp = { ...reintento.data, consentimiento_anuncio: false, anunciado_el: null }
+    }
+  }
+
   if (!exp) return NextResponse.json({ error: 'Ese expediente no existe' }, { status: 404 })
 
   // Las transiciones posibles. Un expediente ya resuelto no se reabre: se abre
@@ -294,6 +316,109 @@ export async function PATCH(req: NextRequest) {
       }
     } else {
       console.log(`[admin/verificaciones] ${exp.user_id} ya es ${persona?.role}: el rol no se toca`)
+    }
+  }
+
+  // ── AVISAR A LA PERSONA, SIEMPRE ──────────────────────────────────────────
+  //
+  // Antes no se avisaba de nada: quien solicitaba una verificacion se enteraba
+  // entrando a mirar. Va al final y envuelto en su propio try: la decision ya
+  // esta grabada y un fallo del correo no puede deshacerla ni devolver un error
+  // donde no hay ningun problema que resolver.
+  //
+  // La retirada no manda nada: no estaba en lo pedido, y una retirada se explica
+  // hablando con la persona, no con una plantilla.
+  if (decision === 'aprobada' || decision === 'rechazada') {
+    try {
+      const [{ data: persona }, { data: esp }] = await Promise.all([
+        db.from('users').select('email, full_name').eq('id', exp.user_id).maybeSingle(),
+        db.from('instructor_specialties').select('nombre').eq('id', exp.specialty_id).maybeSingle(),
+      ])
+
+      const nombre =
+        (persona as { full_name: string | null } | null)?.full_name?.trim() ||
+        (persona as { email: string | null } | null)?.email?.split('@')[0] ||
+        'instructor'
+      const correo = (persona as { email: string | null } | null)?.email ?? null
+      const especialidad = (esp as { nombre: string } | null)?.nombre ?? 'la especialidad solicitada'
+
+      // La jurisdiccion llegara con la migracion de especialidades por pais; hasta
+      // entonces es null y los textos la omiten solos.
+      const jurisdiccion: string | null = null
+
+      if (decision === 'aprobada') {
+        await createInAppNotification(
+          exp.user_id,
+          'verificacion_aprobada',
+          `Verificación aprobada: ${especialidad}`,
+          `Ya puedes crear cursos de ${especialidad} y enviarlos a revisión.`,
+          '/dashboard/instructor'
+        )
+        if (correo) {
+          const envio = await enviarVerificacionAprobada({ to: correo, nombre, especialidad, jurisdiccion })
+          if (!envio.success) console.error('[admin/verificaciones] Correo de aprobacion NO enviado:', envio.error)
+        }
+      } else {
+        await createInAppNotification(
+          exp.user_id,
+          'verificacion_rechazada',
+          `Sobre tu solicitud en ${especialidad}`,
+          'Hemos revisado tu solicitud. Puedes volver a solicitarla cuando quieras.',
+          '/dashboard/instructor/verificacion'
+        )
+        if (correo) {
+          const envio = await enviarVerificacionRechazada({
+            to: correo, nombre, especialidad, jurisdiccion,
+            motivo: notas as string,   // un rechazo sin notas ya se rechazo arriba
+          })
+          if (!envio.success) console.error('[admin/verificaciones] Correo de rechazo NO enviado:', envio.error)
+        }
+      }
+    } catch (e) {
+      console.error('[admin/verificaciones] Fallo al avisar a la persona:', e)
+    }
+  }
+
+  // ── ANUNCIARLO, SOLO SI SE APRUEBA Y SOLO CON CONSENTIMIENTO ──────────────
+  //
+  // Las tres condiciones se comprueban aqui Y en la base (trigger de la 108):
+  // aprobada, consentida y no anunciada todavia. Que el anuncio publique el
+  // nombre de una persona es justo el motivo de no dejarlo en manos de una sola
+  // comprobacion.
+  if (decision === 'aprobada' && exp.consentimiento_anuncio && !exp.anunciado_el) {
+    try {
+      const [{ data: persona }, { data: esp }] = await Promise.all([
+        db.from('users').select('full_name').eq('id', exp.user_id).maybeSingle(),
+        db.from('instructor_specialties').select('nombre').eq('id', exp.specialty_id).maybeSingle(),
+      ])
+
+      const nombrePublico = (persona as { full_name: string | null } | null)?.full_name?.trim()
+      const especialidad = (esp as { nombre: string } | null)?.nombre
+
+      if (!nombrePublico || !especialidad) {
+        console.warn('[admin/verificaciones] Sin nombre publico o especialidad: no se anuncia')
+      } else {
+        const r = await anunciarVerificacionAprobada({
+          nombrePublico,
+          especialidad,
+          jurisdiccion: null,
+          userId: exp.user_id,
+        })
+
+        // La fecha solo se graba si SALIO de verdad. En modo de prueba no se
+        // marca, para poder repetir la prueba sin desbloquear nada a mano.
+        if (r.algunoEnviado) {
+          const { error: errorAnuncio } = await db
+            .from('instructor_certifications')
+            .update({ anunciado_el: new Date().toISOString() })
+            .eq('id', id)
+          if (errorAnuncio) console.error('[admin/verificaciones] Anunciado pero no se pudo marcar:', errorAnuncio)
+        }
+        console.log(`[admin/verificaciones] Anuncio -> discord: ${r.discord}, telegram: ${r.telegram}`)
+      }
+    } catch (e) {
+      // Un canal caido no impide una aprobacion.
+      console.error('[admin/verificaciones] Fallo al anunciar:', e)
     }
   }
 
