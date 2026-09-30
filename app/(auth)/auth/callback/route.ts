@@ -56,6 +56,23 @@ function destinoConRegistro(
   return url.toString()
 }
 
+/**
+ * Añade ?email_confirmed=<método> al destino.
+ *
+ * Mismo problema que con sign_up y la misma solución: aquí es código de
+ * servidor y no hay dataLayer al que escribir, así que el cliente se entera por
+ * la URL y SignUpTracker emite el evento.
+ *
+ * El método de `metodoDeRegistro()` deja fuera el registro con contraseña a
+ * propósito —ese sign_up lo emite el formulario—, así que cuando no hay método
+ * y estamos aquí confirmando, el método es «email».
+ */
+function destinoConConfirmacion(destino: string, metodo: string | null): string {
+  const url = new URL(destino)
+  url.searchParams.set('email_confirmed', metodo ?? 'email')
+  return url.toString()
+}
+
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const origin = requestUrl.origin
@@ -329,12 +346,23 @@ async function handleSuccessfulAuth(
   // suelta se muere cuando se devuelve la respuesta, y el correo se quedaria sin
   // enviar unas veces de cada tantas sin que nada lo registre. Para quien
   // simplemente vuelve, esto es UNA consulta que no encuentra fila.
-  await enviarBienvenidaUnaSolaVez(user.id)
+  const bienvenida = await enviarBienvenidaUnaSolaVez(user.id)
+
+  // `primeraVez` es el instante en que esta cuenta pasa a ser real: la direccion
+  // esta confirmada y nadie lo habia apuntado antes. Es el mismo cerrojo que usa
+  // el correo de bienvenida, asi que no hace falta una segunda marca en la base.
+  const destinoFinal = bienvenida.primeraVez
+    ? destinoConConfirmacion(destino, metodoRegistro)
+    : destino
+
+  if (bienvenida.primeraVez) {
+    console.log('📊 [Auth Callback] Correo confirmado por primera vez')
+  }
 
   // Admin o instructor siempre pasan
   if (profile?.role === 'admin' || profile?.role === 'instructor') {
     console.log('[Auth Callback] Admin/Instructor, acceso completo')
-    const response = NextResponse.redirect(destino)
+    const response = NextResponse.redirect(destinoFinal)
     response.cookies.delete('auth_redirect')
     return response
   }
@@ -343,7 +371,7 @@ async function handleSuccessfulAuth(
 
   // Usuario con acceso
   console.log('[Auth Callback] Redirigiendo a:', redirectTo)
-  const response = NextResponse.redirect(destino)
+  const response = NextResponse.redirect(destinoFinal)
   response.cookies.delete('auth_redirect')
   return response
 }

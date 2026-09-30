@@ -163,6 +163,17 @@ export default async function AdminUsersPage({
                       <Mail className="w-4 h-4" />
                       {user.email}
                     </div>
+                    {/*
+                      SIN CONFIRMAR: la fila existe porque Supabase tiene que crear
+                      la cuenta para poder confirmarla, pero esa direccion no se ha
+                      verificado. No cuenta en las tarjetas ni en las estadisticas, y
+                      aqui se dice en vez de disimularlo. Se borra sola a los 7 dias.
+                    */}
+                    {!user.email_confirmed_at && (
+                      <span className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 text-xs font-medium">
+                        Sin confirmar
+                      </span>
+                    )}
                   </td>
                   <td className="p-4">
                     <span

@@ -34,22 +34,38 @@ export default function SignUpTracker() {
 
     const params = new URLSearchParams(window.location.search)
     const metodo = params.get('signup')
-    if (!metodo) return
+    const confirmado = params.get('email_confirmed')
+    if (!metodo && !confirmado) return
 
     yaEmitido.current = true
 
+    // email_confirmed: la direccion queda confirmada y la cuenta pasa a ser real.
+    // Va aparte de sign_up porque son dos momentos distintos —sign_up se emite al
+    // enviar el formulario, antes de confirmar— y porque con contraseña puede
+    // llegar este sin el otro: quien confirma hoy un registro de ayer.
+    if (confirmado) {
+      if ((METODOS as string[]).includes(confirmado)) {
+        enviarEvento('email_confirmed', { method: confirmado as MetodoRegistro })
+      } else {
+        console.warn('⚠️ [SignUpTracker] Método de confirmación no reconocido:', confirmado)
+      }
+      params.delete('email_confirmed')
+    }
+
     // Viene de la URL, así que es texto de fuera: solo se acepta si es uno de
     // los cuatro métodos. Un `?signup=<script>` no llega a GA4.
-    if ((METODOS as string[]).includes(metodo)) {
-      enviarEvento('sign_up', { method: metodo as MetodoRegistro })
-    } else {
-      console.warn('⚠️ [SignUpTracker] Método de registro no reconocido:', metodo)
+    if (metodo) {
+      if ((METODOS as string[]).includes(metodo)) {
+        enviarEvento('sign_up', { method: metodo as MetodoRegistro })
+      } else {
+        console.warn('⚠️ [SignUpTracker] Método de registro no reconocido:', metodo)
+      }
+      params.delete('signup')
     }
 
     // Fuera de la URL, sin recargar y sin añadir una entrada al historial: si
     // el parámetro se queda, cualquier recarga o enlace compartido volvería a
     // contar el mismo registro.
-    params.delete('signup')
     const query = params.toString()
     window.history.replaceState(
       null,

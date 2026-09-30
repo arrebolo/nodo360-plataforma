@@ -36,11 +36,21 @@ import { sendWelcomeEmail } from '@/lib/email/welcome-email'
  * siguiente acceso lo reintente. Reclamar y no enviar dejaria a alguien sin su
  * correo para siempre.
  *
+ * `primeraVez` dice si ESTA llamada se llevo el cerrojo, o sea si esta es la
+ * primera vez que la cuenta llega aqui confirmada. El callback lo usa para
+ * emitir `email_confirmed` a GA4: es el mismo instante —la cuenta pasa a ser
+ * real— y no hay que apuntarlo dos veces en la base.
+ *
+ * Con una salvedad honesta: si el envio falla se libera el cerrojo para poder
+ * reintentarlo, asi que en ese caso el evento podria emitirse otra vez en el
+ * acceso siguiente. Para una metrica es un precio razonable; la alternativa era
+ * no reintentar el correo nunca.
+ *
  * No lanza nunca: un correo no puede tumbar un inicio de sesion.
  */
 export async function enviarBienvenidaUnaSolaVez(userId: string): Promise<
-  | { enviado: true }
-  | { enviado: false; motivo: 'ya-enviado' | 'sin-confirmar' | 'sin-usuario' | 'error' }
+  | { enviado: true; primeraVez: true }
+  | { enviado: false; primeraVez: boolean; motivo: 'ya-enviado' | 'sin-confirmar' | 'sin-usuario' | 'error' }
 > {
   const db = createAdminClient()
 
@@ -66,11 +76,11 @@ export async function enviarBienvenidaUnaSolaVez(userId: string): Promise<
 
     if (errorReclamo) {
       console.error('[bienvenida] Error al reclamar el envio:', errorReclamo.message)
-      return { enviado: false, motivo: 'error' }
+      return { enviado: false, primeraVez: false, motivo: 'error' }
     }
 
     if (!reclamada || reclamada.length === 0) {
-      return { enviado: false, motivo: 'ya-enviado' }
+      return { enviado: false, primeraVez: false, motivo: 'ya-enviado' }
     }
 
     const fila = reclamada[0] as { email: string | null; full_name: string | null }
@@ -87,19 +97,19 @@ export async function enviarBienvenidaUnaSolaVez(userId: string): Promise<
     if (errorCuenta || !cuenta?.user) {
       console.error('[bienvenida] No se pudo leer la cuenta:', errorCuenta?.message)
       await liberar()
-      return { enviado: false, motivo: 'sin-usuario' }
+      return { enviado: false, primeraVez: false, motivo: 'sin-usuario' }
     }
 
     if (!cuenta.user.email_confirmed_at) {
       console.log('[bienvenida] Direccion sin confirmar, no se envia')
       await liberar()
-      return { enviado: false, motivo: 'sin-confirmar' }
+      return { enviado: false, primeraVez: false, motivo: 'sin-confirmar' }
     }
 
     const email = fila.email || cuenta.user.email
     if (!email) {
       await liberar()
-      return { enviado: false, motivo: 'sin-usuario' }
+      return { enviado: false, primeraVez: false, motivo: 'sin-usuario' }
     }
 
     const nombre =
@@ -113,13 +123,13 @@ export async function enviarBienvenidaUnaSolaVez(userId: string): Promise<
     if (!envio.success) {
       await liberar()
       console.error('[bienvenida] Envio fallido, se libera el cerrojo:', envio.error)
-      return { enviado: false, motivo: 'error' }
+      return { enviado: false, primeraVez: false, motivo: 'error' }
     }
 
     console.log('[bienvenida] Enviado al confirmar la cuenta')
-    return { enviado: true }
+    return { enviado: true, primeraVez: true }
   } catch (e) {
     console.error('[bienvenida] Error inesperado:', e)
-    return { enviado: false, motivo: 'error' }
+    return { enviado: false, primeraVez: false, motivo: 'error' }
   }
 }
