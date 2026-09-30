@@ -325,22 +325,38 @@ export async function POST(request: NextRequest) {
 
         const { error: enrollmentError } = await admin
           .from('course_enrollments')
-          .update(
-            leccionesCompletas
-              ? { completed_at: new Date().toISOString(), progress_percentage: 100 }
-              : { progress_percentage: porcentajeReal }
-          )
+          .update({ progress_percentage: leccionesCompletas ? 100 : porcentajeReal })
           .eq('user_id', user_id)
           .eq('course_id', course_id)
+
+        // EL MISMO CERROJO QUE EN /api/progress, y por el mismo motivo: las dos
+        // rutas anunciaban «Curso completado» sin mirar si ya se habia anunciado, y
+        // quien termina la ultima leccion y luego hace el examen pasa por las dos.
+        // Quien reclama la fecha es quien avisa.
+        let reclamoLaFinalizacion = false
+        if (leccionesCompletas) {
+          const { data: reclamada } = await admin
+            .from('course_enrollments')
+            .update({ completed_at: new Date().toISOString() })
+            .eq('user_id', user_id)
+            .eq('course_id', course_id)
+            .is('completed_at', null)
+            .select('id')
+          reclamoLaFinalizacion = (reclamada?.length ?? 0) === 1
+        }
 
         if (enrollmentError) {
           console.error('[quiz/submit] Error actualizando enrollment:', enrollmentError.message)
         } else {
           console.log('[quiz/submit] Curso marcado como completado')
 
-          // 🎉 Broadcast de curso completado
+          // 🎉 Broadcast de curso completado, solo si esta peticion lo completo
           try {
-            await broadcastCourseCompleted(userName, user_id, courseTitle)
+            if (reclamoLaFinalizacion) {
+              await broadcastCourseCompleted(userName, user_id, courseTitle)
+            } else {
+              console.log('[quiz/submit] El curso ya estaba completado: no se repite el aviso')
+            }
             console.log('[quiz/submit] Broadcast de curso completado enviado')
           } catch (broadcastError) {
             console.error('[quiz/submit] Error en broadcast:', broadcastError)

@@ -192,9 +192,9 @@ export async function POST(request: NextRequest) {
           .eq('course_id', courseId)
           .maybeSingle()
 
-        const completadoEn =
-          matriculaPrevia?.completed_at ??
-          (isCompleted ? new Date().toISOString() : null)
+        // Si ya estaba completado, esta peticion no lo completa: no hay nada que
+        // anunciar. Se conserva el valor para no reescribir la fecha original.
+        const completadoEn = matriculaPrevia?.completed_at ?? null
 
         console.log('📊 [Progress] Actualizando enrollment:', {
           courseId: courseId.substring(0, 8),
@@ -205,15 +205,40 @@ export async function POST(request: NextRequest) {
         })
 
         // Actualizar course_enrollments
+        //
+        // completed_at NO va aqui: se reclama aparte, mas abajo. Ver el comentario
+        // del cerrojo.
         const { error: enrollmentError } = await supabase
           .from('course_enrollments')
           .update({
             progress_percentage: progressPercentage,
-            completed_at: completadoEn,
             last_accessed_at: new Date().toISOString(),
           })
           .eq('user_id', user.id)
           .eq('course_id', courseId)
+
+        // EL CERROJO DE LA FINALIZACION, Y POR QUE HACE FALTA.
+        //
+        // «Curso completado» se anunciaba DOS VECES, con un minuto de diferencia:
+        // hay dos rutas que lo disparan —esta, al llegar el progreso al 100%, y
+        // /api/quiz/submit al aprobar el examen final— y ninguna comprobaba si ya
+        // se habia anunciado. Quien termina la ultima leccion y despues hace el
+        // examen pasa por las dos.
+        //
+        // Se reclama con un UPDATE condicionado a IS NULL, que es atomico: quien
+        // recibe fila es quien completa el curso, y solo ese avisa. Es el mismo
+        // patron del correo de bienvenida y del anuncio de verificacion.
+        let reclamoLaFinalizacion = false
+        if (isCompleted && !completadoEn) {
+          const { data: reclamada } = await supabase
+            .from('course_enrollments')
+            .update({ completed_at: new Date().toISOString() })
+            .eq('user_id', user.id)
+            .eq('course_id', courseId)
+            .is('completed_at', null)
+            .select('id')
+          reclamoLaFinalizacion = (reclamada?.length ?? 0) === 1
+        }
 
         if (enrollmentError) {
           console.error('⚠️ [Progress] Error actualizando enrollment:', enrollmentError)
@@ -221,7 +246,7 @@ export async function POST(request: NextRequest) {
           console.log('✅ [Progress] Enrollment actualizado:', progressPercentage + '%')
 
           // 🎉 Broadcast cuando se completa el curso al 100%
-          if (isCompleted && courseData?.title) {
+          if (reclamoLaFinalizacion && courseData?.title) {
             // Obtener nombre del usuario
             const { data: userData } = await supabase
               .from('users')
