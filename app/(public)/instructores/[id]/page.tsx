@@ -90,19 +90,23 @@ export default async function InstructorProfilePage({
   // y nadie la escribe: si esta vacia, la de users es la real.
   const biografia = user.bio?.trim() || profile.bio || null
 
-  // LOS ENLACES VAN EN SU PROPIA CONSULTA, Y A PROPOSITO.
+  // LOS ENLACES SALEN DE UNA VISTA, Y VAN EN SU PROPIA CONSULTA.
   //
-  // website, twitter, linkedin y github viven en `users`, y anon no los puede
-  // leer hasta que se aplique la 101. Pedirlos dentro del embed del perfil
-  // hacia que la consulta entera devolviese 42501 y esta pagina un 404
-  // —comprobado: el perfil existia y respondia 404 por cuatro redes sociales—.
-  // Separandolos, si el despliegue llega antes que la migracion lo que falta es
-  // la seccion de enlaces, no el instructor. No depende del orden.
+  // La vista es `enlaces_publicos_de_instructor` (migracion 103): solo devuelve
+  // filas con perfil de instructor ACTIVO. En `users` esas cuatro columnas estan
+  // cerradas para anon y para authenticated, porque un GRANT de columna no
+  // distingue filas: la 101 las abrio para el perfil del instructor y con ellas
+  // quedaron abiertos los enlaces de cualquier cuenta no-estudiante.
+  //
+  // Y van aparte del embed del perfil a proposito: pedirlas dentro hacia que un
+  // 42501 tumbase la consulta entera y esta pagina devolviese 404 —medido: el
+  // perfil existia y respondia 404 por cuatro redes sociales—. Separadas, lo que
+  // falta si algo va mal es la seccion de enlaces, no el instructor.
   const { data: enlacesDeUsuario } = await supabase
-    .from('users')
+    .from('enlaces_publicos_de_instructor')
     .select('website, twitter, linkedin, github')
-    .eq('id', id)
-    .single()
+    .eq('user_id', id)
+    .maybeSingle()
 
   const redes = (enlacesDeUsuario ?? null) as {
     website: string | null

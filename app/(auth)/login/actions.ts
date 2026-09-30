@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { redirectAfterLogin } from '@/lib/auth/redirect-after-login'
-import { sendWelcomeEmail } from '@/lib/email/welcome-email'
 import {
   findSpanishErrorMessage,
   getMessageByCode,
@@ -281,23 +280,17 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
       }
     }
 
-    // Enviar email de bienvenida (no bloquea el flujo)
-    if (data.user) {
-      try {
-        const envio = await sendWelcomeEmail({
-          to: email,
-          userName: fullName || email.split('@')[0],
-        })
-        if (envio.success) {
-          console.log('✅ [Auth Actions] Email de bienvenida enviado')
-        } else {
-          console.error('❌ [Auth Actions] Email de bienvenida NO enviado:', envio.error)
-        }
-      } catch (emailError) {
-        // No fallar el registro por error de email
-        console.error('[Auth Actions] Error enviando email de bienvenida:', emailError)
-      }
-    }
+    // EL CORREO DE BIENVENIDA NO SE ENVIA AQUI.
+    //
+    // Aqui la cuenta existe pero la direccion NO esta confirmada: Supabase
+    // acaba de mandar el enlace y nadie lo ha pulsado. Enviar la bienvenida en
+    // este punto era escribir a direcciones sin verificar —las mal tecleadas y
+    // las de otras personas incluidas— y dar por buena una cuenta que todavia
+    // no se podia usar.
+    //
+    // Se envia cuando la direccion queda confirmada, en /auth/callback, con el
+    // cerrojo de users.welcome_email_sent_at para que salga una sola vez.
+    // Ver lib/email/bienvenida-una-sola-vez.ts.
 
     // Con la confirmación de email activada, Supabase crea el usuario pero NO
     // devuelve sesión. Es un registro correcto al que le falta un paso, y hay
