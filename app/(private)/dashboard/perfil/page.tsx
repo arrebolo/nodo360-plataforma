@@ -59,6 +59,14 @@ export default async function ProfilePage() {
             avatar_url: profile?.avatar_url ?? null,
             avatar_path: profile?.avatar_path ?? null,
             role: (profile?.role ?? 'student') as 'student' | 'instructor' | 'mentor' | 'admin',
+            // Las cinco que la 101 dejo legibles en publico y que ya eran
+            // escribibles por la propia persona: comprobado con una sesion de
+            // prueba antes de tocar nada.
+            bio: profile?.bio ?? '',
+            website: profile?.website ?? '',
+            twitter: profile?.twitter ?? '',
+            linkedin: profile?.linkedin ?? '',
+            github: profile?.github ?? '',
           }}
         />
       </div>

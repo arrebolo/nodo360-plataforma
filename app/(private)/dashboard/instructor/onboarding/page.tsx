@@ -15,6 +15,7 @@ import {
   ExternalLink
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 interface OnboardingStep {
   id: number
@@ -30,11 +31,6 @@ interface OnboardingStep {
 interface UserProfile {
   avatar_url: string | null
   bio: string | null
-}
-
-interface Certification {
-  id: string
-  status: string
 }
 
 interface Course {
@@ -62,12 +58,36 @@ export default function InstructorOnboardingPage() {
         .eq('id', user.id)
         .single() as { data: UserProfile | null }
 
-      // Fetch certifications (instructor certification)
-      const { data: certifications } = await supabase
-        .from('certificates')
-        .select('id, status')
+      // LAS VERIFICACIONES DE INSTRUCTOR, y no los certificados de alumno.
+      //
+      // Aqui se consultaba `certificates` con type='course', que son los
+      // certificados que recibe quien TERMINA un curso. No tenian nada que ver
+      // con ser instructor, asi que el paso 2 salia pendiente para todo el mundo
+      // —incluida una cuenta con su verificacion aprobada— y completado para
+      // cualquiera que hubiera acabado un curso.
+      //
+      // Cada uno lee sus propias certificaciones: es la politica de la 093. El
+      // casteo, porque lib/supabase/types.ts no conoce las tablas instructor_*.
+      const { data: verificaciones } = await (supabase as unknown as SupabaseClient)
+        .from('instructor_certifications')
+        .select('id, status, instructor_specialties ( nombre )')
         .eq('user_id', user.id)
-        .eq('type', 'course') as { data: Certification[] | null }
+        .eq('status', 'aprobada')
+
+      const verificadas = (verificaciones ?? []) as Array<{
+        id: string
+        status: string
+        instructor_specialties: { nombre: string } | { nombre: string }[] | null
+      }>
+
+      const nombreDeEspecialidad = (v: typeof verificadas[number]) => {
+        const e = v.instructor_specialties
+        return Array.isArray(e) ? e[0]?.nombre : e?.nombre
+      }
+
+      const especialidadesVerificadas = verificadas
+        .map(nombreDeEspecialidad)
+        .filter((n): n is string => !!n)
 
       // Fetch courses
       const { data: courses } = await supabase
@@ -77,7 +97,7 @@ export default function InstructorOnboardingPage() {
 
       // Calculate step completion
       const hasProfileComplete = !!(profile?.avatar_url && profile?.bio)
-      const hasCertification = certifications && certifications.length > 0
+      const estaVerificado = verificadas.length > 0
       const hasCourse = courses && courses.length > 0
       const hasCoursePendingOrPublished = courses?.some(
         c => c.status === 'pending_review' || c.status === 'published'
@@ -88,7 +108,7 @@ export default function InstructorOnboardingPage() {
         {
           id: 1,
           title: 'Completa tu perfil',
-          description: 'Añade tu foto, bio profesional y areas de conocimiento para que los estudiantes te conozcan.',
+          description: 'Tu foto y una biografia corta: quien eres y de que puedes hablar con conocimiento. Las areas de conocimiento no se escriben aqui, salen del paso siguiente.',
           icon: User,
           link: '/dashboard/perfil',
           linkText: 'Editar perfil',
@@ -97,12 +117,14 @@ export default function InstructorOnboardingPage() {
         },
         {
           id: 2,
-          title: 'Pasa el examen de certificacion',
-          description: 'Demuestra tu conocimiento para ser instructor certificado en Nodo360.',
+          title: 'Verificate en una especialidad',
+          description: especialidadesVerificadas.length > 0
+            ? `Verificado en ${especialidadesVerificadas.join(', ')}. Estar verificado en una especialidad habilita solo en esa.`
+            : 'La verificacion es por especialidad, no general. Si esa especialidad tiene banco de preguntas hay examen; si no, entrevista y parte practica. En los dos casos decide una persona, y sin ella no se puede enviar un curso a revision.',
           icon: Award,
-          link: '/dashboard/instructor',
-          linkText: 'Ver certificaciones',
-          isComplete: !!hasCertification,
+          link: '/dashboard/instructor/verificacion',
+          linkText: especialidadesVerificadas.length > 0 ? 'Ver mis verificaciones' : 'Pedir la verificacion',
+          isComplete: estaVerificado,
           isLoading: false,
         },
         {
@@ -118,7 +140,7 @@ export default function InstructorOnboardingPage() {
         {
           id: 4,
           title: 'Envia a revision',
-          description: 'Un mentor certificado revisara tu curso y te dara sus comentarios.',
+          description: 'Hace falta estar verificado en la especialidad del curso, y que el curso la tenga asignada. Hoy lo revisa el equipo de Nodo360; cuando haya mentores verificados, cada curso lo revisaran dos.',
           icon: Send,
           link: '/dashboard/instructor/guia',
           linkText: 'Ver guia de revision',
@@ -127,8 +149,8 @@ export default function InstructorOnboardingPage() {
         },
         {
           id: 5,
-          title: 'Publica y gana!',
-          description: 'Tu curso estara disponible para estudiantes y comenzaras a generar ingresos.',
+          title: 'Se publica',
+          description: 'Entra en el catalogo con tu nombre y tu biografia, gratuito como todos los demas. Hoy no hay remuneracion para instructores; si en el futuro hay monetizacion, las condiciones se acordaran por escrito antes de cualquier cobro.',
           icon: Rocket,
           link: '/dashboard/instructor/cursos',
           linkText: 'Ver mis cursos',
@@ -179,7 +201,7 @@ export default function InstructorOnboardingPage() {
             </h1>
           </div>
           <p className="text-white/60">
-            Sigue estos pasos para comenzar a crear y vender cursos en Nodo360
+            Sigue estos pasos para crear y publicar cursos en Nodo360
           </p>
         </div>
 

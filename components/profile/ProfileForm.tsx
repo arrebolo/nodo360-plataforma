@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
@@ -13,6 +14,11 @@ interface ProfileFormProps {
     avatar_url: string | null
     avatar_path: string | null
     role: 'student' | 'instructor' | 'mentor' | 'admin'
+    bio: string
+    website: string
+    twitter: string
+    linkedin: string
+    github: string
   }
 }
 
@@ -21,6 +27,11 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [fullName, setFullName] = useState(initial.full_name)
+  const [bio, setBio] = useState(initial.bio)
+  const [website, setWebsite] = useState(initial.website)
+  const [twitter, setTwitter] = useState(initial.twitter)
+  const [linkedin, setLinkedin] = useState(initial.linkedin)
+  const [github, setGithub] = useState(initial.github)
   const [avatarUrl, setAvatarUrl] = useState(initial.avatar_url || '')
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -29,7 +40,31 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
   const [success, setSuccess] = useState(false)
 
   // Detectar si hay cambios
-  const isDirty = fullName !== initial.full_name || file !== null
+  /**
+   * Un enlace, o nada.
+   *
+   * La base tiene el mismo CHECK desde la 101, y ahi es donde de verdad se
+   * impide: esto se escribe con el cliente de sesion contra PostgREST, donde no
+   * hay formulario. Aqui se valida para decirlo ANTES de intentarlo, no para ser
+   * la barrera.
+   */
+  const ENLACE = new RegExp('^https?://\S+$', 'i')
+  const esEnlace = (v: string) => v.trim() === '' || ENLACE.test(v.trim())
+
+  const errorDeEnlace =
+    !esEnlace(website) ? 'La web tiene que empezar por https://'
+    : !esEnlace(linkedin) ? 'El enlace de LinkedIn tiene que empezar por https://'
+    : !esEnlace(github) ? 'El enlace de GitHub tiene que empezar por https://'
+    : null
+
+  const isDirty =
+    fullName !== initial.full_name ||
+    bio !== initial.bio ||
+    website !== initial.website ||
+    twitter !== initial.twitter ||
+    linkedin !== initial.linkedin ||
+    github !== initial.github ||
+    file !== null
 
   // Manejar selección de archivo
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,6 +143,13 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
       // una marca de tiempo de modificacion no la pone el cliente.
       const updates: Record<string, unknown> = {
         full_name: fullName.trim(),
+        // Cadena vacia y no null: asi se puede BORRAR un enlace. El CHECK de la
+        // 101 acepta las dos cosas justo por esto.
+        bio: bio.trim(),
+        website: website.trim(),
+        twitter: twitter.trim(),
+        linkedin: linkedin.trim(),
+        github: github.trim(),
       }
 
       // Subir avatar si hay nuevo archivo
@@ -275,6 +317,72 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
                          placeholder:text-white/40 focus:outline-none focus:border-brand-light/50
                          focus:ring-1 focus:ring-brand-light/50 transition"
             />
+          </div>
+
+          {/* Biografia */}
+          <div>
+            <label htmlFor="perfil-bio" className="block text-sm font-medium text-white/80 mb-2">
+              Biografía
+            </label>
+            <textarea
+              id="perfil-bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={4}
+              maxLength={600}
+              placeholder="Quién eres y de qué puedes hablar con conocimiento. Sin currículum: dos o tres frases."
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-brand-light/50 focus:ring-1 focus:ring-brand-light/50 transition"
+            />
+            <p className="mt-1 text-xs text-white/40">
+              Se muestra en tu perfil público. {600 - bio.length} caracteres restantes.
+            </p>
+          </div>
+
+          {/* Enlaces */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {([
+              ['perfil-web', 'Web', website, setWebsite, 'https://tu-web.com'],
+              ['perfil-x', 'X', twitter, setTwitter, '@tu_usuario o la URL'],
+              ['perfil-linkedin', 'LinkedIn', linkedin, setLinkedin, 'https://linkedin.com/in/…'],
+              ['perfil-github', 'GitHub', github, setGithub, 'https://github.com/…'],
+            ] as const).map(([id, etiqueta, valor, set, ejemplo]) => {
+              const mal = etiqueta !== 'X' && !esEnlace(valor)
+              return (
+                <div key={id}>
+                  <label htmlFor={id} className="block text-sm font-medium text-white/80 mb-2">
+                    {etiqueta}
+                  </label>
+                  <input
+                    id={id}
+                    type="text"
+                    value={valor}
+                    onChange={(e) => set(e.target.value)}
+                    placeholder={ejemplo}
+                    aria-invalid={mal}
+                    className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-1 transition ${mal ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50' : 'border-white/10 focus:border-brand-light/50 focus:ring-brand-light/50'}`}
+                  />
+                </div>
+              )
+            })}
+          </div>
+
+          {errorDeEnlace && <p className="text-sm text-red-400">{errorDeEnlace}</p>}
+
+          {/* Las areas de conocimiento NO son un campo: salen de las especialidades
+              VERIFICADAS, porque un campo libre afirmaria un conocimiento que nadie ha
+              comprobado. */}
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <p className="text-sm text-white/70">
+              <strong className="text-white">Áreas de conocimiento.</strong> No se escriben
+              aquí: salen de las especialidades en las que estás verificado, y aparecen solas
+              en tu perfil público. Un campo libre afirmaría algo que nadie ha comprobado.
+            </p>
+            <Link
+              href="/dashboard/instructor/verificacion"
+              className="mt-2 inline-block text-sm text-brand-light hover:underline"
+            >
+              Mi verificación →
+            </Link>
           </div>
 
           {/* Email (read-only) */}
