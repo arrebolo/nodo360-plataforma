@@ -137,17 +137,34 @@ export async function getUsersByLevel() {
     .sort((a, b) => a.level - b.level)
 }
 
+/** Los roles que existen en `users.role`. Sirve para validar lo que llega por la URL. */
+const ROLES = ['admin', 'mentor', 'instructor', 'student', 'council'] as const
+type Rol = (typeof ROLES)[number]
+
 /**
  * Obtiene lista de usuarios con paginación
  * Usa admin client para bypass RLS y obtener stats de gamificación
  */
-export async function getUsers(page: number = 1, limit: number = 20) {
+export async function getUsers(
+  page: number = 1,
+  limit: number = 20,
+  /** Texto libre: busca en nombre y en correo. */
+  busqueda: string = '',
+  /** Rol exacto, o '' para todos. */
+  rol: string = ''
+) {
   const admin = createAdminClient()
   const offset = (page - 1) * limit
 
-  const { data: users, error, count } = await admin
-    .from('users')
-    .select(`
+  // email_confirmed_at llega con la migracion 105, y pedirla antes NO devuelve la
+  // fila sin ese campo: devuelve 42703 y tumba la consulta entera, o sea que la
+  // lista de usuarios saldria VACIA. Medido: «column users.email_confirmed_at
+  // does not exist».
+  //
+  // Por eso la columna es opcional aqui. Si no esta, la lista se pinta igual y lo
+  // unico que falta es la etiqueta «Sin confirmar». Asi da igual si se despliega
+  // antes o despues de aplicar la migracion.
+  const columnas = (conConfirmacion: boolean) => `
       id,
       email,
       full_name,
@@ -155,14 +172,46 @@ export async function getUsers(page: number = 1, limit: number = 20) {
       is_beta,
       is_suspended,
       created_at,
-      email_confirmed_at,
+      ${conConfirmacion ? 'email_confirmed_at,' : ''}
       user_gamification_stats (
         total_xp,
         current_level
       )
-    `, { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+    `
+
+  // El texto se escapa antes de entrar en un `or`.
+  //
+  // En PostgREST la coma separa condiciones y el punto separa columna de
+  // operador, asi que un correo con coma —o un parentesis— partiria el filtro en
+  // dos condiciones invalidas. Tambien fuera % y _, que son comodines de LIKE:
+  // buscar «100%» debe buscar eso, no «todo lo que empiece por 100».
+  const limpio = busqueda.trim().replace(/[,()%_\\]/g, ' ').trim()
+
+  const pedir = (conConfirmacion: boolean) => {
+    let q = admin.from('users').select(columnas(conConfirmacion), { count: 'exact' })
+
+    if (limpio) {
+      q = q.or(`full_name.ilike.%${limpio}%,email.ilike.%${limpio}%`)
+    }
+
+    // El rol viene de la URL, asi que es texto de fuera: solo se acepta si es uno
+    // de los roles que existen. Un `?role=cualquier-cosa` no llega a la consulta,
+    // y de paso el tipo de la columna cuadra sin castear a ciegas.
+    if (rol && (ROLES as readonly string[]).includes(rol)) {
+      q = q.eq('role', rol as Rol)
+    }
+
+    return q.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
+  }
+
+  let { data: users, error, count } = await pedir(true)
+
+  if (error) {
+    // Sin la 105 la columna no existe y esto es 42703. Se repite sin ella para que
+    // la lista se pinte igual.
+    console.warn('[getUsers] Reintento sin email_confirmed_at:', error.message || error.code)
+    ;({ data: users, error, count } = await pedir(false))
+  }
 
   if (error) {
     console.error('Error fetching users:', error)
@@ -173,6 +222,80 @@ export async function getUsers(page: number = 1, limit: number = 20) {
     users: users || [],
     total: count || 0
   }
+}
+
+/**
+ * Cuantas cuentas hay de cada rol, EN TODA LA TABLA.
+ *
+ * El panel las contaba con `users.filter(u => u.role === 'admin').length` sobre
+ * el resultado de getUsers, que es UNA PAGINA de 20. Con 24 cuentas, eso decia
+ * «Admins 1» y «Mentores 0» porque el segundo admin y el unico mentor estaban en
+ * la pagina 2. No era un recuento: era un recuento de la pagina.
+ *
+ * Y no cuenta a quien nunca confirmo su direccion, por lo mismo que las
+ * estadisticas: una cuenta sin confirmar no es un usuario (migracion 105).
+ *
+ * Va con el cliente de servicio porque email_confirmed_at esta cerrada para
+ * authenticated, y en PostgREST filtrar por una columna que no puedes leer
+ * devuelve 42501 —con head:true, encima, el error llega vacio y el count a null—.
+ */
+export async function getUserRoleCounts() {
+  const admin = createAdminClient()
+
+  const base = () => admin.from('users').select('id', { count: 'exact', head: true })
+
+  const contar = async (filtrarConfirmadas: boolean) => {
+    const q = () =>
+      filtrarConfirmadas ? base().not('email_confirmed_at', 'is', null) : base()
+
+    const [total, admins, mentores, instructores, estudiantes, sinConfirmar] = await Promise.all([
+      q(),
+      q().eq('role', 'admin'),
+      q().eq('role', 'mentor'),
+      q().eq('role', 'instructor'),
+      q().eq('role', 'student'),
+      filtrarConfirmadas
+        ? base().is('email_confirmed_at', null)
+        : Promise.resolve({ count: 0, error: null }),
+    ])
+
+    const fallo = [total, admins, mentores, instructores, estudiantes, sinConfirmar].some(
+      (r) => r.error || r.count === null
+    )
+
+    return {
+      fallo,
+      cifras: {
+        total: total.count ?? 0,
+        admins: admins.count ?? 0,
+        mentores: mentores.count ?? 0,
+        instructores: instructores.count ?? 0,
+        estudiantes: estudiantes.count ?? 0,
+        sinConfirmar: sinConfirmar.count ?? 0,
+      },
+    }
+  }
+
+  // PRIMERO CON EL FILTRO, Y SI NO SE PUEDE, SIN EL.
+  //
+  // No es defensa por si acaso: medido. Si esta pagina se despliega antes de
+  // aplicar la 105, la columna no existe, las seis consultas fallan y las seis
+  // tarjetas se quedarian a CERO —peor que los numeros equivocados que arreglan—.
+  // Y el fallo no se ve: con `head: true` PostgREST devuelve el error con el
+  // mensaje vacio y el count a null, sin codigo.
+  //
+  // Sin el filtro los recuentos siguen siendo los de la tabla entera, que es el
+  // fallo que habia que arreglar; lo unico que falta es descontar a quien no ha
+  // confirmado. Se avisa por consola y se sigue.
+  const conFiltro = await contar(true)
+  if (!conFiltro.fallo) return conFiltro.cifras
+
+  console.warn(
+    '[getUserRoleCounts] No se pudo filtrar por email_confirmed_at (¿falta la migración 105?). ' +
+      'Se cuentan todas las cuentas, incluidas las sin confirmar.'
+  )
+  const sinFiltro = await contar(false)
+  return sinFiltro.cifras
 }
 
 /**
