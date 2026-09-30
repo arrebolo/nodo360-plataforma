@@ -15,6 +15,15 @@ type Props = {
 const RESULTADOS = ['pendiente', 'apto', 'no_apto'] as const
 
 /**
+ * Lo minimo que puede medir la nota para rechazar o retirar. Tiene que coincidir
+ * con MINIMO_DE_LA_NOTA del servidor, que es quien manda.
+ *
+ * Se acepto un rechazo con la nota «000», y esa nota llega TAL CUAL al correo del
+ * candidato: es lo unico que va a leer sobre por que no salio adelante.
+ */
+const MINIMO_DE_LA_NOTA = 20
+
+/**
  * Resuelve un expediente. Las reglas de verdad estan en el servidor —para
  * aprobar, las dos partes aptas, y la acreditacion si la especialidad la
  * exige— y aqui se repiten solo para no dejar pulsar en balde.
@@ -34,8 +43,15 @@ export default function ResolverExpediente({
   const [externo, setExterno] = useState(false)
   const [tipoAcred, setTipoAcred] = useState('')
   const [refAcred, setRefAcred] = useState('')
+  const [noAnunciar, setNoAnunciar] = useState(false)
   const [cargando, setCargando] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const largoDeLaNota = notas.trim().length
+  const notaSuficiente = largoDeLaNota >= MINIMO_DE_LA_NOTA
+  const avisoDeLaNota = notaSuficiente
+    ? undefined
+    : `Escribe al menos ${MINIMO_DE_LA_NOTA} caracteres: esta nota llega tal cual a la persona (van ${largoDeLaNota}).`
 
   const acreditacionLista = !requiereAcreditacion || (tipoAcred.trim() !== '' && refAcred.trim() !== '')
   const puedeAprobar = oral === 'apto' && practica === 'apto' && acreditacionLista
@@ -58,6 +74,7 @@ export default function ResolverExpediente({
           evaluator_is_external: externo,
           accreditation_type: tipoAcred,
           accreditation_ref: refAcred,
+          no_anunciar: noAnunciar,
         }),
       })
       const datos = await res.json()
@@ -87,10 +104,12 @@ export default function ResolverExpediente({
             placeholder="Queda registrado y es obligatorio"
           />
         </label>
+        {!notaSuficiente && <p className="text-xs text-amber-400">{avisoDeLaNota}</p>}
         {error && <p className="text-sm text-red-400">{error}</p>}
         <button
           onClick={() => resolver('retirada')}
-          disabled={notas.trim() === '' || cargando !== null}
+          disabled={!notaSuficiente || cargando !== null}
+          title={avisoDeLaNota}
           className="px-4 py-2 rounded-lg bg-red-500/20 text-red-300 text-sm hover:bg-red-500/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {cargando === 'retirada' ? 'Retirando…' : 'Retirar la verificación'}
@@ -146,7 +165,9 @@ export default function ResolverExpediente({
       <label className="block">
         <span className="text-xs text-white/50 block mb-1">
           Notas del evaluador{' '}
-          <span className="text-white/30">(obligatorias para rechazar)</span>
+          <span className="text-white/30">
+            (obligatorias para rechazar, mínimo {MINIMO_DE_LA_NOTA} caracteres)
+          </span>
         </span>
         <textarea
           className={clase}
@@ -168,6 +189,30 @@ export default function ResolverExpediente({
         </label>
       )}
 
+      {/*
+        NO ANUNCIAR: para poder probar el flujo completo —correo, notificación,
+        rol— sin dejar un anuncio de prueba en un canal público. La primera prueba
+        publicó en #anuncios de verdad y hubo que borrarlo a mano.
+
+        No marca la fecha del anuncio, así que el anuncio queda pendiente y se
+        puede publicar después si se quiere.
+      */}
+      <label className="flex items-start gap-2 text-sm text-white/70">
+        <input
+          type="checkbox"
+          checked={noAnunciar}
+          onChange={(e) => setNoAnunciar(e.target.checked)}
+          className="mt-0.5 w-4 h-4 rounded border-white/10 bg-white/5"
+        />
+        <span>
+          No anunciar en Discord ni en Telegram
+          <span className="block text-xs text-white/40">
+            Para pruebas. Aprueba igual y avisa a la persona, pero no publica nada.
+            El anuncio queda pendiente.
+          </span>
+        </span>
+      </label>
+
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       <div className="flex flex-wrap gap-3">
@@ -181,8 +226,8 @@ export default function ResolverExpediente({
         </button>
         <button
           onClick={() => resolver('rechazada')}
-          disabled={notas.trim() === '' || cargando !== null}
-          title={notas.trim() === '' ? 'Un rechazo necesita explicarse' : undefined}
+          disabled={!notaSuficiente || cargando !== null}
+          title={avisoDeLaNota}
           className="px-4 py-2 rounded-lg bg-red-500/20 text-red-300 text-sm hover:bg-red-500/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {cargando === 'rechazada' ? 'Rechazando…' : 'Rechazar'}
