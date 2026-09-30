@@ -23,11 +23,29 @@ export async function POST(
     console.log(`✅ [Submit Review] User authenticated: ${user.id}`)
 
     // Verificar que el curso existe y pertenece al usuario
-    const { data: course, error: courseError } = await supabase
+    // `jurisdiccion` llega con la migracion 109, y pedirla antes NO devuelve la
+    // fila sin ella: devuelve 42703 y tumba la consulta, asi que este curso
+    // saldria como inexistente y no se podria enviar nada a revision. Se pide y,
+    // si falla, se repite sin ella.
+    const CAMPOS_CURSO = 'id, instructor_id, status, title, specialty_id'
+    let { data: course, error: courseError } = await supabase
       .from('courses')
-      .select('id, instructor_id, status, title, specialty_id')
+      .select(`${CAMPOS_CURSO}, jurisdiccion`)
       .eq('id', courseId)
       .single()
+
+    if (courseError) {
+      const reintento = await supabase
+        .from('courses')
+        .select(CAMPOS_CURSO)
+        .eq('id', courseId)
+        .single()
+      if (reintento.data) {
+        console.warn('[Submit Review] Sin columna jurisdiccion (¿falta la 109?)')
+        course = { ...reintento.data, jurisdiccion: null }
+        courseError = null
+      }
+    }
 
     if (courseError) {
       console.log(`❌ [Submit Review] Course query error:`, courseError)
@@ -70,8 +88,23 @@ export async function POST(
       )
     }
 
+    // LA JURISDICCION VA EN LA LLAMADA.
+    //
+    // Desde la 109, puede_ensenar recibe tambien el ambito normativo: en
+    // fiscalidad y derecho la verificacion es por pais, y estar verificado en
+    // España no habilita en Mexico. Si la especialidad no va por pais, la
+    // funcion ignora este argumento.
+    //
+    // Se lee del curso, no del cuerpo de la peticion: quien llama no decide para
+    // que pais esta verificado.
+    const jurisdiccionDelCurso =
+      (course as { jurisdiccion?: string | null }).jurisdiccion ?? null
+
     const { data: puede } = await supabase
-      .rpc('puede_ensenar', { p_specialty_id: course.specialty_id })
+      .rpc('puede_ensenar', {
+        p_specialty_id: course.specialty_id,
+        p_jurisdiccion: jurisdiccionDelCurso,
+      })
 
     if (puede !== true) {
       console.log(`⛔ [Submit Review] ${user.id} no esta verificado en ${course.specialty_id}`)
