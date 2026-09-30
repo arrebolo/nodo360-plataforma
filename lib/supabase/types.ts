@@ -1676,6 +1676,7 @@ export type Database = {
           twitter: string | null
           updated_at: string
           wants_beta_notification: boolean | null
+          email_normalizado: string | null
           welcome_email_sent_at: string | null
           email_confirmed_at: string | null
           website: string | null
