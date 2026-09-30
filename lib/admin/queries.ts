@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  */
 export async function getAdminStats() {
   const supabase = await createClient()
+  const admin = createAdminClient()
 
   // Stats básicos
   const [
@@ -19,7 +20,19 @@ export async function getAdminStats() {
     supabase.from('courses').select('*', { count: 'exact', head: true }),
     supabase.from('modules').select('*', { count: 'exact', head: true }),
     supabase.from('lessons').select('*', { count: 'exact', head: true }),
-    supabase.from('users').select('*', { count: 'exact', head: true }),
+    // UNA CUENTA SIN CONFIRMAR NO ES UN USUARIO.
+    //
+    // La fila de public.users nace al registrarse, no al confirmar —medido—, asi
+    // que un `count(*)` a secas cuenta tambien a quien escribio mal su direccion
+    // y nunca volvio. Desde la 105, email_confirmed_at refleja auth.users.
+    //
+    // VA CON EL CLIENTE DE SERVICIO, y no es un capricho: email_confirmed_at esta
+    // cerrada para authenticated, y en PostgREST FILTRAR por una columna que no
+    // puedes leer devuelve 42501. Medido, y con una trampa encima: con
+    // `head: true` el error llega VACIO y el count a null, asi que esta tarjeta
+    // habria mostrado el total en blanco sin decir por que.
+    admin.from('users').select('*', { count: 'exact', head: true })
+      .not('email_confirmed_at', 'is', null),
     supabase.from('course_enrollments').select('*', { count: 'exact', head: true }),
     supabase.from('badges').select('*', { count: 'exact', head: true }),
   ])
@@ -142,6 +155,7 @@ export async function getUsers(page: number = 1, limit: number = 20) {
       is_beta,
       is_suspended,
       created_at,
+      email_confirmed_at,
       user_gamification_stats (
         total_xp,
         current_level

@@ -29,6 +29,19 @@ export type MetodoRegistro = 'email' | 'google' | 'magic_link'
 type Eventos = {
   /** Cuenta creada. Uno por registro, nunca dos para el mismo. */
   sign_up: { method: MetodoRegistro }
+  /**
+   * La direccion queda confirmada y la cuenta pasa a ser real.
+   *
+   * `sign_up` se emite al enviar el formulario, o sea ANTES de confirmar: cuenta
+   * intentos, incluidas las direcciones mal escritas que nunca se confirman. Este
+   * evento es el que cuenta registros de verdad, y por eso es el que conviene
+   * marcar como evento clave en GA4 en lugar de sign_up.
+   *
+   * Con Google no hay paso intermedio —la direccion llega verificada del
+   * proveedor—, asi que ahi los dos eventos ocurren casi a la vez. La diferencia
+   * se ve en el registro con contraseña.
+   */
+  email_confirmed: { method: MetodoRegistro }
   /** Matrícula en un curso completada con éxito. */
   course_start: { course_slug: string; course_level: string }
   /** Lección marcada como completada. `lesson_number` es su posición en el curso, desde 1. */
