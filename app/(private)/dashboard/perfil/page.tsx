@@ -67,6 +67,10 @@ export default async function ProfilePage() {
             twitter: profile?.twitter ?? '',
             linkedin: profile?.linkedin ?? '',
             github: profile?.github ?? '',
+            // El consentimiento para anunciar logros (migracion 113). Si la columna
+            // no existe todavia, mi_perfil() no la devuelve y queda en false, que es
+            // el valor por defecto correcto: sin marcarla no se publica nada.
+            anunciar_logros: profile?.anunciar_logros === true,
           }}
         />
       </div>

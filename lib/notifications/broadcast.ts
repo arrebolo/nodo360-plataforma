@@ -7,6 +7,7 @@ import { discordNotifications } from './discord'
 import { telegramNotifications } from './telegram'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { NotificationType } from '@/types/database'
+import { puedeAnunciarSusLogros } from '@/lib/notifications/consentimiento'
 
 interface BroadcastOptions {
   // Canales a usar
@@ -117,6 +118,11 @@ export async function broadcastNewUser(
   userId: string,
   options: BroadcastOptions = defaultOptions
 ): Promise<void> {
+  // MISMO PROBLEMA QUE courseCompleted: «X se ha unido a la comunidad» publica el
+  // nombre de una persona, y esto se dispara al concederle acceso beta. Sin su
+  // permiso no sale.
+  const consiente = await puedeAnunciarSusLogros(userId)
+
   const results = await Promise.allSettled([
     // In-app para el usuario
     options.inApp && createInAppNotification(
@@ -127,9 +133,9 @@ export async function broadcastNewUser(
       '/cursos'
     ),
     // Discord
-    options.discord && discordNotifications.newUser(userName),
+    options.discord && consiente && discordNotifications.newUser(userName),
     // Telegram
-    options.telegram && telegramNotifications.newUser(userName),
+    options.telegram && consiente && telegramNotifications.newUser(userName),
   ])
 
   console.log('📢 [Broadcast] newUser:', results)
@@ -144,6 +150,23 @@ export async function broadcastCourseCompleted(
   courseName: string,
   options: BroadcastOptions = defaultOptions
 ): Promise<void> {
+  // EL ANUNCIO PUBLICO NECESITA SU PERMISO. El aviso privado, no.
+  //
+  // La notificacion in-app va a la propia persona: es correspondencia sobre lo que
+  // acaba de hacer y no hace falta pedir permiso para ella. Lo que si lo necesita es
+  // publicar su NOMBRE en Discord o en Telegram, que es lo que se hacia sin
+  // preguntar. Principio #8.
+  //
+  // Por defecto anunciar_logros es false, asi que hoy esto NO publica nada: el
+  // anuncio queda apagado hasta que alguien lo active en su perfil.
+  const consiente = await puedeAnunciarSusLogros(userId)
+
+  if (!consiente) {
+    console.log(
+      '📢 [Broadcast] courseCompleted: sin consentimiento, solo notificacion in-app'
+    )
+  }
+
   const results = await Promise.allSettled([
     // In-app para el usuario
     options.inApp && createInAppNotification(
@@ -153,10 +176,10 @@ export async function broadcastCourseCompleted(
       `Has completado el curso "${courseName}". ¡Felicidades!`,
       '/dashboard/certificados'
     ),
-    // Discord
-    options.discord && discordNotifications.courseCompleted(userName, courseName),
-    // Telegram
-    options.telegram && telegramNotifications.courseCompleted(userName, courseName),
+    // Discord, solo con consentimiento
+    options.discord && consiente && discordNotifications.courseCompleted(userName, courseName),
+    // Telegram, al grupo social y solo con consentimiento
+    options.telegram && consiente && telegramNotifications.courseCompleted(userName, courseName),
   ])
 
   console.log('📢 [Broadcast] courseCompleted:', results)

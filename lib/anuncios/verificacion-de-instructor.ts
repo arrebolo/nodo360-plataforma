@@ -103,19 +103,29 @@ export async function anunciarVerificacionAprobada(
   }
 
   // ── Telegram ───────────────────────────────────────────────────────────────
+  // El canal OFICIAL, y solo ese: si no esta configurado, no se publica en el grupo
+  // «por si acaso». Ese «por si acaso» es lo que hay que quitar.
   const hayTelegram =
-    Boolean(process.env.TELEGRAM_BOT_TOKEN) &&
-    Boolean(process.env.TELEGRAM_CHANNEL_ID || process.env.TELEGRAM_CHAT_ID)
+    Boolean(process.env.TELEGRAM_BOT_TOKEN) && Boolean(process.env.TELEGRAM_CHANNEL_ID)
 
   if (!hayTelegram) {
     console.log('⚠️ [anuncio] Telegram sin configurar, no se publica ahí')
   } else {
     try {
-      const ok = await sendTelegramMessage({
-        text: `<b>${titulo}</b>\n\n${texto}\n\n<a href="${perfil}">Ver su perfil</a>`,
-        parse_mode: 'HTML',
-        disable_web_page_preview: false,
-      })
+      // AL CANAL OFICIAL, no al grupo.
+      //
+      // Esto se publico en el grupo «Nodo360.comunidad» porque el modulo caia de
+      // TELEGRAM_CHANNEL_ID a TELEGRAM_CHAT_ID cuando la primera no estaba puesta.
+      // Una verificacion de instructor la concede Nodo360: es institucional y va al
+      // canal. Ahora el destino es explicito y no hay caida.
+      const ok = await sendTelegramMessage(
+        {
+          text: `<b>${titulo}</b>\n\n${texto}\n\n<a href="${perfil}">Ver su perfil</a>`,
+          parse_mode: 'HTML',
+          disable_web_page_preview: false,
+        },
+        'oficial'
+      )
       resultado.telegram = ok ? 'enviado' : 'error'
       if (ok) resultado.algunoEnviado = true
     } catch (e) {

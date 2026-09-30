@@ -19,6 +19,7 @@ interface ProfileFormProps {
     twitter: string
     linkedin: string
     github: string
+    anunciar_logros: boolean
   }
 }
 
@@ -32,6 +33,7 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
   const [twitter, setTwitter] = useState(initial.twitter)
   const [linkedin, setLinkedin] = useState(initial.linkedin)
   const [github, setGithub] = useState(initial.github)
+  const [anunciarLogros, setAnunciarLogros] = useState(initial.anunciar_logros)
   const [avatarUrl, setAvatarUrl] = useState(initial.avatar_url || '')
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -64,6 +66,7 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
     twitter !== initial.twitter ||
     linkedin !== initial.linkedin ||
     github !== initial.github ||
+    anunciarLogros !== initial.anunciar_logros ||
     file !== null
 
   // Manejar selección de archivo
@@ -150,6 +153,7 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
         twitter: twitter.trim(),
         linkedin: linkedin.trim(),
         github: github.trim(),
+        anunciar_logros: anunciarLogros,
       }
 
       // Subir avatar si hay nuevo archivo
@@ -384,6 +388,32 @@ export function ProfileForm({ userId, email, initial }: ProfileFormProps) {
               Mi verificación →
             </Link>
           </div>
+
+          {/*
+            EL CONSENTIMIENTO PARA ANUNCIAR LOGROS.
+            Desactivado por defecto, y por defecto no se publica nada. Hasta ahora
+            «X ha completado el curso Y» se publicaba en el grupo de Telegram sin
+            preguntar: el logro es de quien lo consigue y contarlo en público
+            también lo decide él. Principio #8.
+          */}
+          <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={anunciarLogros}
+              onChange={(e) => setAnunciarLogros(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-orange-500"
+            />
+            <span className="text-sm text-white/70">
+              <strong className="text-white">Anunciar mis logros en la comunidad.</strong>{' '}
+              Cuando completes un curso, se publicará en los canales de Nodo360 con tu
+              nombre público y el nombre del curso.
+              <span className="block text-xs text-white/40 mt-1">
+                Opcional y desactivado por defecto. Puedes quitarlo cuando quieras: deja de
+                publicarse a partir de ese momento. Tu certificado y tu progreso no dependen
+                de esto.
+              </span>
+            </span>
+          </label>
 
           {/* Email (read-only) */}
           <div>
