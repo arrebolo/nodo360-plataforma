@@ -15,6 +15,33 @@ import { Resend } from 'resend'
  */
 export const REMITENTE_NODO360 = 'Nodo360 <hola@nodo360.com>'
 
+/**
+ * La base de los enlaces que van DENTRO de un correo.
+ *
+ * No vale usar NEXT_PUBLIC_SITE_URL a secas: en local vale
+ * `http://localhost:3000`, y un correo siempre acaba en un buzon de verdad, donde
+ * un enlace a localhost no le sirve a nadie. Se comprobo enviando los dos correos
+ * de verificacion a la cuenta de pruebas: llegaron con enlaces a localhost.
+ *
+ * Asi que si la variable apunta a una direccion local, los correos usan el dominio
+ * de produccion y lo dicen por consola. Una vista previa o un script de pruebas
+ * manda correos con enlaces que funcionan.
+ */
+export const SITIO_PARA_CORREOS: string = (() => {
+  const configurado = (process.env.NEXT_PUBLIC_SITE_URL || '').trim().replace(/\/$/, '')
+  const esLocal = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(configurado)
+
+  if (!configurado || esLocal) {
+    if (esLocal) {
+      console.warn(
+        `[email] NEXT_PUBLIC_SITE_URL es ${configurado}: los enlaces de los correos usaran https://nodo360.com`
+      )
+    }
+    return 'https://nodo360.com'
+  }
+  return configurado
+})()
+
 /** Nombre exacto de la variable de entorno con la clave de la API de Resend. */
 export const VARIABLE_CLAVE_RESEND = 'RESEND_API_KEY'
 

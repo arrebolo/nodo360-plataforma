@@ -1,4 +1,4 @@
-import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
+import { getResend, REMITENTE_NODO360, SITIO_PARA_CORREOS } from '@/lib/email/resend-client'
 
 /**
  * LOS DOS CORREOS DE UNA VERIFICACION DE INSTRUCTOR
@@ -19,7 +19,7 @@ import { getResend, REMITENTE_NODO360 } from '@/lib/email/resend-client'
  * de lo que de verdad se dijo.
  */
 
-const SITIO = (process.env.NEXT_PUBLIC_SITE_URL || 'https://nodo360.com').replace(/\/$/, '')
+const SITIO = SITIO_PARA_CORREOS
 
 /** El texto entre etiquetas viene de la base; aqui no se confia en nada. */
 function escapar(v: string): string {
@@ -107,8 +107,9 @@ export async function enviarVerificacionAprobada({
     <p style="${PARRAFO}">Hola ${escapar(nombre)}:</p>
 
     <p style="${PARRAFO}">
-      Tu verificación en <strong style="color: #f7931a;">${mat}</strong> está aprobada.
-      Alguien ha revisado tu solicitud y ha decidido que puedes enseñar esa materia en Nodo360.
+      El equipo de Nodo360 ha revisado tu solicitud y tu verificación en
+      <strong style="color: #f7931a;">${mat}</strong> está aprobada: puedes enseñar esa
+      materia en la plataforma.
     </p>
 
     <p style="${PARRAFO}">A partir de ahora puedes:</p>
@@ -157,13 +158,26 @@ export async function enviarVerificacionAprobada({
 // RECHAZADA
 // =====================================================
 
+/** Los dias que hay que esperar tras un rechazo antes de volver a solicitarla. */
+export const DIAS_DE_ESPERA_TRAS_RECHAZO = 30
+
+/** «14 de noviembre de 2026», en español y sin depender del locale del servidor. */
+function fechaLarga(d: Date): string {
+  const MESES = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  ]
+  return `${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`
+}
+
 export async function enviarVerificacionRechazada({
   to,
   nombre,
   especialidad,
   jurisdiccion,
   motivo,
-}: DatosComunes & { motivo: string }) {
+  puedeVolverEl,
+}: DatosComunes & { motivo: string; puedeVolverEl?: Date }) {
   const resend = getResend()
   if (!resend) {
     console.error('❌ [verificacion/rechazada] Resend no configurado')
@@ -172,12 +186,15 @@ export async function enviarVerificacionRechazada({
 
   const mat = escapar(materia(especialidad, jurisdiccion))
 
+  // Si no se pasa, se calcula: la fecha del correo mas el plazo.
+  const vuelta = puedeVolverEl ?? new Date(Date.now() + DIAS_DE_ESPERA_TRAS_RECHAZO * 86400000)
+
   const contenido = `
     <p style="${PARRAFO}">Hola ${escapar(nombre)}:</p>
 
     <p style="${PARRAFO}">
-      Hemos revisado tu solicitud de verificación en <strong>${mat}</strong> y esta vez no
-      ha salido adelante.
+      El equipo de Nodo360 ha revisado tu solicitud de verificación en
+      <strong>${mat}</strong> y esta vez no ha salido adelante.
     </p>
 
     <p style="${PARRAFO}">Esto es lo que anotó quien la evaluó:</p>
@@ -185,13 +202,15 @@ export async function enviarVerificacionRechazada({
     <blockquote style="margin: 0 0 20px 0; padding: 16px 20px; border-left: 3px solid rgba(247,147,26,0.5); background: rgba(255,255,255,0.03); color: #d1d5db; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">${escapar(motivo)}</blockquote>
 
     <p style="${PARRAFO}">
-      Puedes volver a solicitarla <strong>cuando quieras</strong>: no hay plazo de espera.
-      Una solicitud que no sale adelante no cierra ninguna puerta, y tampoco afecta a las
-      demás especialidades.
+      Puedes volver a solicitarla a partir del
+      <strong style="color: #f7931a;">${escapar(fechaLarga(vuelta))}</strong>. El plazo es de
+      ${DIAS_DE_ESPERA_TRAS_RECHAZO} días y sirve para tener tiempo de preparar lo que falta;
+      no es una penalización. Esto no afecta a las demás especialidades: puedes solicitar
+      cualquier otra cuando quieras.
     </p>
 
     <div style="text-align: center; margin: 28px 0;">
-      <a href="${SITIO}/dashboard/instructor/verificacion" style="${BOTON}">Volver a solicitarla</a>
+      <a href="${SITIO}/dashboard/instructor/verificacion" style="${BOTON}">Ver mis verificaciones</a>
     </div>
 
     <p style="color: #9ca3af; font-size: 14px; line-height: 1.6; margin: 0;">

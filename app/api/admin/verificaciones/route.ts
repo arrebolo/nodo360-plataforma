@@ -4,7 +4,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/ratelimit'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createInAppNotification } from '@/lib/notifications/broadcast'
-import { enviarVerificacionAprobada, enviarVerificacionRechazada } from '@/lib/email/verificacion'
+import {
+  enviarVerificacionAprobada,
+  enviarVerificacionRechazada,
+  DIAS_DE_ESPERA_TRAS_RECHAZO,
+} from '@/lib/email/verificacion'
 import { anunciarVerificacionAprobada } from '@/lib/anuncios/verificacion-de-instructor'
 
 /**
@@ -264,6 +268,10 @@ export async function PATCH(req: NextRequest) {
       )
     }
     cambios.status = 'rechazada'
+    // La fecha del rechazo, para contar los 30 dias. Se usa updated_at? No:
+    // updated_at cambia por cualquier otra cosa y el plazo dejaria de ser el plazo.
+    // La columna llega con la 108; si no esta, se quita mas abajo.
+    cambios.rechazada_el = new Date().toISOString()
   }
 
   if (decision === 'retirada') {
@@ -278,7 +286,16 @@ export async function PATCH(req: NextRequest) {
     cambios.revoked_reason = notas
   }
 
-  const { error } = await db.from('instructor_certifications').update(cambios).eq('id', id)
+  let { error } = await db.from('instructor_certifications').update(cambios).eq('id', id)
+
+  // rechazada_el llega con la 108. Sin ella, PostgREST rechaza el UPDATE entero
+  // con PGRST204 y no se podria rechazar nada: se repite sin esa columna.
+  if (error && (error.code === 'PGRST204' || error.code === '42703')) {
+    console.warn('[admin/verificaciones] Sin columna rechazada_el (¿falta la 108?): se resuelve sin ella')
+    const { rechazada_el: _fuera, ...sinColumna } = cambios
+    ;({ error } = await db.from('instructor_certifications').update(sinColumna).eq('id', id))
+  }
+
   if (error) {
     console.error('[admin/verificaciones] Error al resolver:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -359,17 +376,23 @@ export async function PATCH(req: NextRequest) {
           if (!envio.success) console.error('[admin/verificaciones] Correo de aprobacion NO enviado:', envio.error)
         }
       } else {
+        // El plazo de espera se cuenta desde AHORA, que es cuando se rechaza, y la
+        // misma fecha va al correo y a la regla de la base: si el correo dijera una
+        // fecha y el sistema aceptara otra, el correo estaria mintiendo.
+        const puedeVolverEl = new Date(Date.now() + DIAS_DE_ESPERA_TRAS_RECHAZO * 86400000)
+
         await createInAppNotification(
           exp.user_id,
           'verificacion_rechazada',
           `Sobre tu solicitud en ${especialidad}`,
-          'Hemos revisado tu solicitud. Puedes volver a solicitarla cuando quieras.',
+          `El equipo de Nodo360 ha revisado tu solicitud. Puedes volver a solicitarla a partir del ${puedeVolverEl.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}.`,
           '/dashboard/instructor/verificacion'
         )
         if (correo) {
           const envio = await enviarVerificacionRechazada({
             to: correo, nombre, especialidad, jurisdiccion,
             motivo: notas as string,   // un rechazo sin notas ya se rechazo arriba
+            puedeVolverEl,
           })
           if (!envio.success) console.error('[admin/verificaciones] Correo de rechazo NO enviado:', envio.error)
         }
@@ -398,23 +421,48 @@ export async function PATCH(req: NextRequest) {
       if (!nombrePublico || !especialidad) {
         console.warn('[admin/verificaciones] Sin nombre publico o especialidad: no se anuncia')
       } else {
-        const r = await anunciarVerificacionAprobada({
-          nombrePublico,
-          especialidad,
-          jurisdiccion: null,
-          userId: exp.user_id,
-        })
+        // SE RECLAMA ANTES DE PUBLICAR, Y NO SE COMPRUEBA.
+        //
+        // La version anterior leia anunciado_el, publicaba, y despues marcaba la
+        // fecha. Entre la lectura y la marca cabe otra peticion: dos aprobaciones
+        // a la vez publicaban dos veces el mismo anuncio. El cerrojo es este
+        // UPDATE condicionado a IS NULL, que es atomico: quien recibe fila
+        // publica, y no hay segundo.
+        const { data: reclamada, error: errorReclamo } = await db
+          .from('instructor_certifications')
+          .update({ anunciado_el: new Date().toISOString() })
+          .eq('id', id)
+          .is('anunciado_el', null)
+          .select('id')
 
-        // La fecha solo se graba si SALIO de verdad. En modo de prueba no se
-        // marca, para poder repetir la prueba sin desbloquear nada a mano.
-        if (r.algunoEnviado) {
-          const { error: errorAnuncio } = await db
-            .from('instructor_certifications')
-            .update({ anunciado_el: new Date().toISOString() })
-            .eq('id', id)
-          if (errorAnuncio) console.error('[admin/verificaciones] Anunciado pero no se pudo marcar:', errorAnuncio)
+        if (errorReclamo) {
+          console.error('[admin/verificaciones] No se pudo reclamar el anuncio:', errorReclamo)
+        } else if (!reclamada || reclamada.length === 0) {
+          console.log('[admin/verificaciones] Otra peticion se llevo el anuncio: no se publica')
+        } else {
+          const r = await anunciarVerificacionAprobada({
+            nombrePublico,
+            especialidad,
+            jurisdiccion: null,
+            userId: exp.user_id,
+          })
+
+          // Si no salio por ningun canal, se SUELTA el cerrojo para poder
+          // reintentarlo. Reclamado y no publicado dejaria el anuncio sin hacer
+          // para siempre. En modo de prueba tampoco se queda marcado, y asi la
+          // prueba se puede repetir sin desbloquear nada a mano.
+          if (!r.algunoEnviado) {
+            const { error: errorSuelta } = await db
+              .from('instructor_certifications')
+              .update({ anunciado_el: null })
+              .eq('id', id)
+            if (errorSuelta) {
+              console.error('[admin/verificaciones] No se pudo soltar el cerrojo del anuncio:', errorSuelta)
+            }
+          }
+
+          console.log(`[admin/verificaciones] Anuncio -> discord: ${r.discord}, telegram: ${r.telegram}`)
         }
-        console.log(`[admin/verificaciones] Anuncio -> discord: ${r.discord}, telegram: ${r.telegram}`)
       }
     } catch (e) {
       // Un canal caido no impide una aprobacion.
