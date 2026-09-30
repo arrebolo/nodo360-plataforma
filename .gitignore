@@ -81,3 +81,6 @@ tmpclaude-*
 # archivos legitimos del proyecto, que ya tiene varios con ese nombre.
 # El archivo vive ahora en C:\Users\alber\backups-sql\
 /codigos respaldo discord.txt
+
+# Artefactos de la CLI de Supabase (npx supabase gen types los crea)
+supabase/.temp/
