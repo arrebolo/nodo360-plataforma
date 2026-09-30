@@ -8,6 +8,12 @@ type Especialidad = {
   nombre: string
   descripcion: string | null
   requiere_acreditacion: boolean
+  /**
+   * Si esa especialidad tiene examen UTILIZABLE: activo y con banco suficiente.
+   * Cuatro examenes antiguos existen con cero preguntas, y antes de la 099 esto
+   * prometia un examen que al intentarlo fallaba.
+   */
+  tiene_examen: boolean
 }
 
 /**
@@ -66,6 +72,7 @@ export default function SolicitarVerificacion({
           {especialidades.map((e) => (
             <option key={e.id} value={e.id}>
               {e.nombre}
+              {e.tiene_examen ? ' · con examen' : ' · entrevista y práctica'}
             </option>
           ))}
         </select>
@@ -74,6 +81,22 @@ export default function SolicitarVerificacion({
       {esp && (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2">
           {esp.descripcion && <p className="text-sm text-white/70">{esp.descripcion}</p>}
+
+          {esp.tiene_examen ? (
+            <p className="text-sm text-white/70">
+              <strong className="text-white">Con examen.</strong> Quince preguntas de su
+              banco, y después repreguntas en voz alta y una parte práctica. La nota no
+              decide por sí sola.
+            </p>
+          ) : (
+            <p className="text-sm text-white/70">
+              <strong className="text-white">Sin examen todavía.</strong> Esta especialidad
+              no tiene banco de preguntas, así que la verificación es{' '}
+              <strong className="text-white">entrevista y parte práctica</strong>. Es el
+              mismo camino que fiscalidad y derecho, y no es un atajo: lo que se valora es
+              lo mismo.
+            </p>
+          )}
           {esp.requiere_acreditacion && (
             <p className="text-sm text-amber-400">
               Esta especialidad <strong>requiere acreditación profesional</strong>: hará falta

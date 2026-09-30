@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Mail, FileText, Users, CheckCircle2, RotateCcw, XCircle, BadgeCheck, FileSearch, BookOpen, Sparkles } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * /instructores  ·  "Hazte instructor"
@@ -86,7 +87,7 @@ const VERIFICACION = [
     icono: BookOpen,
     titulo: 'Si la especialidad tiene examen, lo haces',
     texto:
-      'Quince preguntas de su banco, distintas en cada intento, con las opciones en otro orden. Mide lo que sabes de la materia, no lo bien que se te da un test: la nota no decide nada por sí sola.',
+      'Quince preguntas de su banco, distintas en cada intento, con las opciones en otro orden. Mide lo que sabes de la materia, no lo bien que se te da un test: la nota no decide nada por sí sola. Y si esa especialidad todavía no tiene banco de preguntas, no hay examen: la verificación es entrevista y parte práctica, igual que en fiscalidad y derecho.',
   },
   {
     icono: Users,
@@ -136,7 +137,23 @@ const HOY_RECIBES = [
   'Acceso al panel de instructor para ver cuánta gente lo está haciendo y por dónde va.',
 ]
 
-export default function InstructoresPage() {
+export default async function InstructoresPage() {
+  // Cuales tienen examen HOY, de la vista de la 099. Se lee en vez de escribirse
+  // a mano porque una lista escrita envejece: cuatro examenes existen con cero
+  // preguntas, y el dia que tengan banco esta pagina tiene que cambiar sola.
+  const supabase = await createClient()
+  const { data: especialidades } = await supabase
+    .from('especialidades_publicas')
+    .select('slug, nombre, requiere_acreditacion, tiene_examen')
+    .order('position')
+
+  const lista = (especialidades ?? []) as Array<{
+    slug: string
+    nombre: string
+    requiere_acreditacion: boolean
+    tiene_examen: boolean
+  }>
+
   return (
     <div className="min-h-screen bg-dark">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
@@ -245,6 +262,34 @@ export default function InstructoresPage() {
               </div>
             ))}
           </div>
+
+          {lista.length > 0 && (
+            <div className="mt-8 rounded-xl border border-white/10 bg-dark-surface p-5">
+              <p className="text-sm text-white/60 mb-4">
+                Las once especialidades, y cómo se verifica cada una ahora mismo:
+              </p>
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {lista.map((e) => (
+                  <li key={e.slug} className="flex items-start gap-2 text-sm">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25" aria-hidden />
+                    <span className="text-white/70">
+                      {e.nombre}
+                      <span className="text-white/40">
+                        {' · '}
+                        {e.tiene_examen ? 'examen y entrevista' : 'entrevista y práctica'}
+                        {e.requiere_acreditacion && ' · requiere acreditación'}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-xs text-white/40 leading-relaxed">
+                «Entrevista y práctica» no es un atajo: se valora lo mismo. Significa que
+                esa especialidad todavía no tiene banco de preguntas, y preferimos decirlo
+                a montar un examen de relleno.
+              </p>
+            </div>
+          )}
 
           <div className="mt-8 flex items-start gap-3 rounded-xl border border-white/10 bg-dark-surface p-5">
             <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-blue-300" aria-hidden />
