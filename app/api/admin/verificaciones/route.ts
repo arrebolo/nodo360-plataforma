@@ -7,6 +7,7 @@ import { createInAppNotification } from '@/lib/notifications/broadcast'
 import {
   enviarVerificacionAprobada,
   enviarVerificacionRechazada,
+  enviarVerificacionRetirada,
   DIAS_DE_ESPERA_TRAS_RECHAZO,
 } from '@/lib/email/verificacion'
 import { anunciarVerificacionAprobada } from '@/lib/anuncios/verificacion-de-instructor'
@@ -371,9 +372,17 @@ export async function PATCH(req: NextRequest) {
   // esta grabada y un fallo del correo no puede deshacerla ni devolver un error
   // donde no hay ningun problema que resolver.
   //
-  // La retirada no manda nada: no estaba en lo pedido, y una retirada se explica
-  // hablando con la persona, no con una plantilla.
-  if (decision === 'aprobada' || decision === 'rechazada') {
+  // LA RETIRADA TAMBIEN AVISA.
+  //
+  // Antes no: «una retirada se explica hablando con la persona». Es bonito y en la
+  // practica significaba que no se avisaba de nada, asi que quien perdia una
+  // verificacion se enteraba al intentar enviar un curso a revision y encontrarse
+  // la puerta cerrada. Esa es la peor forma de enterarse.
+  //
+  // Lo que NO cambia: una retirada no se anuncia en ningun canal publico. El
+  // anuncio solo corre para 'aprobada', y el trigger de la 108 —corregido en la
+  // 110— lo impide ademas en la base.
+  if (decision === 'aprobada' || decision === 'rechazada' || decision === 'retirada') {
     try {
       const [{ data: persona }, { data: esp }] = await Promise.all([
         db.from('users').select('email, full_name').eq('id', exp.user_id).maybeSingle(),
@@ -402,6 +411,21 @@ export async function PATCH(req: NextRequest) {
         if (correo) {
           const envio = await enviarVerificacionAprobada({ to: correo, nombre, especialidad, jurisdiccion })
           if (!envio.success) console.error('[admin/verificaciones] Correo de aprobacion NO enviado:', envio.error)
+        }
+      } else if (decision === 'retirada') {
+        await createInAppNotification(
+          exp.user_id,
+          'verificacion_retirada',
+          `Verificación retirada: ${especialidad}`,
+          'Tus cursos publicados siguen visibles. No podrás enviar cursos nuevos de esa especialidad a revisión.',
+          '/dashboard/instructor/verificacion'
+        )
+        if (correo) {
+          const envio = await enviarVerificacionRetirada({
+            to: correo, nombre, especialidad, jurisdiccion,
+            motivo: notas as string,   // una retirada sin motivo ya se rechazo arriba
+          })
+          if (!envio.success) console.error('[admin/verificaciones] Correo de retirada NO enviado:', envio.error)
         }
       } else {
         // El plazo de espera se cuenta desde AHORA, que es cuando se rechaza, y la

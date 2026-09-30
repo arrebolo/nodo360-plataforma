@@ -1,14 +1,19 @@
 import { getResend, REMITENTE_NODO360, SITIO_PARA_CORREOS } from '@/lib/email/resend-client'
 
 /**
- * LOS DOS CORREOS DE UNA VERIFICACION DE INSTRUCTOR
+ * LOS TRES CORREOS DE UNA VERIFICACION DE INSTRUCTOR
  *
  * Hasta ahora no se enviaba ninguno: al aprobar o rechazar, la persona se
  * enteraba entrando a mirar. Se comprobo en la ruta que resuelve el expediente,
  * que no tenia ni una referencia a correo ni a notificaciones.
  *
- * Van los dos en el mismo fichero porque comparten la envoltura y porque son la
- * misma conversacion: la respuesta a una solicitud. Lo que cambia es el fondo.
+ * Van los tres en el mismo fichero porque comparten la envoltura y porque son la
+ * misma conversacion: lo que Nodo360 le dice a alguien sobre su verificacion. Lo
+ * que cambia es el fondo.
+ *
+ * El de la RETIRADA no se envio nunca hasta la 111: al retirar una verificacion no
+ * se avisaba a nadie, y la persona se enteraba al intentar enviar un curso a
+ * revision y encontrarse la puerta cerrada. Esa es la peor forma de enterarse.
  *
  * NI UNA PROMESA DE PAGO. No se menciona dinero, ni ingresos, ni remuneracion:
  * ni para prometerlos ni para negarlos. Este correo va de lo que la persona
@@ -150,6 +155,82 @@ export async function enviarVerificacionAprobada({
     return { success: true, id: data?.id }
   } catch (e) {
     console.error('❌ [verificacion/aprobada] Error critico:', e)
+    return { success: false, error: String(e) }
+  }
+}
+
+// =====================================================
+// RETIRADA
+// =====================================================
+
+export async function enviarVerificacionRetirada({
+  to,
+  nombre,
+  especialidad,
+  jurisdiccion,
+  motivo,
+}: DatosComunes & { motivo: string }) {
+  const resend = getResend()
+  if (!resend) {
+    console.error('❌ [verificacion/retirada] Resend no configurado')
+    return { success: false, error: 'Email service not configured' }
+  }
+
+  const mat = escapar(materia(especialidad, jurisdiccion))
+
+  const contenido = `
+    <p style="${PARRAFO}">Hola ${escapar(nombre)}:</p>
+
+    <p style="${PARRAFO}">
+      El equipo de Nodo360 ha retirado tu verificación en <strong>${mat}</strong>.
+    </p>
+
+    <p style="${PARRAFO}">Este es el motivo que queda registrado:</p>
+
+    <blockquote style="margin: 0 0 20px 0; padding: 16px 20px; border-left: 3px solid rgba(247,147,26,0.5); background: rgba(255,255,255,0.03); color: #d1d5db; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">${escapar(motivo)}</blockquote>
+
+    <p style="${PARRAFO}">Qué significa, en concreto:</p>
+
+    <ul style="color: #d1d5db; font-size: 15px; line-height: 1.8; margin: 0 0 20px 0; padding-left: 20px;">
+      <li>
+        <strong>No podrás crear ni enviar a revisión cursos nuevos de ${mat}.</strong>
+        La verificación es lo que habilita para esa materia.
+      </li>
+      <li>
+        <strong>Tus cursos ya publicados siguen visibles</strong> y tu alumnado sigue
+        teniendo acceso. Esto no los retira ni los oculta.
+      </li>
+      <li>
+        No afecta a las demás especialidades: las que tengas verificadas siguen igual.
+      </li>
+    </ul>
+
+    <p style="${PARRAFO}">
+      Si quieres comentarlo, responder a esto o entender mejor la decisión, escríbenos a
+      <a href="mailto:soporte@nodo360.com" style="color: #f7931a; text-decoration: none;">soporte@nodo360.com</a>.
+      Lo miramos con calma.
+    </p>
+
+    <p style="color: #9ca3af; font-size: 14px; line-height: 1.6; margin: 0;">
+      Puedes ver el estado de tus verificaciones en
+      <a href="${SITIO}/dashboard/instructor/verificacion" style="color: #f7931a; text-decoration: none;">tu panel</a>.
+    </p>
+  `
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: REMITENTE_NODO360,
+      to,
+      subject: `Tu verificación en ${materia(especialidad, jurisdiccion)} se ha retirado`,
+      html: envoltura(`Verificación retirada: ${materia(especialidad, jurisdiccion)}`, contenido),
+    })
+    if (error) {
+      console.error('❌ [verificacion/retirada]', error)
+      return { success: false, error: error.message }
+    }
+    return { success: true, id: data?.id }
+  } catch (e) {
+    console.error('❌ [verificacion/retirada] Error critico:', e)
     return { success: false, error: String(e) }
   }
 }

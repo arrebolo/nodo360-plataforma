@@ -772,7 +772,8 @@ export type NotificationType =
   | 'welcome'
   | 'system'
   | 'verificacion_aprobada'
-  | 'verificacion_rechazada';
+  | 'verificacion_rechazada'
+  | 'verificacion_retirada';
 
 export interface Notification {
   id: string;
