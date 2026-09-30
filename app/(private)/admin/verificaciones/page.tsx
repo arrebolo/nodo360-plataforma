@@ -200,7 +200,14 @@ function Expediente({ e }: { e: any }) {
         </div>
       )}
 
-      {e.evaluator_notes && e.status !== 'rechazada' && (
+      {/*
+        Las notas sueltas, SOLO para lo que esta sin resolver.
+        En una retirada, la ruta escribe la nota en evaluator_notes Y en
+        revoked_reason —comprobado: las dos columnas son identicas—, asi que
+        pintar las dos mostraba el motivo dos veces. Cuando el expediente esta
+        resuelto, el motivo lo cuenta su propio recuadro y aqui no hace falta.
+      */}
+      {e.evaluator_notes && e.status !== 'rechazada' && e.status !== 'retirada' && (
         <p className="mt-3 text-sm text-white/60 border-l-2 border-white/10 pl-3">
           {e.evaluator_notes}
         </p>
