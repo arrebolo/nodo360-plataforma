@@ -34,6 +34,14 @@ export type MiPerfil = {
   is_beta: boolean | null
   is_beta_enabled: boolean | null
   wants_beta_notification: boolean | null
+  /**
+   * Consentimiento para anunciar logros con su nombre (migración 113).
+   *
+   * Opcional a propósito: `mi_perfil()` devuelve la fila entera, así que mientras
+   * la migración no esté aplicada esta clave no viene. Ausente cuenta como `false`,
+   * que es el valor por defecto correcto.
+   */
+  anunciar_logros?: boolean | null
   is_suspended: boolean | null
   suspended_at: string | null
   suspended_reason: string | null
