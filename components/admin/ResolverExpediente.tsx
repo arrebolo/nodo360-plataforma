@@ -53,6 +53,16 @@ export default function ResolverExpediente({
     ? undefined
     : `Escribe al menos ${MINIMO_DE_LA_NOTA} caracteres: esta nota llega tal cual a la persona (van ${largoDeLaNota}).`
 
+  /**
+   * El contador se pinta SIEMPRE, tambien cuando la nota ya vale.
+   *
+   * Antes solo aparecia si faltaban caracteres, y eso tiene un problema practico:
+   * si el navegador sirve un bundle viejo en cache, no hay forma de distinguir
+   * «no hay contador porque la nota vale» de «no hay contador porque este codigo
+   * no es el nuevo». Visible siempre, se ve de un golpe cual de las dos es.
+   */
+  const contador = `${largoDeLaNota}/${MINIMO_DE_LA_NOTA} caracteres`
+
   const acreditacionLista = !requiereAcreditacion || (tipoAcred.trim() !== '' && refAcred.trim() !== '')
   const puedeAprobar = oral === 'apto' && practica === 'apto' && acreditacionLista
   const clase =
@@ -104,7 +114,10 @@ export default function ResolverExpediente({
             placeholder="Queda registrado y es obligatorio"
           />
         </label>
-        {!notaSuficiente && <p className="text-xs text-amber-400">{avisoDeLaNota}</p>}
+        <p className={`text-xs ${notaSuficiente ? 'text-white/40' : 'text-amber-400'}`}>
+          {contador}
+          {!notaSuficiente && ` · ${avisoDeLaNota}`}
+        </p>
         {error && <p className="text-sm text-red-400">{error}</p>}
         <button
           onClick={() => resolver('retirada')}
@@ -175,6 +188,10 @@ export default function ResolverExpediente({
           value={notas}
           onChange={(e) => setNotas(e.target.value)}
         />
+        <span className={`mt-1 block text-xs ${notaSuficiente ? 'text-white/40' : 'text-amber-400'}`}>
+          {contador}
+          {!notaSuficiente && ' · hacen falta para rechazar'}
+        </span>
       </label>
 
       {permiteEvaluadorExterno && (
