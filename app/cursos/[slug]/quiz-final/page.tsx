@@ -9,6 +9,7 @@ import type { QuizQuestion } from '@/types/database'
 import { resolveCourseAccess } from '@/lib/courses/access'
 import { CoursePreviewBanner } from '@/components/course/CoursePreviewBanner'
 import { CourseUnavailable } from '@/components/course/CourseUnavailable'
+import { CursoEmpezado } from '@/components/analytics'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -85,6 +86,11 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
     .eq('course_id', course.id)
     .maybeSingle()
 
+  // Si se matricula aqui hay que CONTARLO: esta pantalla matriculaba en silencio y
+  // course_start no se emitia. Un componente de servidor no puede poner cookies, asi
+  // que el slug va como propiedad a CursoEmpezado, mas abajo.
+  let seAcabaDeMatricular = false
+
   if (!matricula) {
     const { error: errorMatricula } = await supabase
       .from('course_enrollments')
@@ -94,6 +100,7 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
       console.error('❌ [quiz-final] No se pudo matricular:', errorMatricula.message)
     } else {
       console.log('✅ [quiz-final] Matricula creada al entrar al examen')
+      seAcabaDeMatricular = true
     }
   }
 
@@ -134,6 +141,9 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
+      {/* Si la matricula se acaba de crear aqui, se cuenta. Antes esta pantalla
+          matriculaba en silencio y course_start no llegaba a GA4. */}
+      {seAcabaDeMatricular && <CursoEmpezado slug={course.slug} />}
       {isPreview && <CoursePreviewBanner />}
       {/* Header */}
       <header className="border-b border-white/10 bg-dark-surface/80 backdrop-blur-sm sticky top-0 z-40">

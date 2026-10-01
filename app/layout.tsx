@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Providers } from "./providers";
 import SiteHeaderServer from "@/components/navigation/SiteHeader/SiteHeaderServer";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
-import { GoogleAnalytics, SignUpTracker } from "@/components/analytics";
+import { GoogleAnalytics, SignUpTracker, CursoEmpezado } from "@/components/analytics";
 import "./globals.css";
 import { ScrollToTopOnNavigate } from '@/components/navigation/ScrollToTopOnNavigate';
 import { TITULO_POR_DEFECTO } from "@/lib/brand-config";
@@ -81,6 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Va aqui y no en /dashboard porque el callback redirige a donde
             estuviera el usuario antes de entrar. */}
         <SignUpTracker />
+        <CursoEmpezado />
         {/* Skip to main content - accessibility */}
         <a
           href="#main-content"

@@ -203,7 +203,28 @@ export async function GET(request: NextRequest) {
   }
 
   // 8) Redirect final
-  return NextResponse.redirect(new URL(destination, url.origin), 302)
+  const respuesta = NextResponse.redirect(new URL(destination, url.origin), 302)
+
+  // COURSE_START, POR COOKIE.
+  //
+  // Este camino —el enlace de la ficha, no el boton— matriculaba sin emitir nada, y
+  // es el que usa quien ya tiene acceso: por eso course_start no llegaba a GA4.
+  //
+  // Va en una cookie y no en la URL porque el destino por defecto es
+  // /api/continue, que redirige OTRA VEZ hasta la leccion que toque: un parametro
+  // en la query se habria perdido en ese salto. La cookie sobrevive, la lee
+  // CursoEmpezado en el layout y se borra sola. Dura un minuto: es un acuse de
+  // recibo, no un estado.
+  if (enrolled) {
+    respuesta.cookies.set('n360_curso_empezado', course.slug, {
+      path: '/',
+      maxAge: 60,
+      sameSite: 'lax',
+      httpOnly: false, // la tiene que leer el navegador
+    })
+  }
+
+  return respuesta
 }
 
 /**

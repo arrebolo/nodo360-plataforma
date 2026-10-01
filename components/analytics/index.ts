@@ -5,3 +5,6 @@
 // necesita usePathname().
 export { default as GoogleAnalytics } from './GoogleAnalyticsServer'
 export { default as SignUpTracker } from './SignUpTracker'
+// `CursoEmpezado` emite course_start cuando la matricula no pasa por el boton:
+// por cookie (el enlace de la ficha) o por propiedad (el examen final).
+export { default as CursoEmpezado } from './CursoEmpezado'
