@@ -239,8 +239,14 @@ export async function getUsers(
   // mundo. Quien pinta la etiqueta necesita saber la diferencia.
   let hayConfirmacion = true
 
-  if (error) {
-    console.warn('[getUsers] Reintento sin email_confirmed_at:', error.message || error.code)
+  // Y SE REINTENTA SOLO SI EL ERROR ES 42703, la columna que no existe.
+  //
+  // Antes el reintento era para cualquier error, y eso convertia un fallo
+  // cualquiera —la base caida, un permiso, un tiempo de espera— en «la columna no
+  // esta»: la lista se pintaba sin la etiqueta y nadie se enteraba de que algo iba
+  // mal. Un fallo que no es el esperado tiene que verse.
+  if (error && error.code === '42703') {
+    console.warn('[getUsers] Sin email_confirmed_at (42703), se reintenta sin ella:', error.message)
     hayConfirmacion = false
     ;({ data: users, error, count } = await pedir(false))
   }
@@ -276,7 +282,17 @@ export async function getUsers(
 export async function getUserRoleCounts() {
   const admin = createAdminClient()
 
-  const base = () => admin.from('users').select('id', { count: 'exact', head: true })
+  // `limit(0)` Y NO `head: true`, Y ES LO QUE PERMITE DISTINGUIR UN FALLO DE OTRO.
+  //
+  // Medido contra la base, filtrando por una columna inexistente:
+  //
+  //   head: true   ->  code=undefined  message=""              count=null
+  //   limit(0)     ->  code="42703"    message="column ... does not exist"  count=null
+  //
+  // Con `head: true` el error llega SIN CODIGO y con el mensaje vacio, asi que no hay
+  // forma de saber si fue la columna que falta o cualquier otra cosa. Con `limit(0)`
+  // el codigo llega entero y el recuento es el mismo: 24 en los dos casos, cero filas.
+  const base = () => admin.from('users').select('id', { count: 'exact' }).limit(0)
 
   const contar = async (filtrarConfirmadas: boolean) => {
     const q = () =>
@@ -293,12 +309,20 @@ export async function getUserRoleCounts() {
         : Promise.resolve({ count: 0, error: null }),
     ])
 
-    const fallo = [total, admins, mentores, instructores, estudiantes, sinConfirmar].some(
-      (r) => r.error || r.count === null
-    )
+    const respuestas = [total, admins, mentores, instructores, estudiantes, sinConfirmar]
+    const errores = respuestas
+      .map((r) => (r as { error?: { code?: string; message?: string } | null }).error)
+      .filter(Boolean) as { code?: string; message?: string }[]
+
+    const fallo = errores.length > 0 || respuestas.some((r) => r.count === null)
+    // ¿Es «la columna no existe» o es otra cosa? De eso depende si se puede seguir.
+    const faltaLaColumna = errores.some((e) => e.code === '42703')
+    const detalle = errores[0]?.message ?? (fallo ? 'una de las consultas no devolvio recuento' : null)
 
     return {
       fallo,
+      faltaLaColumna,
+      detalle,
       cifras: {
         total: total.count ?? 0,
         admins: admins.count ?? 0,
@@ -310,26 +334,38 @@ export async function getUserRoleCounts() {
     }
   }
 
-  // PRIMERO CON EL FILTRO, Y SI NO SE PUEDE, SIN EL.
+  // TRES DESENLACES, Y EL PANEL TIENE QUE PODER DISTINGUIRLOS.
   //
-  // No es defensa por si acaso: medido. Si esta pagina se despliega antes de
-  // aplicar la 105, la columna no existe, las seis consultas fallan y las seis
-  // tarjetas se quedarian a CERO —peor que los numeros equivocados que arreglan—.
-  // Y el fallo no se ve: con `head: true` PostgREST devuelve el error con el
-  // mensaje vacio y el count a null, sin codigo.
+  // Si esta pagina se despliega antes de aplicar la 105, la columna no existe y las
+  // seis consultas fallan con 42703. Ahi se puede seguir sin el filtro: los recuentos
+  // siguen siendo los de la tabla entera —que es el fallo que esto arregla— y lo
+  // unico que falta es descontar a quien no ha confirmado. Pero eso hay que DECIRLO.
   //
-  // Sin el filtro los recuentos siguen siendo los de la tabla entera, que es el
-  // fallo que habia que arreglar; lo unico que falta es descontar a quien no ha
-  // confirmado. Se avisa por consola y se sigue.
+  // Y si el fallo es otro —la base caida, un permiso, un tiempo de espera—, no se
+  // tapa con cifras que incluyen cuentas sin confirmar: se devuelve el error para que
+  // la pagina lo ensene. Unas cifras calladamente distintas de lo que dicen ser son
+  // peor que un aviso.
   const conFiltro = await contar(true)
-  if (!conFiltro.fallo) return conFiltro.cifras
+  if (!conFiltro.fallo) {
+    return { cifras: conFiltro.cifras, estado: 'ok' as const, detalle: null }
+  }
+
+  if (!conFiltro.faltaLaColumna) {
+    console.error('[getUserRoleCounts] Las consultas de recuento fallaron:', conFiltro.detalle)
+    return { cifras: null, estado: 'error' as const, detalle: conFiltro.detalle }
+  }
 
   console.warn(
-    '[getUserRoleCounts] No se pudo filtrar por email_confirmed_at (¿falta la migración 105?). ' +
+    '[getUserRoleCounts] Sin email_confirmed_at (42703, ¿falta la migración 105?). ' +
       'Se cuentan todas las cuentas, incluidas las sin confirmar.'
   )
   const sinFiltro = await contar(false)
-  return sinFiltro.cifras
+  if (sinFiltro.fallo) {
+    console.error('[getUserRoleCounts] Y tampoco sin el filtro:', sinFiltro.detalle)
+    return { cifras: null, estado: 'error' as const, detalle: sinFiltro.detalle }
+  }
+
+  return { cifras: sinFiltro.cifras, estado: 'sin-columna' as const, detalle: null }
 }
 
 /**
