@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin/auth'
 import { getUsers, getUserRoleCounts } from '@/lib/admin/queries'
+import { unSoloValor, paginaPedida } from '@/lib/admin/parametros'
 import Link from 'next/link'
 import { User, Mail, Calendar, TrendingUp, Shield, Search } from 'lucide-react'
 import BetaToggle from '@/components/admin/BetaToggle'
@@ -8,11 +9,20 @@ export const metadata = {
   title: 'Usuarios',
 }
 
+/**
+ * Lo que llega por la URL, y puede llegar REPETIDO.
+ *
+ * `?search=a&search=b` no llega como texto: llega como `['a','b']`. Con el tipo
+ * anterior —`search?: string`— TypeScript se quedaba tranquilo y `busqueda.trim()`
+ * reventaba en ejecucion con un 500. Y es trivial de provocar: basta con un enlace
+ * mal formado o con pulsar dos veces en un formulario.
+ */
 interface SearchParams {
-  page?: string
-  search?: string
-  role?: string
+  page?: string | string[]
+  search?: string | string[]
+  role?: string | string[]
 }
+
 
 export default async function AdminUsersPage({
   searchParams,
@@ -22,14 +32,25 @@ export default async function AdminUsersPage({
   await requireAdmin()
 
   const params = await searchParams
-  const page = parseInt(params.page || '1')
-  const busqueda = params.search ?? ''
-  const rol = params.role ?? ''
+  const page = paginaPedida(params.page)
+  const busqueda = unSoloValor(params.search)
+  const rol = unSoloValor(params.role)
 
-  const [{ users, total, hayConfirmacion }, recuentos] = await Promise.all([
+  const [{ users, total, hayConfirmacion }, conteo] = await Promise.all([
     getUsers(page, 20, busqueda, rol),
     getUserRoleCounts(),
   ])
+
+  // Las tarjetas se pintan con lo que haya, y lo que NO haya se dice.
+  //
+  //   ok           las cifras son de la tabla y descuentan a quien no ha confirmado
+  //   sin-columna  la 105 no esta aplicada: las cifras incluyen a quien no confirmo
+  //   error        no se pudo contar. No se inventan cifras: se pinta «—» y el motivo.
+  const recuentos = conteo.cifras ?? {
+    total: 0, admins: 0, mentores: 0, instructores: 0, estudiantes: 0, sinConfirmar: 0,
+  }
+  const hayCifras = conteo.cifras !== null
+  const cifra = (n: number) => (hayCifras ? String(n) : '—')
 
   const totalPages = Math.ceil(total / 20)
   const hayFiltro = Boolean(busqueda.trim() || rol)
@@ -56,6 +77,31 @@ export default async function AdminUsersPage({
         <p className="text-white/60">Gestiona los usuarios de la plataforma</p>
       </div>
 
+      {/* EL FALLO DE LOS RECUENTOS, A LA VISTA.
+          Unas cifras que callan que no son lo que dicen ser son peor que un aviso. */}
+      {conteo.estado === 'error' && (
+        <div className="mb-6 p-4 rounded-xl border border-red-500/30 bg-red-500/10">
+          <p className="text-sm font-semibold text-red-400">No se pudieron contar las cuentas</p>
+          <p className="text-xs text-red-300/80 mt-1">
+            Las tarjetas se quedan sin cifras a propósito: antes mostraban el total de la
+            tabla sin descontar las cuentas sin confirmar, y eso no se distinguía de un
+            recuento correcto.
+          </p>
+          {conteo.detalle && (
+            <p className="text-xs text-red-300/60 mt-2 font-mono">{conteo.detalle}</p>
+          )}
+        </div>
+      )}
+      {conteo.estado === 'sin-columna' && (
+        <div className="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10">
+          <p className="text-sm text-amber-400">
+            Estas cifras <strong>incluyen las cuentas sin confirmar</strong>: la columna
+            <code className="mx-1">email_confirmed_at</code> no está en la base todavía
+            (falta aplicar la migración 105).
+          </p>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -65,7 +111,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Total</span>
           </div>
-          <p className="text-2xl font-bold text-white">{recuentos.total}</p>
+          <p className="text-2xl font-bold text-white">{cifra(recuentos.total)}</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -75,7 +121,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Admins</span>
           </div>
-          <p className="text-2xl font-bold text-white">{recuentos.admins}</p>
+          <p className="text-2xl font-bold text-white">{cifra(recuentos.admins)}</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -85,7 +131,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Mentores</span>
           </div>
-          <p className="text-2xl font-bold text-white">{recuentos.mentores}</p>
+          <p className="text-2xl font-bold text-white">{cifra(recuentos.mentores)}</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -95,7 +141,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Instructores</span>
           </div>
-          <p className="text-2xl font-bold text-white">{recuentos.instructores}</p>
+          <p className="text-2xl font-bold text-white">{cifra(recuentos.instructores)}</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -105,7 +151,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Estudiantes</span>
           </div>
-          <p className="text-2xl font-bold text-white">{recuentos.estudiantes}</p>
+          <p className="text-2xl font-bold text-white">{cifra(recuentos.estudiantes)}</p>
         </div>
       </div>
 

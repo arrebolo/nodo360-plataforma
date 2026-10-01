@@ -4,9 +4,32 @@
 // commit nuevo sin relacion de ancestro con la rama. `git branch --contains` miente
 // aqui. Lo unico fiable es comparar el CONTENIDO de los ficheros.
 import { execFileSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
 const REPO = 'arrebolo/nodo360-plataforma'
-const DIR = 'C:/Users/alber/nodo360-projects/nodo360-plataforma'
+
+// La raiz del repositorio, sin rutas de la maquina de nadie: este fichero vive en
+// scripts/, asi que su padre es la raiz. Si alguien lo mueve, se usa el directorio
+// de trabajo, y si tampoco es un repositorio, se dice en vez de fallar raro.
+function raizDelRepositorio() {
+  const candidatos = [
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'),
+    process.cwd(),
+  ]
+  for (const dir of candidatos) {
+    try {
+      const raiz = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+        cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim()
+      if (raiz) return raiz
+    } catch { /* el siguiente */ }
+  }
+  console.error('No encuentro el repositorio. Ejecuta esto desde dentro del proyecto.')
+  process.exit(2)
+}
+
+const DIR = raizDelRepositorio()
 
 const s = execFileSync('git', ['credential', 'fill'], {
   input: 'protocol=https\nhost=github.com\n\n', encoding: 'utf8', cwd: DIR,
