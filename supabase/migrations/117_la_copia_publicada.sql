@@ -91,24 +91,24 @@ CREATE TABLE IF NOT EXISTS public.quiz_questions_publicadas (
 
 DO $anadir$
 DECLARE
-  t text;
+  v_tabla text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['courses_publicados', 'modules_publicados',
+  FOREACH v_tabla IN ARRAY ARRAY['courses_publicados', 'modules_publicados',
                            'lessons_publicadas', 'quiz_questions_publicadas']
   LOOP
     EXECUTE format('ALTER TABLE public.%I
       ADD COLUMN IF NOT EXISTS publicado_el timestamptz NOT NULL DEFAULT now(),
       ADD COLUMN IF NOT EXISTS version integer NOT NULL DEFAULT 1,
-      ADD COLUMN IF NOT EXISTS retirada_el timestamptz', t);
+      ADD COLUMN IF NOT EXISTS retirada_el timestamptz', v_tabla);
 
     -- La clave primaria es la MISMA que en la tabla de trabajo: el uuid de la
     -- leccion es su identidad y no cambia nunca. Reordenar es cambiar order_index,
     -- que el progreso no mira.
     IF NOT EXISTS (
       SELECT 1 FROM pg_constraint
-      WHERE conrelid = format('public.%I', t)::regclass AND contype = 'p'
+      WHERE conrelid = format('public.%I', v_tabla)::regclass AND contype = 'p'
     ) THEN
-      EXECUTE format('ALTER TABLE public.%I ADD PRIMARY KEY (id)', t);
+      EXECUTE format('ALTER TABLE public.%I ADD PRIMARY KEY (id)', v_tabla);
     END IF;
   END LOOP;
 END
@@ -262,8 +262,11 @@ BEGIN
     RAISE EXCEPTION 'No existe el curso %.', p_course_id USING ERRCODE = '23503';
   END IF;
 
-  SELECT coalesce(max(c.version), 0) + 1 INTO v_version
-  FROM public.courses_publicados c WHERE c.id = p_course_id;
+  -- Alias `cp`, no `c`: `version` es a la vez columna del espejo y columna de salida
+  -- de esta funcion, asi que la referencia va siempre cualificada y con un alias que
+  -- no se parezca a nada declarado.
+  SELECT coalesce(max(cp.version), 0) + 1 INTO v_version
+  FROM public.courses_publicados cp WHERE cp.id = p_course_id;
 
   -- ── El curso ──────────────────────────────────────────────────────────────
   v_cols  := public.columnas_a_copiar('courses', 'courses_publicados');
@@ -513,7 +516,7 @@ DO $relleno$
 DECLARE
   v_cols  text[];
   v_lista text;
-  c       record;
+  r_curso record;
   v_n     integer;
 BEGIN
   -- (b) primero los cursos, que son los padres
@@ -580,11 +583,11 @@ BEGIN
   -- vuelto al catalogo por la puerta de atras. Las filas de los que no estan
   -- publicados se quedan en el registro, retiradas, para que el progreso y los
   -- certificados de quien paso por ellos sigan cuadrando.
-  FOR c IN SELECT id, slug FROM public.courses
+  FOR r_curso IN SELECT id, slug FROM public.courses
            WHERE status = 'published'
            ORDER BY created_at
   LOOP
-    PERFORM public.publicar_curso_interno(c.id);
+    PERFORM public.publicar_curso_interno(r_curso.id);
   END LOOP;
 
   SELECT count(*) INTO v_n FROM public.courses_publicados WHERE retirada_el IS NULL;
@@ -609,11 +612,11 @@ $relleno$;
 
 DO $claves$
 DECLARE
-  r  record;
-  v  record;
+  r_vieja  record;
+  r_fila   record;
   v_nombre text;
 BEGIN
-  FOR v IN
+  FOR r_fila IN
     SELECT * FROM (VALUES
       ('user_progress', 'lesson_id', 'lessons',  'lessons_publicadas'),
       ('xp_events',     'lesson_id', 'lessons',  'lessons_publicadas'),
@@ -622,7 +625,7 @@ BEGIN
       ('certificates',  'module_id', 'modules',  'modules_publicados')
     ) AS t(tabla, columna, destino_viejo, destino_nuevo)
   LOOP
-    FOR r IN
+    FOR r_vieja IN
       SELECT con.conname
       FROM pg_constraint con
       JOIN pg_class      cl  ON cl.oid  = con.conrelid
@@ -631,22 +634,22 @@ BEGIN
                             AND att.attnum = con.conkey[1]
       WHERE con.contype = 'f'
         AND cl.relnamespace = 'public'::regnamespace
-        AND cl.relname  = v.tabla
-        AND fcl.relname = v.destino_viejo
-        AND att.attname = v.columna
+        AND cl.relname  = r_fila.tabla
+        AND fcl.relname = r_fila.destino_viejo
+        AND att.attname = r_fila.columna
         AND array_length(con.conkey, 1) = 1
     LOOP
-      EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT %I', v.tabla, r.conname);
-      RAISE NOTICE 'CLAVES   %.% : quitada la vieja %', v.tabla, v.columna, r.conname;
+      EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT %I', r_fila.tabla, r_vieja.conname);
+      RAISE NOTICE 'CLAVES   %.% : quitada la vieja %', r_fila.tabla, r_fila.columna, r_vieja.conname;
     END LOOP;
 
-    v_nombre := format('%s_%s_espejo_fk', v.tabla, v.columna);
-    EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT IF EXISTS %I', v.tabla, v_nombre);
+    v_nombre := format('%s_%s_espejo_fk', r_fila.tabla, r_fila.columna);
+    EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT IF EXISTS %I', r_fila.tabla, v_nombre);
     EXECUTE format(
       'ALTER TABLE public.%I ADD CONSTRAINT %I FOREIGN KEY (%I)
          REFERENCES public.%I(id) ON DELETE RESTRICT',
-      v.tabla, v_nombre, v.columna, v.destino_nuevo);
-    RAISE NOTICE 'CLAVES   %.% -> %  RESTRICT', v.tabla, v.columna, v.destino_nuevo;
+      r_fila.tabla, v_nombre, r_fila.columna, r_fila.destino_nuevo);
+    RAISE NOTICE 'CLAVES   %.% -> %  RESTRICT', r_fila.tabla, r_fila.columna, r_fila.destino_nuevo;
   END LOOP;
 END
 $claves$;
@@ -663,9 +666,9 @@ $claves$;
 
 DO $matriculas$
 DECLARE
-  r record;
+  r_clave record;
 BEGIN
-  FOR r IN
+  FOR r_clave IN
     SELECT con.conname, con.confdeltype
     FROM pg_constraint con
     JOIN pg_class     cl  ON cl.oid  = con.conrelid
@@ -678,11 +681,11 @@ BEGIN
       AND att.attname = 'course_id'
       AND array_length(con.conkey, 1) = 1
   LOOP
-    RAISE NOTICE 'MATRICULAS  clave actual %: ON DELETE %', r.conname,
-      CASE r.confdeltype WHEN 'c' THEN 'CASCADE' WHEN 'r' THEN 'RESTRICT'
+    RAISE NOTICE 'MATRICULAS  clave actual %: ON DELETE %', r_clave.conname,
+      CASE r_clave.confdeltype WHEN 'c' THEN 'CASCADE' WHEN 'r' THEN 'RESTRICT'
                          WHEN 'n' THEN 'SET NULL' WHEN 'a' THEN 'NO ACTION'
-                         ELSE r.confdeltype::text END;
-    EXECUTE format('ALTER TABLE public.course_enrollments DROP CONSTRAINT %I', r.conname);
+                         ELSE r_clave.confdeltype::text END;
+    EXECUTE format('ALTER TABLE public.course_enrollments DROP CONSTRAINT %I', r_clave.conname);
   END LOOP;
 
   ALTER TABLE public.course_enrollments
@@ -707,40 +710,40 @@ DECLARE
   v_n          integer;
   v_m          integer;
   v_cuentas    record;
-  c            record;
+  r_curso      record;
 BEGIN
   -- 1. Las cuentas del espejo cuadran, curso a curso, para todo lo publicado
-  FOR c IN SELECT id, slug FROM public.courses WHERE status = 'published' LOOP
-    SELECT count(*) INTO v_n FROM public.modules WHERE course_id = c.id;
+  FOR r_curso IN SELECT id, slug FROM public.courses WHERE status = 'published' LOOP
+    SELECT count(*) INTO v_n FROM public.modules WHERE course_id = r_curso.id;
     SELECT count(*) INTO v_m FROM public.modules_publicados
-      WHERE course_id = c.id AND retirada_el IS NULL;
+      WHERE course_id = r_curso.id AND retirada_el IS NULL;
     IF v_n <> v_m THEN
-      RAISE EXCEPTION 'PRUEBA 1 FALLIDA: % tiene % modulos y el espejo % vivos.', c.slug, v_n, v_m;
+      RAISE EXCEPTION 'PRUEBA 1 FALLIDA: % tiene % modulos y el espejo % vivos.', r_curso.slug, v_n, v_m;
     END IF;
 
-    SELECT count(*) INTO v_n FROM public.lessons WHERE course_id = c.id;
+    SELECT count(*) INTO v_n FROM public.lessons WHERE course_id = r_curso.id;
     SELECT count(*) INTO v_m FROM public.lessons_publicadas
-      WHERE course_id = c.id AND retirada_el IS NULL;
+      WHERE course_id = r_curso.id AND retirada_el IS NULL;
     IF v_n <> v_m THEN
-      RAISE EXCEPTION 'PRUEBA 1 FALLIDA: % tiene % lecciones y el espejo % vivas.', c.slug, v_n, v_m;
+      RAISE EXCEPTION 'PRUEBA 1 FALLIDA: % tiene % lecciones y el espejo % vivas.', r_curso.slug, v_n, v_m;
     END IF;
 
     SELECT count(*) INTO v_n FROM public.quiz_questions
-      WHERE module_id IN (SELECT id FROM public.modules WHERE course_id = c.id);
+      WHERE module_id IN (SELECT id FROM public.modules WHERE course_id = r_curso.id);
     SELECT count(*) INTO v_m FROM public.quiz_questions_publicadas
-      WHERE module_id IN (SELECT id FROM public.modules_publicados WHERE course_id = c.id)
+      WHERE module_id IN (SELECT id FROM public.modules_publicados WHERE course_id = r_curso.id)
         AND retirada_el IS NULL;
     IF v_n <> v_m THEN
-      RAISE EXCEPTION 'PRUEBA 1 FALLIDA: % tiene % preguntas y el espejo % vivas.', c.slug, v_n, v_m;
+      RAISE EXCEPTION 'PRUEBA 1 FALLIDA: % tiene % preguntas y el espejo % vivas.', r_curso.slug, v_n, v_m;
     END IF;
   END LOOP;
   RAISE NOTICE 'PRUEBA 1  el espejo cuadra con el trabajo en todo lo publicado   PASA';
 
   -- 2. Ningun curso publicado se quedo fuera
-  SELECT count(*) INTO v_n FROM public.courses c
-   WHERE c.status = 'published'
+  SELECT count(*) INTO v_n FROM public.courses cu
+   WHERE cu.status = 'published'
      AND NOT EXISTS (SELECT 1 FROM public.courses_publicados e
-                      WHERE e.id = c.id AND e.retirada_el IS NULL);
+                      WHERE e.id = cu.id AND e.retirada_el IS NULL);
   IF v_n <> 0 THEN
     RAISE EXCEPTION 'PRUEBA 2 FALLIDA: % cursos publicados no estan vivos en el espejo.', v_n;
   END IF;
