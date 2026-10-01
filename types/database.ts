@@ -6,7 +6,7 @@
  */
 
 import type { LessonContent } from './lesson-content'
-import type { Database as SupabaseDatabase } from '@/lib/supabase/types'
+import type { Database as SupabaseDatabase, Enums } from '@/lib/supabase/types'
 
 // Re-export Database type for use across the app
 export type Database = SupabaseDatabase
@@ -26,7 +26,18 @@ export type LearningPathUpdate = SupabaseDatabase['public']['Tables']['learning_
 
 export type UserRole = 'student' | 'instructor' | 'admin' | 'mentor' | 'council'
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
-export type CourseStatus = 'draft' | 'published' | 'archived' | 'coming_soon' | 'changes_requested'
+/**
+ * Los estados de un curso, SACADOS DEL ESQUEMA REAL.
+ *
+ * Estaba a mano y le faltaban `pending_review` y `rejected`, que la base usa desde
+ * la 030. Por eso la pantalla de revisión del admin tiene que comparar
+ * `course.status as string` para poder compilar.
+ *
+ * Hay dos declaraciones locales más de este mismo tipo, cada una con valores
+ * distintos —`app/(private)/dashboard/instructor/CourseForm.tsx` y
+ * `app/api/instructor/courses/[id]/status/route.ts`—; esta es la canónica.
+ */
+export type CourseStatus = Enums<'course_status'>
 export type CourseCategory = 'bitcoin' | 'blockchain' | 'defi' | 'nfts' | 'development' | 'trading' | 'other'
 export type MentorshipRequestStatus = 'pending' | 'contacted' | 'scheduled' | 'completed'
 
@@ -758,22 +769,19 @@ export interface LessonCommentWithUser extends LessonComment {
   }
 }
 
-export type NotificationType =
-  | 'beta_granted'
-  | 'course_published'
-  | 'course_changes_requested'
-  | 'lesson_comment_new'
-  | 'proposal_active'
-  | 'course_completed'
-  | 'certificate_issued'
-  | 'badge_earned'
-  | 'level_up'
-  | 'feedback_reply'
-  | 'welcome'
-  | 'system'
-  | 'verificacion_aprobada'
-  | 'verificacion_rechazada'
-  | 'verificacion_retirada';
+/**
+ * Los tipos de notificación, SACADOS DEL ESQUEMA REAL.
+ *
+ * Esta unión estaba escrita a mano, y por eso se desfasó: llegó a declarar
+ * `course_changes_requested` y `lesson_comment_new` cuando la base no los tenía,
+ * los dos usados en rutas vivas. Un INSERT con un valor que el enum no tiene no
+ * degrada: lo rechaza Postgres. La 112 los añadió.
+ *
+ * Derivándola de `Enums<'notification_type'>` el desfase deja de ser posible en esa
+ * dirección: si alguien añade un valor aquí sin migración, no compila; y al
+ * regenerar los tipos, los valores nuevos aparecen solos.
+ */
+export type NotificationType = Enums<'notification_type'>;
 
 export interface Notification {
   id: string;
