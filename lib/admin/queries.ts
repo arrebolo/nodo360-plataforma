@@ -137,17 +137,34 @@ export async function getUsersByLevel() {
     .sort((a, b) => a.level - b.level)
 }
 
+/** Los roles que existen en `users.role`. Sirve para validar lo que llega por la URL. */
+const ROLES = ['admin', 'mentor', 'instructor', 'student', 'council'] as const
+type Rol = (typeof ROLES)[number]
+
 /**
  * Obtiene lista de usuarios con paginación
  * Usa admin client para bypass RLS y obtener stats de gamificación
  */
-export async function getUsers(page: number = 1, limit: number = 20) {
+export async function getUsers(
+  page: number = 1,
+  limit: number = 20,
+  /** Texto libre: busca en nombre y en correo. */
+  busqueda: string = '',
+  /** Rol exacto, o '' para todos. */
+  rol: string = ''
+) {
   const admin = createAdminClient()
   const offset = (page - 1) * limit
 
-  const { data: users, error, count } = await admin
-    .from('users')
-    .select(`
+  // email_confirmed_at llega con la migracion 105, y pedirla antes NO devuelve la
+  // fila sin ese campo: devuelve 42703 y tumba la consulta entera, o sea que la
+  // lista de usuarios saldria VACIA. Medido: «column users.email_confirmed_at
+  // does not exist».
+  //
+  // Por eso la columna es opcional aqui. Si no esta, la lista se pinta igual y lo
+  // unico que falta es la etiqueta «Sin confirmar». Asi da igual si se despliega
+  // antes o despues de aplicar la migracion.
+  const columnas = (conConfirmacion: boolean) => `
       id,
       email,
       full_name,
@@ -155,24 +172,164 @@ export async function getUsers(page: number = 1, limit: number = 20) {
       is_beta,
       is_suspended,
       created_at,
-      email_confirmed_at,
+      ${conConfirmacion ? 'email_confirmed_at,' : ''}
       user_gamification_stats (
         total_xp,
         current_level
       )
-    `, { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+    `
+
+  // El texto se ESCAPA, no se sustituye.
+  //
+  // Antes aqui habia `.replace(/[,()%_\\]/g, ' ')`, que cambiaba esos caracteres por
+  // espacios. Para la coma y el parentesis era defendible, pero para el guion bajo
+  // no: buscar «john_doe@…» se convertia en «john doe@…» y NO ENCONTRABA LA CUENTA.
+  // Y los correos con guion bajo son de lo mas normal.
+  //
+  // Hay dos capas de escapado, y son distintas:
+  //
+  //   a) PostgREST. Dentro de `or(...)` la coma separa condiciones y el punto
+  //      separa columna de operador. Se resuelve ENTRECOMILLANDO el valor; dentro
+  //      de las comillas, `"` y `\` se escapan con `\`.
+  //   b) LIKE. `%` y `_` son comodines. Se escapan con `\`, que es el caracter de
+  //      escape por defecto de LIKE en Postgres. Y como ese `\` tiene que llegar
+  //      entero a traves de la capa (a), va duplicado.
+  //
+  // Sin esto, buscar «100%» traia todo lo que empieza por 100, y «a_b» cualquier
+  // «a?b».
+  const patronDeBusqueda = (texto: string): string => {
+    const escapado = texto
+      // Primero el backslash: si no, se escaparian los que añaden los siguientes.
+      .replace(/\\/g, '\\\\\\\\')
+      .replace(/%/g, '\\\\%')
+      .replace(/_/g, '\\\\_')
+      // Y la comilla, que cerraria el valor entrecomillado de PostgREST.
+      .replace(/"/g, '\\"')
+    return `"%${escapado}%"`
+  }
+
+  const limpio = busqueda.trim()
+
+  const pedir = (conConfirmacion: boolean) => {
+    let q = admin.from('users').select(columnas(conConfirmacion), { count: 'exact' })
+
+    if (limpio) {
+      const patron = patronDeBusqueda(limpio)
+      q = q.or(`full_name.ilike.${patron},email.ilike.${patron}`)
+    }
+
+    // El rol viene de la URL, asi que es texto de fuera: solo se acepta si es uno
+    // de los roles que existen. Un `?role=cualquier-cosa` no llega a la consulta,
+    // y de paso el tipo de la columna cuadra sin castear a ciegas.
+    if (rol && (ROLES as readonly string[]).includes(rol)) {
+      q = q.eq('role', rol as Rol)
+    }
+
+    return q.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
+  }
+
+  let { data: users, error, count } = await pedir(true)
+
+  // SE DICE SI LA COLUMNA ESTABA, y no se deja que el panel lo adivine.
+  //
+  // Sin la 105 la columna no existe, la consulta da 42703 y se reintenta sin ella.
+  // Pero entonces `email_confirmed_at` llega `undefined` en todas las filas, y un
+  // `!user.email_confirmed_at` pinta «Sin confirmar» en TODAS las cuentas —incluidas
+  // las confirmadas—. Es peor que no decir nada: es decir algo falso de todo el
+  // mundo. Quien pinta la etiqueta necesita saber la diferencia.
+  let hayConfirmacion = true
+
+  if (error) {
+    console.warn('[getUsers] Reintento sin email_confirmed_at:', error.message || error.code)
+    hayConfirmacion = false
+    ;({ data: users, error, count } = await pedir(false))
+  }
 
   if (error) {
     console.error('Error fetching users:', error)
-    return { users: [], total: 0 }
+    return { users: [], total: 0, hayConfirmacion: false }
   }
 
   return {
     users: users || [],
-    total: count || 0
+    total: count || 0,
+    /** false si la columna email_confirmed_at no existe todavia en la base. */
+    hayConfirmacion
   }
+}
+
+/**
+ * Cuantas cuentas hay de cada rol, EN TODA LA TABLA.
+ *
+ * El panel las contaba con `users.filter(u => u.role === 'admin').length` sobre
+ * el resultado de getUsers, que es UNA PAGINA de 20. Con 24 cuentas, eso decia
+ * «Admins 1» y «Mentores 0» porque el segundo admin y el unico mentor estaban en
+ * la pagina 2. No era un recuento: era un recuento de la pagina.
+ *
+ * Y no cuenta a quien nunca confirmo su direccion, por lo mismo que las
+ * estadisticas: una cuenta sin confirmar no es un usuario (migracion 105).
+ *
+ * Va con el cliente de servicio porque email_confirmed_at esta cerrada para
+ * authenticated, y en PostgREST filtrar por una columna que no puedes leer
+ * devuelve 42501 —con head:true, encima, el error llega vacio y el count a null—.
+ */
+export async function getUserRoleCounts() {
+  const admin = createAdminClient()
+
+  const base = () => admin.from('users').select('id', { count: 'exact', head: true })
+
+  const contar = async (filtrarConfirmadas: boolean) => {
+    const q = () =>
+      filtrarConfirmadas ? base().not('email_confirmed_at', 'is', null) : base()
+
+    const [total, admins, mentores, instructores, estudiantes, sinConfirmar] = await Promise.all([
+      q(),
+      q().eq('role', 'admin'),
+      q().eq('role', 'mentor'),
+      q().eq('role', 'instructor'),
+      q().eq('role', 'student'),
+      filtrarConfirmadas
+        ? base().is('email_confirmed_at', null)
+        : Promise.resolve({ count: 0, error: null }),
+    ])
+
+    const fallo = [total, admins, mentores, instructores, estudiantes, sinConfirmar].some(
+      (r) => r.error || r.count === null
+    )
+
+    return {
+      fallo,
+      cifras: {
+        total: total.count ?? 0,
+        admins: admins.count ?? 0,
+        mentores: mentores.count ?? 0,
+        instructores: instructores.count ?? 0,
+        estudiantes: estudiantes.count ?? 0,
+        sinConfirmar: sinConfirmar.count ?? 0,
+      },
+    }
+  }
+
+  // PRIMERO CON EL FILTRO, Y SI NO SE PUEDE, SIN EL.
+  //
+  // No es defensa por si acaso: medido. Si esta pagina se despliega antes de
+  // aplicar la 105, la columna no existe, las seis consultas fallan y las seis
+  // tarjetas se quedarian a CERO —peor que los numeros equivocados que arreglan—.
+  // Y el fallo no se ve: con `head: true` PostgREST devuelve el error con el
+  // mensaje vacio y el count a null, sin codigo.
+  //
+  // Sin el filtro los recuentos siguen siendo los de la tabla entera, que es el
+  // fallo que habia que arreglar; lo unico que falta es descontar a quien no ha
+  // confirmado. Se avisa por consola y se sigue.
+  const conFiltro = await contar(true)
+  if (!conFiltro.fallo) return conFiltro.cifras
+
+  console.warn(
+    '[getUserRoleCounts] No se pudo filtrar por email_confirmed_at (¿falta la migración 105?). ' +
+      'Se cuentan todas las cuentas, incluidas las sin confirmar.'
+  )
+  const sinFiltro = await contar(false)
+  return sinFiltro.cifras
 }
 
 /**

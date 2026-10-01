@@ -1,5 +1,5 @@
 import { requireAdmin } from '@/lib/admin/auth'
-import { getUsers } from '@/lib/admin/queries'
+import { getUsers, getUserRoleCounts } from '@/lib/admin/queries'
 import Link from 'next/link'
 import { User, Mail, Calendar, TrendingUp, Shield, Search } from 'lucide-react'
 import BetaToggle from '@/components/admin/BetaToggle'
@@ -23,9 +23,30 @@ export default async function AdminUsersPage({
 
   const params = await searchParams
   const page = parseInt(params.page || '1')
-  const { users, total } = await getUsers(page, 20)
+  const busqueda = params.search ?? ''
+  const rol = params.role ?? ''
+
+  const [{ users, total, hayConfirmacion }, recuentos] = await Promise.all([
+    getUsers(page, 20, busqueda, rol),
+    getUserRoleCounts(),
+  ])
 
   const totalPages = Math.ceil(total / 20)
+  const hayFiltro = Boolean(busqueda.trim() || rol)
+
+  // Los enlaces de paginacion tienen que llevarse el filtro puesto.
+  //
+  // Antes eran `?page=N` a secas: pulsar Siguiente con una busqueda activa
+  // devolvia la lista entera desde la pagina 2, sin avisar de que el filtro se
+  // habia perdido.
+  const enlace = (n: number) => {
+    const q = new URLSearchParams()
+    if (busqueda.trim()) q.set('search', busqueda.trim())
+    if (rol) q.set('role', rol)
+    if (n > 1) q.set('page', String(n))
+    const cola = q.toString()
+    return cola ? `/admin/usuarios?${cola}` : '/admin/usuarios'
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -44,7 +65,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Total</span>
           </div>
-          <p className="text-2xl font-bold text-white">{total}</p>
+          <p className="text-2xl font-bold text-white">{recuentos.total}</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -54,9 +75,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Admins</span>
           </div>
-          <p className="text-2xl font-bold text-white">
-            {users.filter(u => u.role === 'admin').length}
-          </p>
+          <p className="text-2xl font-bold text-white">{recuentos.admins}</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -66,9 +85,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Mentores</span>
           </div>
-          <p className="text-2xl font-bold text-white">
-            {users.filter(u => u.role === 'mentor').length}
-          </p>
+          <p className="text-2xl font-bold text-white">{recuentos.mentores}</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -78,9 +95,7 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Instructores</span>
           </div>
-          <p className="text-2xl font-bold text-white">
-            {users.filter(u => u.role === 'instructor').length}
-          </p>
+          <p className="text-2xl font-bold text-white">{recuentos.instructores}</p>
         </div>
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
@@ -90,39 +105,76 @@ export default async function AdminUsersPage({
             </div>
             <span className="text-xs text-white/60">Estudiantes</span>
           </div>
-          <p className="text-2xl font-bold text-white">
-            {users.filter(u => u.role === 'student').length}
-          </p>
+          <p className="text-2xl font-bold text-white">{recuentos.estudiantes}</p>
         </div>
       </div>
 
-      {/* Filters - Simple search UI (functionality requires client component) */}
-      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 mb-6">
-        <div className="flex items-center gap-4">
+      {/*
+        BUSQUEDA Y FILTRO, con un formulario GET y sin componente de cliente.
+        El comentario anterior decia que la funcionalidad exigia uno; no lo exige.
+        Un <form method="get"> pone lo escrito en la URL, que es justo donde esta
+        pagina ya leia `search` y `role`: los tenia declarados en SearchParams y no
+        los usaba. Asi se puede compartir el enlace de una busqueda, funciona sin
+        JavaScript, y el filtrado ocurre en la base y no en memoria.
+      */}
+      <form method="get" action="/admin/usuarios" className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
             <input
               type="text"
+              name="search"
+              defaultValue={busqueda}
               placeholder="Buscar por nombre o email..."
               className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder:text-white/60 focus:outline-none focus:border-brand-light/50"
-              disabled
             />
           </div>
           <select
+            name="role"
+            defaultValue={rol}
             className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-brand-light/50"
-            disabled
           >
             <option value="">Todos los roles</option>
             <option value="admin">Admin</option>
             <option value="mentor">Mentor</option>
             <option value="instructor">Instructor</option>
             <option value="student">Estudiante</option>
+            {/* `council` existe en users.role y faltaba aqui: filtrar por el era
+                imposible desde la interfaz aunque la consulta lo aceptara. */}
+            <option value="council">Consejo</option>
           </select>
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-light to-brand text-white font-medium text-sm hover:opacity-90 transition-opacity"
+          >
+            Buscar
+          </button>
+          {hayFiltro && (
+            <Link
+              href="/admin/usuarios"
+              className="px-4 py-2 rounded-lg bg-white/10 text-white/70 font-medium text-sm hover:bg-white/15 transition-colors text-center"
+            >
+              Limpiar
+            </Link>
+          )}
         </div>
-        <p className="text-xs text-white/60 mt-2">
-          Búsqueda y filtros - próximamente
-        </p>
-      </div>
+        {hayFiltro && (
+          <p className="text-xs text-white/60 mt-3">
+            {total} {total === 1 ? 'resultado' : 'resultados'}
+            {busqueda.trim() ? ` para "${busqueda.trim()}"` : ''}
+            {rol ? ` con rol ${rol}` : ''}
+          </p>
+        )}
+        {recuentos.sinConfirmar > 0 && !hayFiltro && (
+          <p className="text-xs text-amber-400/80 mt-3">
+            Hay {recuentos.sinConfirmar} cuenta{recuentos.sinConfirmar === 1 ? '' : 's'} sin
+            confirmar. No cuentan en las tarjetas. La limpieza automática borra solo las
+            de rol <strong>estudiante</strong> que lleven más de 7 días sin confirmar, y
+            únicamente si el programador de tareas del proyecto está activo; las de
+            cualquier otro rol se quedan hasta que alguien las mire.
+          </p>
+        )}
+      </form>
 
       {/* Users Table */}
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden">
@@ -167,9 +219,16 @@ export default async function AdminUsersPage({
                       SIN CONFIRMAR: la fila existe porque Supabase tiene que crear
                       la cuenta para poder confirmarla, pero esa direccion no se ha
                       verificado. No cuenta en las tarjetas ni en las estadisticas, y
-                      aqui se dice en vez de disimularlo. Se borra sola a los 7 dias.
+                      aqui se dice en vez de disimularlo.
+
+                      SOLO SI SE SABE. Si la columna email_confirmed_at no esta en la
+                      base —antes de la 105—, getUsers devuelve hayConfirmacion=false y
+                      aqui no se pinta nada: con la columna ausente, `!user.email_...`
+                      es cierto para TODAS las cuentas y la etiqueta diria «Sin
+                      confirmar» de gente que si confirmo. Callarse es lo correcto;
+                      afirmar algo falso de todo el mundo, no.
                     */}
-                    {!user.email_confirmed_at && (
+                    {hayConfirmacion && !user.email_confirmed_at && (
                       <span className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 text-xs font-medium">
                         Sin confirmar
                       </span>
@@ -246,7 +305,7 @@ export default async function AdminUsersPage({
             <div className="flex gap-2">
               {page > 1 && (
                 <Link
-                  href={`/admin/usuarios?page=${page - 1}`}
+                  href={enlace(page - 1)}
                   className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-sm transition"
                 >
                   Anterior
@@ -254,7 +313,7 @@ export default async function AdminUsersPage({
               )}
               {page < totalPages && (
                 <Link
-                  href={`/admin/usuarios?page=${page + 1}`}
+                  href={enlace(page + 1)}
                   className="px-4 py-2 bg-brand-light hover:bg-brand-light/80 rounded-lg text-white text-sm transition"
                 >
                   Siguiente
