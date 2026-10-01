@@ -70,7 +70,7 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
           className="inline-flex items-center gap-1 text-xs text-brand-light hover:text-brand transition-colors"
         >
           <ExternalLink className="w-3 h-3" />
-          Ver guia de revisión antes de enviar
+          Ver guía de revisión antes de enviar
         </Link>
       </div>
     )

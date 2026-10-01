@@ -146,7 +146,7 @@ export function LearningPathSelect({ courseId }: LearningPathSelectProps) {
         Ruta de Aprendizaje
       </label>
       <p className="text-xs text-white/50 -mt-1">
-        Selecciona en que rutas aparecera este curso
+        Selecciona en qué rutas aparecerá este curso
       </p>
 
       <div className="rounded-xl border border-white/10 bg-[#0d1117] overflow-hidden">

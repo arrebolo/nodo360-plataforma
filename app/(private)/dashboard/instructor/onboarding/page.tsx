@@ -146,7 +146,7 @@ export default function InstructorOnboardingPage() {
           description: 'Hace falta estar verificado en la especialidad del curso, y que el curso la tenga asignada. Hoy lo revisa el equipo de Nodo360; cuando haya mentores verificados, cada curso lo revisaran dos.',
           icon: Send,
           link: '/dashboard/instructor/guia',
-          linkText: 'Ver guia de revision',
+          linkText: 'Ver guía de revisión',
           isComplete: !!hasCoursePendingOrPublished,
           isLoading: false,
         },
@@ -327,7 +327,7 @@ export default function InstructorOnboardingPage() {
             ¿Necesitas ayuda?
           </h3>
           <p className="text-white/60 text-sm mb-4">
-            Consulta nuestra guia de revisión o contacta con un mentor
+            Consulta nuestra guía de revisión o contacta con un mentor
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link

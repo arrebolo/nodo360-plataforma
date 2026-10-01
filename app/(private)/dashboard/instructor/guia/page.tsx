@@ -38,7 +38,7 @@ const approvalCriteria = [
   },
   {
     icon: BookOpen,
-    title: 'Minimo 3 modulos con lecciones',
+    title: 'Mínimo 3 módulos con lecciones',
     description: 'Estructura tu curso en al menos 3 modulos con contenido sustancial en cada uno.',
   },
   // Habia un criterio «Video o contenido multimedia: incluye videos

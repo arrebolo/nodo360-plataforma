@@ -21,6 +21,7 @@ import {
   PricingToggles,
 } from './fields'
 import ImageUpload from '@/components/ui/ImageUpload'
+import { relanzarSiEsRedireccion } from '@/lib/navegacion/es-redireccion'
 
 interface CourseFormCoreProps {
   /** Server action to handle form submission */
@@ -123,6 +124,14 @@ export function CourseFormCore({
           toast.success(initialData?.id ? 'Curso actualizado' : 'Curso creado')
         }
       } catch (error) {
+        // UNA REDIRECCION NO ES UN ERROR.
+        //
+        // La accion de servidor termina con redirect(), que no devuelve: lanza. Al
+        // atraparlo aqui, la navegacion no ocurria y encima translateError() no
+        // reconocia «NEXT_REDIRECT», asi que devolvia el texto generico: el curso se
+        // creaba bien y se le decia a la persona que habia fallado.
+        relanzarSiEsRedireccion(error)
+
         console.error('Error al guardar:', error)
         const errorMessage = error instanceof Error ? translateError(error.message) : 'Error al guardar el curso'
         toast.error(errorMessage)

@@ -209,6 +209,12 @@ export default async function EditInstructorCoursePage({
                   status: course.status,
                   is_free: course.is_free,
                   price: course.price ?? null,
+                  // Faltaban, y por eso el campo «Imagen de portada» salia vacio en
+                  // un curso que SI tenia portada: el formulario las acepta desde
+                  // siempre, pero esta pantalla no se las pasaba. Quien editaba
+                  // cualquier otra cosa y guardaba, se quedaba sin imagen.
+                  thumbnail_url: course.thumbnail_url,
+                  banner_url: course.banner_url,
                 }}
                 courseId={courseId}
                 isPublished={course.status === 'published'}

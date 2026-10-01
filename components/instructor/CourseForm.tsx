@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { LearningPathSelect } from "./LearningPathSelect";
+import { esRedireccion } from "@/lib/navegacion/es-redireccion";
 
 type CourseLevel = "beginner" | "intermediate" | "advanced";
 type CourseStatus = "draft" | "published" | "pending_review" | "rejected" | "archived" | "coming_soon";
@@ -87,7 +88,7 @@ export default function CourseForm({ initial, courseId, isPublished, onSave }: P
             await onSave(payload);
           } catch (err: any) {
             // Ignorar errores de redirect de Next.js
-            if (err?.digest?.includes('NEXT_REDIRECT')) {
+            if (esRedireccion(err)) {
               return;
             }
             setError(err?.message ?? "Error guardando");
