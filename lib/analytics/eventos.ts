@@ -1,5 +1,3 @@
-import { sendGAEvent } from '@next/third-parties/google'
-
 /**
  * Los eventos de conversión de Nodo360, y el único sitio por el que salen.
  *
@@ -42,8 +40,15 @@ type Eventos = {
    * se ve en el registro con contraseña.
    */
   email_confirmed: { method: MetodoRegistro }
-  /** Matrícula en un curso completada con éxito. */
-  course_start: { course_slug: string; course_level: string }
+  /**
+   * Matrícula en un curso completada con éxito.
+   *
+   * `course_level` es opcional: hay dos caminos que matriculan sin pasar por el
+   * botón —el enlace de la ficha y abrir el examen final— y por ahí solo viaja el
+   * slug. Arrastrar el nivel por una cookie no compensa: en GA4 se cruza por el
+   * slug. Antes era obligatorio y esos dos caminos no emitían nada.
+   */
+  course_start: { course_slug: string; course_level?: string }
   /** Lección marcada como completada. `lesson_number` es su posición en el curso, desde 1. */
   lesson_complete: { course_slug: string; lesson_number: number }
   /** La primerísima lección que completa esta persona en toda la plataforma. */
@@ -77,10 +82,30 @@ export type NombreEvento = keyof Eventos
 /**
  * Manda un evento a GA4.
  *
- * Solo en producción, igual que el script: `components/analytics/GoogleAnalytics.tsx`
- * devuelve null fuera de producción, así que `window.dataLayer` no existe y
- * `sendGAEvent` se quejaría por consola en cada clic durante el desarrollo. En
- * dev se registra lo que se habría enviado, que para depurar vale más.
+ * SE EMPUJA A dataLayer AQUI, Y NO CON sendGAEvent, Y ES EL ARREGLO DE UN FALLO.
+ * Esto es lo que hace `sendGAEvent` de @next/third-parties, leido del paquete
+ * instalado:
+ *
+ *     if (currDataLayerName === undefined) {
+ *       console.warn('@next/third-parties: GA has not been initialized')
+ *       return                                      // <- el evento se pierde
+ *     }
+ *     if (window[currDataLayerName]) { ...push... }
+ *     else { console.warn('... dataLayer does not exist') }   // <- tambien
+ *
+ * `currDataLayerName` lo pone el componente <GoogleAnalytics> al renderizarse. Un
+ * evento emitido ANTES de eso se tira con un aviso por consola y nada mas. Y eso es
+ * exactamente lo que le pasaba a `email_confirmed`: se emite en un useEffect del
+ * layout raiz justo despues de la redireccion del callback, el momento mas temprano
+ * posible. En 28 dias no llego ni uno a GA4.
+ *
+ * Empujando a `window.dataLayer` nosotros, el orden deja de importar: gtag.js procesa
+ * la cola cuando carga, asi que un evento encolado antes llega igual. Es el patron
+ * estandar de gtag —`dataLayer.push(['event', nombre, parametros])`—, el mismo que
+ * usa sendGAEvent, solo que sin rendirse si el script aun no esta.
+ *
+ * Solo en producción: `GoogleAnalyticsTag` devuelve null fuera de producción, asi
+ * que aqui se registra lo que se habria enviado, que para depurar vale mas.
  *
  * No lanza nunca: perder una métrica no puede tumbar la acción que la genera.
  */
@@ -96,7 +121,9 @@ export function enviarEvento<N extends NombreEvento>(
   }
 
   try {
-    sendGAEvent('event', nombre, parametros)
+    const w = window as unknown as { dataLayer?: unknown[] }
+    if (!w.dataLayer) w.dataLayer = []
+    w.dataLayer.push(['event', nombre, parametros])
   } catch (error) {
     console.error('❌ [GA4] No se pudo enviar el evento', nombre, error)
   }
