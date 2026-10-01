@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Send, Loader2, ExternalLink } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useCambiosSinGuardar } from '@/components/instructor/CambiosSinGuardar'
 
 interface SubmitForReviewButtonProps {
   courseId: string
@@ -21,6 +22,7 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
   // mensaje que explica que falta tiene que poder leerse con calma.
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const { hayCambios } = useCambiosSinGuardar()
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
@@ -98,8 +100,29 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
   return (
     <div className="flex flex-col gap-3">
       {aviso}
+      {hayCambios && (
+        <div
+          role="alert"
+          className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-300"
+        >
+          <p className="font-semibold text-amber-400">Tienes cambios sin guardar</p>
+          <p className="mt-1 text-amber-300/90">
+            El envío lee lo que hay guardado, no lo que se ve en el formulario. Guarda
+            los cambios antes de enviar.
+          </p>
+        </div>
+      )}
     <button
-      onClick={() => setShowConfirm(true)}
+      onClick={() => {
+        // SIN GUARDAR NO SE ENVIA. El servidor lee la base: enviar con la
+        // especialidad elegida pero no guardada se rechazaba por algo que en pantalla
+        // parecia resuelto.
+        if (hayCambios) {
+          setError('Guarda los cambios antes de enviar: el envío comprueba lo que hay guardado.')
+          return
+        }
+        setShowConfirm(true)
+      }}
       className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-light/20 border border-brand-light/30 text-brand-light font-semibold rounded-xl hover:bg-brand-light/30 transition"
     >
       <Send className="w-4 h-4" />

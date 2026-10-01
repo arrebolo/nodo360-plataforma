@@ -4,6 +4,7 @@ import { Eye, ExternalLink, ArrowLeft, Layers, Clock, XCircle, AlertTriangle, Se
 import CourseForm from "@/components/instructor/CourseForm";
 import { PublishChecklist } from "@/components/courses/PublishChecklist";
 import { SubmitForReviewButton } from "@/components/instructor/SubmitForReviewButton";
+import { CambiosSinGuardar } from "@/components/instructor/CambiosSinGuardar";
 import { CourseQuizEditor } from "@/components/admin/CourseQuizEditor";
 import { requireInstructorLike } from "@/lib/auth/requireInstructor";
 import { getMyCourseForEdit, getMyCourseStats, updateMyCourse } from "@/lib/instructor/courses";
@@ -38,6 +39,9 @@ export default async function EditInstructorCoursePage({
   }
 
   return (
+    // El formulario y el boton de enviar son hermanos y no se ven entre ellos: este
+    // envoltorio es lo que permite que el boton sepa que hay cambios sin guardar.
+    <CambiosSinGuardar>
     <div className="min-h-screen bg-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Header con título y estado */}
@@ -226,7 +230,9 @@ export default async function EditInstructorCoursePage({
                 }}
                 especialidades={especialidades}
                 courseId={courseId}
-                isPublished={course.status === 'published'}
+                // published_at, no el estado: es la misma condicion que los triggers de
+                // la 114 y la 115 y que el editor del examen de esta pantalla.
+                seHaPublicado={Boolean(course.published_at)}
                 onSave={onSave}
               />
             </div>
@@ -252,6 +258,11 @@ export default async function EditInstructorCoursePage({
                 // Lo decide instructor_specialties.requiere_acreditacion, no una lista
                 // de slugs: se calcula aqui y se pasa hecho.
                 requiereJurisdiccion: laDelCurso?.requiereJurisdiccion ?? false,
+                // `laDelCurso` sale de las verificaciones vigentes, asi que si el
+                // curso tiene una especialidad que ya no esta verificada —retirada o
+                // caducada— esto es false y el checklist lo marca pendiente, igual
+                // que hara el servidor al enviar.
+                especialidadVerificada: Boolean(laDelCurso),
               }}
               stats={stats}
             />
@@ -313,5 +324,6 @@ export default async function EditInstructorCoursePage({
         </div>
       </div>
     </div>
+    </CambiosSinGuardar>
   );
 }
