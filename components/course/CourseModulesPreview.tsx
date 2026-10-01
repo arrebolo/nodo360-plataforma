@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronDown, ChevronUp, PlayCircle, Lock } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { cx } from '@/lib/design/tokens'
@@ -25,9 +26,24 @@ interface Module {
 interface Props {
   courseSlug: string
   modules: Module[]
+  /**
+   * A donde lleva cada leccion, si lleva a algun sitio.
+   *
+   * Este componente NO tenia ni un enlace: recibia `courseSlug` y no lo usaba, asi que
+   * en la vista previa del instructor no se podia abrir ninguna leccion —ni las
+   * marcadas como vista previa gratuita— y no habia forma de revisar el contenido ni
+   * el video antes de enviar el curso a revision.
+   *
+   * Se pasa una funcion y no un patron de URL porque el destino depende de quien mira:
+   * el instructor va a SU editor de la leccion (el curso esta en borrador, la pagina
+   * publica no existiria todavia), y una pantalla publica iria a /cursos/...
+   *
+   * Sin esta propiedad, se comporta como antes: texto sin enlace.
+   */
+  enlaceDeLeccion?: (moduloId: string, leccionId: string) => string
 }
 
-export default function CourseModulesPreview({ courseSlug, modules }: Props) {
+export default function CourseModulesPreview({ courseSlug, modules, enlaceDeLeccion }: Props) {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
     new Set([modules[0]?.id])
   )
@@ -109,17 +125,29 @@ export default function CourseModulesPreview({ courseSlug, modules }: Props) {
             {/* Lista de lecciones */}
             {isExpanded && (
               <div className="border-t border-black/5 divide-y divide-black/5">
-                {module.lessons.map((lesson, lessonIndex) => (
-                  <div
+                {module.lessons.map((lesson, lessonIndex) => {
+                  const destino = enlaceDeLeccion?.(module.id, lesson.id)
+                  // Con destino es un enlace; sin el, lo de antes. Y entonces el
+                  // candado y la opacidad no pintan nada: quien puede abrirlas todas
+                  // no esta viendo un escaparate, esta revisando su propio curso.
+                  const Envoltura = destino ? Link : 'div'
+                  const propiedades = destino
+                    ? { href: destino, title: 'Abrir esta leccion en el editor' }
+                    : {}
+                  return (
+                  <Envoltura
                     key={lesson.id}
+                    {...(propiedades as { href: string })}
                     className={cx(
                       'flex items-center gap-3 px-4 sm:px-5 py-3',
-                      lessonIndex === 0 && moduleIndex === 0
-                        ? 'bg-neutral-50'
-                        : 'opacity-70'
+                      destino
+                        ? 'cursor-pointer hover:bg-orange-50 transition-colors'
+                        : lessonIndex === 0 && moduleIndex === 0
+                          ? 'bg-neutral-50'
+                          : 'opacity-70'
                     )}
                   >
-                    {lessonIndex === 0 && moduleIndex === 0 ? (
+                    {destino || (lessonIndex === 0 && moduleIndex === 0) ? (
                       <PlayCircle className="h-5 w-5 flex-shrink-0 text-orange-500" />
                     ) : (
                       <Lock className="h-5 w-5 flex-shrink-0 text-neutral-300" />
@@ -137,8 +165,9 @@ export default function CourseModulesPreview({ courseSlug, modules }: Props) {
                         Vista previa
                       </span>
                     )}
-                  </div>
-                ))}
+                  </Envoltura>
+                  )
+                })}
 
                 {module.lessons.length === 0 && (
                   <div className="px-4 sm:px-5 py-4 text-sm text-neutral-400 italic">

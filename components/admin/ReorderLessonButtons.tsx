@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
+import { mensajeDeRespuesta } from '@/lib/ui/errores'
 
 interface ReorderLessonButtonsProps {
   lessonId: string
@@ -17,8 +18,12 @@ export function ReorderLessonButtons({
   totalLessons
 }: ReorderLessonButtonsProps) {
   const [isReordering, setIsReordering] = useState(false)
+  // El error, EN PANTALLA. Antes era un alert(), que lo cierra cualquier cosa y no
+  // deja rastro: en la auditoria estas acciones «fallaban sin avisar».
+  const [error, setError] = useState<string | null>(null)
 
   const handleReorder = async (direction: 'up' | 'down') => {
+    setError(null)
     setIsReordering(true)
 
     try {
@@ -34,7 +39,7 @@ export function ReorderLessonButtons({
         })
       })
 
-      if (!response.ok) throw new Error('Error al reordenar')
+      if (!response.ok) throw new Error(await mensajeDeRespuesta(response, 'No se pudo reordenar la lección.'))
 
       console.log('✅ [Reorder Lesson] Reordenado correctamente')
 
@@ -42,7 +47,7 @@ export function ReorderLessonButtons({
       window.location.reload()
     } catch (error) {
       console.error('❌ [Reorder Lesson] Error:', error)
-      alert('Error al reordenar lección')
+      setError(error instanceof Error ? error.message : 'No se pudo reordenar la lección.')
       setIsReordering(false)
     }
   }
@@ -68,6 +73,11 @@ export function ReorderLessonButtons({
       >
         <ChevronDown className="w-4 h-4" />
       </button>
+      {error && (
+        <p className="max-w-[16rem] text-right text-xs text-red-400" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

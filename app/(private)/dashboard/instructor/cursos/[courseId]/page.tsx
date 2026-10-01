@@ -7,6 +7,7 @@ import { SubmitForReviewButton } from "@/components/instructor/SubmitForReviewBu
 import { CourseQuizEditor } from "@/components/admin/CourseQuizEditor";
 import { requireInstructorLike } from "@/lib/auth/requireInstructor";
 import { getMyCourseForEdit, getMyCourseStats, updateMyCourse } from "@/lib/instructor/courses";
+import { misEspecialidadesVerificadas } from "@/lib/instructor/mis-especialidades";
 
 export default async function EditInstructorCoursePage({
   params,
@@ -24,6 +25,11 @@ export default async function EditInstructorCoursePage({
   }
 
   const stats = await getMyCourseStats(userId, courseId);
+
+  // Las especialidades en las que esta persona esta verificada. Es lo que decide que
+  // puede elegir en el formulario, y lo que el servidor comprobara al enviar.
+  const especialidades = await misEspecialidadesVerificadas(userId);
+  const laDelCurso = especialidades.find((e) => e.id === course.specialty_id);
 
   async function onSave(payload: any) {
     "use server";
@@ -215,7 +221,10 @@ export default async function EditInstructorCoursePage({
                   // cualquier otra cosa y guardaba, se quedaba sin imagen.
                   thumbnail_url: course.thumbnail_url,
                   banner_url: course.banner_url,
+                  specialty_id: course.specialty_id,
+                  jurisdiccion: course.jurisdiccion,
                 }}
+                especialidades={especialidades}
                 courseId={courseId}
                 isPublished={course.status === 'published'}
                 onSave={onSave}
@@ -238,6 +247,11 @@ export default async function EditInstructorCoursePage({
                 status: course.status,
                 is_free: course.is_free,
                 is_premium: course.is_premium,
+                specialty_id: course.specialty_id,
+                jurisdiccion: course.jurisdiccion,
+                // Lo decide instructor_specialties.requiere_acreditacion, no una lista
+                // de slugs: se calcula aqui y se pasa hecho.
+                requiereJurisdiccion: laDelCurso?.requiereJurisdiccion ?? false,
               }}
               stats={stats}
             />

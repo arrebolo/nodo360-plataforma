@@ -12,6 +12,18 @@ export type InstructorCourseForm = {
   thumbnail_url?: string | null;
   banner_url?: string | null;
   rejection_reason?: string | null;
+  /**
+   * La especialidad del curso. Sin ella NO se puede enviar a revision: el servidor
+   * responde «Este curso no tiene especialidad asignada», y antes no habia manera de
+   * ponerla desde la interfaz porque el formulario no tenia el campo.
+   */
+  specialty_id?: string | null;
+  /**
+   * El pais cuya normativa explica el curso. Solo en las especialidades con
+   * requiere_acreditacion —fiscalidad y derecho—; en las demas tiene que ir vacia, y
+   * lo hace cumplir el trigger de la 109 en los dos sentidos.
+   */
+  jurisdiccion?: string | null;
 };
 
 export async function listMyCourses(userId: string) {
@@ -91,7 +103,8 @@ export async function getMyCourseForEdit(userId: string, courseId: string) {
       id, title, slug, description, long_description,
       level, status, is_free, is_premium, price,
       thumbnail_url, banner_url, rejection_reason,
-      published_at
+      published_at,
+      specialty_id, jurisdiccion
     `)
     .eq("id", courseId)
     .eq("instructor_id", userId)

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
+import { mensajeDeRespuesta } from '@/lib/ui/errores'
 
 interface ReorderModuleButtonsProps {
   moduleId: string
@@ -17,8 +18,12 @@ export function ReorderModuleButtons({
   totalModules
 }: ReorderModuleButtonsProps) {
   const [isReordering, setIsReordering] = useState(false)
+  // El error, EN PANTALLA. Antes era un alert(), que lo cierra cualquier cosa y no
+  // deja rastro: en la auditoria estas acciones «fallaban sin avisar».
+  const [error, setError] = useState<string | null>(null)
 
   const handleReorder = async (direction: 'up' | 'down') => {
+    setError(null)
     setIsReordering(true)
 
     try {
@@ -34,7 +39,7 @@ export function ReorderModuleButtons({
         })
       })
 
-      if (!response.ok) throw new Error('Error al reordenar')
+      if (!response.ok) throw new Error(await mensajeDeRespuesta(response, 'No se pudo reordenar el módulo.'))
 
       console.log('✅ [Reorder Module] Reordenado correctamente')
 
@@ -42,7 +47,7 @@ export function ReorderModuleButtons({
       window.location.reload()
     } catch (error) {
       console.error('❌ [Reorder Module] Error:', error)
-      alert('Error al reordenar módulo')
+      setError(error instanceof Error ? error.message : 'No se pudo reordenar el módulo.')
       setIsReordering(false)
     }
   }
@@ -68,6 +73,11 @@ export function ReorderModuleButtons({
       >
         <ChevronDown className="w-4 h-4" />
       </button>
+      {error && (
+        <p className="max-w-[16rem] text-right text-xs text-red-400" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

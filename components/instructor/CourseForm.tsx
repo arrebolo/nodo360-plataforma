@@ -17,10 +17,27 @@ type Initial = {
   price?: number | null;
   thumbnail_url?: string | null;
   banner_url?: string | null;
+  specialty_id?: string | null;
+  jurisdiccion?: string | null;
 };
 
 type Props = {
   initial?: Initial;
+  /**
+   * Las especialidades en las que esta persona esta verificada, y en que paises.
+   *
+   * Solo estas: estar verificado en una habilita SOLO en esa, y es lo que comprueba
+   * puede_ensenar() al enviar a revision. Ofrecer las once seria invitar a un rechazo.
+   * Si la lista viene vacia, no hay desplegable: hay un aviso con el enlace para
+   * pedir la verificacion, porque sin ella no se puede enviar nada.
+   */
+  especialidades?: {
+    id: string;
+    slug: string;
+    nombre: string;
+    requiereJurisdiccion: boolean;
+    jurisdicciones: string[];
+  }[];
   courseId?: string;
   /** Si true, el botón mostrará advertencia de re-aprobación */
   isPublished?: boolean;
@@ -37,7 +54,13 @@ type Props = {
   }) => Promise<void>;
 };
 
-export default function CourseForm({ initial, courseId, isPublished, onSave }: Props) {
+export default function CourseForm({
+  initial,
+  courseId,
+  isPublished,
+  onSave,
+  especialidades = [],
+}: Props) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +74,15 @@ export default function CourseForm({ initial, courseId, isPublished, onSave }: P
     price: initial?.price ?? null,
     thumbnail_url: initial?.thumbnail_url ?? "",
     banner_url: initial?.banner_url ?? "",
+    // Si solo esta verificado en una, preseleccionada: no hay nada que elegir.
+    specialty_id:
+      initial?.specialty_id ?? (especialidades.length === 1 ? especialidades[0].id : ""),
+    jurisdiccion: initial?.jurisdiccion ?? "",
   });
+
+  const especialidadElegida = especialidades.find((e) => e.id === form.specialty_id);
+  const hacenFaltaPaises = Boolean(especialidadElegida?.requiereJurisdiccion);
+  const paises = especialidadElegida?.jurisdicciones ?? [];
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((p) => ({ ...p, [key]: value }));
@@ -80,10 +111,19 @@ export default function CourseForm({ initial, courseId, isPublished, onSave }: P
               price: form.is_free ? null : form.price ?? null,
               thumbnail_url: form.thumbnail_url?.trim() || null,
               banner_url: form.banner_url?.trim() || null,
+              specialty_id: form.specialty_id || null,
+              // En las especialidades que no van por pais la jurisdiccion TIENE que ir
+              // vacia: el trigger de la 109 lo exige en los dos sentidos.
+              jurisdiccion: hacenFaltaPaises ? form.jurisdiccion || null : null,
             };
 
             if (!payload.title) throw new Error("El título es obligatorio.");
             if (!payload.slug) throw new Error("El slug es obligatorio.");
+            if (hacenFaltaPaises && !payload.jurisdiccion) {
+              throw new Error(
+                `«${especialidadElegida?.nombre}» se verifica por país: elige la jurisdicción del curso.`
+              );
+            }
 
             await onSave(payload);
           } catch (err: any) {
@@ -141,6 +181,84 @@ export default function CourseForm({ initial, courseId, isPublished, onSave }: P
       {courseId && <LearningPathSelect courseId={courseId} />}
 
       <div className="grid gap-5 md:grid-cols-2">
+        {/* LA ESPECIALIDAD, que faltaba y bloqueaba el envio a revision.
+            Solo las verificadas: el servidor comprueba puede_ensenar() al enviar, asi
+            que ofrecer una en la que no se esta verificado seria invitar a un rechazo. */}
+        {especialidades.length === 0 ? (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+            <p className="text-sm font-medium text-amber-400">
+              No tienes ninguna verificación aprobada
+            </p>
+            <p className="mt-1 text-xs text-amber-300/80">
+              Puedes escribir el curso y guardarlo, pero para enviarlo a revisión hace falta
+              estar verificado en su especialidad. La verificación se pide una vez por
+              especialidad.
+            </p>
+            <a
+              href="/dashboard/instructor/verificacion"
+              className="mt-2 inline-block text-xs font-medium text-amber-400 underline"
+            >
+              Pedir mi verificación
+            </a>
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className={labelClasses} htmlFor="specialty_id">
+                Especialidad *
+              </label>
+              <select
+                id="specialty_id"
+                className={selectClasses}
+                value={form.specialty_id}
+                onChange={(e) => {
+                  update("specialty_id", e.target.value);
+                  // Al cambiar de especialidad, la jurisdiccion anterior deja de valer.
+                  update("jurisdiccion", "");
+                }}
+                disabled={isPublished}
+              >
+                <option value="">Elige la especialidad…</option>
+                {especialidades.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.nombre}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-white/50">
+                {isPublished
+                  ? "La especialidad de un curso publicado la cambia la administración."
+                  : "Solo las especialidades en las que estás verificado."}
+              </p>
+            </div>
+        
+            {hacenFaltaPaises && (
+              <div className="space-y-2">
+                <label className={labelClasses} htmlFor="jurisdiccion">
+                  Jurisdicción *
+                </label>
+                <select
+                  id="jurisdiccion"
+                  className={selectClasses}
+                  value={form.jurisdiccion}
+                  onChange={(e) => update("jurisdiccion", e.target.value)}
+                  disabled={isPublished}
+                >
+                  <option value="">Elige el país…</option>
+                  {paises.map((j) => (
+                    <option key={j} value={j}>
+                      {j}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-white/50">
+                  Esta especialidad se verifica por país: el curso dice a qué normativa aplica.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid gap-2">
           <label className={labelClasses}>Nivel *</label>
           <select
