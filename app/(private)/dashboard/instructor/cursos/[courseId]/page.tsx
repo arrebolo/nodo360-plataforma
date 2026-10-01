@@ -4,6 +4,7 @@ import { Eye, ExternalLink, ArrowLeft, Layers, Clock, XCircle, AlertTriangle, Se
 import CourseForm from "@/components/instructor/CourseForm";
 import { PublishChecklist } from "@/components/courses/PublishChecklist";
 import { SubmitForReviewButton } from "@/components/instructor/SubmitForReviewButton";
+import { CourseQuizEditor } from "@/components/admin/CourseQuizEditor";
 import { requireInstructorLike } from "@/lib/auth/requireInstructor";
 import { getMyCourseForEdit, getMyCourseStats, updateMyCourse } from "@/lib/instructor/courses";
 
@@ -235,6 +236,31 @@ export default async function EditInstructorCoursePage({
               </dl>
             </div>
           </div>
+        </div>
+
+        {/* EL EXAMEN FINAL DEL CURSO
+            Hasta ahora este editor solo existia en /admin/cursos/[id], asi que un
+            instructor no tenia ninguna forma de crear el examen de su propio
+            curso: tenia que pedirlo. La API ya le dejaba escribir (comprobaba el
+            rol, no la pantalla); lo que faltaba era la pantalla.
+
+            En un curso ya publicado no se muestra el editor, se explica por que:
+            hay alumnos a los que se esta corrigiendo con ese examen. Lo mismo que
+            con una verificacion retirada, la pantalla dice el estado en vez de
+            ofrecer un formulario que el servidor va a rechazar. */}
+        <div className="mt-8">
+          {course.published_at ? (
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Examen final</h2>
+              <p className="text-white/60 text-sm">
+                Este curso ya se ha publicado, así que su examen no se edita desde aquí:
+                hay alumnos a los que se está corrigiendo con él. Si necesitas cambiar una
+                pregunta, escríbenos y lo revisamos contigo.
+              </p>
+            </div>
+          ) : (
+            <CourseQuizEditor courseId={course.id} courseName={course.title} />
+          )}
         </div>
       </div>
     </div>
