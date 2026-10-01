@@ -11,18 +11,18 @@ import {
   getMessageByCode,
   MENSAJE_GENERICO,
 } from '@/lib/auth/error-messages'
+import { esRedireccion } from '@/lib/navegacion/es-redireccion'
 
 /**
  * Helper para detectar errores de redirect de Next.js
  * En Next.js 14+, redirect() lanza un error especial que debe ser re-lanzado
  */
+/**
+ * Igual que antes, pero la regla vive en un solo sitio: lib/navegacion/es-redireccion.
+ * Se conserva el nombre para no tocar sus tres usos de aqui abajo.
+ */
 function isRedirectError(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    'digest' in error &&
-    typeof (error as any).digest === 'string' &&
-    (error as any).digest.startsWith('NEXT_REDIRECT')
-  )
+  return esRedireccion(error)
 }
 
 /**

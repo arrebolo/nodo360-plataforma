@@ -5,6 +5,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { ArrowLeft, Save, Loader2, HelpCircle } from 'lucide-react'
 import { translateError } from '@/lib/error-messages'
+import { esRedireccion } from '@/lib/navegacion/es-redireccion'
 
 // Dynamic import for heavy RichTextEditor component
 const RichTextEditor = dynamic(
@@ -62,8 +63,8 @@ export function LessonForm({ action, initialData, courseId, moduleId }: LessonFo
       await action(formData)
     } catch (error: any) {
       // Ignorar errores de redirect de Next.js (es comportamiento esperado)
-      // El redirect() lanza una excepción especial con digest que contiene NEXT_REDIRECT
-      if (error?.digest?.includes('NEXT_REDIRECT') || error?.message?.includes('NEXT_REDIRECT')) {
+      // El redirect() lanza una excepción especial: no es un error real
+      if (esRedireccion(error)) {
         return
       }
       console.error('Error al guardar:', error)
