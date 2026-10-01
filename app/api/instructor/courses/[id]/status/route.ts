@@ -53,7 +53,7 @@ export async function PATCH(
     // Obtener el curso para verificar propiedad
     const { data: course, error: courseError } = await supabase
       .from('courses')
-      .select('id, instructor_id, status')
+      .select('id, instructor_id, status, published_at')
       .eq('id', courseId)
       .single()
 
@@ -105,16 +105,30 @@ export async function PATCH(
       status: newStatus
     }
 
-    // Si se publica, establecer published_at y limpiar rejection_reason
+    // Si se publica, establecer published_at y limpiar rejection_reason.
+    // La fecha SOLO si no la tenia: es la de la primera publicacion, y volver a
+    // publicar un curso que ya lo estuvo no la reinicia. Es lo mismo que hacen la
+    // pantalla de aprobar y publishCourse, que reclaman la fila con
+    // `.is('published_at', null)`.
     if (newStatus === 'published' && course.status !== 'published') {
-      updateData.published_at = new Date().toISOString()
+      if (!course.published_at) {
+        updateData.published_at = new Date().toISOString()
+      }
       updateData.rejection_reason = null
     }
 
-    // Si se despublica, limpiar published_at
-    if (newStatus === 'draft' && course.status === 'published') {
-      updateData.published_at = null
-    }
+    // AL DESPUBLICAR NO SE BORRA published_at.
+    //
+    // Aqui se ponia a NULL, y eso era un atajo para desactivar dos protecciones: los
+    // triggers de la 114 y la 115 preguntan por `published_at IS NOT NULL` para saber
+    // si un curso estuvo publicado alguna vez. Un instructor puede poner su propio
+    // curso publicado en 'draft' —esta en INSTRUCTOR_ALLOWED_STATUSES—, asi que le
+    // bastaba eso para quedarse libre de cambiarle la especialidad, la jurisdiccion y
+    // el examen final.
+    //
+    // published_at significa «se publico alguna vez» y no «esta publicado ahora»; lo
+    // segundo lo dice `status`, que es justo lo que se esta cambiando aqui. Desde la
+    // 116 la base tampoco lo permite, asi que dejarlo habria hecho fallar esta ruta.
 
     const { error: updateError } = await supabase
       .from('courses')
