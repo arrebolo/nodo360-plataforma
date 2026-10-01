@@ -458,28 +458,89 @@ export async function publishCourse(
   }
 
   // 5. Publicar el curso
+  //
+  // DOS COSAS QUE FALTABAN AQUI, Y LAS DOS IMPORTAN
+  //
+  // a) published_at. Esto ponia status = 'published' y nada mas, asi que un curso
+  //    publicado por este camino se quedaba con published_at vacio. Los triggers de
+  //    la 114 y la 115 preguntan justo por eso para saber si un curso estuvo
+  //    publicado alguna vez: con la fecha vacia, su autor podia seguir cambiandole
+  //    la especialidad, la jurisdiccion y el examen final de un curso que los
+  //    alumnos ya estaban viendo.
+  //
+  // b) El anuncio. Este camino no avisaba a nadie: ni Discord, ni Telegram, ni
+  //    correo, ni notificacion. El curso aparecia en el catalogo en silencio.
+  //
+  // Se reclama la primera publicacion como en la pantalla de aprobar: la fecha solo
+  // se pone si estaba vacia, y solo quien consigue la fila anuncia. Republicar no
+  // vuelve a anunciar ni pisa la fecha original.
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  const { data: reclamado, error: errorAlReclamar } = await supabase
     .from('courses')
     .update({
       status: 'published',
+      published_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     })
     .eq('id', courseId)
+    .is('published_at', null)
     .select('id, title, slug, status')
-    .single()
 
-  if (error) {
-    console.error('❌ [publishCourse] Error al publicar:', error)
+  if (errorAlReclamar) {
+    console.error('❌ [publishCourse] Error al publicar:', errorAlReclamar)
     return {
       success: false,
-      error: 'Error al publicar el curso: ' + error.message,
+      error: 'Error al publicar el curso: ' + errorAlReclamar.message,
       check
     }
   }
 
-  console.log('✅ [publishCourse] Curso publicado:', data.title)
+  const esPrimeraPublicacion = (reclamado?.length ?? 0) === 1
+  let data = reclamado?.[0]
+
+  if (!esPrimeraPublicacion) {
+    const { data: republicado, error } = await supabase
+      .from('courses')
+      .update({
+        status: 'published',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', courseId)
+      .select('id, title, slug, status')
+      .single()
+
+    if (error) {
+      console.error('❌ [publishCourse] Error al publicar:', error)
+      return {
+        success: false,
+        error: 'Error al publicar el curso: ' + error.message,
+        check
+      }
+    }
+    data = republicado
+  }
+
+  if (!data) {
+    return {
+      success: false,
+      error: 'El curso no se pudo publicar: no se encontro la fila.',
+      check
+    }
+  }
+
+  if (esPrimeraPublicacion) {
+    const { anunciarCursoPublicado } = await import('@/lib/courses/anunciar-publicacion')
+    anunciarCursoPublicado(courseId).catch(err =>
+      console.error('Error anunciando el curso publicado:', err)
+    )
+  }
+
+  console.log(
+    '✅ [publishCourse] Curso publicado:',
+    data.title,
+    esPrimeraPublicacion ? '(primera vez)' : '(ya se habia publicado antes)'
+  )
   revalidatePath('/admin/cursos')
   revalidatePath(`/admin/cursos/${courseId}`)
   revalidatePath('/cursos')
