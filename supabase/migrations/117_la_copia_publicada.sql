@@ -225,7 +225,23 @@ REVOKE ALL ON FUNCTION public.columnas_a_copiar(text, text) FROM PUBLIC;
 -- 3. publicar_curso()
 -- =====================================================
 
-CREATE OR REPLACE FUNCTION public.publicar_curso(p_course_id uuid)
+-- DOS FUNCIONES, Y LA DIFERENCIA IMPORTA.
+--
+-- La interna hace el trabajo y NO comprueba el rol. No se le da EXECUTE a nadie:
+-- solo la pueden llamar el dueño y las funciones SECURITY DEFINER de aqui —es decir,
+-- el trigger—. La publica comprueba que quien llama es administracion y delega.
+--
+-- POR QUE, Y ES UN FALLO QUE SE COLO EN LA PRIMERA VERSION DE ESTA MIGRACION
+-- El trigger corre en la sesion de quien cambia el estado, asi que auth.uid() es esa
+-- persona. Y un instructor PUEDE pasar su propio curso publicado a draft o archived:
+-- esta en INSTRUCTOR_ALLOWED_STATUSES de /api/instructor/courses/[id]/status. Con la
+-- comprobacion de rol dentro de la funcion que llama el trigger, esa operacion
+-- legitima se levantaba con 42501, el UPDATE se deshacia entero y la API devolvia
+-- 500. El instructor no podia despublicar su curso, y el mensaje no decia por que.
+--
+-- Mezclar «quien puede pedir esto» con «como se hace esto» es lo que lo causo. Aqui
+-- van separados: el permiso en la puerta, el trabajo dentro.
+CREATE OR REPLACE FUNCTION public.publicar_curso_interno(p_course_id uuid)
 RETURNS TABLE (version integer, modulos integer, lecciones integer,
                preguntas integer, retiradas integer)
 LANGUAGE plpgsql
@@ -233,7 +249,6 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $fn$
 DECLARE
-  v_uid       uuid := auth.uid();
   v_version   integer;
   v_cols      text[];
   v_lista     text;
@@ -241,13 +256,8 @@ DECLARE
   v_n         integer;
   v_retiradas integer := 0;
 BEGIN
-  -- La identidad sale de auth.uid(), nunca de un parametro. Sin sesion son las
-  -- migraciones, el editor SQL y el cliente de servicio.
-  IF v_uid IS NOT NULL AND NOT public.es_admin_actual() THEN
-    RAISE EXCEPTION 'Publicar un curso lo hace la administracion.'
-      USING ERRCODE = '42501';
-  END IF;
-
+  -- Sin comprobacion de rol a proposito: la hace la envoltura publica. Esta no la
+  -- puede llamar nadie a quien no se le haya dado EXECUTE, y no se le da a nadie.
   IF NOT EXISTS (SELECT 1 FROM public.courses WHERE id = p_course_id) THEN
     RAISE EXCEPTION 'No existe el curso %.', p_course_id USING ERRCODE = '23503';
   END IF;
@@ -343,6 +353,33 @@ BEGIN
 END
 $fn$;
 
+COMMENT ON FUNCTION public.publicar_curso_interno(uuid) IS
+  'El trabajo de publicar la copia, SIN comprobar quien llama. No se le da EXECUTE a nadie: solo el dueño y las funciones SECURITY DEFINER de esta migracion —el trigger—. El permiso lo pone publicar_curso().';
+
+-- Sin GRANT a nadie. Ni a authenticated, ni a service_role: quien tenga que
+-- llamarla es el trigger, que es SECURITY DEFINER y corre como el dueño.
+REVOKE ALL ON FUNCTION public.publicar_curso_interno(uuid) FROM PUBLIC;
+
+/** La puerta: comprueba el rol y delega. Es la que se llama por RPC. */
+CREATE OR REPLACE FUNCTION public.publicar_curso(p_course_id uuid)
+RETURNS TABLE (version integer, modulos integer, lecciones integer,
+               preguntas integer, retiradas integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $fn$
+BEGIN
+  -- La identidad sale de auth.uid(), nunca de un parametro. Sin sesion son las
+  -- migraciones, el editor SQL y el cliente de servicio.
+  IF auth.uid() IS NOT NULL AND NOT public.es_admin_actual() THEN
+    RAISE EXCEPTION 'Publicar un curso lo hace la administracion.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  RETURN QUERY SELECT * FROM public.publicar_curso_interno(p_course_id);
+END
+$fn$;
+
 COMMENT ON FUNCTION public.publicar_curso(uuid) IS
   'Refresca la copia publicada de un curso y devuelve una fila con las cuentas. Lo que ya no esta en las tablas de trabajo se RETIRA, no se borra: el progreso y los certificados apuntan al espejo. Las migraciones de contenido terminan llamandola. Solo la administracion, o sin sesion (migraciones y servicio).';
 
@@ -357,21 +394,18 @@ GRANT EXECUTE ON FUNCTION public.publicar_curso(uuid) TO service_role;
 -- curso no lo retirara del espejo, en cuanto las lecturas pasen al espejo (PR 3) el
 -- curso seguiria en el catalogo con el estado cambiado. Retirar NO BORRA: marca.
 
-CREATE OR REPLACE FUNCTION public.retirar_curso_de_la_copia(p_course_id uuid)
+CREATE OR REPLACE FUNCTION public.retirar_curso_de_la_copia_interno(p_course_id uuid)
 RETURNS TABLE (modulos integer, lecciones integer, preguntas integer)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $fn$
 DECLARE
-  v_uid uuid := auth.uid();
-  v_n   integer;
+  v_n integer;
 BEGIN
-  IF v_uid IS NOT NULL AND NOT public.es_admin_actual() THEN
-    RAISE EXCEPTION 'Retirar un curso del catalogo lo hace la administracion.'
-      USING ERRCODE = '42501';
-  END IF;
-
+  -- Sin comprobacion de rol: AQUI ESTABA EL FALLO. Un instructor puede pasar su
+  -- propio curso publicado a draft, el trigger llama a esto con su auth.uid(), y
+  -- exigir administracion deshacia el UPDATE y devolvia 500.
   UPDATE public.quiz_questions_publicadas SET retirada_el = now()
    WHERE retirada_el IS NULL
      AND module_id IN (SELECT id FROM public.modules_publicados WHERE course_id = p_course_id);
@@ -395,8 +429,30 @@ BEGIN
 END
 $fn$;
 
+COMMENT ON FUNCTION public.retirar_curso_de_la_copia_interno(uuid) IS
+  'El trabajo de retirar la copia, SIN comprobar quien llama. La llama el trigger, que corre en la sesion de quien despublica: puede ser el autor del curso, que no es administracion. Sin EXECUTE para nadie.';
+
+REVOKE ALL ON FUNCTION public.retirar_curso_de_la_copia_interno(uuid) FROM PUBLIC;
+
+/** La puerta: comprueba el rol y delega. Es la que se llama por RPC. */
+CREATE OR REPLACE FUNCTION public.retirar_curso_de_la_copia(p_course_id uuid)
+RETURNS TABLE (modulos integer, lecciones integer, preguntas integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $fn$
+BEGIN
+  IF auth.uid() IS NOT NULL AND NOT public.es_admin_actual() THEN
+    RAISE EXCEPTION 'Retirar un curso del catalogo lo hace la administracion.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  RETURN QUERY SELECT * FROM public.retirar_curso_de_la_copia_interno(p_course_id);
+END
+$fn$;
+
 COMMENT ON FUNCTION public.retirar_curso_de_la_copia(uuid) IS
-  'Retira del catalogo la copia publicada de un curso, marcando retirada_el. No borra ni una fila: el progreso y los certificados siguen apuntando aqui. Es el inverso de publicar_curso, y el trigger la llama cuando un curso deja de estar publicado.';
+  'Retira del catalogo la copia publicada de un curso, marcando retirada_el. No borra ni una fila: el progreso y los certificados siguen apuntando aqui. Es el inverso de publicar_curso. Llamada directa: solo administracion. El trigger usa la version interna, porque despublicar su propio curso lo puede hacer su autor.';
 
 REVOKE ALL ON FUNCTION public.retirar_curso_de_la_copia(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.retirar_curso_de_la_copia(uuid) TO authenticated;
@@ -410,11 +466,20 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $fn$
 BEGIN
+  -- LAS INTERNAS, NO LAS PUBLICAS.
+  --
+  -- Este trigger corre en la sesion de quien cambia el estado, y quien cambia el
+  -- estado no siempre es administracion: el autor de un curso publicado puede
+  -- pasarlo a draft o a archived. Si llamara a las publicas, esa operacion legitima
+  -- se levantaria con 42501 y se desharia el UPDATE entero.
+  --
+  -- Quien pide publicar por RPC sigue pasando por la puerta: las publicas no
+  -- cambian.
   IF NEW.status = 'published' AND OLD.status IS DISTINCT FROM 'published' THEN
-    PERFORM public.publicar_curso(NEW.id);
+    PERFORM public.publicar_curso_interno(NEW.id);
   ELSIF OLD.status = 'published' AND NEW.status IS DISTINCT FROM 'published' THEN
     -- Deja de estar publicado: fuera del catalogo. Marcado, no borrado.
-    PERFORM public.retirar_curso_de_la_copia(NEW.id);
+    PERFORM public.retirar_curso_de_la_copia_interno(NEW.id);
   END IF;
   RETURN NULL;
 END
@@ -519,7 +584,7 @@ BEGIN
            WHERE status = 'published'
            ORDER BY created_at
   LOOP
-    PERFORM public.publicar_curso(c.id);
+    PERFORM public.publicar_curso_interno(c.id);
   END LOOP;
 
   SELECT count(*) INTO v_n FROM public.courses_publicados WHERE retirada_el IS NULL;
@@ -587,6 +652,48 @@ END
 $claves$;
 
 -- =====================================================
+-- 5 bis. Y LAS MATRICULAS, SIN CASCADA
+-- =====================================================
+-- course_enrollments.course_id NO se repunta al espejo: eso cambiaria quien puede
+-- matricularse y no es lo que toca decidir aqui. Pero sigue apuntando a `courses` con
+-- ON DELETE CASCADE, asi que borrar un curso borra las matriculas de quienes estaban
+-- dentro. Se queda donde esta y se le quita la cascada: borrar un curso con alumnos
+-- matriculados pasa a estar impedido, que es lo correcto —primero se mira a quien
+-- afecta, y luego se decide—.
+
+DO $matriculas$
+DECLARE
+  r record;
+BEGIN
+  FOR r IN
+    SELECT con.conname, con.confdeltype
+    FROM pg_constraint con
+    JOIN pg_class     cl  ON cl.oid  = con.conrelid
+    JOIN pg_class     fcl ON fcl.oid = con.confrelid
+    JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = con.conkey[1]
+    WHERE con.contype = 'f'
+      AND cl.relnamespace = 'public'::regnamespace
+      AND cl.relname  = 'course_enrollments'
+      AND fcl.relname = 'courses'
+      AND att.attname = 'course_id'
+      AND array_length(con.conkey, 1) = 1
+  LOOP
+    RAISE NOTICE 'MATRICULAS  clave actual %: ON DELETE %', r.conname,
+      CASE r.confdeltype WHEN 'c' THEN 'CASCADE' WHEN 'r' THEN 'RESTRICT'
+                         WHEN 'n' THEN 'SET NULL' WHEN 'a' THEN 'NO ACTION'
+                         ELSE r.confdeltype::text END;
+    EXECUTE format('ALTER TABLE public.course_enrollments DROP CONSTRAINT %I', r.conname);
+  END LOOP;
+
+  ALTER TABLE public.course_enrollments
+    DROP CONSTRAINT IF EXISTS course_enrollments_course_id_sin_cascada,
+    ADD CONSTRAINT course_enrollments_course_id_sin_cascada
+      FOREIGN KEY (course_id) REFERENCES public.courses(id) ON DELETE RESTRICT;
+  RAISE NOTICE 'MATRICULAS  course_enrollments.course_id -> courses  RESTRICT';
+END
+$matriculas$;
+
+-- =====================================================
 -- LA PRUEBA
 -- =====================================================
 
@@ -596,6 +703,7 @@ DECLARE
   v_modulo     uuid;
   v_leccion    uuid;
   v_persona    uuid;
+  v_persona_no_admin uuid;
   v_n          integer;
   v_m          integer;
   v_cuentas    record;
@@ -653,6 +761,26 @@ BEGIN
 
   -- ── Un curso de usar y tirar para las pruebas de borrado ──────────────────
   SELECT id INTO v_persona FROM public.users ORDER BY created_at LIMIT 1;
+
+  -- Alguien que NO sea admin por ninguna de las dos vias que mira es_admin_actual(),
+  -- y PREFERIBLEMENTE con rol de instructor.
+  --
+  -- El orden importa: la prueba 12 actualiza el curso con SET LOCAL ROLE
+  -- authenticated, o sea pasando por la RLS. Si la politica de `courses` pide rol de
+  -- instructor ademas de ser el autor, con un `student` el UPDATE no afectaria a
+  -- ninguna fila y la prueba fallaria por el motivo equivocado. Ademas, un
+  -- instructor es exactamente el caso del informe.
+  SELECT u.id INTO v_persona_no_admin
+  FROM public.users u
+  WHERE u.role <> 'admin'
+    AND NOT EXISTS (SELECT 1 FROM public.user_roles ur
+                     WHERE ur.user_id = u.id AND ur.role::text = 'admin' AND ur.is_active)
+  ORDER BY CASE u.role WHEN 'instructor' THEN 0 WHEN 'mentor' THEN 1 ELSE 2 END,
+           u.created_at
+  LIMIT 1;
+  IF v_persona_no_admin IS NULL THEN
+    RAISE EXCEPTION 'La prueba 12 necesita una cuenta que no sea admin.';
+  END IF;
 
   INSERT INTO public.courses (slug, title, level, status, is_free, is_certifiable, specialty_id)
   VALUES ('prueba-117-' || floor(random() * 1000000)::text, 'PRUEBA 117', 'beginner',
@@ -805,7 +933,111 @@ BEGIN
 
   DELETE FROM public.courses WHERE id = v_curso;
 
-  -- 12. Y el registro queda sin rastro de la prueba.
+  -- 12. EL CASO QUE FALTABA: un instructor despublica SU PROPIO curso.
+  --
+  --     Es el fallo que encontro la revision. El trigger corre en la sesion de quien
+  --     cambia el estado, y esto lo puede hacer el autor del curso, que no es
+  --     administracion. Con la comprobacion de rol dentro de la funcion del trigger,
+  --     el UPDATE se deshacia y la API devolvia 500.
+  --
+  --     Se prueba de verdad: SET LOCAL ROLE authenticated ademas de los claims, para
+  --     que pase por la RLS igual que una peticion de PostgREST. El rol se devuelve
+  --     antes de mirar nada, porque `authenticated` no tiene SELECT sobre el espejo.
+  INSERT INTO public.courses
+    (slug, title, level, status, is_free, is_certifiable,
+     instructor_id, owner_id, specialty_id)
+  VALUES ('prueba-117-instructor-' || floor(random() * 1000000)::text,
+          'PRUEBA 117 instructor', 'beginner', 'draft', true, false,
+          v_persona_no_admin, v_persona_no_admin,
+          (SELECT id FROM public.instructor_specialties WHERE slug = 'ethereum-contratos'))
+  RETURNING id INTO v_curso;
+
+  -- Se publica sin sesion, que es como lo hace una migracion
+  UPDATE public.courses SET status = 'published' WHERE id = v_curso;
+  SELECT count(*) INTO v_n FROM public.courses_publicados
+   WHERE id = v_curso AND retirada_el IS NULL;
+  IF v_n <> 1 THEN
+    RAISE EXCEPTION 'PRUEBA 12 FALLIDA: el curso no quedo publicado en el espejo.';
+  END IF;
+
+  BEGIN
+    PERFORM set_config('request.jwt.claims',
+                       json_build_object('sub', v_persona_no_admin::text,
+                                         'role', 'authenticated')::text,
+                       true);
+    EXECUTE 'SET LOCAL ROLE authenticated';
+
+    UPDATE public.courses SET status = 'draft' WHERE id = v_curso;
+
+    EXECUTE 'RESET ROLE';
+  EXCEPTION WHEN OTHERS THEN
+    EXECUTE 'RESET ROLE';
+    PERFORM set_config('request.jwt.claims', '', true);
+    RAISE EXCEPTION 'PRUEBA 12 FALLIDA: un instructor no pudo despublicar su propio curso: % (%)',
+      SQLERRM, SQLSTATE;
+  END;
+  PERFORM set_config('request.jwt.claims', '', true);
+
+  -- Que el UPDATE no afecte a ninguna fila por la RLS seria un falso verde: se
+  -- comprueba el estado, no la ausencia de error.
+  IF (SELECT status::text FROM public.courses WHERE id = v_curso) <> 'draft' THEN
+    RAISE EXCEPTION 'PRUEBA 12 FALLIDA: el UPDATE no cambio el estado (la RLS lo filtro).';
+  END IF;
+
+  SELECT count(*) INTO v_n FROM public.courses_publicados
+   WHERE id = v_curso AND retirada_el IS NULL;
+  IF v_n <> 0 THEN
+    RAISE EXCEPTION 'PRUEBA 12 FALLIDA: el curso del instructor se quedo vivo en el catalogo.';
+  END IF;
+  RAISE NOTICE 'PRUEBA 12 un instructor despublica su propio curso y la copia se retira  PASA';
+
+  DELETE FROM public.courses WHERE id = v_curso;
+
+  -- 13. Y la llamada DIRECTA sigue siendo solo de administracion
+  PERFORM set_config('request.jwt.claims',
+                     json_build_object('sub', v_persona_no_admin::text,
+                                       'role', 'authenticated')::text,
+                     true);
+  BEGIN
+    PERFORM public.retirar_curso_de_la_copia(
+      (SELECT id FROM public.courses WHERE status = 'published' LIMIT 1));
+    RAISE EXCEPTION 'PRUEBA 13 FALLIDA: alguien que no es admin retiro un curso por RPC.';
+  EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'PRUEBA 13 por RPC, retirar sigue siendo cosa de la administracion   PASA';
+  END;
+  PERFORM set_config('request.jwt.claims', '', true);
+
+  -- 14. Y las internas no las puede llamar nadie desde fuera
+  IF has_function_privilege('authenticated', 'public.publicar_curso_interno(uuid)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.publicar_curso_interno(uuid)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.retirar_curso_de_la_copia_interno(uuid)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.retirar_curso_de_la_copia_interno(uuid)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'PRUEBA 14 FALLIDA: las funciones internas son invocables desde fuera.';
+  END IF;
+  RAISE NOTICE 'PRUEBA 14 las internas no tienen EXECUTE para anon ni authenticated   PASA';
+
+  -- 15. Borrar un curso ya no se lleva las matriculas: esta impedido
+  INSERT INTO public.courses
+    (slug, title, level, status, is_free, is_certifiable, specialty_id)
+  VALUES ('prueba-117-matricula-' || floor(random() * 1000000)::text,
+          'PRUEBA 117 matricula', 'beginner', 'draft', true, false,
+          (SELECT id FROM public.instructor_specialties WHERE slug = 'ethereum-contratos'))
+  RETURNING id INTO v_curso;
+
+  INSERT INTO public.course_enrollments (user_id, course_id)
+  VALUES (v_persona, v_curso);
+
+  BEGIN
+    DELETE FROM public.courses WHERE id = v_curso;
+    RAISE EXCEPTION 'PRUEBA 15 FALLIDA: se borro un curso con matriculas, y con el las matriculas.';
+  EXCEPTION WHEN foreign_key_violation THEN
+    RAISE NOTICE 'PRUEBA 15 borrar un curso con matriculas esta impedido              PASA';
+  END;
+
+  DELETE FROM public.course_enrollments WHERE course_id = v_curso;
+  DELETE FROM public.courses WHERE id = v_curso;
+
+  -- 16. Y el registro queda sin rastro de la prueba.
   --
   --     «El registro no borra nunca» es para las filas a las que apunta algo de
   --     alguien: el progreso, un certificado. A estas dos no apunta nada —el progreso
@@ -824,22 +1056,22 @@ BEGIN
 
   SELECT count(*) INTO v_n FROM public.courses_publicados WHERE slug LIKE 'prueba-117-%';
   IF v_n <> 0 THEN
-    RAISE EXCEPTION 'PRUEBA 12 FALLIDA: quedan % cursos de prueba en el registro.', v_n;
+    RAISE EXCEPTION 'PRUEBA 16 FALLIDA: quedan % cursos de prueba en el registro.', v_n;
   END IF;
 
-  -- 12 bis. No queda nada de la prueba
+  -- 17. No queda nada de la prueba
   SELECT count(*) INTO v_n FROM public.courses WHERE slug LIKE 'prueba-117-%';
   IF v_n <> 0 THEN
-    RAISE EXCEPTION 'PRUEBA 12 FALLIDA: quedan % cursos de prueba en las tablas de trabajo.', v_n;
+    RAISE EXCEPTION 'PRUEBA 17 FALLIDA: quedan % cursos de prueba en las tablas de trabajo.', v_n;
   END IF;
   SELECT count(*) INTO v_n FROM information_schema.tables
    WHERE table_schema = 'public' AND table_name LIKE 'prueba_117_%';
   IF v_n <> 0 THEN
-    RAISE EXCEPTION 'PRUEBA 12 FALLIDA: quedan % tablas de prueba.', v_n;
+    RAISE EXCEPTION 'PRUEBA 17 FALLIDA: quedan % tablas de prueba.', v_n;
   END IF;
-  RAISE NOTICE 'PRUEBA 12 no queda nada, ni en el trabajo ni en el registro    PASA';
+  RAISE NOTICE 'PRUEBA 17 no queda nada, ni en el trabajo ni en el registro    PASA';
 
-  RAISE NOTICE 'Las doce pruebas pasan.';
+  RAISE NOTICE 'Las diecisiete pruebas pasan.';
 END
 $prueba$;
 
