@@ -55,7 +55,10 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (!userData || !['admin', 'instructor'].includes(userData.role)) {
+    // CREAR una ruta de aprendizaje es estructura de la plataforma, no contenido de
+    // un curso: solo la administracion. El rol instructor estaba aqui para que su
+    // formulario pudiera LEER el catalogo (el GET), no para crear rutas.
+    if (!userData || userData.role !== 'admin') {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
 

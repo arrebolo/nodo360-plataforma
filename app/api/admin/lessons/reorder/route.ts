@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/admin/auth'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { exigirAdminEnApi } from '@/lib/admin/auth-api'
 
 export async function POST(request: Request) {
   // Rate limiting
@@ -11,7 +11,11 @@ export async function POST(request: Request) {
   try {
     console.log('🔄 [Reorder Lesson API] Iniciando reordenamiento')
 
-    await requireAdmin()
+    // 403, no una redireccion: requireAdmin() llama a redirect(), que lanza, y la
+    // excepcion acababa en el catch de esta ruta como un 500 con «NEXT_REDIRECT»
+    // dentro. Medido con sesion de instructor.
+    const guarda = await exigirAdminEnApi()
+    if (!guarda.ok) return guarda.respuesta
     const { lessonId, moduleId, direction } = await request.json()
 
     console.log('🔄 [Reorder Lesson API] Datos:', { lessonId, moduleId, direction })

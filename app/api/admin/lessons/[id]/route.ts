@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/admin/auth'
 import { checkRateLimit } from '@/lib/ratelimit'
 import { recalcularMatriculasDelCurso } from '@/lib/progress/recalcularMatriculas'
+import { exigirAdminEnApi } from '@/lib/admin/auth-api'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -16,7 +16,11 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   try {
     console.log('🗑️ [Delete Lesson API] Iniciando eliminación')
 
-    await requireAdmin()
+    // 403, no una redireccion: requireAdmin() llama a redirect(), que lanza, y la
+    // excepcion acababa en el catch de esta ruta como un 500 con «NEXT_REDIRECT»
+    // dentro. Medido con sesion de instructor.
+    const guarda = await exigirAdminEnApi()
+    if (!guarda.ok) return guarda.respuesta
     const resolvedParams = await params
     const supabase = await createClient()
 
