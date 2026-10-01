@@ -19,7 +19,7 @@ import {
 import { sendCourseApprovedEmail } from '@/lib/email/course-approved'
 import { sendCourseChangesRequestedEmail } from '@/lib/email/course-changes-requested'
 import { sendCourseRejectedEmail } from '@/lib/email/course-rejected'
-import { notifyNewCourse } from '@/lib/discord/webhook'
+import { anunciarCursoPublicado } from '@/lib/courses/anunciar-publicacion'
 import { createInAppNotification, broadcastCourseChangesRequested } from '@/lib/notifications/broadcast'
 import { PedirCambiosEnCurso } from '@/components/admin/PedirCambiosEnCurso'
 
@@ -55,7 +55,14 @@ async function approveCourse(courseId: string) {
     .eq('id', courseId)
     .single()
 
-  const { error } = await supabase
+  // SE RECLAMA LA PRIMERA PUBLICACION, no se da por hecha.
+  //
+  // published_at solo se pone si estaba vacio, y solo quien consigue esa fila
+  // anuncia. Asi un curso que se despublico, se edito y se vuelve a aprobar no
+  // vuelve a salir en Discord ni en Telegram como si fuera nuevo, y conserva la
+  // fecha de su primera publicacion —que es la que miran los triggers de la 114 y
+  // la 115 para saber si alguna vez estuvo publicado—.
+  const { data: reclamado, error } = await supabase
     .from('courses')
     .update({
       status: 'published',
@@ -64,12 +71,36 @@ async function approveCourse(courseId: string) {
       updated_at: new Date().toISOString(),
     })
     .eq('id', courseId)
+    .is('published_at', null)
+    .select('id')
 
   if (error) {
     throw new Error('Error al aprobar el curso: ' + error.message)
   }
 
-  console.log(`✅ [Admin] Course ${courseId} approved and published`)
+  const esPrimeraPublicacion = (reclamado?.length ?? 0) === 1
+
+  if (!esPrimeraPublicacion) {
+    // Ya se habia publicado antes: se publica igual, pero sin tocar la fecha ni
+    // anunciar nada.
+    const { error: errorAlRepublicar } = await supabase
+      .from('courses')
+      .update({
+        status: 'published',
+        rejection_reason: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', courseId)
+
+    if (errorAlRepublicar) {
+      throw new Error('Error al aprobar el curso: ' + errorAlRepublicar.message)
+    }
+  }
+
+  console.log(
+    `✅ [Admin] Course ${courseId} approved and published` +
+      (esPrimeraPublicacion ? ' (primera vez)' : ' (ya se habia publicado antes)')
+  )
 
   // Enviar email al instructor (non-blocking)
   if (course?.users) {
@@ -94,15 +125,16 @@ async function approveCourse(courseId: string) {
       `/cursos/${course.slug}`
     ).catch(err => console.error('Error creando notificacion de curso publicado:', err))
 
-    // Notify Discord about new course
-    notifyNewCourse({
-      title: course.title,
-      slug: course.slug,
-      description: course.description,
-      instructor_name: instructor.full_name || 'Instructor Nodo360',
-      level: course.level,
-      thumbnail_url: course.thumbnail_url,
-    }).catch(err => console.error('Error notificando a Discord:', err))
+  }
+
+  // EL ANUNCIO PUBLICO, SOLO LA PRIMERA VEZ. Discord llevaba su tarjeta desde
+  // siempre; Telegram no llevaba nada. Van los dos, por separado, y fuera del
+  // `if (course?.users)`: que no se sepa quien es el autor no es razon para no
+  // anunciar el curso.
+  if (esPrimeraPublicacion) {
+    anunciarCursoPublicado(courseId).catch(err =>
+      console.error('Error anunciando el curso publicado:', err)
+    )
   }
 
   revalidatePath('/admin/cursos/pendientes')
