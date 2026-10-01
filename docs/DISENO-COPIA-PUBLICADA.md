@@ -1,6 +1,12 @@
 # La copia publicada de un curso
 
-Diseño cerrado sobre los cuatro puntos pedidos. Sin implementar todavía.
+Diseño cerrado y aprobado. **La PR 1 es la migración 117**, que crea las tablas
+espejo, `publicar_curso()`, `retirar_curso_de_la_copia()`, el trigger y el repunte de
+las claves ajenas. Las lecturas no cambian hasta la PR 3.
+
+Cifras medidas el 01/10/2026, no estimadas: 15 cursos, 10 publicados, 27 módulos, 81
+lecciones, 243 preguntas, 113 filas de progreso sobre 59 lecciones distintas, 17
+certificados emitidos.
 
 ## El problema que resuelve
 
@@ -17,10 +23,19 @@ visible por definición, y publicar es un acto explícito.
 
 ## Forma: tablas espejo, no jsonb
 
-`courses_publicados`, `modules_publicados`, `lessons_publicadas`,
-`course_quizzes_publicados`, `quiz_questions_publicadas`. Mismas columnas, **las
-mismas claves primarias** (el mismo uuid que en la tabla de trabajo), más
-`publicado_el`, `version` y `retirada_el`.
+`courses_publicados`, `modules_publicados`, `lessons_publicadas` y
+`quiz_questions_publicadas`. Mismas columnas, **las mismas claves primarias** (el
+mismo uuid que en la tabla de trabajo), más `publicado_el`, `version` y
+`retirada_el`.
+
+**No hay `course_quizzes_publicados`**: `course_quizzes` tiene 0 filas y 0
+referencias en el código. La migración 078 la dejó PARADA y tenía razón — el examen
+final son las preguntas de los módulos. Esto corrige la primera versión de este
+documento.
+
+Las columnas que se copian **se sacan del catálogo, no de una lista escrita a mano**,
+y si al espejo le falta una columna del origen no se publica: se levanta. Una lista a
+mano es exactamente lo que dejó corta a la 030.
 
 Se descarta el snapshot en jsonb: las lecturas públicas son consultas PostgREST
 con filtros, embeds y `order`. Con tablas espejo el cambio en cada sitio es el
@@ -102,8 +117,21 @@ certificados ya emitidos son inmunes al baile de lecciones.
 2. **`lessons_publicadas` es el registro de referencia y no borra nunca**. Al
    publicar una versión que ya no incluye una lección, esa fila no se borra: se
    marca `retirada_el = now()`. Si la lección vuelve, se le quita la marca.
-3. **La clave ajena del progreso se repunta** de `lessons` a `lessons_publicadas`,
-   sin cascada. Consecuencias, todas deseables:
+3. **Las claves ajenas de la gente se repuntan al espejo, sin cascada.** Medido una
+   por una:
+
+   | clave ajena | antes | ahora |
+   |---|---|---|
+   | `user_progress.lesson_id` | `lessons` CASCADE | `lessons_publicadas` RESTRICT |
+   | `xp_events.lesson_id` | `lessons` CASCADE | `lessons_publicadas` RESTRICT |
+   | `xp_events.course_id` | `courses` CASCADE | `courses_publicados` RESTRICT |
+   | `certificates.course_id` | `courses` **CASCADE** | `courses_publicados` RESTRICT |
+   | `certificates.module_id` | `modules` SET NULL | `modules_publicados` RESTRICT |
+
+   La de los certificados es la peor de las cinco: **borrar un curso borraba las
+   credenciales que había emitido**, y `/verificar/[código]` dejaba de encontrarlas.
+
+   Consecuencias, todas deseables:
    - El instructor borra una lección en su copia de trabajo: **el progreso no se
      entera**. El fallo medido arriba desaparece.
    - Se aprueba una versión que elimina lecciones con progreso: la fila publicada
@@ -122,6 +150,25 @@ certificados ya emitidos son inmunes al baile de lecciones.
 6. **Los certificados no necesitan nada**: son del curso. Opcional y barato,
    guardar en `certificates` la `version` del curso certificado, para poder
    responder dentro de un año qué contenía el curso que aprobó.
+
+## Dos piezas que solo aparecieron al escribir la migración
+
+**El relleno no puede ser «lo publicado».** 59 lecciones tienen progreso y **21 de
+ellas no son de un curso publicado**. Si el registro no las tuviera, la clave ajena
+del progreso no se podría ni crear. Así que se siembra **lo publicado ∪ todo lo que
+alguien ya tocó** —progreso, XP, certificados, matrículas—, y lo segundo entra
+**retirado**: está en el registro para que esa persona siga cuadrando, pero no es
+contenido vivo.
+
+**Hace falta el inverso de publicar.** `retirar_curso_de_la_copia()`, que el mismo
+trigger llama cuando un curso deja de estar `published`. Sin ella, despublicar o
+archivar un curso no lo quitaría del espejo y, en cuanto las lecturas pasen al
+espejo, seguiría en el catálogo con el estado cambiado. Retirar marca; no borra.
+
+Por lo mismo, el relleno publica **solo lo que está publicado ahora**, y no «lo que
+tenga `published_at`»: desde la 116 un curso archivado que estuvo publicado alguna
+vez tiene fecha, y con esa condición habría vuelto al catálogo por la puerta de
+atrás.
 
 ## Punto 3 · Cómo publica el admin
 
@@ -151,19 +198,22 @@ Tres vías de publicación, y ninguna depende de acordarse:
 
 ## Punto 4 · El examen final sale de la copia publicada
 
-`course_quizzes_publicados` y `quiz_questions_publicadas` se copian igual, y
-heredan **la misma postura de permisos** que sus originales: `correct_option` no se
-abre a `anon` ni a `authenticated` por el hecho de estar en otra tabla. La
-corrección (`lib/quiz/checkCourseQuiz.ts` y `/api/quiz/submit`) lee del espejo,
+`quiz_questions_publicadas` hereda **la misma postura de permisos** que su original:
+`correct_answer` y `explanation` no se abren a `anon` ni a `authenticated` por el
+hecho de estar en otra tabla —hoy están cerradas a todos los roles, y se queda así—.
+La corrección (`lib/quiz/checkCourseQuiz.ts` y `/api/quiz/submit`) lee del espejo,
 para que a nadie se le corrija con un examen distinto del que hizo.
 
 ## Esfuerzo y orden
 
 Cuatro PR, en este orden, porque el orden es la parte peligrosa:
 
-1. **Migración**: tablas espejo, permisos, `publicar_curso()`, el trigger, el
-   repunte de la clave ajena del progreso y el **relleno de los cursos ya
-   publicados**. Autoprueba obligatoria: para cada curso publicado, las cuentas de
+1. **Migración** (la 117): tablas espejo, `publicar_curso()`,
+   `retirar_curso_de_la_copia()`, el trigger, el repunte de las cinco claves ajenas y
+   el relleno. **Las tablas nacen cerradas**: RLS activada sin políticas y sin GRANT
+   a `anon` ni a `authenticated`. Nadie las lee todavía, y abrir una tabla que nadie
+   lee es abrirla a ciegas; los permisos los pone la PR 3, superficie por
+   superficie. Autoprueba obligatoria: para cada curso publicado, las cuentas de
    módulos, lecciones y preguntas del espejo coinciden con las de trabajo. Es la
    pieza grande.
 2. **El guardián de CI**, con las lecturas todavía apuntando a las tablas de
