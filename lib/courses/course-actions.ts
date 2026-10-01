@@ -206,9 +206,53 @@ export async function updateCourse(
   // escribe: se quita del payload, que NO es lo mismo que mandar el valor
   // actual. Mandar 'draft' aqui despublicaria un curso vivo.
   const { status: statusDelFormulario, ...sinEstado } = data
-  const campos = quien.esAdmin ? data : sinEstado
+  let campos: Record<string, unknown> = quien.esAdmin ? data : sinEstado
   if (!quien.esAdmin && statusDelFormulario) {
     console.log(`ℹ️ [Update Course] status="${statusDelFormulario}" ignorado: lo decide la administracion`)
+  }
+
+  // LA CLASIFICACION DE UN CURSO YA PUBLICADO NO LA CAMBIA SU AUTOR.
+  //
+  // La auditoria lo midio: cambiar specialty_id o jurisdiccion en un curso
+  // publicado NO devolvia el curso a revision, porque el trigger de la 030 lista
+  // nueve columnas a mano y esas dos no estan. Asi que alguien verificado solo en
+  // Fiscalidad·ES podia dejar publicado un curso que dice aplicar a Mexico, o
+  // mover el curso a una especialidad en la que no esta verificado.
+  //
+  // La barrera de verdad es el trigger de la 114 —esto se escribe con el cliente de
+  // sesion y PostgREST es alcanzable directamente—. Esto esta aqui para que la
+  // persona lea una frase que le sirve en vez de un 42501, y para no mandar un
+  // cambio que la base va a rechazar.
+  if (!quien.esAdmin) {
+    const { data: cursoActual } = await supabase
+      .from('courses')
+      .select('published_at, specialty_id, jurisdiccion')
+      .eq('id', courseId)
+      .maybeSingle()
+
+    const yaSePublico = Boolean((cursoActual as { published_at?: string | null } | null)?.published_at)
+
+    if (yaSePublico) {
+      const actual = cursoActual as { specialty_id?: string | null; jurisdiccion?: string | null }
+      const intentaCambiarEspecialidad =
+        'specialty_id' in campos && campos.specialty_id !== actual.specialty_id
+      const intentaCambiarJurisdiccion =
+        'jurisdiccion' in campos && campos.jurisdiccion !== actual.jurisdiccion
+
+      if (intentaCambiarEspecialidad || intentaCambiarJurisdiccion) {
+        return {
+          success: false,
+          error: intentaCambiarEspecialidad
+            ? 'La especialidad de un curso ya publicado no se cambia desde aquí: habilitaría a enseñar algo que no se ha verificado. Pídelo a la administración.'
+            : 'La jurisdicción de un curso ya publicado no se cambia desde aquí: el curso dice a qué país aplica su normativa, y cambiarlo sin revisión es publicar otra cosa. Pídelo a la administración.',
+        }
+      }
+
+      // Y no se reenvian aunque vengan iguales: menos ruido en el UPDATE y el
+      // trigger de la 114 no tiene que entrar siquiera.
+      const { specialty_id: _e, jurisdiccion: _j, ...sinClasificacion } = campos
+      campos = sinClasificacion
+    }
   }
 
   console.log('🔍 [Update Course] Updating course:', courseId)

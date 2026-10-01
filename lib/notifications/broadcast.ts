@@ -318,14 +318,20 @@ export async function broadcastCourseChangesRequested(
   instructorId: string,
   courseName: string,
   feedback: string,
-  options: BroadcastOptions = { inApp: true, discord: false, telegram: false }
+  options: BroadcastOptions = { inApp: true, discord: false, telegram: false },
+  /**
+   * Quien ha pedido los cambios, tal como se le nombra al instructor. Decia
+   * siempre «Los mentores», y desde el panel de administracion eso no es verdad.
+   * Por omision se queda como estaba.
+   */
+  pedidoPor: string = 'Los mentores'
 ): Promise<void> {
   const results = await Promise.allSettled([
     options.inApp && createInAppNotification(
       instructorId,
       'course_changes_requested',
       '📝 Cambios solicitados en tu curso',
-      `Los mentores han solicitado cambios en "${courseName}": ${feedback.substring(0, 100)}${feedback.length > 100 ? '...' : ''}`,
+      `${pedidoPor} ${pedidoPor.toLowerCase().startsWith('el ') ? 'ha' : 'han'} pedido cambios en "${courseName}": ${feedback.substring(0, 100)}${feedback.length > 100 ? '...' : ''}`,
       '/dashboard/instructor/cursos'
     ),
   ])

@@ -82,7 +82,9 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
       className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-light/20 border border-brand-light/30 text-brand-light font-semibold rounded-xl hover:bg-brand-light/30 transition"
     >
       <Send className="w-4 h-4" />
-      {currentStatus === 'rejected' ? 'Reenviar a revisión' : 'Enviar a revisión'}
+      {currentStatus === 'rejected' || currentStatus === 'changes_requested'
+        ? 'Reenviar a revisión'
+        : 'Enviar a revisión'}
     </button>
   )
 }
