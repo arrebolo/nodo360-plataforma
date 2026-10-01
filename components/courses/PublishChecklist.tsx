@@ -15,6 +15,15 @@ interface CourseData {
   status: string
   is_free: boolean
   is_premium?: boolean
+  /** Sin especialidad no se puede enviar a revision, y el checklist decia 7/7. */
+  specialty_id?: string | null
+  jurisdiccion?: string | null
+  /**
+   * Si la especialidad elegida se verifica por pais. Lo decide
+   * instructor_specialties.requiere_acreditacion, no una lista de slugs, asi que lo
+   * calcula quien pinta el checklist y se pasa hecho.
+   */
+  requiereJurisdiccion?: boolean
 }
 
 interface CourseStats {
@@ -77,6 +86,27 @@ const checklistItems: ChecklistItem[] = [
     check: (c) => (c.long_description?.length ?? 0) >= 200,
     required: false,
     category: 'info'
+  },
+  {
+    // SIN ESPECIALIDAD NO SE PUEDE ENVIAR A REVISION, y este checklist decia 7/7
+    // mientras el servidor rechazaba el envio. Un checklist que da el visto bueno a
+    // algo que no se puede enviar es peor que no tenerlo.
+    id: 'specialty',
+    label: 'Especialidad',
+    description: 'Hace falta para enviar a revisión, y solo puedes elegir una en la que estés verificado',
+    check: (c) => Boolean(c.specialty_id),
+    required: true,
+    category: 'info',
+  },
+  {
+    id: 'jurisdiccion',
+    label: 'Jurisdicción',
+    description: 'Fiscalidad y derecho se verifican por país: el curso tiene que decir a qué país aplica',
+    // Solo cuenta cuando la especialidad va por pais. En las demas, cumplido: la
+    // jurisdiccion TIENE que estar vacia y el trigger de la 109 lo exige.
+    check: (c) => (c.requiereJurisdiccion ? Boolean(c.jurisdiccion) : true),
+    required: true,
+    category: 'info',
   },
   {
     id: 'level',

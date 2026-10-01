@@ -168,6 +168,12 @@ export default async function CoursePreviewPage({ params }: PreviewPageProps) {
               <CourseModulesPreview
                 courseSlug={course.slug}
                 modules={sortedModules}
+                // Cada leccion abre SU editor. El curso esta en borrador, asi que la
+                // pagina publica no serviria; y lo que hace falta aqui es poder
+                // revisar el contenido y el video antes de enviar a revision.
+                enlaceDeLeccion={(moduloId, leccionId) =>
+                  `/dashboard/instructor/cursos/${courseId}/modulos/${moduloId}/lecciones/${leccionId}`
+                }
               />
             ) : (
               <div className="bg-dark-surface border border-white/10 rounded-2xl p-6 sm:p-8 text-center">
@@ -175,7 +181,7 @@ export default async function CoursePreviewPage({ params }: PreviewPageProps) {
                   Este curso aún no tiene módulos
                 </p>
                 <Button
-                  href={`/dashboard/instructor/cursos/${courseId}/módulos`}
+                  href={`/dashboard/instructor/cursos/${courseId}/modulos`}
                   variant="primary"
                 >
                   Agregar módulos
@@ -190,29 +196,27 @@ export default async function CoursePreviewPage({ params }: PreviewPageProps) {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-neutral-200">
-                ¿Todo listo para publicar?
+                ¿Todo listo para enviar a revisión?
               </p>
               <p className="text-xs text-neutral-400 mt-1">
-                Revisa que el contenido se vea correctamente antes de publicar
+                Abre cualquier lección para revisar su contenido y su vídeo. Cuando esté,
+                el botón de enviar a revisión está en el editor.
               </p>
             </div>
+            {/* NO HAY BOTON DE PUBLICAR, Y NO ES UN OLVIDO.
+                Habia uno, y era doblemente enganoso: un instructor no puede publicar
+                —solo la administracion, y /api/instructor/courses/[id]/status le
+                responde 403 si lo intenta— y encima ese boton no publicaba nada: era
+                un enlace al editor con otro nombre. Lo que si puede hacer es enviar a
+                revision, y eso se hace desde el editor. */}
             <div className="flex gap-3">
               <Button
                 href={`/dashboard/instructor/cursos/${courseId}`}
-                variant="secondary"
+                variant="primary"
                 size="sm"
               >
-                Editar curso
+                Volver al editor
               </Button>
-              {isDraft && (
-                <Button
-                  href={`/dashboard/instructor/cursos/${courseId}`}
-                  variant="primary"
-                  size="sm"
-                >
-                  Publicar
-                </Button>
-              )}
             </div>
           </div>
         </div>
