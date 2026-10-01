@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Save } from 'lucide-react'
 import ImageUpload from '@/components/ui/ImageUpload'
+import { esRedireccion } from '@/lib/navegacion/es-redireccion'
 
 interface CourseFormProps {
   action: (formData: FormData) => Promise<void>
@@ -46,7 +47,7 @@ export function CourseForm({ action, initialData }: CourseFormProps) {
       await action(formData)
     } catch (error: any) {
       // redirect() lanza NEXT_REDIRECT - no es un error real
-      if (error?.digest?.includes('NEXT_REDIRECT')) {
+      if (esRedireccion(error)) {
         return // Redirect exitoso, no mostrar error
       }
       console.error('Error al guardar:', error)

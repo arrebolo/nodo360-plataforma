@@ -46,7 +46,7 @@ const checklistItems: ChecklistItem[] = [
   {
     id: 'title',
     label: 'Titulo del curso',
-    description: 'Minimo 10 caracteres',
+    description: 'Mínimo 10 caracteres',
     check: (c) => (c.title?.length ?? 0) >= 10,
     required: true,
     category: 'info'
@@ -54,7 +54,7 @@ const checklistItems: ChecklistItem[] = [
   {
     id: 'slug',
     label: 'URL amigable (slug)',
-    description: 'Minimo 3 caracteres',
+    description: 'Mínimo 3 caracteres',
     check: (c) => (c.slug?.length ?? 0) >= 3,
     required: true,
     category: 'info'
@@ -73,7 +73,7 @@ const checklistItems: ChecklistItem[] = [
   {
     id: 'long_description',
     label: 'Descripcion completa',
-    description: 'Minimo 200 caracteres',
+    description: 'Mínimo 200 caracteres',
     check: (c) => (c.long_description?.length ?? 0) >= 200,
     required: false,
     category: 'info'
@@ -90,7 +90,7 @@ const checklistItems: ChecklistItem[] = [
   // Contenido
   {
     id: 'modules',
-    label: 'Modulos del curso',
+    label: 'Módulos del curso',
     description: 'Al menos 1 modulo creado',
     check: (_, stats) => stats.modulesCount >= 1,
     required: true,
