@@ -28,6 +28,7 @@ npm run build
 - **Nunca push directo a `main`**: está protegida. Todo entra por PR con el check `verificar` en verde.
 - Lo que se aplica a la base de datos se versiona en `supabase/migrations/`. Si se ejecutó a mano, se versiona después con la fecha y el SQL exacto.
 - Toda función `SECURITY DEFINER` nace con `SET search_path` y con `REVOKE ALL … FROM PUBLIC`, en la misma migración.
+- **Una migración que cambia contenido de un curso termina llamando a `publicar_curso('<id>')`** y dejando su fila de cuentas en la verificación. Lo que leen los alumnos es la copia publicada (`*_publicados`), no las tablas de trabajo: sin esa llamada, el cambio no sale al aire.
 - La identidad sale de `auth.uid()`, nunca de un parámetro: PostgREST es alcanzable directamente y la clave anon es pública.
 - El lockfile se genera con **npm 10**, el de Node 22. npm 11 tolera entradas que npm 10 rechaza y rompe el CI.
 - **Español neutro**, válido para España y Latinoamérica.
