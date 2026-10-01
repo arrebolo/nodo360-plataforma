@@ -1,4 +1,5 @@
 import { getResend, REMITENTE_NODO360, SITIO_PARA_CORREOS } from '@/lib/email/resend-client'
+import { escapar } from '@/lib/email/escapar'
 
 /**
  * LOS TRES CORREOS DE UNA VERIFICACION DE INSTRUCTOR
@@ -27,14 +28,6 @@ import { getResend, REMITENTE_NODO360, SITIO_PARA_CORREOS } from '@/lib/email/re
 const SITIO = SITIO_PARA_CORREOS
 
 /** El texto entre etiquetas viene de la base; aqui no se confia en nada. */
-function escapar(v: string): string {
-  return v
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
 function envoltura(titulo: string, contenido: string): string {
   return `
     <!DOCTYPE html>
