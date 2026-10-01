@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { permisoSobreElExamen } from '@/lib/quiz/permiso-del-examen'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 /**
- * Admin Quiz API
+ * El examen final de un curso: sus preguntas.
  *
- * Manages quiz questions for course final exams.
- * Questions are stored per module_id, but this API works at course level
- * by aggregating all modules.
+ * Las preguntas se guardan por module_id, y esta API trabaja a nivel de curso
+ * juntando las de todos sus modulos.
+ *
+ * QUIEN PUEDE QUE, en lib/quiz/permiso-del-examen.ts. Hasta la 115 esta ruta
+ * comprobaba solo el ROL y despues escribia con el cliente de servicio, que salta
+ * la RLS: cualquier instructor podia cambiar el examen de cualquier curso de la
+ * plataforma, publicados incluidos, mandando el module_id que quisiera en el
+ * cuerpo. La ruta se sigue llamando /api/admin/quiz porque la usa tambien el
+ * panel de administracion; el nombre no es el permiso.
  */
 
 // GET: List all questions for a course (across all modules)
@@ -18,30 +24,17 @@ export async function GET(request: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse
 
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    // Verify admin or instructor role
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['admin', 'instructor', 'mentor'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-    }
-
     const { searchParams } = new URL(request.url)
     const courseId = searchParams.get('courseId')
 
     if (!courseId) {
       return NextResponse.json({ error: 'courseId es requerido' }, { status: 400 })
     }
+
+    // Leer el examen de un curso propio se permite aunque este publicado: lo que
+    // no se permite es cambiarlo.
+    const permiso = await permisoSobreElExamen({ courseId, soloLectura: true })
+    if (!permiso.ok) return permiso.respuesta
 
     const admin = createAdminClient()
 
@@ -98,24 +91,6 @@ export async function POST(request: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse
 
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    // Verify role
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['admin', 'instructor', 'mentor'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-    }
-
     const body = await request.json()
     const { module_id, question, options, correct_answer, explanation, order_index, difficulty, points } = body
 
@@ -131,6 +106,11 @@ export async function POST(request: NextRequest) {
     if (correct_answer < 0 || correct_answer >= options.length) {
       return NextResponse.json({ error: 'correct_answer debe ser un indice valido' }, { status: 400 })
     }
+
+    // El module_id llega en el cuerpo de la peticion: hay que comprobar a que
+    // curso pertenece antes de escribir nada.
+    const permiso = await permisoSobreElExamen({ moduleId: module_id })
+    if (!permiso.ok) return permiso.respuesta
 
     const admin = createAdminClient()
 
@@ -170,30 +150,15 @@ export async function PUT(request: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse
 
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    // Verify role
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['admin', 'instructor', 'mentor'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-    }
-
     const body = await request.json()
     const { id, question, options, correct_answer, explanation, order_index, difficulty, points } = body
 
     if (!id) {
       return NextResponse.json({ error: 'id es requerido' }, { status: 400 })
     }
+
+    const permiso = await permisoSobreElExamen({ questionId: id })
+    if (!permiso.ok) return permiso.respuesta
 
     const admin = createAdminClient()
 
@@ -237,30 +202,15 @@ export async function DELETE(request: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse
 
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    // Verify role
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['admin', 'instructor', 'mentor'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-    }
-
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
     if (!id) {
       return NextResponse.json({ error: 'id es requerido' }, { status: 400 })
     }
+
+    const permiso = await permisoSobreElExamen({ questionId: id })
+    if (!permiso.ok) return permiso.respuesta
 
     const admin = createAdminClient()
 
