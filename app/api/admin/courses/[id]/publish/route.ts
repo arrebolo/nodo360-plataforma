@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { publishCourse, unpublishCourse, getCoursePublishStatus } from '@/lib/admin/actions'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { exigirAdminEnApi } from '@/lib/admin/auth-api'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -17,6 +18,12 @@ export async function GET(
   // Rate limiting
   const rateLimitResponse = await checkRateLimit(request, 'api')
   if (rateLimitResponse) return rateLimitResponse
+
+  // La guarda, AQUI: publishCourse() y unpublishCourse() llaman a requireAdmin(),
+  // que redirige, y en una ruta de API esa excepcion sale como un 500 con
+  // «NEXT_REDIRECT» dentro. La de la libreria se queda como segunda linea.
+  const guarda = await exigirAdminEnApi()
+  if (!guarda.ok) return guarda.respuesta
 
   try {
     const { id } = await context.params
@@ -42,6 +49,12 @@ export async function POST(
   // Rate limiting
   const rateLimitResponse = await checkRateLimit(request, 'api')
   if (rateLimitResponse) return rateLimitResponse
+
+  // La guarda, AQUI: publishCourse() y unpublishCourse() llaman a requireAdmin(),
+  // que redirige, y en una ruta de API esa excepcion sale como un 500 con
+  // «NEXT_REDIRECT» dentro. La de la libreria se queda como segunda linea.
+  const guarda = await exigirAdminEnApi()
+  if (!guarda.ok) return guarda.respuesta
 
   try {
     const { id } = await context.params
@@ -75,6 +88,12 @@ export async function DELETE(
   // Rate limiting
   const rateLimitResponse = await checkRateLimit(request, 'api')
   if (rateLimitResponse) return rateLimitResponse
+
+  // La guarda, AQUI: publishCourse() y unpublishCourse() llaman a requireAdmin(),
+  // que redirige, y en una ruta de API esa excepcion sale como un 500 con
+  // «NEXT_REDIRECT» dentro. La de la libreria se queda como segunda linea.
+  const guarda = await exigirAdminEnApi()
+  if (!guarda.ok) return guarda.respuesta
 
   try {
     const { id } = await context.params

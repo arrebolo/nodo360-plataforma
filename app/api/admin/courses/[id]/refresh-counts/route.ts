@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { permisoSobreElCurso } from '@/lib/courses/permiso-sobre-el-curso'
 
 /**
  * POST /api/admin/courses/[id]/refresh-counts
@@ -20,23 +21,10 @@ export async function POST(
   try {
     const { id: courseId } = await params
 
-    // Verify user is authenticated and is admin/instructor
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['admin', 'instructor'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-    }
+    // Sesion, rol y DE QUIEN ES EL CURSO. Antes solo el rol, asi que un instructor
+    // podia recontar los modulos y lecciones del curso de otro: medido, 200.
+    const permiso = await permisoSobreElCurso(courseId)
+    if (!permiso.ok) return permiso.respuesta
 
     const admin = createAdminClient()
 
