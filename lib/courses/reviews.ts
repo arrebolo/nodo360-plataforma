@@ -85,7 +85,102 @@ export async function submitReview(
     }
   }
 
+  // PEDIR CAMBIOS DEVUELVE EL CURSO A SU AUTOR.
+  //
+  // Hasta aquí esto solo insertaba el voto: el curso se quedaba en
+  // 'pending_review'. El instructor recibía un correo diciéndole que corrigiera y
+  // reenviara, y al intentarlo, submit-review se lo rechazaba, porque solo acepta
+  // el reenvío desde 'draft', 'rejected' o 'changes_requested'. Un callejón sin
+  // salida, y con el curso parado en una cola donde ya nadie iba a mirarlo.
+  //
+  // El estado y el aviso van AQUI y no en quien llama, porque quien llama son dos:
+  // la pantalla del mentor y /api/mentor/courses/review. La ruta no enviaba ni
+  // correo ni notificación, así que por ahí el instructor no se enteraba de nada.
+  // Un único sitio, y ninguna vía se queda a medias.
+  //
+  // El orden importa: primero el voto, que es el que lleva la restricción de
+  // «ya has votado»; solo después se mueve el curso. Al revés, un segundo voto
+  // rechazado habría dejado el estado cambiado de todas formas.
+  if (vote === 'request_changes') {
+    const comentario = (comment ?? '').trim()
+
+    const { error: errorDeEstado } = await supabase
+      .from('courses')
+      .update({
+        status: 'changes_requested',
+        rejection_reason: comentario,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', courseId)
+
+    if (errorDeEstado) {
+      console.error('[submitReview] No se pudo devolver el curso a su autor:', errorDeEstado)
+      return {
+        success: false,
+        error: 'El voto se registró pero el curso no volvió a su autor: ' + errorDeEstado.message,
+      }
+    }
+
+    await avisarDeLosCambios(courseId, comentario)
+  }
+
   return { success: true, data }
+}
+
+/**
+ * El correo y la notificación de «cambios solicitados».
+ *
+ * No bloquea: que falle un correo no puede dejar el curso a medio camino. El
+ * cambio de estado ya está hecho cuando se llega aquí, que es lo que el instructor
+ * necesita para poder corregir y reenviar.
+ */
+async function avisarDeLosCambios(courseId: string, comentario: string) {
+  try {
+    const supabase = createAdminClient() as any
+
+    const { data: course } = await supabase
+      .from('courses')
+      .select(`
+        title,
+        users!courses_instructor_id_fkey (
+          id,
+          email,
+          full_name
+        )
+      `)
+      .eq('id', courseId)
+      .single()
+
+    if (!course?.users) {
+      console.error('[avisarDeLosCambios] Sin instructor al que avisar:', courseId)
+      return
+    }
+
+    const instructor = course.users as {
+      id: string
+      email: string
+      full_name: string | null
+    }
+
+    const [{ sendCourseChangesRequestedEmail }, { broadcastCourseChangesRequested }] =
+      await Promise.all([
+        import('@/lib/email/course-changes-requested'),
+        import('@/lib/notifications/broadcast'),
+      ])
+
+    await Promise.allSettled([
+      sendCourseChangesRequestedEmail({
+        to: instructor.email,
+        instructorName: instructor.full_name || 'Instructor',
+        courseName: course.title,
+        courseId,
+        mentorComments: [comentario],
+      }),
+      broadcastCourseChangesRequested(instructor.id, course.title, comentario),
+    ])
+  } catch (e) {
+    console.error('[avisarDeLosCambios] Error avisando al instructor:', e)
+  }
 }
 
 /**
