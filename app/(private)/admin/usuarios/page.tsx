@@ -26,7 +26,7 @@ export default async function AdminUsersPage({
   const busqueda = params.search ?? ''
   const rol = params.role ?? ''
 
-  const [{ users, total }, recuentos] = await Promise.all([
+  const [{ users, total, hayConfirmacion }, recuentos] = await Promise.all([
     getUsers(page, 20, busqueda, rol),
     getUserRoleCounts(),
   ])
@@ -139,6 +139,9 @@ export default async function AdminUsersPage({
             <option value="mentor">Mentor</option>
             <option value="instructor">Instructor</option>
             <option value="student">Estudiante</option>
+            {/* `council` existe en users.role y faltaba aqui: filtrar por el era
+                imposible desde la interfaz aunque la consulta lo aceptara. */}
+            <option value="council">Consejo</option>
           </select>
           <button
             type="submit"
@@ -165,7 +168,10 @@ export default async function AdminUsersPage({
         {recuentos.sinConfirmar > 0 && !hayFiltro && (
           <p className="text-xs text-amber-400/80 mt-3">
             Hay {recuentos.sinConfirmar} cuenta{recuentos.sinConfirmar === 1 ? '' : 's'} sin
-            confirmar. No cuentan en las tarjetas y se borran solas a los 7 dias del registro.
+            confirmar. No cuentan en las tarjetas. La limpieza automática borra solo las
+            de rol <strong>estudiante</strong> que lleven más de 7 días sin confirmar, y
+            únicamente si el programador de tareas del proyecto está activo; las de
+            cualquier otro rol se quedan hasta que alguien las mire.
           </p>
         )}
       </form>
@@ -213,9 +219,16 @@ export default async function AdminUsersPage({
                       SIN CONFIRMAR: la fila existe porque Supabase tiene que crear
                       la cuenta para poder confirmarla, pero esa direccion no se ha
                       verificado. No cuenta en las tarjetas ni en las estadisticas, y
-                      aqui se dice en vez de disimularlo. Se borra sola a los 7 dias.
+                      aqui se dice en vez de disimularlo.
+
+                      SOLO SI SE SABE. Si la columna email_confirmed_at no esta en la
+                      base —antes de la 105—, getUsers devuelve hayConfirmacion=false y
+                      aqui no se pinta nada: con la columna ausente, `!user.email_...`
+                      es cierto para TODAS las cuentas y la etiqueta diria «Sin
+                      confirmar» de gente que si confirmo. Callarse es lo correcto;
+                      afirmar algo falso de todo el mundo, no.
                     */}
-                    {!user.email_confirmed_at && (
+                    {hayConfirmacion && !user.email_confirmed_at && (
                       <span className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 text-xs font-medium">
                         Sin confirmar
                       </span>

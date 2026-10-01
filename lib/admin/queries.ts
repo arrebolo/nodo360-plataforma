@@ -179,19 +179,43 @@ export async function getUsers(
       )
     `
 
-  // El texto se escapa antes de entrar en un `or`.
+  // El texto se ESCAPA, no se sustituye.
   //
-  // En PostgREST la coma separa condiciones y el punto separa columna de
-  // operador, asi que un correo con coma —o un parentesis— partiria el filtro en
-  // dos condiciones invalidas. Tambien fuera % y _, que son comodines de LIKE:
-  // buscar «100%» debe buscar eso, no «todo lo que empiece por 100».
-  const limpio = busqueda.trim().replace(/[,()%_\\]/g, ' ').trim()
+  // Antes aqui habia `.replace(/[,()%_\\]/g, ' ')`, que cambiaba esos caracteres por
+  // espacios. Para la coma y el parentesis era defendible, pero para el guion bajo
+  // no: buscar «john_doe@…» se convertia en «john doe@…» y NO ENCONTRABA LA CUENTA.
+  // Y los correos con guion bajo son de lo mas normal.
+  //
+  // Hay dos capas de escapado, y son distintas:
+  //
+  //   a) PostgREST. Dentro de `or(...)` la coma separa condiciones y el punto
+  //      separa columna de operador. Se resuelve ENTRECOMILLANDO el valor; dentro
+  //      de las comillas, `"` y `\` se escapan con `\`.
+  //   b) LIKE. `%` y `_` son comodines. Se escapan con `\`, que es el caracter de
+  //      escape por defecto de LIKE en Postgres. Y como ese `\` tiene que llegar
+  //      entero a traves de la capa (a), va duplicado.
+  //
+  // Sin esto, buscar «100%» traia todo lo que empieza por 100, y «a_b» cualquier
+  // «a?b».
+  const patronDeBusqueda = (texto: string): string => {
+    const escapado = texto
+      // Primero el backslash: si no, se escaparian los que añaden los siguientes.
+      .replace(/\\/g, '\\\\\\\\')
+      .replace(/%/g, '\\\\%')
+      .replace(/_/g, '\\\\_')
+      // Y la comilla, que cerraria el valor entrecomillado de PostgREST.
+      .replace(/"/g, '\\"')
+    return `"%${escapado}%"`
+  }
+
+  const limpio = busqueda.trim()
 
   const pedir = (conConfirmacion: boolean) => {
     let q = admin.from('users').select(columnas(conConfirmacion), { count: 'exact' })
 
     if (limpio) {
-      q = q.or(`full_name.ilike.%${limpio}%,email.ilike.%${limpio}%`)
+      const patron = patronDeBusqueda(limpio)
+      q = q.or(`full_name.ilike.${patron},email.ilike.${patron}`)
     }
 
     // El rol viene de la URL, asi que es texto de fuera: solo se acepta si es uno
@@ -206,21 +230,31 @@ export async function getUsers(
 
   let { data: users, error, count } = await pedir(true)
 
+  // SE DICE SI LA COLUMNA ESTABA, y no se deja que el panel lo adivine.
+  //
+  // Sin la 105 la columna no existe, la consulta da 42703 y se reintenta sin ella.
+  // Pero entonces `email_confirmed_at` llega `undefined` en todas las filas, y un
+  // `!user.email_confirmed_at` pinta «Sin confirmar» en TODAS las cuentas —incluidas
+  // las confirmadas—. Es peor que no decir nada: es decir algo falso de todo el
+  // mundo. Quien pinta la etiqueta necesita saber la diferencia.
+  let hayConfirmacion = true
+
   if (error) {
-    // Sin la 105 la columna no existe y esto es 42703. Se repite sin ella para que
-    // la lista se pinte igual.
     console.warn('[getUsers] Reintento sin email_confirmed_at:', error.message || error.code)
+    hayConfirmacion = false
     ;({ data: users, error, count } = await pedir(false))
   }
 
   if (error) {
     console.error('Error fetching users:', error)
-    return { users: [], total: 0 }
+    return { users: [], total: 0, hayConfirmacion: false }
   }
 
   return {
     users: users || [],
-    total: count || 0
+    total: count || 0,
+    /** false si la columna email_confirmed_at no existe todavia en la base. */
+    hayConfirmacion
   }
 }
 
