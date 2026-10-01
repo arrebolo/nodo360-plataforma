@@ -16,9 +16,8 @@ import {
   Play,
 } from 'lucide-react'
 import { sendCourseApprovedEmail } from '@/lib/email/course-approved'
-import { sendCourseChangesRequestedEmail } from '@/lib/email/course-changes-requested'
 import { submitReview, getCourseReviews, canMentorReview } from '@/lib/courses/reviews'
-import { broadcastCourseChangesRequested, createInAppNotification } from '@/lib/notifications/broadcast'
+import { createInAppNotification } from '@/lib/notifications/broadcast'
 import { notifyNewCourse } from '@/lib/discord/webhook'
 
 interface ReviewCoursePageProps {
@@ -118,42 +117,10 @@ async function requestChanges(courseId: string, formData: FormData) {
 
   console.log(`📝 [Mentor] Course ${courseId} changes requested by mentor ${userId}`)
 
-  // Get course data for email/notification
-  const { createClient } = await import('@/lib/supabase/server')
-  const supabase = await createClient()
-
-  const { data: course } = await createAdminClient()
-    .from('courses')
-    .select(`
-      title,
-      users!courses_instructor_id_fkey (
-        id,
-        email,
-        full_name
-      )
-    `)
-    .eq('id', courseId)
-    .single()
-
-  if (course?.users) {
-    const instructor = course.users as any
-
-    // Send email with mentor comments
-    sendCourseChangesRequestedEmail({
-      to: instructor.email,
-      instructorName: instructor.full_name || 'Instructor',
-      courseName: course.title,
-      courseId: courseId,
-      mentorComments: [comment.trim()],
-    }).catch(err => console.error('Error enviando email de cambios solicitados:', err))
-
-    // In-app notification
-    broadcastCourseChangesRequested(
-      instructor.id,
-      course.title,
-      comment.trim()
-    ).catch(err => console.error('Error creando notificación:', err))
-  }
+  // EL CORREO Y LA NOTIFICACION YA LOS MANDA submitReview, junto con el cambio de
+  // estado del curso. Estaban aqui, y por eso /api/mentor/courses/review —la otra
+  // via para el mismo voto— no avisaba a nadie. Estan en un solo sitio para que
+  // ninguna de las dos se quede a medias.
 
   revalidatePath('/dashboard/mentor/cursos/pendientes')
   revalidatePath('/admin/cursos/pendientes')
