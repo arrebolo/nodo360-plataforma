@@ -145,28 +145,32 @@ const ZONAS_PUBLICAS = [
 const ZONAS_DE_PERSONAL = ['app/api/admin/', 'app/api/instructor/', 'app/api/mentor/']
 
 /**
- * Y los ayudantes que usan esas páginas.
+ * Lo que NO alcanza ninguna superficie de alumno y aun así cuenta.
  *
- * Esta lista SI es declarada, y no descubierta, porque `lib/` no está separado por
- * público y administración: el mismo fichero sirve a las dos cosas. Es la parte frágil
- * del guardián y conviene saberlo; la PR 3 separa lo que haga falta separar.
+ * `recalcularMatriculasDelCurso` solo se llama desde el panel —cuando alguien de
+ * personal borra una leccion o un modulo—, asi que el grafo no la alcanza desde una
+ * pantalla publica. Pero lo que lee es el DENOMINADOR DEL PROGRESO DE LOS ALUMNOS, con
+ * el cliente de servicio, y escribe `course_enrollments.progress_percentage`: si cuenta
+ * las lecciones de la tabla de trabajo, el porcentaje que ve un alumno sale de contenido
+ * sin publicar. Tiene que contar lo publicado.
+ *
+ * Es la única entrada a mano que queda, y queda con su motivo escrito.
  */
-const AYUDANTES_DE_ALUMNO = [
-  'lib/db/courses-queries.ts',
-  'lib/db/queries.ts',
-  'lib/db/learning-paths.ts',
-  'lib/cache/queries.ts',
-  'lib/progress/getCourseProgress.ts',
-  'lib/progress/getPathProgress.ts',
-  'lib/quiz/checkCourseQuiz.ts',
-  'lib/certificates/createCertificate.ts',
-  // Estos tres los encontro el barrido de createAdminClient, no la lista de arriba: los
-  // tres leen contenido de cursos CON EL CLIENTE DE SERVICIO para algo que ve un
-  // alumno, y por tanto la RLS no los frena.
-  'lib/comments/index.ts',
-  'lib/projects/eligibility.ts',
-  'lib/progress/recalcularMatriculas.ts',
-]
+const ADEMAS = ['lib/progress/recalcularMatriculas.ts']
+
+/**
+ * LOS AYUDANTES SE DESCUBREN SIGUIENDO LOS IMPORTS, no se declaran.
+ *
+ * La primera versión llevaba una lista escrita a mano de los ficheros de `lib/` que usan
+ * las páginas públicas, con la excusa de que `lib/` no está separado por audiencia. La
+ * excusa no se sostuvo: la lista dejaba fuera `lib/progress/checkLessonAccess.ts` —que
+ * decide si un alumno puede abrir una lección— y `lib/courses/suggestions.ts`. Una lista
+ * a mano envejece en silencio; es el mismo error que el inventario del diseño, dos veces.
+ *
+ * Ahora se parte de las superficies públicas y se sigue cada import: todo lo que alcance
+ * una pantalla de alumno o pública se escanea, esté en `lib/`, en `components/` o donde
+ * sea. Mismo grafo que scripts/ficheros-que-no-alcanza-nadie.mjs, en la otra dirección.
+ */
 
 type Excepcion = {
   numero: number
@@ -241,40 +245,37 @@ const EXCEPCIONES: Excepcion[] = [
   { numero: 50, fichero: 'app/sitemap.ts', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'sitemap. PR 3' },
   { numero: 51, fichero: 'app/sitemap.ts', tabla: 'modules', como: 'embed', cuantas: 1, porque: 'sitemap. PR 3' },
   { numero: 52, fichero: 'components/home/HomeFeaturedCourses.tsx', tabla: 'courses', como: 'from', cuantas: 1, porque: 'portada. PR 3' },
-  { numero: 53, fichero: 'lib/cache/queries.ts', tabla: 'courses', como: 'clave', cuantas: 1, porque: 'cache del catalogo. PR 3' },
-  { numero: 54, fichero: 'lib/cache/queries.ts', tabla: 'courses', como: 'from', cuantas: 2, porque: 'cache del catalogo. PR 3' },
-  { numero: 55, fichero: 'lib/cache/queries.ts', tabla: 'lessons', como: 'embed', cuantas: 1, porque: 'cache del catalogo. PR 3' },
-  { numero: 56, fichero: 'lib/cache/queries.ts', tabla: 'modules', como: 'embed', cuantas: 1, porque: 'cache del catalogo. PR 3' },
-  { numero: 57, fichero: 'lib/certificates/createCertificate.ts', tabla: 'courses', como: 'from', cuantas: 1, porque: 'titulo del certificado. PR 3' },
-  { numero: 58, fichero: 'lib/comments/index.ts', tabla: 'courses', como: 'embed', cuantas: 1, porque: 'comentarios de una leccion, con el cliente de servicio. PR 3' },
-  { numero: 59, fichero: 'lib/comments/index.ts', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'comentarios de una leccion, con el cliente de servicio. PR 3' },
-  { numero: 60, fichero: 'lib/comments/index.ts', tabla: 'modules', como: 'embed', cuantas: 1, porque: 'comentarios de una leccion, con el cliente de servicio. PR 3' },
+  { numero: 53, fichero: 'components/instructor/InstructorPreviewModal.tsx', tabla: 'courses', como: 'from', cuantas: 2, porque: 'pendiente de revisar' },
+  { numero: 54, fichero: 'hooks/useCourseCompletion.ts', tabla: 'courses', como: 'from', cuantas: 2, porque: 'pendiente de revisar' },
+  { numero: 55, fichero: 'lib/certificates/createCertificate.ts', tabla: 'courses', como: 'from', cuantas: 1, porque: 'titulo del certificado. PR 3' },
+  { numero: 56, fichero: 'lib/comments/index.ts', tabla: 'courses', como: 'embed', cuantas: 1, porque: 'comentarios de una leccion, con el cliente de servicio. PR 3' },
+  { numero: 57, fichero: 'lib/comments/index.ts', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'comentarios de una leccion, con el cliente de servicio. PR 3' },
+  { numero: 58, fichero: 'lib/comments/index.ts', tabla: 'modules', como: 'embed', cuantas: 1, porque: 'comentarios de una leccion, con el cliente de servicio. PR 3' },
+  { numero: 59, fichero: 'lib/courses/suggestions.ts', tabla: 'courses', como: 'clave', cuantas: 1, porque: 'pendiente de revisar' },
+  { numero: 60, fichero: 'lib/courses/suggestions.ts', tabla: 'courses', como: 'from', cuantas: 1, porque: 'pendiente de revisar' },
   { numero: 61, fichero: 'lib/db/courses-queries.ts', tabla: 'courses', como: 'from', cuantas: 4, porque: 'ayudantes del catalogo y de la ficha. PR 3' },
   { numero: 62, fichero: 'lib/db/courses-queries.ts', tabla: 'lessons', como: 'embed', cuantas: 1, porque: 'ayudantes del catalogo y de la ficha. PR 3' },
   { numero: 63, fichero: 'lib/db/courses-queries.ts', tabla: 'lessons', como: 'from', cuantas: 8, porque: 'ayudantes del catalogo y de la ficha. PR 3' },
   { numero: 64, fichero: 'lib/db/courses-queries.ts', tabla: 'modules', como: 'embed', cuantas: 1, porque: 'ayudantes del catalogo y de la ficha. PR 3' },
   { numero: 65, fichero: 'lib/db/courses-queries.ts', tabla: 'modules', como: 'from', cuantas: 7, porque: 'ayudantes del catalogo y de la ficha. PR 3' },
-  { numero: 66, fichero: 'lib/db/learning-paths.ts', tabla: 'courses', como: 'clave', cuantas: 2, porque: 'embed por la clave ajena (course:course_id!inner). PR 3' },
-  { numero: 67, fichero: 'lib/db/queries.ts', tabla: 'courses', como: 'clave', cuantas: 4, porque: 'ayudantes antiguos. PR 3' },
-  { numero: 68, fichero: 'lib/db/queries.ts', tabla: 'courses', como: 'from', cuantas: 3, porque: 'ayudantes antiguos. PR 3' },
-  { numero: 69, fichero: 'lib/db/queries.ts', tabla: 'lessons', como: 'clave', cuantas: 3, porque: 'ayudantes antiguos. PR 3' },
-  { numero: 70, fichero: 'lib/db/queries.ts', tabla: 'lessons', como: 'embed', cuantas: 1, porque: 'ayudantes antiguos. PR 3' },
-  { numero: 71, fichero: 'lib/db/queries.ts', tabla: 'lessons', como: 'from', cuantas: 9, porque: 'ayudantes antiguos. PR 3' },
-  { numero: 72, fichero: 'lib/db/queries.ts', tabla: 'modules', como: 'clave', cuantas: 4, porque: 'ayudantes antiguos. PR 3' },
-  { numero: 73, fichero: 'lib/db/queries.ts', tabla: 'modules', como: 'embed', cuantas: 1, porque: 'ayudantes antiguos. PR 3' },
-  { numero: 74, fichero: 'lib/db/queries.ts', tabla: 'modules', como: 'from', cuantas: 7, porque: 'ayudantes antiguos. PR 3' },
-  { numero: 75, fichero: 'lib/progress/getCourseProgress.ts', tabla: 'lessons', como: 'embed', cuantas: 2, porque: 'el denominador del progreso es lo publicado (punto 2). PR 3' },
-  { numero: 76, fichero: 'lib/progress/getCourseProgress.ts', tabla: 'modules', como: 'from', cuantas: 2, porque: 'el denominador del progreso es lo publicado (punto 2). PR 3' },
-  { numero: 77, fichero: 'lib/progress/getPathProgress.ts', tabla: 'courses', como: 'embed', cuantas: 1, porque: 'progreso de una ruta. PR 3' },
-  { numero: 78, fichero: 'lib/progress/getPathProgress.ts', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'progreso de una ruta. PR 3' },
-  { numero: 79, fichero: 'lib/progress/getPathProgress.ts', tabla: 'modules', como: 'from', cuantas: 1, porque: 'progreso de una ruta. PR 3' },
-  { numero: 80, fichero: 'lib/progress/recalcularMatriculas.ts', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'el denominador del progreso de todos, con el cliente de servicio. PR 3' },
-  { numero: 81, fichero: 'lib/projects/eligibility.ts', tabla: 'courses', como: 'from', cuantas: 1, porque: 'decide si un alumno puede entregar proyecto, con el cliente de servicio. PR 3' },
-  { numero: 82, fichero: 'lib/quiz/checkCourseQuiz.ts', tabla: 'modules', como: 'from', cuantas: 1, porque: 'correccion y estado del examen (punto 4). PR 3' },
-  { numero: 83, fichero: 'lib/quiz/checkCourseQuiz.ts', tabla: 'quiz_questions', como: 'from', cuantas: 2, porque: 'correccion y estado del examen (punto 4). PR 3' },
-  { numero: 84, fichero: 'scripts/generar-cursos-publicados.mjs', tabla: 'courses', como: 'from', cuantas: 1, porque: 'genera lib/enlazado/cursos-publicados.ts, que usan el blog y el glosario. PR 3' },
-  { numero: 85, fichero: 'scripts/generar-cursos-publicados.mjs', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'genera lib/enlazado/cursos-publicados.ts, que usan el blog y el glosario. PR 3' },
-  { numero: 86, fichero: 'scripts/generar-cursos-publicados.mjs', tabla: 'modules', como: 'from', cuantas: 1, porque: 'genera lib/enlazado/cursos-publicados.ts, que usan el blog y el glosario. PR 3' },
+  { numero: 66, fichero: 'lib/db/enrollments.ts', tabla: 'courses', como: 'clave', cuantas: 1, porque: 'pendiente de revisar' },
+  { numero: 67, fichero: 'lib/db/enrollments.ts', tabla: 'courses', como: 'embed', cuantas: 1, porque: 'pendiente de revisar' },
+  { numero: 68, fichero: 'lib/db/enrollments.ts', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'pendiente de revisar' },
+  { numero: 69, fichero: 'lib/db/enrollments.ts', tabla: 'modules', como: 'from', cuantas: 1, porque: 'pendiente de revisar' },
+  { numero: 70, fichero: 'lib/db/learning-paths.ts', tabla: 'courses', como: 'clave', cuantas: 2, porque: 'embed por la clave ajena (course:course_id!inner). PR 3' },
+  { numero: 71, fichero: 'lib/progress/checkLessonAccess.ts', tabla: 'courses', como: 'from', cuantas: 1, porque: 'pendiente de revisar' },
+  { numero: 72, fichero: 'lib/progress/checkLessonAccess.ts', tabla: 'lessons', como: 'from', cuantas: 2, porque: 'pendiente de revisar' },
+  { numero: 73, fichero: 'lib/progress/checkLessonAccess.ts', tabla: 'modules', como: 'from', cuantas: 1, porque: 'pendiente de revisar' },
+  { numero: 74, fichero: 'lib/progress/getCourseProgress.ts', tabla: 'lessons', como: 'embed', cuantas: 2, porque: 'el denominador del progreso es lo publicado (punto 2). PR 3' },
+  { numero: 75, fichero: 'lib/progress/getCourseProgress.ts', tabla: 'modules', como: 'from', cuantas: 2, porque: 'el denominador del progreso es lo publicado (punto 2). PR 3' },
+  { numero: 76, fichero: 'lib/progress/recalcularMatriculas.ts', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'el denominador del progreso de todos, con el cliente de servicio. PR 3' },
+  { numero: 77, fichero: 'lib/projects/eligibility.ts', tabla: 'courses', como: 'from', cuantas: 1, porque: 'decide si un alumno puede entregar proyecto, con el cliente de servicio. PR 3' },
+  { numero: 78, fichero: 'lib/quiz/checkCourseQuiz.ts', tabla: 'modules', como: 'from', cuantas: 1, porque: 'correccion y estado del examen (punto 4). PR 3' },
+  { numero: 79, fichero: 'lib/quiz/checkCourseQuiz.ts', tabla: 'quiz_questions', como: 'from', cuantas: 2, porque: 'correccion y estado del examen (punto 4). PR 3' },
+  { numero: 80, fichero: 'lib/supabase/client.ts', tabla: 'courses', como: 'from', cuantas: 1, porque: 'pendiente de revisar' },
+  { numero: 81, fichero: 'scripts/generar-cursos-publicados.mjs', tabla: 'courses', como: 'from', cuantas: 1, porque: 'genera lib/enlazado/cursos-publicados.ts, que usan el blog y el glosario. PR 3' },
+  { numero: 82, fichero: 'scripts/generar-cursos-publicados.mjs', tabla: 'lessons', como: 'from', cuantas: 1, porque: 'genera lib/enlazado/cursos-publicados.ts, que usan el blog y el glosario. PR 3' },
+  { numero: 83, fichero: 'scripts/generar-cursos-publicados.mjs', tabla: 'modules', como: 'from', cuantas: 1, porque: 'genera lib/enlazado/cursos-publicados.ts, que usan el blog y el glosario. PR 3' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -295,6 +296,48 @@ function recorrer(p: string, acc: string[] = []): string[] {
     else if (EXT.includes(path.extname(e.name))) acc.push(hijo)
   }
   return acc
+}
+
+/** Resuelve un especificador a un fichero del proyecto, o null si es externo. */
+function resolver(desde: string, spec: string): string | null {
+  let base: string
+  if (spec.startsWith('@/')) base = path.join(RAIZ, spec.slice(2))
+  else if (spec.startsWith('./') || spec.startsWith('../')) {
+    base = path.resolve(path.dirname(path.join(RAIZ, desde)), spec)
+  } else return null
+
+  for (const e of ['', ...EXT]) {
+    const abs = base + e
+    if (fs.existsSync(abs) && fs.statSync(abs).isFile()) {
+      return path.relative(RAIZ, abs).split(path.sep).join('/')
+    }
+  }
+  for (const e of EXT) {
+    const abs = path.join(base, 'index' + e)
+    if (fs.existsSync(abs)) return path.relative(RAIZ, abs).split(path.sep).join('/')
+  }
+  return null
+}
+
+const RE_IMPORT = /(?:from\s*|import\s*\(\s*|require\s*\(\s*)['"]([^'"]+)['"]/g
+
+/** Todo lo que se alcanza desde estas raíces siguiendo imports. */
+function alcanzableDesde(raices: string[]): string[] {
+  const vistos = new Set<string>()
+  const pila = [...raices]
+  while (pila.length) {
+    const f = pila.pop()!
+    if (vistos.has(f)) continue
+    const abs = path.join(RAIZ, f)
+    if (!fs.existsSync(abs)) continue
+    vistos.add(f)
+    const texto = fs.readFileSync(abs, 'utf8')
+    for (const m of texto.matchAll(RE_IMPORT)) {
+      const hijo = resolver(f, m[1])
+      if (hijo && !vistos.has(hijo)) pila.push(hijo)
+    }
+  }
+  return [...vistos]
 }
 
 type Hallazgo = {
@@ -353,11 +396,15 @@ function hallazgosDe(fichero: string): Hallazgo[] {
   return fuera
 }
 
-const ficheros = [
-  ...new Set([...ZONAS_PUBLICAS.flatMap((z) => recorrer(z)), ...AYUDANTES_DE_ALUMNO]),
-]
-  .filter((f) => fs.existsSync(path.join(RAIZ, f)))
+// Las superficies, y todo lo que alcanzan siguiendo imports. Lo de personal se
+// descarta al final: si una pantalla pública importara algo de /api/admin, eso sería
+// otro problema y no de este guardián.
+const superficies = ZONAS_PUBLICAS.flatMap((z) => recorrer(z))
   .filter((f) => !ZONAS_DE_PERSONAL.some((z) => f.startsWith(z)))
+
+const ficheros = alcanzableDesde([...superficies, ...ADEMAS])
+  .filter((f) => !ZONAS_DE_PERSONAL.some((z) => f.startsWith(z)))
+  .filter((f) => !f.startsWith('node_modules/'))
   .sort()
 
 const hallazgos = ficheros.flatMap(hallazgosDe)
@@ -395,7 +442,8 @@ for (const e of EXCEPCIONES) {
 }
 
 const totalDeclarado = EXCEPCIONES.reduce((a, e) => a + e.cuantas, 0)
-console.log(`\nficheros de alumno o públicos mirados: ${ficheros.length}`)
+console.log(`\nsuperficies públicas o de alumno: ${superficies.length}`)
+console.log(`ficheros mirados (ellas y todo lo que importan): ${ficheros.length}`)
 console.log(`lecturas de tablas de trabajo encontradas: ${hallazgos.length}`)
 console.log(`declaradas como excepción temporal: ${totalDeclarado} lecturas en ${new Set(EXCEPCIONES.map((e) => e.fichero)).size} ficheros`)
 
