@@ -109,7 +109,12 @@ export async function checkLessonAccess(
   }
 
   // --- Regla general: el primer modulo siempre esta abierto ---------------
-  if (moduloActual.order_index === 0) {
+  //
+  // POR POSICION EN LA LISTA, no por `order_index === 0`. Los indices pueden tener
+  // huecos —un borrado los dejaba— y entonces el primer modulo de verdad podia no ser
+  // el 0. `modulos` viene ordenado por order_index.
+  const posicion = modulos.findIndex((m) => m.id === moduloActual.id)
+  if (posicion <= 0) {
     return { canAccess: true, reason: 'primer_modulo' }
   }
 
@@ -138,7 +143,18 @@ export async function checkLessonAccess(
   }
 
   // --- Regla general: el modulo anterior tiene que estar completo ---------
-  const anterior = modulos.find((m) => m.order_index === moduloActual.order_index - 1)
+  //
+  // EL INMEDIATAMENTE ANTERIOR EN ORDEN, no el de indice uno menos.
+  //
+  // Esto era un agujero: con `order_index === actual - 1`, un hueco en la numeracion
+  // —modulos 0, 1 y 3 porque se borro el 2— hacia que no se encontrara anterior, y el
+  // `if (!anterior)` lo trataba como «primer modulo» y ABRIA el modulo sin pedir nada.
+  // Borrar un modulo intermedio desbloqueaba el siguiente para todo el mundo.
+  //
+  // Los borrados ya renumeran (lib/courses/contenido.ts), pero esto no puede depender
+  // de eso: cualquier hueco que quede de antes, o una migracion que mueva indices, no
+  // puede abrir un modulo.
+  const anterior = modulos[posicion - 1]
   if (!anterior) return { canAccess: true, reason: 'primer_modulo' }
 
   const { data: leccionesAnterior } = await supabase

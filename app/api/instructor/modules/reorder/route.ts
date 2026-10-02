@@ -1,23 +1,21 @@
-/**
- * Subir o bajar un modulo, desde el panel de administracion.
- *
- * La logica esta en lib/courses/contenido.ts, compartida con /api/instructor/...: es
- * un intercambio en tres pasos con un indice temporal, y dos copias se desfasarian.
- * Aqui solo cambia el permiso: esta ruta exige admin.
- */
 import { NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/ratelimit'
-import { exigirAdminEnApi } from '@/lib/admin/auth-api'
+import { permisoSobreElCurso } from '@/lib/courses/permiso-sobre-el-curso'
 import { direccionValida, moduloConSuCurso, moverModulo } from '@/lib/courses/contenido'
 
+/**
+ * Subir o bajar un módulo de un curso propio.
+ *
+ * `courseId` llegaba en el cuerpo y se usaba para buscar el módulo vecino con el que
+ * intercambiar. Aquí se IGNORA: el curso sale de la fila del módulo. Si se creyera al
+ * cuerpo, comprobar el permiso sobre ese curso no diría nada sobre el módulo que se
+ * mueve, y bastaría con mandar un curso propio para reordenar el de otro.
+ */
 export async function POST(request: Request) {
   const limite = await checkRateLimit(request, 'api')
   if (limite) return limite
 
   try {
-    const guarda = await exigirAdminEnApi()
-    if (!guarda.ok) return guarda.respuesta
-
     const cuerpo = await request.json().catch(() => ({}))
     const moduleId = typeof cuerpo.moduleId === 'string' ? cuerpo.moduleId : ''
     const direccion = direccionValida(cuerpo.direction)
@@ -27,10 +25,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'La dirección tiene que ser «up» o «down».' }, { status: 400 })
     }
 
-    // El curso sale de la fila del modulo, no del cuerpo: `courseId` llegaba en la
-    // peticion y se usaba para buscar el vecino con el que intercambiar.
     const modulo = await moduloConSuCurso(moduleId)
     if (!modulo) return NextResponse.json({ error: 'El módulo no existe.' }, { status: 404 })
+
+    const permiso = await permisoSobreElCurso(modulo.course_id)
+    if (!permiso.ok) return permiso.respuesta
 
     const resultado = await moverModulo(modulo, direccion)
     if (!resultado.ok) {
@@ -39,7 +38,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('[admin/modules/reorder] Error inesperado:', error)
+    console.error('[instructor/modules/reorder] Error inesperado:', error)
     return NextResponse.json({ error: 'Error del servidor.' }, { status: 500 })
   }
 }

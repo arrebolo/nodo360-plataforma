@@ -8,11 +8,26 @@ import { mensajeDeRespuesta } from '@/lib/ui/errores'
 interface DeleteLessonButtonProps {
   lessonId: string
   lessonTitle: string
+  /**
+   * A quien llamar: '/api/instructor' desde la zona del instructor, '/api/admin' desde
+   * el panel. El permiso NO lo decide esto, lo decide la ruta: la de instructor exige
+   * que el curso sea tuyo y la de admin exige admin. Esta aqui porque ninguna pantalla
+   * de /dashboard/instructor debe llamar a /api/admin, y porque los cuatro botones del
+   * editor del instructor recibian 403.
+   */
+  api?: string
+
   moduleId: string
   courseId: string
 }
 
-export function DeleteLessonButton({ lessonId, lessonTitle, moduleId, courseId }: DeleteLessonButtonProps) {
+export function DeleteLessonButton({
+  lessonId,
+  lessonTitle,
+  moduleId,
+  courseId,
+  api = '/api/admin',
+}: DeleteLessonButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   // El error, EN PANTALLA. Antes era un alert(), que lo cierra cualquier cosa y no
   // deja rastro: en la auditoria estas acciones «fallaban sin avisar».
@@ -20,7 +35,7 @@ export function DeleteLessonButton({ lessonId, lessonTitle, moduleId, courseId }
   const router = useRouter()
 
   const handleDelete = async () => {
-    if (!confirm(`¿Eliminar la lección "${lessonTitle}"?\n\nSe eliminará el progreso de usuarios en esta lección.\nEsta acción no se puede deshacer.`)) {
+    if (!confirm(`¿Eliminar la lección "${lessonTitle}"?\n\nDesaparece del curso. El progreso de quien ya la hizo no se borra: desde la 117 cuelga de la copia publicada.\nEsta acción no se puede deshacer.`)) {
       return
     }
 
@@ -31,7 +46,7 @@ export function DeleteLessonButton({ lessonId, lessonTitle, moduleId, courseId }
     try {
       console.log('🗑️ [Delete Lesson] Eliminando lección:', lessonId)
 
-      const response = await fetch(`/api/admin/lessons/${lessonId}`, {
+      const response = await fetch(`${api}/lessons/${lessonId}`, {
         method: 'DELETE',
       })
 

@@ -196,6 +196,7 @@ export default async function InstructorLessonListPage({ params }: PageProps) {
                         moduleId={moduleId}
                         currentIndex={index}
                         totalLessons={totalLessons}
+                        api="/api/instructor"
                       />
 
                       <Link
@@ -210,6 +211,7 @@ export default async function InstructorLessonListPage({ params }: PageProps) {
                         lessonTitle={lesson.title}
                         moduleId={moduleId}
                         courseId={courseId}
+                        api="/api/instructor"
                       />
                     </div>
                   </div>

@@ -130,6 +130,7 @@ export default async function InstructorModulosPage({ params }: PageProps) {
                       courseId={course.id}
                       currentIndex={index}
                       totalModules={modulesWithCount.length}
+                      api="/api/instructor"
                     />
                   </div>
 
@@ -171,6 +172,7 @@ export default async function InstructorModulosPage({ params }: PageProps) {
                       moduleId={module.id}
                       moduleTitle={module.title}
                       courseId={course.id}
+                      api="/api/instructor"
                     />
                   </div>
                 </div>

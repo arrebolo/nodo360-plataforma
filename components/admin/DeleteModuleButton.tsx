@@ -8,10 +8,24 @@ import { mensajeDeRespuesta } from '@/lib/ui/errores'
 interface DeleteModuleButtonProps {
   moduleId: string
   moduleTitle: string
+  /**
+   * A quien llamar: '/api/instructor' desde la zona del instructor, '/api/admin' desde
+   * el panel. El permiso NO lo decide esto, lo decide la ruta: la de instructor exige
+   * que el curso sea tuyo y la de admin exige admin. Esta aqui porque ninguna pantalla
+   * de /dashboard/instructor debe llamar a /api/admin, y porque los cuatro botones del
+   * editor del instructor recibian 403.
+   */
+  api?: string
+
   courseId: string
 }
 
-export function DeleteModuleButton({ moduleId, moduleTitle, courseId }: DeleteModuleButtonProps) {
+export function DeleteModuleButton({
+  moduleId,
+  moduleTitle,
+  courseId,
+  api = '/api/admin',
+}: DeleteModuleButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   // El error, EN PANTALLA. Antes era un alert(), que lo cierra cualquier cosa y no
   // deja rastro: en la auditoria estas acciones «fallaban sin avisar».
@@ -30,7 +44,7 @@ export function DeleteModuleButton({ moduleId, moduleTitle, courseId }: DeleteMo
     try {
       console.log('🗑️ [Delete Module] Eliminando módulo:', moduleId)
 
-      const response = await fetch(`/api/admin/modules/${moduleId}`, {
+      const response = await fetch(`${api}/modules/${moduleId}`, {
         method: 'DELETE',
       })
 
