@@ -93,6 +93,79 @@ Dos mitades, porque una sola no basta:
    fichero nuevo que no está en la lista revisada. Una lista escrita a mano
    envejece en silencio; un censo del catálogo, no.
 
+### Lo que el guardián corrigió del inventario (PR 2, aplicada)
+
+El inventario de arriba se escribió leyendo el código. Al ejecutar el guardián no
+cuadraba, y las diferencias importan:
+
+**Una tercera sintaxis de embed, que ningún grep del nombre de la tabla ve.**
+`lib/db/learning-paths.ts` llega a `courses` así:
+
+```ts
+.from('learning_path_courses')
+.select(`position, is_required, course:course_id!inner (*)`)
+```
+
+Embebe por el nombre de la **columna de la clave ajena**, no por el de la tabla: la
+palabra `courses` no aparece. El inventario daba ese fichero por «lee por el helper» y
+lo que hace es leer `courses` sin nombrarla. El guardián mira ahora las tres formas:
+`from('x')`, `x (` y `clave_id (`.
+
+**Cuatro entradas del inventario sobraban y tres lecturas faltaban.** Sobraban
+`app/cursos/page.tsx` y `app/rutas/[slug]/page.tsx` —leen por su ayudante, no
+directamente—, y `lib/progress/getCourseProgress.ts` no lee `courses`. Faltaban
+`modules` en `app/sitemap.ts` (por embed) y las dos lecturas de
+`app/certificados/[certificateId]/page.tsx`, que no estaban en el inventario y hoy no
+pueden ir al espejo porque está cerrado.
+
+La lista de excepciones del guardián **sale de ejecutarlo**, no de este documento. Son
+20 ficheros y 102 lecturas, cada una numerada, y el guardián corta también cuando una
+excepción deja de hacer falta: así la PR 3 no puede olvidarse de retirarlas.
+
+**Lo que el guardián no ve, y por qué no basta con él**: una función de la base que lea
+por dentro, una vista sobre las tablas de trabajo, o una lectura en un fichero fuera de
+las zonas. Las dos primeras las cierra la PR 3 quitándole a `anon` el SELECT sobre las
+tablas de trabajo: entonces lo que no esté en el espejo no se puede leer, lo diga el
+código como lo diga.
+
+### Las rutas de API del alumno, y el cliente de servicio (PR 2, segunda vuelta)
+
+El inventario original solo miraba páginas. Faltaba lo más serio: **las rutas de API que
+sirven o corrigen contenido**, y entre ellas varias que usan el **cliente de servicio**,
+que salta la RLS.
+
+| fichero | lecturas | cliente | para quién |
+|---|---|---|---|
+| `app/api/quiz/submit` | 5 | **servicio** | corrige el examen |
+| `app/api/quiz/questions` | 2 | **servicio** | sirve las preguntas |
+| `lib/comments/index.ts` | 1 | **servicio** | comentarios de una lección |
+| `lib/projects/eligibility.ts` | 1 | **servicio** | si el alumno puede entregar proyecto |
+| `lib/progress/recalcularMatriculas.ts` | 1 | **servicio** | el denominador del progreso de todos |
+| `app/api/internal/discord-notify` | 1 | **servicio** | el anuncio público |
+| `app/api/progress` | 4 | sesión | el progreso al avanzar |
+| `app/api/continue` | 3 | sesión | por dónde sigue |
+| `app/api/enroll` | 2 | sesión | la matrícula |
+| `app/api/bookmarks`, `lesson-notes`, `comments/[id]` | 3 cada una, por embed | sesión | guardados, notas y comentarios |
+| `app/api/health` | 1 | sesión | infraestructura |
+
+**Consecuencia para la PR 3, y no es menor:** quitarle a `anon` el `SELECT` sobre las
+tablas de trabajo **no protege nada de esto**.
+
+- Las seis primeras usan el **service role**: entran igual, con o sin RLS. Para ellas el
+  guardián de CI es la única barrera, y por eso ahora están todas dentro.
+- Las demás usan la sesión del alumno, que es **`authenticated`, no `anon`**. Si la
+  política de RLS de `courses` deja leer los publicados a cualquier autenticado —y hoy
+  los deja—, cerrar solo `anon` deja a todos los alumnos leyendo las tablas de trabajo.
+
+Así que la PR 3 tiene dos mitades que no se sustituyen: **mover las lecturas** (las 137,
+que el guardián lleva contadas una por una) y **ajustar los permisos de las dos tablas a
+los dos roles**, no solo a `anon`.
+
+Lecturas de personal que siguen en las tablas de trabajo, y está bien que sigan:
+`lib/courses/contenido.ts`, `lib/courses/permiso-sobre-el-curso.ts`,
+`lib/courses/reviews.ts`, `lib/courses/anunciar-publicacion.ts`,
+`lib/quiz/permiso-del-examen.ts` y todo `/api/{admin,instructor,mentor}`.
+
 ## Punto 2 · Identificadores estables
 
 ### Lo que hay hoy, medido
