@@ -125,7 +125,13 @@ export default async function DashboardCertificatesPage({ searchParams }: PagePr
   // aprueba el examen y llega al 100 % más tarde —porque se borró la lección que le
   // faltaba, por ejemplo— no vuelve a pasar por ninguno de los dos y se quedaba
   // cumpliendo las condiciones sin forma de pedirlo.
-  const listos = await cursosListosParaCertificado(user.id)
+  const todosLosListos = await cursosListosParaCertificado(user.id)
+  // EL FILTRO POR CURSO TAMBIEN AQUI. Con ?curso=<slug> la pantalla dice «filtrando
+  // por curso» y la lista de abajo obedece; esta sección se quedaba enseñando los de
+  // los demás cursos, contradiciendo el filtro que está en pantalla.
+  const listos = courseSlug
+    ? todosLosListos.filter((c) => c.slug === courseSlug)
+    : todosLosListos
 
   let list = (certificates ?? []).map((c) => ({
     ...c,

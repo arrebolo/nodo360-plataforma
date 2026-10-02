@@ -48,6 +48,20 @@ const galleta = (sesion: unknown) =>
   `sb-${REF}-auth-token=base64-${Buffer.from(JSON.stringify(sesion), 'utf8').toString('base64url')}`
 const sinComentariosHtml = (html: string) => html.replace(/<!--[\s\S]*?-->/g, '')
 
+/**
+ * El trozo de HTML de la seccion «listos para emitir».
+ *
+ * Buscar «listo para emitir» en toda la pagina no sirve: el encabezado es singular con
+ * uno y plural con dos, y el titulo de un curso sale tambien en la lista de certificados
+ * ya emitidos. Las comprobaciones tienen que mirar DENTRO de la seccion.
+ */
+const bloqueDeListos = (html: string) => {
+  const k = html.indexOf('para emitir')
+  if (k === -1) return ''
+  const fin = html.indexOf('</ul>', k)
+  return html.slice(k, fin === -1 ? Math.min(k + 4000, html.length) : fin)
+}
+
 const creado: { usuarios: string[]; cursos: string[] } = { usuarios: [], cursos: [] }
 
 const pedirUnaVez = async (ruta: string, o: { cookie?: string; metodo?: string; cuerpo?: unknown } = {}) => {
@@ -152,6 +166,27 @@ try {
   })
   di(publicado.status === 200, 'el curso se publica', String(publicado.status))
 
+  // ── Un SEGUNDO curso, también listo, para probar el filtro por curso ─────
+  const slug2 = `${MARCA}-otro-${Math.random().toString(36).slice(2, 8)}`
+  const { data: c2, error: ec2 } = await svc.from('courses').insert({
+    title: 'PRUEBA certificado otro curso', slug: slug2,
+    description: 'El otro.', long_description: 'x'.repeat(220),
+    level: 'beginner', is_free: true, status: 'draft',
+    instructor_id: instructor.id, specialty_id: esp!.id,
+    thumbnail_url: 'https://example.invalid/x.png',
+  }).select('id, slug').single()
+  if (ec2) throw new Error(`curso 2: ${ec2.message}`)
+  creado.cursos.push(c2!.id)
+  const { data: m2 } = await svc.from('modules')
+    .insert({ course_id: c2!.id, title: 'Módulo', order_index: 0 }).select('id').single()
+  await svc.from('lessons').insert({
+    course_id: c2!.id, module_id: m2!.id, title: 'Lección',
+    slug: `${slug2}-l0`, order_index: 0, content: 'x',
+  })
+  // Sin preguntas: un curso sin examen no exige examen. Y sin publicar: «listos para
+  // emitir» no lo necesita —le basta la matricula al 100 %— y publicar exige minimos de
+  // contenido que este curso de pega no cumple.
+
   // ── La alumna: examen aprobado y una lección de dos ───────────────────────
   console.log('\n=== el montaje: examen aprobado, 1 de 2 lecciones ===')
   for (const quien of [alumna, otra]) {
@@ -165,6 +200,10 @@ try {
 
   // `answers` es NOT NULL (medido: 23502 sin ella), y la sonda de dos payloads no lo
   // habia cazado. El esquema completo, antes de los datos de prueba.
+  await svc.from('course_enrollments').insert({
+    user_id: alumna.id, course_id: c2!.id, progress_percentage: 100,
+  })
+
   const { error: eIntento } = await svc.from('quiz_attempts').insert({
     user_id: alumna.id, module_id: m!.id, score: 100,
     total_questions: 1, correct_answers: 1, passed: true,
@@ -201,8 +240,9 @@ try {
   console.log('\n=== su panel de certificados ===')
   const panel = await pedir('/dashboard/certificados', { cookie: alumna.cookie })
   di(panel.status === 200, 'responde 200', String(panel.status))
-  di(panel.texto.includes('listo para emitir'), 'lo lista como listo para emitir')
-  di(panel.texto.includes('PRUEBA certificado tras borrado'), 'con el nombre del curso')
+  di(bloqueDeListos(panel.texto) !== '', 'tiene la sección de listos para emitir')
+  di(bloqueDeListos(panel.texto).includes('PRUEBA certificado tras borrado'),
+    'y el curso está DENTRO de esa sección')
 
   // ── Emitirlo ─────────────────────────────────────────────────────────────
   console.log('\n=== emitirlo ===')
@@ -222,7 +262,8 @@ try {
   di(!fichaDespues.texto.includes('Emitir mi certificado'), 'y ya no ofrece emitirlo')
 
   const panelDespues = await pedir('/dashboard/certificados', { cookie: alumna.cookie })
-  di(!panelDespues.texto.includes('listo para emitir'), 'el panel ya no lo lista como pendiente')
+  di(!bloqueDeListos(panelDespues.texto).includes('PRUEBA certificado tras borrado'),
+    'el panel ya no lo lista como pendiente')
   di(panelDespues.texto.includes('PRUEBA certificado tras borrado'),
     'y lo lista como certificado, con el nombre del curso')
   di(!panelDespues.texto.includes('Aun no tienes certificados'),
@@ -245,6 +286,33 @@ try {
     .select('id', { count: 'exact' }).eq('user_id', alumna.id).eq('course_id', c!.id).limit(0)
   di(otraVez.status === 200 && (cuantos ?? 0) === 1,
     'pedirlo otra vez devuelve el mismo, no emite dos', `${otraVez.status}, ${cuantos} certificados`)
+
+  // ── El filtro por curso llega a «listos para emitir» ─────────────────────
+  console.log('\n=== el panel con ?curso=<slug> ===')
+  const sinFiltro = await pedir('/dashboard/certificados', { cookie: alumna.cookie })
+  di(bloqueDeListos(sinFiltro.texto).includes('PRUEBA certificado otro curso'),
+    'sin filtro, el otro curso también sale como listo')
+
+  const conFiltro = await pedir(`/dashboard/certificados?curso=${c2!.slug}`, { cookie: alumna.cookie })
+  di(conFiltro.status === 200, 'con ?curso= responde 200', String(conFiltro.status))
+  di(bloqueDeListos(conFiltro.texto).includes('PRUEBA certificado otro curso'),
+    'y el curso filtrado sigue saliendo')
+  di(!bloqueDeListos(conFiltro.texto).includes('PRUEBA certificado tras borrado'),
+    'pero el que NO es del filtro ya no aparece en «listos para emitir»')
+
+  // ── Un error de base NO es un 404 ────────────────────────────────────────
+  console.log('\n=== la página del certificado: 404 solo si no existe ===')
+  const inexistente = await pedir('/certificados/00000000-0000-0000-0000-000000000000', {
+    cookie: alumna.cookie,
+  })
+  di(inexistente.status === 404, 'un certificado que no existe: 404', String(inexistente.status))
+
+  // Un id que no es UUID hace fallar la consulta en la base (22P02): es un error, no
+  // un «no existe», y no puede contestar 404.
+  const idInvalido = await pedir('/certificados/no-es-un-uuid', { cookie: alumna.cookie })
+  di(idInvalido.status !== 404, 'un id inválido NO contesta 404', String(idInvalido.status))
+  di(idInvalido.texto.includes('No hemos podido leer tu certificado'),
+    'sino la página de error, que dice que el certificado sigue siendo válido')
 
   // ── Sin aprobar el examen, nada ──────────────────────────────────────────
   console.log('\n=== la otra alumna, que no aprobó el examen ===')

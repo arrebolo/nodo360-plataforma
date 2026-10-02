@@ -37,7 +37,17 @@ export default async function CertificatePage({
 
   const supabase = await createClient();
 
-  // Get certificate
+  // UN 404 SOLO SI NO EXISTE.
+  //
+  // Antes era `if (error || !certificate) notFound()`, que convierte cualquier fallo
+  // —de la base, de permisos, de red— en «esta página no existe». Y pasó de verdad: la
+  // 117 repuntó `certificates.course_id` al espejo, el embed a `courses` dejó de
+  // resolverse (PGRST200) y la página contestaba «no existe» a certificados que sí
+  // existían. Un error disfrazado de 404 manda a su dueño a buscar en el sitio
+  // equivocado: creerá que lo ha perdido.
+  //
+  // `maybeSingle()` y no `single()`: con `single()`, cero filas ES un error (PGRST116)
+  // y volveríamos a tener que adivinar cuál de los dos casos es.
   const { data: certificate, error } = await supabase
     .from("certificates")
     .select(
@@ -48,14 +58,11 @@ export default async function CertificatePage({
     `
     )
     .eq("id", resolvedParams.certificateId)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    // Antes esto se mezclaba con «no existe» y un fallo de la consulta se veía como un
-    // 404. La 117 repuntó `certificates.course_id` al espejo y el embed a `courses`
-    // dejó de resolverse: la página contestaba «no existe» a un certificado que sí
-    // existía. Ahora el curso se lee aparte y un error se dice.
     console.error('[certificado] no se pudo leer:', error.code, error.message);
+    return <NoSePudoLeerElCertificado codigo={error.code} />;
   }
 
   if (!certificate) {
@@ -234,4 +241,42 @@ export default async function CertificatePage({
       </div>
     </div>
   );
+}
+
+/**
+ * Cuando la consulta falla, y no cuando el certificado no existe.
+ *
+ * Dice qué ha pasado, que el certificado sigue siendo válido —el fallo es de la
+ * plataforma, no del certificado— y por dónde seguir. Sin inventarse que no existe.
+ */
+function NoSePudoLeerElCertificado({ codigo }: { codigo?: string }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-dark-surface via-dark-soft to-dark-surface">
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="text-3xl font-bold text-white">No hemos podido leer tu certificado</h1>
+        <p className="mt-4 text-white/70">
+          Ha fallado la consulta, no el certificado: <strong className="text-white/90">sigue
+          emitido y sigue siendo válido</strong>. Vuelve a intentarlo en un momento.
+        </p>
+        <p className="mt-2 text-sm text-white/40">
+          Si sigue pasando, dilo citando este código: {codigo ?? 'sin código'}.
+        </p>
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href="/dashboard/certificados"
+            className="inline-flex items-center justify-center rounded-lg bg-white/10 px-5 py-3 text-white transition hover:bg-white/15"
+          >
+            Mis certificados
+          </Link>
+          <a
+            {...DISCORD_LINK_PROPS}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#5865F2]/20 px-5 py-3 text-white transition hover:bg-[#5865F2]/30"
+          >
+            <DiscordIcon className="h-4 w-4" aria-hidden="true" />
+            Avisar en Discord
+          </a>
+        </div>
+      </div>
+    </div>
+  )
 }
