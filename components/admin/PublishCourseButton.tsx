@@ -20,6 +20,10 @@ export function PublishCourseButton({
   const [showModal, setShowModal] = useState(false)
   const [checkResult, setCheckResult] = useState<PublishCheckResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Esta es la OTRA pantalla que publica de verdad: /admin/cursos/[id]. La casilla
+  // estaba solo en la de aprobar un curso pendiente, asi que publicar desde aqui
+  // anunciaba siempre, sin forma de evitarlo.
+  const [noAnunciar, setNoAnunciar] = useState(false)
 
   const isPublished = currentStatus === 'published'
 
@@ -51,7 +55,7 @@ export function PublishCourseButton({
       const res = await fetch(`/api/admin/courses/${courseId}/publish`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ force })
+        body: JSON.stringify({ force, noAnunciar })
       })
 
       const data = await res.json()
@@ -235,6 +239,26 @@ export function PublishCourseButton({
             </div>
 
             {/* Footer */}
+            {checkResult.canPublish && (
+              <div className="px-6 pb-2">
+                <label className="flex items-start gap-2 text-sm text-white/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={noAnunciar}
+                    onChange={(e) => setNoAnunciar(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5"
+                  />
+                  <span>
+                    No anunciar en Discord ni en Telegram
+                    <span className="block text-xs text-white/40">
+                      El curso se publica igual. Solo afecta a la primera publicación:
+                      republicar no anuncia nunca.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            )}
+
             <div className="p-6 border-t border-white/10 flex gap-3 justify-end">
               <button
                 onClick={() => setShowModal(false)}

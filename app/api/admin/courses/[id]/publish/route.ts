@@ -60,8 +60,9 @@ export async function POST(
     const { id } = await context.params
     const body = await request.json().catch(() => ({}))
     const forcePublish = body.force === true
+    const noAnunciar = body.noAnunciar === true
 
-    const result = await publishCourse(id, forcePublish)
+    const result = await publishCourse(id, forcePublish, noAnunciar)
 
     if (!result.success) {
       return NextResponse.json(result, { status: 400 })

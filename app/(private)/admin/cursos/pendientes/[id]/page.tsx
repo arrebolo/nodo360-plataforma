@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { estadoVisibleDelCurso } from '@/lib/cursos/estado-visible'
 import { requireAdmin } from '@/lib/admin/auth'
 import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -364,6 +365,11 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
 
   const instructor = course.users as any
 
+  // Primera publicacion o revision de un curso ya publicado. En el segundo caso hay una
+  // version viva en el catalogo que no se toca mientras se decide, y aprobar la
+  // sustituye: quien revisa tiene que saberlo antes de pulsar.
+  const estado = estadoVisibleDelCurso(course, { para: 'admin' })
+
   // Calcular estadísticas
   const totalModules = modules?.length || 0
   const totalLessons = modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0
@@ -391,8 +397,9 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold text-white">{course.title}</h1>
-                <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">
-                  Pendiente de revisión
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${estado.clases}`}>
+                  <span aria-hidden="true">{estado.icono}</span>
+                  {estado.etiqueta}
                 </span>
               </div>
               <p className="text-white/60">{course.description}</p>
@@ -556,6 +563,17 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
             {/* Acciones */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
               <h2 className="text-lg font-semibold text-white mb-4">Decisión</h2>
+
+              {estado.sigueVisible && (
+                <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-sm text-orange-200">
+                  <p className="font-semibold text-orange-300">Este curso ya está publicado</p>
+                  <p className="mt-1">
+                    Lo que estás revisando son cambios. La versión publicada sigue visible
+                    para los alumnos mientras decides, y al aprobar la sustituye. Como no
+                    es su primera publicación, no se anuncia en ningún sitio.
+                  </p>
+                </div>
+              )}
 
               {/* Aprobar */}
               <form action={approveAction} className="space-y-3">

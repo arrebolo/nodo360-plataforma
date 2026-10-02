@@ -2,7 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Pencil, Trash2, List } from 'lucide-react'
+import { Pencil, Trash2, List, Eye } from 'lucide-react'
+import { estadoVisibleDelCurso } from '@/lib/cursos/estado-visible'
 
 export interface CourseAdminCardProps {
   course: any
@@ -20,6 +21,13 @@ export default function CourseAdminCard({
   const backParam = returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''
   const courseId = course?.id
 
+  // EL ESTADO, EN CASTELLANO Y DEL SITIO COMPARTIDO.
+  //
+  // Esta tarjeta enseñaba `course.status` tal cual —«pending_review»— en gris pequeño
+  // junto al slug. La correccion de los siete estados se escribio en CoursesList, que
+  // no la usa ninguna pagina, asi que aqui no se veia nada.
+  const estado = estadoVisibleDelCurso(course ?? {})
+
   // Count modules and lessons
   const modulesCount = course?.modules?.length || 0
   const lessonsCount = course?.modules?.reduce(
@@ -35,8 +43,19 @@ export default function CourseAdminCard({
             {course?.title ?? 'Sin título'}
           </h3>
           <p className="text-xs text-white/60 mt-1 truncate">
-            {course?.slug ?? ''} · {course?.status ?? 'draft'}
+            {course?.slug ?? ''}
           </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${estado.clases}`}>
+              <span aria-hidden="true">{estado.icono}</span>
+              {estado.etiqueta}
+            </span>
+            {estado.sigueVisible && estado.esperaRevision && (
+              <span className="text-xs text-white/50">
+                lo publicado sigue visible
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -50,6 +69,16 @@ export default function CourseAdminCard({
               <List size={16} />
               <span className="hidden sm:inline">Esquema</span>
             </button>
+          )}
+          {estado.esperaRevision && (
+            <Link
+              href={`/admin/cursos/pendientes/${courseId}`}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-200 hover:bg-orange-500/25 transition-colors"
+              title="Revisar los cambios, pedir cambios o aprobar"
+            >
+              <Eye size={16} />
+              Revisar
+            </Link>
           )}
           <Link
             href={`/admin/cursos/${courseId}${backParam}`}

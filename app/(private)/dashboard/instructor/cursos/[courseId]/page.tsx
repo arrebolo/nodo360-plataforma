@@ -17,6 +17,7 @@ import {
   MOTIVOS,
   type ClaveDelImpedimento,
 } from "@/lib/instructor/puede-enviarse";
+import { estadoVisibleDelCurso } from "@/lib/cursos/estado-visible";
 
 export default async function EditInstructorCoursePage({
   params,
@@ -60,6 +61,10 @@ export default async function EditInstructorCoursePage({
     course.jurisdiccion
   );
 
+  // Y el estado, del sitio compartido: para su autor, y distinguiendo un curso
+  // publicado con cambios en revision de uno que nunca se publico.
+  const estado = estadoVisibleDelCurso(course, { para: 'autor' });
+
   async function onSave(payload: any) {
     "use server";
     await updateMyCourse(userId, courseId, payload);
@@ -80,35 +85,13 @@ export default async function EditInstructorCoursePage({
                 {course.title}
               </h1>
 
-              {/* Badge de estado */}
-              <span className={`
-                inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium
-                ${course.status === 'published'
-                  ? 'bg-success/20 text-success'
-                  : course.status === 'pending_review'
-                    ? 'bg-yellow-500/20 text-yellow-400'
-                    : course.status === 'rejected'
-                      ? 'bg-red-500/20 text-red-400'
-                      : course.status === 'changes_requested'
-                        ? 'bg-amber-500/20 text-amber-400'
-                        : course.status === 'archived'
-                          ? 'bg-white/10 text-white/60'
-                          : 'bg-warning/20 text-warning'
-                }
-              `}>
-                {course.status === 'published' && 'Publicado'}
-                {course.status === 'pending_review' && (
-                  <><Clock className="w-3.5 h-3.5" /> Pendiente de aprobación</>
-                )}
-                {course.status === 'rejected' && (
-                  <><XCircle className="w-3.5 h-3.5" /> Rechazado</>
-                )}
-                {course.status === 'changes_requested' && (
-                  <><MessageSquare className="w-3.5 h-3.5" /> Cambios solicitados</>
-                )}
-                {course.status === 'archived' && 'Archivado'}
-                {course.status === 'draft' && 'Borrador'}
-                {course.status === 'coming_soon' && 'Próximamente'}
+              {/* Badge de estado, del sitio compartido: esta cadena de ternarios no
+                  tenia el caso de un curso publicado con cambios en revision, y le
+                  ponia a su autor «Pendiente de aprobación» sin decirle que lo
+                  publicado sigue viendose. */}
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${estado.clases}`}>
+                <span aria-hidden="true">{estado.icono}</span>
+                {estado.etiqueta}
               </span>
             </div>
           </div>

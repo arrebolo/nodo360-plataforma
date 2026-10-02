@@ -423,7 +423,10 @@ export async function deleteLesson(lessonId: string) {
  */
 export async function publishCourse(
   courseId: string,
-  forcePublish: boolean = false // Si true, ignora warnings (pero no hardErrors)
+  forcePublish: boolean = false, // Si true, ignora warnings (pero no hardErrors)
+  // Igual que al aprobar un curso en /admin/cursos/pendientes/[id]: el curso se publica,
+  // pero no se pregona. Para probar el flujo, o para una correccion que no toca anunciar.
+  noAnunciar: boolean = false
 ): Promise<{
   success: boolean
   error?: string
@@ -529,11 +532,13 @@ export async function publishCourse(
     }
   }
 
-  if (esPrimeraPublicacion) {
+  if (esPrimeraPublicacion && !noAnunciar) {
     const { anunciarCursoPublicado } = await import('@/lib/courses/anunciar-publicacion')
     anunciarCursoPublicado(courseId).catch(err =>
       console.error('Error anunciando el curso publicado:', err)
     )
+  } else if (esPrimeraPublicacion && noAnunciar) {
+    console.log(`[publishCourse] ${courseId} publicado sin anunciar, a peticion de quien publica`)
   }
 
   console.log(
