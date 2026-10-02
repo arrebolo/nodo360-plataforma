@@ -44,16 +44,35 @@ export default async function CertificatePage({
       `
       *,
       revoked_at,
-      course:courses(id, title, slug),
-      module:modules(id, title, slug)
+      module_id
     `
     )
     .eq("id", resolvedParams.certificateId)
     .single();
 
-  if (error || !certificate) {
+  if (error) {
+    // Antes esto se mezclaba con «no existe» y un fallo de la consulta se veía como un
+    // 404. La 117 repuntó `certificates.course_id` al espejo y el embed a `courses`
+    // dejó de resolverse: la página contestaba «no existe» a un certificado que sí
+    // existía. Ahora el curso se lee aparte y un error se dice.
+    console.error('[certificado] no se pudo leer:', error.code, error.message);
+  }
+
+  if (!certificate) {
     notFound();
   }
+
+  // El curso y el módulo, aparte: sus claves ajenas apuntan al espejo —la 117—, que
+  // todavía no se puede leer con la sesión de nadie, y un embed sigue la clave ajena.
+  // El id es el mismo en las dos tablas, así que se leen de las de trabajo por su id.
+  const [{ data: cursoDelCertificado }, { data: moduloDelCertificado }] = await Promise.all([
+    certificate.course_id
+      ? supabase.from('courses').select('id, title, slug').eq('id', certificate.course_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    certificate.module_id
+      ? supabase.from('modules').select('id, title').eq('id', certificate.module_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   // Verify that this certificate belongs to the current user
   if (certificate.user_id !== user.id) {
@@ -134,8 +153,8 @@ export default async function CertificatePage({
           <p className="text-xl text-white/70">
             Has completado exitosamente{" "}
             {certificate.type === "module"
-              ? `el módulo "${certificate.module?.title}"`
-              : `el curso "${certificate.course?.title ?? certificate.title}"`}
+              ? `el módulo "${moduloDelCertificado?.title}"`
+              : `el curso "${cursoDelCertificado?.title ?? certificate.title}"`}
           </p>
           )}
           {/* Mismo criterio que la pagina publica de verificacion: se dice
@@ -166,8 +185,8 @@ export default async function CertificatePage({
             certificateNumber={certificate.certificate_number}
             verificationUrl={certificate.verification_url || undefined}
             userName={user.full_name || user.email}
-            courseTitle={certificate.course?.title ?? certificate.title}
-            moduleTitle={certificate.module?.title}
+            courseTitle={cursoDelCertificado?.title ?? certificate.title}
+            moduleTitle={moduloDelCertificado?.title}
             issuedDate={new Date(certificate.issued_at)}
             type={certificate.type as "module" | "course"}
           />
@@ -181,9 +200,9 @@ export default async function CertificatePage({
               lanzaba una excepcion. El certificado sigue siendo valido, asi
               que se muestra igual; lo unico que desaparece es el enlace al
               curso, que ya no llevaria a ninguna parte. */}
-          {certificate.course?.slug && (
+          {cursoDelCertificado?.slug && (
             <Link
-              href={`/cursos/${certificate.course.slug}`}
+              href={`/cursos/${cursoDelCertificado.slug}`}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 text-white font-medium rounded-lg hover:bg-white/10 transition-all border border-white/10"
             >
               Ver curso

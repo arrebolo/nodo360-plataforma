@@ -2,12 +2,19 @@ import Link from 'next/link'
 import { Award, CheckCircle2, ClipboardCheck } from 'lucide-react'
 import { DiscordIcon } from '@/components/lesson/CommunityIcons'
 import { DISCORD_LINK_PROPS } from '@/lib/discord/invite'
+import { PedirCertificado } from '@/components/certificates/PedirCertificado'
 
 type Props = {
   /** Fecha de finalizacion (ISO). Se muestra si viene. */
   completedAt?: string | null
   /** Id del certificado, si lo hay, para enlazarlo. */
   certificateId?: string | null
+  /**
+   * Hace falta para poder emitirlo desde aquí: cumple las condiciones y no lo tiene.
+   * Sin esto, el aviso decía «lo terminaste» y no ofrecía nada, que es un callejón sin
+   * salida para quien aprobó el examen y llegó al 100 % más tarde.
+   */
+  cursoId?: string | null
   /** Numero del certificado, para mostrarlo junto al enlace. */
   certificateNumber?: string | null
   /** 'curso' en la ficha, 'leccion' al entrar a repasar. */
@@ -59,6 +66,7 @@ function formatearFecha(iso: string) {
 export function CourseAlreadyCompleted({
   completedAt,
   certificateId,
+  cursoId,
   certificateNumber,
   contexto = 'curso',
   examenPendiente = false,
@@ -69,6 +77,8 @@ export function CourseAlreadyCompleted({
   const ampliado = leccionesNuevas > 0 && !examenPendiente
   // Si falta el examen, el certificado no existe todavia: no se enlaza.
   const mostrarCertificado = !!certificateId && !examenPendiente
+  // Cumple y no lo tiene: se puede emitir. El servidor vuelve a comprobarlo.
+  const puedeEmitirlo = !certificateId && !examenPendiente && !!cursoId
 
   return (
     <div
@@ -132,6 +142,11 @@ export function CourseAlreadyCompleted({
                 cada recompensa se concede una sola vez.
               </p>
             </>
+          ) : puedeEmitirlo ? (
+            <p className="mt-2 text-sm text-white/80">
+              Tienes el curso completo y el examen aprobado:{' '}
+              <strong className="text-white/95">tu certificado está listo para emitirse</strong>.
+            </p>
           ) : (
             <p className="mt-2 text-sm text-white/70">
               {contexto === 'leccion'
@@ -153,6 +168,10 @@ export function CourseAlreadyCompleted({
                 <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
                 Hacer el examen final
               </Link>
+            )}
+
+            {puedeEmitirlo && cursoId && (
+              <PedirCertificado courseId={cursoId} />
             )}
 
             {mostrarCertificado && (

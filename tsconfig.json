@@ -43,6 +43,7 @@
     "src",
     "backup",
     "backups",
-    "_backup_cleanup_*"
+    "_backup_cleanup_*",
+    "tmp"
   ]
 }

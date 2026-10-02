@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { CertificateCard } from '@/components/certificates/CertificateCard'
 import { Award, BookOpen, ArrowRight } from 'lucide-react'
+import { cursosListosParaCertificado } from '@/lib/certificates/listosParaCertificado'
+import { PedirCertificado } from '@/components/certificates/PedirCertificado'
 
 export const metadata = {
   title: 'Mis Certificados',
@@ -36,6 +38,21 @@ export default async function DashboardCertificatesPage({ searchParams }: PagePr
   // Obtenemos el nombre del usuario por separado y score desde quiz_attempts si aplica
   const { data: certificates, error } = await supabase
     .from('certificates')
+  // SIN EMBED, dos consultas.
+  //
+  // La 117 repuntó `certificates.course_id` y `module_id` a `courses_publicados` y
+  // `modules_publicados`, y un embed de PostgREST sigue la clave ajena. Resultado: el
+  // embed a `courses` dejó de resolverse (PGRST200, «no se encontró relación») y la
+  // consulta ENTERA fallaba, así que la página se quedaba sin certificados sin decir por
+  // qué. Medido en producción.
+  //
+  // Apuntar el embed al espejo tampoco vale todavía: la 117 lo dejó cerrado a propósito
+  // —RLS sin políticas y REVOKE a `authenticated`— hasta que la copia publicada se abra
+  // para leer. También medido: 42501.
+  //
+  // Así que el curso se lee aparte, de `courses`, por su id. El id es el MISMO en las
+  // dos tablas —el espejo conserva la clave primaria—, así que esto seguirá valiendo
+  // cuando las lecturas pasen al espejo.
     .select(`
       id,
       type,
@@ -46,9 +63,7 @@ export default async function DashboardCertificatesPage({ searchParams }: PagePr
       certificate_url,
       verification_url,
       course_id,
-      module_id,
-      course:courses(id, slug, title, description),
-      module:modules(id, title)
+      module_id
     `)
     .eq('user_id', user.id)
     .order('issued_at', { ascending: false })
@@ -80,6 +95,22 @@ export default async function DashboardCertificatesPage({ searchParams }: PagePr
   }
 
   // Obtener nombre del usuario para mostrar en certificados
+  // Los cursos y los módulos de esos certificados, por su id.
+  const idsDeCurso = [...new Set((certificates ?? []).map((c) => c.course_id).filter(Boolean))] as string[]
+  const idsDeModulo = [...new Set((certificates ?? []).map((c) => c.module_id).filter(Boolean))] as string[]
+
+  const [{ data: cursosDeLosCertificados }, { data: modulosDeLosCertificados }] = await Promise.all([
+    idsDeCurso.length
+      ? supabase.from('courses').select('id, slug, title, description').in('id', idsDeCurso)
+      : Promise.resolve({ data: [] as { id: string; slug: string; title: string; description: string | null }[] }),
+    idsDeModulo.length
+      ? supabase.from('modules').select('id, title').in('id', idsDeModulo)
+      : Promise.resolve({ data: [] as { id: string; title: string }[] }),
+  ])
+
+  const porCurso = new Map((cursosDeLosCertificados ?? []).map((c) => [c.id, c]))
+  const porModulo = new Map((modulosDeLosCertificados ?? []).map((m) => [m.id, m]))
+
   const { data: userData2 } = await supabase
     .from('users')
     .select('full_name')
@@ -88,7 +119,19 @@ export default async function DashboardCertificatesPage({ searchParams }: PagePr
 
   const userName = userData2?.full_name || user.email?.split('@')[0] || 'Usuario'
 
-  let list = certificates ?? []
+  // LOS QUE YA CUMPLEN Y NO ESTAN EMITIDOS.
+  //
+  // El certificado se emite al marcar la última lección o al aprobar el examen. Quien
+  // aprueba el examen y llega al 100 % más tarde —porque se borró la lección que le
+  // faltaba, por ejemplo— no vuelve a pasar por ninguno de los dos y se quedaba
+  // cumpliendo las condiciones sin forma de pedirlo.
+  const listos = await cursosListosParaCertificado(user.id)
+
+  let list = (certificates ?? []).map((c) => ({
+    ...c,
+    course: c.course_id ? porCurso.get(c.course_id as string) ?? null : null,
+    module: c.module_id ? porModulo.get(c.module_id as string) ?? null : null,
+  }))
   if (courseSlug) {
     list = list.filter((c: any) => c.course?.slug === courseSlug)
   }
@@ -128,6 +171,33 @@ export default async function DashboardCertificatesPage({ searchParams }: PagePr
           </div>
         )}
       </div>
+
+      {/* Listos para emitir */}
+      {listos.length > 0 && (
+        <div className="mb-8 rounded-2xl border border-green-500/30 bg-green-500/10 p-5">
+          <h2 className="text-lg font-semibold text-white">
+            {listos.length === 1
+              ? 'Tienes un certificado listo para emitir'
+              : `Tienes ${listos.length} certificados listos para emitir`}
+          </h2>
+          <p className="mt-1 text-sm text-white/70">
+            Curso completo y examen aprobado. Solo falta emitirlo.
+          </p>
+          <ul className="mt-4 space-y-3">
+            {listos.map((curso) => (
+              <li
+                key={curso.courseId}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/5 p-3"
+              >
+                <Link href={`/cursos/${curso.slug}`} className="font-medium text-white hover:underline">
+                  {curso.titulo}
+                </Link>
+                <PedirCertificado courseId={curso.courseId} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Lista de certificados */}
       {list.length === 0 ? (
