@@ -128,6 +128,44 @@ las zonas. Las dos primeras las cierra la PR 3 quitándole a `anon` el SELECT so
 tablas de trabajo: entonces lo que no esté en el espejo no se puede leer, lo diga el
 código como lo diga.
 
+### Las rutas de API del alumno, y el cliente de servicio (PR 2, segunda vuelta)
+
+El inventario original solo miraba páginas. Faltaba lo más serio: **las rutas de API que
+sirven o corrigen contenido**, y entre ellas varias que usan el **cliente de servicio**,
+que salta la RLS.
+
+| fichero | lecturas | cliente | para quién |
+|---|---|---|---|
+| `app/api/quiz/submit` | 5 | **servicio** | corrige el examen |
+| `app/api/quiz/questions` | 2 | **servicio** | sirve las preguntas |
+| `lib/comments/index.ts` | 1 | **servicio** | comentarios de una lección |
+| `lib/projects/eligibility.ts` | 1 | **servicio** | si el alumno puede entregar proyecto |
+| `lib/progress/recalcularMatriculas.ts` | 1 | **servicio** | el denominador del progreso de todos |
+| `app/api/internal/discord-notify` | 1 | **servicio** | el anuncio público |
+| `app/api/progress` | 4 | sesión | el progreso al avanzar |
+| `app/api/continue` | 3 | sesión | por dónde sigue |
+| `app/api/enroll` | 2 | sesión | la matrícula |
+| `app/api/bookmarks`, `lesson-notes`, `comments/[id]` | 3 cada una, por embed | sesión | guardados, notas y comentarios |
+| `app/api/health` | 1 | sesión | infraestructura |
+
+**Consecuencia para la PR 3, y no es menor:** quitarle a `anon` el `SELECT` sobre las
+tablas de trabajo **no protege nada de esto**.
+
+- Las seis primeras usan el **service role**: entran igual, con o sin RLS. Para ellas el
+  guardián de CI es la única barrera, y por eso ahora están todas dentro.
+- Las demás usan la sesión del alumno, que es **`authenticated`, no `anon`**. Si la
+  política de RLS de `courses` deja leer los publicados a cualquier autenticado —y hoy
+  los deja—, cerrar solo `anon` deja a todos los alumnos leyendo las tablas de trabajo.
+
+Así que la PR 3 tiene dos mitades que no se sustituyen: **mover las lecturas** (las 137,
+que el guardián lleva contadas una por una) y **ajustar los permisos de las dos tablas a
+los dos roles**, no solo a `anon`.
+
+Lecturas de personal que siguen en las tablas de trabajo, y está bien que sigan:
+`lib/courses/contenido.ts`, `lib/courses/permiso-sobre-el-curso.ts`,
+`lib/courses/reviews.ts`, `lib/courses/anunciar-publicacion.ts`,
+`lib/quiz/permiso-del-examen.ts` y todo `/api/{admin,instructor,mentor}`.
+
 ## Punto 2 · Identificadores estables
 
 ### Lo que hay hoy, medido
