@@ -23,6 +23,21 @@ import { anunciarCursoPublicado } from '@/lib/courses/anunciar-publicacion'
 import { createInAppNotification, broadcastCourseChangesRequested } from '@/lib/notifications/broadcast'
 import { PedirCambiosEnCurso } from '@/components/admin/PedirCambiosEnCurso'
 
+/**
+ * SIEMPRE DINAMICA.
+ *
+ * Esta pantalla existe para decir el estado real de los cursos, y el estado cambia por
+ * caminos que no pasan por aqui: un instructor reenvia un curso a revision desde su
+ * panel y esta lista se queda con el HTML de antes. Paso de verdad: un curso en
+ * pending_review que aqui seguia saliendo como si nada, porque submit-review invalidaba
+ * /admin/cursos/pendientes pero no /admin/cursos.
+ *
+ * Se arregla por los dos lados —la ruta tambien se invalida al reenviar—, pero el que
+ * no depende de que nadie se acuerde es este.
+ */
+export const dynamic = 'force-dynamic'
+
+
 interface ReviewCoursePageProps {
   params: Promise<{ id: string }>
 }
@@ -35,11 +50,18 @@ export async function generateMetadata({ params }: ReviewCoursePageProps) {
 }
 
 // Server Action: Aprobar curso
-async function approveCourse(courseId: string) {
+async function approveCourse(courseId: string, formData: FormData) {
   'use server'
 
   await requireAdmin()
   const supabase = await createClient()
+
+  // «NO ANUNCIAR», como en las verificaciones.
+  //
+  // Sirve para dos cosas y las dos hacen falta: probar el flujo completo sin publicar
+  // nada en Discord ni en Telegram, y publicar un curso sin montar un anuncio —una
+  // correccion, algo que no toca pregonar—. Es una casilla: llega 'on' o nada.
+  const noAnunciar = formData.get('no_anunciar') === 'on'
 
   // Obtener curso con info del instructor para el email y Discord
   const { data: course } = await createAdminClient()
@@ -131,10 +153,12 @@ async function approveCourse(courseId: string) {
   // siempre; Telegram no llevaba nada. Van los dos, por separado, y fuera del
   // `if (course?.users)`: que no se sepa quien es el autor no es razon para no
   // anunciar el curso.
-  if (esPrimeraPublicacion) {
+  if (esPrimeraPublicacion && !noAnunciar) {
     anunciarCursoPublicado(courseId).catch(err =>
       console.error('Error anunciando el curso publicado:', err)
     )
+  } else if (noAnunciar) {
+    console.log(`🔇 [Admin] «No anunciar» marcado: ${courseId} se publica sin anuncio`)
   }
 
   revalidatePath('/admin/cursos/pendientes')
@@ -534,13 +558,27 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
               <h2 className="text-lg font-semibold text-white mb-4">Decisión</h2>
 
               {/* Aprobar */}
-              <form action={approveAction}>
+              <form action={approveAction} className="space-y-3">
+                <label className="flex items-start gap-2 text-sm text-white/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="no_anunciar"
+                    className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5"
+                  />
+                  <span>
+                    No anunciar en Discord ni en Telegram
+                    <span className="block text-xs text-white/40">
+                      El curso se publica igual. Útil para probar el flujo o para una
+                      corrección que no toca pregonar.
+                    </span>
+                  </span>
+                </label>
                 <button
                   type="submit"
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-500/20 border border-green-500/30 text-green-400 font-semibold rounded-xl hover:bg-green-500/30 transition"
                 >
                   <CheckCircle className="w-5 h-5" />
-                  Aprobar y Publicar
+                  Aprobar y publicar
                 </button>
               </form>
 

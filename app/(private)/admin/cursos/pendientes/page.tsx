@@ -3,6 +3,21 @@ import { requireAdmin } from '@/lib/admin/auth'
 import Link from 'next/link'
 import { Clock, Eye, CheckCircle, XCircle, User, Calendar, BookOpen } from 'lucide-react'
 
+/**
+ * SIEMPRE DINAMICA.
+ *
+ * Esta pantalla existe para decir el estado real de los cursos, y el estado cambia por
+ * caminos que no pasan por aqui: un instructor reenvia un curso a revision desde su
+ * panel y esta lista se queda con el HTML de antes. Paso de verdad: un curso en
+ * pending_review que aqui seguia saliendo como si nada, porque submit-review invalidaba
+ * /admin/cursos/pendientes pero no /admin/cursos.
+ *
+ * Se arregla por los dos lados —la ruta tambien se invalida al reenviar—, pero el que
+ * no depende de que nadie se acuerde es este.
+ */
+export const dynamic = 'force-dynamic'
+
+
 export const metadata = {
   title: 'Cursos Pendientes',
 }
@@ -23,6 +38,7 @@ export default async function PendingCoursesPage() {
       created_at,
       updated_at,
       instructor_id,
+      published_at,
       users!courses_instructor_id_fkey (
         id,
         full_name,

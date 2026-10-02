@@ -12,6 +12,11 @@ interface Course {
   thumbnail_url?: string
   level: string
   status: string
+  /**
+   * Hace falta para distinguir «pendiente de revision» de «publicado con cambios
+   * pendientes de revision»: son dos cosas distintas y el panel las pintaba igual.
+   */
+  published_at?: string | null
   is_free: boolean
   is_premium: boolean
   created_at: string
@@ -71,9 +76,19 @@ export function CoursesList({ courses, isLoading }: CoursesListProps) {
     advanced: { label: 'Avanzado', variant: 'error' }
   }
 
-  const statusConfig: Record<string, { label: string; variant: 'warning' | 'success' | 'default'; icon: string }> = {
+  // LOS SEIS ESTADOS, no tres.
+  //
+  // Faltaban pending_review, rejected, changes_requested y coming_soon, y todos caian
+  // en el `|| statusConfig.draft` de abajo: un curso ESPERANDO REVISION se pintaba
+  // «Borrador», indistinguible de uno que nadie ha mandado a ninguna parte. Por eso el
+  // panel no mostraba el estado real.
+  const statusConfig: Record<string, { label: string; variant: 'warning' | 'success' | 'default' | 'error'; icon: string }> = {
     draft: { label: 'Borrador', variant: 'warning', icon: '📝' },
+    pending_review: { label: 'Pendiente de revisión', variant: 'warning', icon: '⏳' },
+    changes_requested: { label: 'Cambios solicitados', variant: 'warning', icon: '📝' },
+    rejected: { label: 'Rechazado', variant: 'error', icon: '⛔' },
     published: { label: 'Publicado', variant: 'success', icon: '✅' },
+    coming_soon: { label: 'Próximamente', variant: 'default', icon: '🔜' },
     archived: { label: 'Archivado', variant: 'default', icon: '📦' }
   }
 
@@ -81,7 +96,15 @@ export function CoursesList({ courses, isLoading }: CoursesListProps) {
     <div className="space-y-4">
       {courses.map((course) => {
         const level = levelConfig[course.level] || levelConfig.beginner
-        const status = statusConfig[course.status] || statusConfig.draft
+        // UN CURSO PUBLICADO CON UNA REVISION EN CURSO no es «pendiente» a secas: su
+        // version publicada sigue en pie y lo que espera aprobacion son los cambios.
+        // Hoy `status` es una sola columna, asi que las dos cosas se distinguen por
+        // published_at: lo estuvo alguna vez y ahora esta en revision.
+        const revisionDeUnPublicado =
+          course.status === 'pending_review' && Boolean(course.published_at)
+        const status = revisionDeUnPublicado
+          ? { label: 'Cambios pendientes de revisión', variant: 'warning' as const, icon: '♻️' }
+          : statusConfig[course.status] || statusConfig.draft
 
         return (
           <div

@@ -202,6 +202,9 @@ export async function POST(
     revalidatePath('/dashboard/instructor/cursos')
     revalidatePath(`/dashboard/instructor/cursos/${courseId}`)
     revalidatePath('/admin/cursos/pendientes')
+    // Y la lista general, que es donde se mira el estado de todo: faltaba, y por eso
+    // un curso reenviado seguia saliendo ahi con su estado anterior.
+    revalidatePath('/admin/cursos')
     revalidatePath('/dashboard/mentor/cursos/pendientes')
 
     return NextResponse.json({
