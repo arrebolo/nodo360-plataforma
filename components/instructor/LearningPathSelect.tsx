@@ -33,14 +33,18 @@ export function LearningPathSelect({ courseId }: LearningPathSelectProps) {
     const fetchData = async () => {
       try {
         // Cargar todas las rutas
-        const pathsRes = await fetch('/api/admin/learning-paths')
+        // SOLO LAS ACTIVAS, y por la ruta del instructor: con /api/admin/learning-paths
+        // aparecian tambien las apagadas —en la auditoria se pudo elegir «Ecosistema
+        // Ethereum», inactiva—, y asignar un curso a una ruta que no se ve no lo mete
+        // en ninguna parte.
+        const pathsRes = await fetch('/api/instructor/learning-paths')
         if (pathsRes.ok) {
           const data = await pathsRes.json()
           setAvailablePaths(data.paths || [])
         }
 
         // Cargar rutas asignadas al curso
-        const assignedRes = await fetch(`/api/admin/courses/${courseId}/paths`)
+        const assignedRes = await fetch(`/api/instructor/courses/${courseId}/paths`)
         if (assignedRes.ok) {
           const data = await assignedRes.json()
           setAssignedPaths(data.paths || [])
@@ -66,7 +70,7 @@ export function LearningPathSelect({ courseId }: LearningPathSelectProps) {
     try {
       if (isAssigned(pathId)) {
         // Quitar de la ruta
-        const res = await fetch(`/api/admin/courses/${courseId}/paths`, {
+        const res = await fetch(`/api/instructor/courses/${courseId}/paths`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ learning_path_id: pathId }),
@@ -81,7 +85,7 @@ export function LearningPathSelect({ courseId }: LearningPathSelectProps) {
         }
       } else {
         // Anadir a la ruta
-        const res = await fetch(`/api/admin/courses/${courseId}/paths`, {
+        const res = await fetch(`/api/instructor/courses/${courseId}/paths`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

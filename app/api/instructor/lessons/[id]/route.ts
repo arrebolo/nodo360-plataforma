@@ -1,27 +1,26 @@
-/**
- * Borrar una leccion, desde el panel de administracion.
- *
- * La logica esta en lib/courses/contenido.ts, compartida con /api/instructor/...: es
- * un intercambio en tres pasos con un indice temporal, y dos copias se desfasarian.
- * Aqui solo cambia el permiso: esta ruta exige admin.
- */
 import { NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/ratelimit'
-import { exigirAdminEnApi } from '@/lib/admin/auth-api'
+import { permisoSobreElCurso } from '@/lib/courses/permiso-sobre-el-curso'
 import { borrarLeccion, leccionConSuCurso } from '@/lib/courses/contenido'
 
+/**
+ * Borrar una lección de un curso propio.
+ *
+ * El curso sale del MODULO de la lección —lección → módulo → curso—, no de
+ * `lessons.course_id`, que es una copia.
+ */
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const limite = await checkRateLimit(request, 'api')
   if (limite) return limite
 
   try {
-    const guarda = await exigirAdminEnApi()
-    if (!guarda.ok) return guarda.respuesta
-
     const { id } = await params
-    if (!(await leccionConSuCurso(id))) {
-      return NextResponse.json({ error: 'La lección no existe.' }, { status: 404 })
-    }
+
+    const leccion = await leccionConSuCurso(id)
+    if (!leccion) return NextResponse.json({ error: 'La lección no existe.' }, { status: 404 })
+
+    const permiso = await permisoSobreElCurso(leccion.course_id)
+    if (!permiso.ok) return permiso.respuesta
 
     const resultado = await borrarLeccion(id)
     if (!resultado.ok) {
@@ -30,7 +29,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('[admin/lessons] Error inesperado:', error)
+    console.error('[instructor/lessons] Error inesperado:', error)
     return NextResponse.json({ error: 'Error del servidor.' }, { status: 500 })
   }
 }

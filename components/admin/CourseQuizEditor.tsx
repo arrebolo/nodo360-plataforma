@@ -32,11 +32,18 @@ interface Module {
 }
 
 interface CourseQuizEditorProps {
+  /**
+   * A quien llamar: '/api/instructor' desde la zona del instructor, '/api/admin' desde
+   * el panel. Las dos rutas son la MISMA implementacion —la de instructor la
+   * reexporta— y el permiso lo decide `permisoSobreElExamen()`. Esta aqui para que
+   * ninguna pantalla de /dashboard/instructor llame a /api/admin.
+   */
+  api?: string
   courseId: string
   courseName?: string
 }
 
-export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps) {
+export function CourseQuizEditor({ courseId, courseName, api = '/api/admin' }: CourseQuizEditorProps) {
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [modules, setModules] = useState<Module[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -49,7 +56,7 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/admin/quiz?courseId=${courseId}`)
+        const res = await fetch(`${api}/quiz?courseId=${courseId}`)
         const json = await res.json()
 
         if (!res.ok) throw new Error(json.error || 'Error al cargar')
@@ -125,7 +132,7 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
 
     if (question.id) {
       try {
-        const res = await fetch(`/api/admin/quiz?id=${question.id}`, {
+        const res = await fetch(`${api}/quiz?id=${question.id}`, {
           method: 'DELETE'
         })
         if (!res.ok) {
@@ -169,7 +176,7 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
 
     try {
       const method = question.id ? 'PUT' : 'POST'
-      const res = await fetch('/api/admin/quiz', {
+      const res = await fetch(`${api}/quiz`, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(question)
@@ -207,7 +214,7 @@ export function CourseQuizEditor({ courseId, courseName }: CourseQuizEditorProps
 
       try {
         const method = question.id ? 'PUT' : 'POST'
-        const res = await fetch('/api/admin/quiz', {
+        const res = await fetch(`${api}/quiz`, {
           method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(question)

@@ -350,7 +350,11 @@ export default async function EditInstructorCoursePage({
               </p>
             </div>
           ) : (
-            <CourseQuizEditor courseId={course.id} courseName={course.title} />
+            <CourseQuizEditor
+              courseId={course.id}
+              courseName={course.title}
+              api="/api/instructor"
+            />
           )}
         </div>
       </div>
