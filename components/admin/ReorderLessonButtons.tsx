@@ -9,13 +9,22 @@ interface ReorderLessonButtonsProps {
   moduleId: string
   currentIndex: number
   totalLessons: number
+  /**
+   * A quien llamar: '/api/instructor' desde la zona del instructor, '/api/admin' desde
+   * el panel. El permiso NO lo decide esto, lo decide la ruta: la de instructor exige
+   * que el curso sea tuyo y la de admin exige admin. Esta aqui porque ninguna pantalla
+   * de /dashboard/instructor debe llamar a /api/admin, y porque los cuatro botones del
+   * editor del instructor recibian 403.
+   */
+  api?: string
 }
 
 export function ReorderLessonButtons({
   lessonId,
   moduleId,
   currentIndex,
-  totalLessons
+  totalLessons,
+  api = '/api/admin',
 }: ReorderLessonButtonsProps) {
   const [isReordering, setIsReordering] = useState(false)
   // El error, EN PANTALLA. Antes era un alert(), que lo cierra cualquier cosa y no
@@ -29,7 +38,7 @@ export function ReorderLessonButtons({
     try {
       console.log('🔄 [Reorder Lesson] Reordenando:', direction)
 
-      const response = await fetch('/api/admin/lessons/reorder', {
+      const response = await fetch(`${api}/lessons/reorder`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

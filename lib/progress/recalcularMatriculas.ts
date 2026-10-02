@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
  * Pone al dia el progreso de todas las matriculas de un curso.
@@ -30,10 +30,19 @@ import { createClient } from '@/lib/supabase/server'
  *   problema en cuanto nadie deduce "completado" de ese campo a solas: ver
  *   estadoDeLaMatricula() en @/lib/progress/estadoMatricula.
  */
+/**
+ * CON EL CLIENTE DE SERVICIO, y no con la sesion de quien llama.
+ *
+ * Esto repasa las matriculas de TODO EL MUNDO en un curso. Con la sesion de quien
+ * borra una leccion —su autor, por ejemplo— la RLS de `course_enrollments` no le deja
+ * ver las matriculas de los alumnos: la lista salia vacia y la funcion devolvia
+ * «0 revisadas» sin haber hecho nada y sin quejarse. Un recalculo que no recalcula es
+ * peor que no tenerlo, porque el porcentaje se queda mintiendo.
+ */
 export async function recalcularMatriculasDelCurso(
   courseId: string
 ): Promise<{ revisadas: number; actualizadas: number }> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: lecciones, error: errorLecciones } = await supabase
     .from('lessons')
