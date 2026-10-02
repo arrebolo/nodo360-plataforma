@@ -66,7 +66,8 @@ export default async function InstructorCoursesPage({
       updated_at,
       thumbnail_url,
       specialty_id,
-      jurisdiccion
+      jurisdiccion,
+      published_at
     `);
 
   // Filtrar por instructor (excepto admin que ve todos)

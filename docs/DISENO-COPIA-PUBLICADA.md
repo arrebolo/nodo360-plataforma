@@ -204,6 +204,67 @@ hecho de estar en otra tabla —hoy están cerradas a todos los roles, y se qued
 La corrección (`lib/quiz/checkCourseQuiz.ts` y `/api/quiz/submit`) lee del espejo,
 para que a nadie se le corrija con un examen distinto del que hizo.
 
+## Un curso publicado con cambios pendientes de revisión
+
+Esto sale de un caso real: un curso aprobado, modificado por su autor y reenviado a
+revisión. Lo que tiene que pasar es claro —la versión publicada sigue en pie y los
+cambios no se ven hasta aprobarlos— y la copia publicada lo resuelve, pero **no
+gratis**: hacen falta tres cosas más de las que estaban escritas.
+
+### 1. `status` pasa a describir la COPIA DE TRABAJO
+
+Hoy `status` intenta decir dos cosas a la vez —qué hay publicado y en qué punto está la
+revisión— y no puede: es una sola columna. De ahí que un curso aprobado y reenviado
+«desaparezca» de publicado.
+
+Con la copia publicada se separan sin añadir ninguna columna:
+
+- **qué está en el catálogo** lo dice el espejo: `courses_publicados.retirada_el IS NULL`
+- **en qué punto está el trabajo** lo dice `status`: `draft`, `pending_review`,
+  `changes_requested`
+
+Así «publicado con cambios pendientes» es simplemente *espejo vivo + `status =
+pending_review`*, y no hay estado nuevo que inventar. Lo que sí hay que escribir en
+algún sitio es que `status` ya no habla del catálogo, porque hoy medio código lo lee
+como si hablara.
+
+### 2. El trigger de la 117 tiene que dejar de retirar la copia al salir de «published»
+
+**Esto es un cambio de la 117, así que la PR 3 lleva migración**, y no me había dado
+cuenta al escribir el diseño.
+
+Hoy `al_publicar_refrescar_la_copia()` retira el espejo en cuanto el estado deja de ser
+`published`. Eso es lo correcto mientras `status` signifique «está en el catálogo»: si
+el admin archiva un curso, fuera. Pero en cuanto `status` describa el trabajo, ese mismo
+trigger **despublicaría el curso en el momento en que su autor reenvía cambios** — justo
+lo contrario de lo que queremos.
+
+La regla nueva: se retira cuando la administración lo decide (`archived`, o `draft`
+puesto por un admin), **no** cuando el curso pasa a `pending_review` o a
+`changes_requested`. Publicar sigue siendo `publicar_curso()`, que al aprobar una
+revisión hace exactamente lo que ya hace: refrescar la copia y retirar lo que ya no
+está.
+
+### 3. Qué ha cambiado, para poder revisarlo
+
+El espejo guarda los valores publicados, así que la comparación sale de los datos y no
+hay que guardar diffs: `courses` frente a `courses_publicados` campo a campo, y
+`lessons` frente a `lessons_publicadas` por `id` —título y contenido—. Con eso, la
+pantalla de revisión del admin puede enseñar **lo que cambia respecto a lo publicado**,
+que es lo único que hace falta revisar.
+
+En `/admin/cursos`, el curso aparece como **«Cambios pendientes de revisión»** y entra en
+la lista de pendientes, con acceso a revisar, pedir cambios o aprobar. Eso ya está hecho
+—sin esperar a la copia publicada— distinguiendo por `published_at IS NOT NULL AND
+status = 'pending_review'`, que es lo que hoy se puede saber.
+
+### Lo que NO hace falta
+
+- Ninguna columna nueva.
+- Ninguna tabla de versiones: la «versión pendiente» es la copia de trabajo, que ya
+  existe. Era el punto de todo el diseño.
+- Guardar diffs: se calculan.
+
 ## Esfuerzo y orden
 
 Cuatro PR, en este orden, porque el orden es la parte peligrosa:

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { Impedimento } from '@/lib/instructor/puede-enviarse'
+import { estadoVisibleDelCurso } from '@/lib/cursos/estado-visible'
 import {
   Pencil,
   Eye,
@@ -23,6 +24,12 @@ interface Course {
   slug: string
   level: 'beginner' | 'intermediate' | 'advanced'
   status: 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived' | 'coming_soon' | 'changes_requested'
+  /**
+   * Hace falta para distinguir «en revision» de «publicado con cambios en revision»:
+   * en el segundo caso la version publicada sigue viendose, y quien escribe el curso
+   * necesita saberlo antes de tocar nada.
+   */
+  published_at?: string | null
   is_free: boolean
   price?: number | null
   total_modules: number | null
@@ -41,16 +48,6 @@ interface InstructorCourseCardProps {
    * reglas que va a aplicar el envío. `null` = nada lo impide.
    */
   impedimento?: Impedimento | null
-}
-
-const statusConfig = {
-  draft: { label: 'Borrador', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  pending_review: { label: 'En revisión', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
-  published: { label: 'Publicado', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  rejected: { label: 'Rechazado', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
-  changes_requested: { label: 'Cambios solicitados', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-  archived: { label: 'Archivado', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
-  coming_soon: { label: 'Proximamente', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
 }
 
 const levelConfig = {
@@ -76,7 +73,12 @@ export default function InstructorCourseCard({
   const [confirmando, setConfirmando] = useState<null | 'enviar' | 'duplicar'>(null)
   const router = useRouter()
 
-  const status = statusConfig[currentStatus] || statusConfig.draft
+  // Del sitio compartido: aqui habia una copia de la tabla de estados, con otros
+  // nombres que en el panel de administracion para los mismos estados.
+  const estado = estadoVisibleDelCurso(
+    { status: currentStatus, published_at: course.published_at },
+    { para: 'autor' }
+  )
   const level = levelConfig[course.level] || levelConfig.beginner
 
   const formatDate = (dateString: string) => {
@@ -169,8 +171,9 @@ export default function InstructorCourseCard({
 
         {/* Badges */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${status.color}`}>
-            {status.label}
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${estado.clases}`}>
+            <span aria-hidden="true">{estado.icono}</span>
+            {estado.etiqueta}
           </span>
           <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${course.is_free ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#f7931a]/10 text-[#f7931a]'}`}>
             {course.is_free ? 'Gratis' : `${course.price || 0}€`}
@@ -330,17 +333,11 @@ export default function InstructorCourseCard({
             )
           )}
 
-          {/* Indicador de estado para pending_review */}
-          {currentStatus === 'pending_review' && (
-            <span className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-orange-400 bg-orange-500/10 rounded-lg">
-              En revisión
-            </span>
-          )}
-
-          {/* Indicador de estado para published */}
-          {currentStatus === 'published' && (
-            <span className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-emerald-400 bg-emerald-500/10 rounded-lg">
-              Publicado
+          {/* Mientras se revisan los cambios de un curso publicado, lo importante no es
+              repetir el estado —ya esta arriba— sino que lo publicado sigue en pie. */}
+          {estado.esperaRevision && estado.sigueVisible && (
+            <span className="text-xs text-white/50">
+              Lo publicado sigue visible
             </span>
           )}
         </div>

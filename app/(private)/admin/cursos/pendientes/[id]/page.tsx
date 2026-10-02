@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { estadoVisibleDelCurso } from '@/lib/cursos/estado-visible'
 import { requireAdmin } from '@/lib/admin/auth'
 import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -23,6 +24,21 @@ import { anunciarCursoPublicado } from '@/lib/courses/anunciar-publicacion'
 import { createInAppNotification, broadcastCourseChangesRequested } from '@/lib/notifications/broadcast'
 import { PedirCambiosEnCurso } from '@/components/admin/PedirCambiosEnCurso'
 
+/**
+ * SIEMPRE DINAMICA.
+ *
+ * Esta pantalla existe para decir el estado real de los cursos, y el estado cambia por
+ * caminos que no pasan por aqui: un instructor reenvia un curso a revision desde su
+ * panel y esta lista se queda con el HTML de antes. Paso de verdad: un curso en
+ * pending_review que aqui seguia saliendo como si nada, porque submit-review invalidaba
+ * /admin/cursos/pendientes pero no /admin/cursos.
+ *
+ * Se arregla por los dos lados —la ruta tambien se invalida al reenviar—, pero el que
+ * no depende de que nadie se acuerde es este.
+ */
+export const dynamic = 'force-dynamic'
+
+
 interface ReviewCoursePageProps {
   params: Promise<{ id: string }>
 }
@@ -35,11 +51,18 @@ export async function generateMetadata({ params }: ReviewCoursePageProps) {
 }
 
 // Server Action: Aprobar curso
-async function approveCourse(courseId: string) {
+async function approveCourse(courseId: string, formData: FormData) {
   'use server'
 
   await requireAdmin()
   const supabase = await createClient()
+
+  // «NO ANUNCIAR», como en las verificaciones.
+  //
+  // Sirve para dos cosas y las dos hacen falta: probar el flujo completo sin publicar
+  // nada en Discord ni en Telegram, y publicar un curso sin montar un anuncio —una
+  // correccion, algo que no toca pregonar—. Es una casilla: llega 'on' o nada.
+  const noAnunciar = formData.get('no_anunciar') === 'on'
 
   // Obtener curso con info del instructor para el email y Discord
   const { data: course } = await createAdminClient()
@@ -131,10 +154,12 @@ async function approveCourse(courseId: string) {
   // siempre; Telegram no llevaba nada. Van los dos, por separado, y fuera del
   // `if (course?.users)`: que no se sepa quien es el autor no es razon para no
   // anunciar el curso.
-  if (esPrimeraPublicacion) {
+  if (esPrimeraPublicacion && !noAnunciar) {
     anunciarCursoPublicado(courseId).catch(err =>
       console.error('Error anunciando el curso publicado:', err)
     )
+  } else if (noAnunciar) {
+    console.log(`🔇 [Admin] «No anunciar» marcado: ${courseId} se publica sin anuncio`)
   }
 
   revalidatePath('/admin/cursos/pendientes')
@@ -340,6 +365,11 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
 
   const instructor = course.users as any
 
+  // Primera publicacion o revision de un curso ya publicado. En el segundo caso hay una
+  // version viva en el catalogo que no se toca mientras se decide, y aprobar la
+  // sustituye: quien revisa tiene que saberlo antes de pulsar.
+  const estado = estadoVisibleDelCurso(course, { para: 'admin' })
+
   // Calcular estadísticas
   const totalModules = modules?.length || 0
   const totalLessons = modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0
@@ -367,8 +397,9 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold text-white">{course.title}</h1>
-                <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">
-                  Pendiente de revisión
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${estado.clases}`}>
+                  <span aria-hidden="true">{estado.icono}</span>
+                  {estado.etiqueta}
                 </span>
               </div>
               <p className="text-white/60">{course.description}</p>
@@ -533,14 +564,39 @@ export default async function ReviewCoursePage({ params }: ReviewCoursePageProps
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
               <h2 className="text-lg font-semibold text-white mb-4">Decisión</h2>
 
+              {estado.sigueVisible && (
+                <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-sm text-orange-200">
+                  <p className="font-semibold text-orange-300">Este curso ya está publicado</p>
+                  <p className="mt-1">
+                    Lo que estás revisando son cambios. La versión publicada sigue visible
+                    para los alumnos mientras decides, y al aprobar la sustituye. Como no
+                    es su primera publicación, no se anuncia en ningún sitio.
+                  </p>
+                </div>
+              )}
+
               {/* Aprobar */}
-              <form action={approveAction}>
+              <form action={approveAction} className="space-y-3">
+                <label className="flex items-start gap-2 text-sm text-white/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="no_anunciar"
+                    className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5"
+                  />
+                  <span>
+                    No anunciar en Discord ni en Telegram
+                    <span className="block text-xs text-white/40">
+                      El curso se publica igual. Útil para probar el flujo o para una
+                      corrección que no toca pregonar.
+                    </span>
+                  </span>
+                </label>
                 <button
                   type="submit"
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-500/20 border border-green-500/30 text-green-400 font-semibold rounded-xl hover:bg-green-500/30 transition"
                 >
                   <CheckCircle className="w-5 h-5" />
-                  Aprobar y Publicar
+                  Aprobar y publicar
                 </button>
               </form>
 

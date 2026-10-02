@@ -2,6 +2,22 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/admin/auth'
 import Link from 'next/link'
 import { Clock, Eye, CheckCircle, XCircle, User, Calendar, BookOpen } from 'lucide-react'
+import { estadoVisibleDelCurso } from '@/lib/cursos/estado-visible'
+
+/**
+ * SIEMPRE DINAMICA.
+ *
+ * Esta pantalla existe para decir el estado real de los cursos, y el estado cambia por
+ * caminos que no pasan por aqui: un instructor reenvia un curso a revision desde su
+ * panel y esta lista se queda con el HTML de antes. Paso de verdad: un curso en
+ * pending_review que aqui seguia saliendo como si nada, porque submit-review invalidaba
+ * /admin/cursos/pendientes pero no /admin/cursos.
+ *
+ * Se arregla por los dos lados —la ruta tambien se invalida al reenviar—, pero el que
+ * no depende de que nadie se acuerde es este.
+ */
+export const dynamic = 'force-dynamic'
+
 
 export const metadata = {
   title: 'Cursos Pendientes',
@@ -12,6 +28,10 @@ export default async function PendingCoursesPage() {
   const supabase = await createClient()
 
   // Obtener cursos pendientes de revisión
+  // `status` FALTABA en esta consulta: filtraba por el sin traerlo, asi que la fila
+  // llegaba sin estado y la pantalla no podia decir de que clase de pendiente se trata.
+  // Lo canto la prueba que sirve la pagina, porque el traductor de estados no se
+  // inventa un «Borrador» cuando no sabe: pinta «Sin estado».
   const { data: courses, error } = await supabase
     .from('courses')
     .select(`
@@ -23,6 +43,8 @@ export default async function PendingCoursesPage() {
       created_at,
       updated_at,
       instructor_id,
+      published_at,
+      status,
       users!courses_instructor_id_fkey (
         id,
         full_name,
@@ -97,6 +119,9 @@ export default async function PendingCoursesPage() {
           <div className="space-y-4">
             {coursesWithStats.map((course: any) => {
               const instructor = course.users
+              // Primera publicacion o revision de algo ya publicado: no es lo mismo, y
+              // en la segunda hay una version viva en el catalogo que no se toca.
+              const estado = estadoVisibleDelCurso(course)
               return (
                 <div
                   key={course.id}
@@ -109,6 +134,10 @@ export default async function PendingCoursesPage() {
                         <h3 className="text-xl font-semibold text-white truncate">
                           {course.title}
                         </h3>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${estado.clases}`}>
+                          <span aria-hidden="true">{estado.icono}</span>
+                          {estado.etiqueta}
+                        </span>
                         <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                           course.level === 'beginner' ? 'bg-green-500/20 text-green-400' :
                           course.level === 'intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -118,6 +147,14 @@ export default async function PendingCoursesPage() {
                            course.level === 'intermediate' ? 'Intermedio' : 'Avanzado'}
                         </span>
                       </div>
+
+                      {estado.sigueVisible && (
+                        <p className="text-sm text-orange-200/90 mb-3">
+                          Este curso ya está publicado. Lo que espera revisión son los
+                          cambios: la versión publicada sigue visible para los alumnos
+                          mientras lo decides.
+                        </p>
+                      )}
 
                       {course.description && (
                         <p className="text-white/60 text-sm mb-4 line-clamp-2">

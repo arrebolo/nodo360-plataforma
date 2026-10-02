@@ -13,6 +13,7 @@ import {
   CheckCircle,
 } from 'lucide-react'
 import { getReviewCounts } from '@/lib/courses/reviews'
+import { estadoVisibleDelCurso } from '@/lib/cursos/estado-visible'
 
 export const metadata = {
   title: 'Cursos Pendientes | Mentor',
@@ -24,6 +25,10 @@ export default async function MentorPendingCoursesPage() {
   const supabase = await createClient()
 
   // Obtener cursos pendientes de revisión
+  // `status` FALTABA en esta consulta: filtraba por el sin traerlo, asi que la fila
+  // llegaba sin estado y la pantalla no podia decir de que clase de pendiente se trata.
+  // Lo canto la prueba que sirve la pagina, porque el traductor de estados no se
+  // inventa un «Borrador» cuando no sabe: pinta «Sin estado».
   const { data: courses, error } = await supabase
     .from('courses')
     .select(`
@@ -37,6 +42,8 @@ export default async function MentorPendingCoursesPage() {
       thumbnail_url,
       created_at,
       updated_at,
+      published_at,
+      status,
       users!courses_instructor_id_fkey (
         id,
         full_name,
@@ -158,6 +165,18 @@ export default async function MentorPendingCoursesPage() {
                           {course.title}
                         </h2>
                         <div className="flex items-center gap-2 flex-shrink-0">
+                          {/* De que clase de pendiente se trata: con un curso ya
+                              publicado, lo que se revisa son cambios y hay una version
+                              viva que no se toca. */}
+                          {(() => {
+                            const estado = estadoVisibleDelCurso(course)
+                            return (
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${estado.clases}`}>
+                                <span aria-hidden="true">{estado.icono}</span>
+                                {estado.etiqueta}
+                              </span>
+                            )
+                          })()}
                           {/* Review progress */}
                           <span className="flex items-center gap-1.5 px-3 py-1 bg-white/10 text-white/70 rounded-full text-xs font-medium">
                             <CheckCircle className="w-3.5 h-3.5" />
