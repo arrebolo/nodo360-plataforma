@@ -323,6 +323,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <CourseAlreadyCompleted
               completedAt={enrollment?.completed_at ?? certificado?.issued_at ?? null}
               certificateId={certificado?.id ?? null}
+              cursoId={course.id}
               certificateNumber={certificado?.certificate_number ?? null}
               examenPendiente={examenPendiente}
               cursoSlug={course.slug}

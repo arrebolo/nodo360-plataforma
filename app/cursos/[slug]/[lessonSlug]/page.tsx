@@ -378,6 +378,7 @@ export default async function LessonPage({ params }: PageProps) {
       {yaCompletado && (
         <div className="mx-auto max-w-7xl px-4 pt-4 lg:px-6">
           <CourseAlreadyCompleted
+            cursoId={course.id}
             contexto="leccion"
             completedAt={matricula?.completed_at ?? certificado?.issued_at ?? null}
             certificateId={certificado?.id ?? null}

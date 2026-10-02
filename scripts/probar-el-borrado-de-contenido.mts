@@ -280,6 +280,14 @@ try {
     await svc.from('courses').update({ status: 'draft', published_at: null }).eq('id', id)
     const { error } = await svc.from('courses').delete().eq('id', id)
     if (error) console.log(`   curso ${id.slice(0, 8)}: ${error.message}`)
+    // EL ESPEJO, EN ORDEN. Las preguntas publicadas apuntan a los modulos publicados,
+    // asi que sin borrarlas primero fallan los dos borrados siguientes —y el curso se
+    // quedaba en el registro del espejo, acumulandose entre pasadas—.
+    const modulosEspejo = ((await svc.from('modules_publicados').select('id').eq('course_id', id)).data ?? [])
+      .map((m) => m.id)
+    if (modulosEspejo.length) {
+      await svc.from('quiz_questions_publicadas').delete().in('module_id', modulosEspejo)
+    }
     await svc.from('lessons_publicadas').delete().eq('course_id', id)
     await svc.from('modules_publicados').delete().eq('course_id', id)
     await svc.from('courses_publicados').delete().eq('id', id)
