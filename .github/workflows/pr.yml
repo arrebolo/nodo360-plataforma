@@ -61,3 +61,12 @@ jobs:
       # Los umbrales de nivel viven en dos sitios a proposito. Esto comprueba
       # que no se separen, sin tocar la base de datos.
       - run: node scripts/check-level-thresholds.mjs
+
+      # EL GUARDIAN DE LA COPIA PUBLICADA: ninguna superficie publica lee las
+      # tablas de trabajo. Lo que ven los alumnos sale de *_publicados; si no,
+      # cualquier cambio a medias del instructor se publica solo. Corta en el
+      # primer hallazgo sin declarar, y tambien si sobra una excepcion, para que
+      # la PR que mueva una lectura al espejo no pueda olvidarse de quitarla.
+      #
+      # No toca la base: solo lee el codigo, asi que no necesita credenciales.
+      - run: npx tsx scripts/comprobar-lecturas-publicas.mts

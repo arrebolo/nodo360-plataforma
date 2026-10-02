@@ -93,6 +93,41 @@ Dos mitades, porque una sola no basta:
    fichero nuevo que no está en la lista revisada. Una lista escrita a mano
    envejece en silencio; un censo del catálogo, no.
 
+### Lo que el guardián corrigió del inventario (PR 2, aplicada)
+
+El inventario de arriba se escribió leyendo el código. Al ejecutar el guardián no
+cuadraba, y las diferencias importan:
+
+**Una tercera sintaxis de embed, que ningún grep del nombre de la tabla ve.**
+`lib/db/learning-paths.ts` llega a `courses` así:
+
+```ts
+.from('learning_path_courses')
+.select(`position, is_required, course:course_id!inner (*)`)
+```
+
+Embebe por el nombre de la **columna de la clave ajena**, no por el de la tabla: la
+palabra `courses` no aparece. El inventario daba ese fichero por «lee por el helper» y
+lo que hace es leer `courses` sin nombrarla. El guardián mira ahora las tres formas:
+`from('x')`, `x (` y `clave_id (`.
+
+**Cuatro entradas del inventario sobraban y tres lecturas faltaban.** Sobraban
+`app/cursos/page.tsx` y `app/rutas/[slug]/page.tsx` —leen por su ayudante, no
+directamente—, y `lib/progress/getCourseProgress.ts` no lee `courses`. Faltaban
+`modules` en `app/sitemap.ts` (por embed) y las dos lecturas de
+`app/certificados/[certificateId]/page.tsx`, que no estaban en el inventario y hoy no
+pueden ir al espejo porque está cerrado.
+
+La lista de excepciones del guardián **sale de ejecutarlo**, no de este documento. Son
+20 ficheros y 102 lecturas, cada una numerada, y el guardián corta también cuando una
+excepción deja de hacer falta: así la PR 3 no puede olvidarse de retirarlas.
+
+**Lo que el guardián no ve, y por qué no basta con él**: una función de la base que lea
+por dentro, una vista sobre las tablas de trabajo, o una lectura en un fichero fuera de
+las zonas. Las dos primeras las cierra la PR 3 quitándole a `anon` el SELECT sobre las
+tablas de trabajo: entonces lo que no esté en el espejo no se puede leer, lo diga el
+código como lo diga.
+
 ## Punto 2 · Identificadores estables
 
 ### Lo que hay hoy, medido
