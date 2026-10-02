@@ -19,11 +19,12 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     if (!guarda.ok) return guarda.respuesta
 
     const { id } = await params
-    if (!(await leccionConSuCurso(id))) {
+    const leccion = await leccionConSuCurso(id)
+    if (!leccion) {
       return NextResponse.json({ error: 'La lección no existe.' }, { status: 404 })
     }
 
-    const resultado = await borrarLeccion(id)
+    const resultado = await borrarLeccion(leccion)
     if (!resultado.ok) {
       return NextResponse.json({ error: resultado.error }, { status: resultado.estado })
     }

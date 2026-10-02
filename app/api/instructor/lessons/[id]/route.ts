@@ -22,7 +22,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const permiso = await permisoSobreElCurso(leccion.course_id)
     if (!permiso.ok) return permiso.respuesta
 
-    const resultado = await borrarLeccion(id)
+    const resultado = await borrarLeccion(leccion)
     if (!resultado.ok) {
       return NextResponse.json({ error: resultado.error }, { status: resultado.estado })
     }

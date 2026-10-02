@@ -22,11 +22,12 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     if (!guarda.ok) return guarda.respuesta
 
     const { id } = await params
-    if (!(await moduloConSuCurso(id))) {
+    const modulo = await moduloConSuCurso(id)
+    if (!modulo) {
       return NextResponse.json({ error: 'El módulo no existe.' }, { status: 404 })
     }
 
-    const resultado = await borrarModulo(id)
+    const resultado = await borrarModulo(modulo)
     if (!resultado.ok) {
       return NextResponse.json({ error: resultado.error }, { status: resultado.estado })
     }
