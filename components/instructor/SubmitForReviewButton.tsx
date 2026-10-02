@@ -24,7 +24,20 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
   const router = useRouter()
   const { hayCambios } = useCambiosSinGuardar()
 
+  // SE COMPRUEBA AQUI TAMBIEN, no solo al abrir la confirmacion.
+  //
+  // El formulario sigue en pantalla mientras se pide confirmacion: se puede abrirla,
+  // cambiar algo y pulsar «Si, enviar». Comprobarlo solo al abrir deja esa ventana, y
+  // el envio lee la base —lo guardado—, no lo que se ve.
+  const AVISO_SIN_GUARDAR =
+    'Guarda los cambios antes de enviar: el envío comprueba lo que hay guardado.'
+
   const handleSubmit = async () => {
+    if (hayCambios) {
+      setError(AVISO_SIN_GUARDAR)
+      setShowConfirm(false)
+      return
+    }
     setIsSubmitting(true)
     setError(null)
     try {
@@ -118,7 +131,7 @@ export function SubmitForReviewButton({ courseId, currentStatus }: SubmitForRevi
         // especialidad elegida pero no guardada se rechazaba por algo que en pantalla
         // parecia resuelto.
         if (hayCambios) {
-          setError('Guarda los cambios antes de enviar: el envío comprueba lo que hay guardado.')
+          setError(AVISO_SIN_GUARDAR)
           return
         }
         setShowConfirm(true)
