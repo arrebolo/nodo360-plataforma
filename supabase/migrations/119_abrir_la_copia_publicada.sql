@@ -45,8 +45,11 @@
 --    arreglar—. Medido hoy, con las tablas de trabajo: un curso en `pending_review` no
 --    lo ve `anon`, ni sus módulos, ni sus lecciones.
 --
---    Regla nueva: se retira cuando deja de estar publicado de verdad —`draft` o
---    `archived`—, no cuando está en revisión.
+--    Regla nueva: se retira al LLEGAR a `draft` o `archived` y haber algo vivo que
+--    retirar, sin mirar de dónde se viene. El estado anterior no sirve como condición: el
+--    camino real es published → pending_review → draft, y en el segundo salto el anterior
+--    ya no es `published`, así que la copia se quedaría viva en el catálogo con el curso
+--    en borrador.
 
 BEGIN;
 
@@ -170,13 +173,24 @@ BEGIN
   IF NEW.status = 'published' AND OLD.status IS DISTINCT FROM 'published' THEN
     PERFORM public.publicar_curso_interno(NEW.id);
 
-  -- SE RETIRA SOLO SI DEJA DE ESTAR PUBLICADO DE VERDAD.
+  -- SE RETIRA AL LLEGAR A draft O archived, SIN MIRAR DE DONDE SE VIENE.
   --
   -- `pending_review`, `changes_requested` y `rejected` son estados de la COPIA DE
   -- TRABAJO: el autor ha mandado cambios y la administracion aun no los ha visto. La
   -- version publicada sigue en pie y los alumnos la siguen leyendo; retirarla ahi era
   -- despublicar un curso por corregirle una falta.
-  ELSIF OLD.status = 'published' AND NEW.status IN ('draft', 'archived') THEN
+  --
+  -- Pero el estado anterior NO puede ser la condicion. El camino real es
+  -- published -> pending_review -> draft: en el segundo salto el anterior ya no es
+  -- `published`, asi que una condicion sobre OLD.status dejaria la copia VIVA en el
+  -- catalogo con el curso en borrador. Lo que decide es a donde se llega, y que haya
+  -- algo vivo que retirar.
+  ELSIF NEW.status IN ('draft', 'archived')
+    AND EXISTS (
+      SELECT 1 FROM public.courses_publicados cp
+       WHERE cp.id = NEW.id AND cp.retirada_el IS NULL
+    )
+  THEN
     PERFORM public.retirar_curso_de_la_copia_interno(NEW.id);
   END IF;
 
@@ -185,7 +199,7 @@ END
 $fn$;
 
 COMMENT ON FUNCTION public.al_publicar_refrescar_la_copia() IS
-  'Refresca la copia publicada al pasar a published, y la retira SOLO al pasar a draft o archived. Los estados de revision (pending_review, changes_requested, rejected) no la retiran: son estados de la copia de trabajo, y la version publicada sigue visible mientras la administracion decide. Hasta la 119 cualquier salida de published retiraba la copia, con lo que reenviar cambios despublicaba el curso.';
+  'Refresca la copia publicada al pasar a published, y la retira al llegar a draft o archived SIN MIRAR EL ESTADO ANTERIOR, porque el camino real es published -> pending_review -> draft. Los estados de revision (pending_review, changes_requested, rejected) no la retiran: son estados de la copia de trabajo, y la version publicada sigue visible mientras la administracion decide. Hasta la 119 cualquier salida de published retiraba la copia, con lo que reenviar cambios despublicaba el curso.';
 
 REVOKE ALL ON FUNCTION public.al_publicar_refrescar_la_copia() FROM PUBLIC;
 
@@ -318,37 +332,49 @@ BEGIN
 
   -- ── El trigger ────────────────────────────────────────────────────────────
   --
-  -- HACIENDOSE PASAR POR UN ADMIN. No es un adorno: publicar pasa por los triggers de
-  -- la 109, la 114 y la 115, que exigen administracion o verificacion en la
-  -- especialidad. Sin esto la autoprueba se levantaria por un motivo que no tiene nada
-  -- que ver con lo que quiere comprobar.
-  SELECT id INTO v_instructor FROM public.users WHERE role = 'admin' LIMIT 1;
+  -- LO QUE HAY QUE RESPETAR, repasado trigger por trigger sobre `public.courses`:
+  --
+  --   · trg_controlar_publicacion (098/109)  BEFORE INSERT OR UPDATE
+  --        se escapa en la primera linea si `auth.uid()` es NULL. Por eso aqui se
+  --        DEJAN LAS CLAIMS VACIAS: sin sesion, la puerta no opina, y la autoprueba no
+  --        depende de que exista un admin ni de que este verificado en nada.
+  --   · trigger_course_modification (030)    BEFORE UPDATE (todas las columnas)
+  --        se escapa si NEW.status <> OLD.status. Aqui SOLO se cambia el status, nunca
+  --        el contenido, asi que no devuelve nada a revision.
+  --   · trg_no_recalificar (114)             BEFORE UPDATE OF specialty_id, jurisdiccion
+  --        no se tocan esas dos columnas.
+  --   · la_fecha_de_publicacion_no_se_borra (116)  BEFORE UPDATE OF published_at
+  --        PROHIBE poner published_at a NULL, y con razon. La primera version de esta
+  --        autoprueba lo hacia al limpiar y se levantaba con 42501: no se aplicaba nada.
+  --        Aqui published_at SOLO se escribe al publicar, y nunca se borra; la limpieza
+  --        es un DELETE, que ese trigger no vigila.
+  --   · trg_examen_de_un_publicado (115)     esta sobre quiz_questions, no sobre courses.
+  --
+  -- UN CURSO DE USAR Y TIRAR POR CASO, para que ninguno herede el estado del anterior.
+  PERFORM set_config('request.jwt.claims', '{}', TRUE);
+
   SELECT id INTO v_esp FROM public.instructor_specialties LIMIT 1;
+  SELECT id INTO v_instructor FROM public.users ORDER BY created_at LIMIT 1;
 
-  IF v_instructor IS NULL THEN
-    RAISE EXCEPTION 'REVISAR: no hay ningun admin con el que probar el trigger';
-  END IF;
-
-  PERFORM set_config('request.jwt.claims', json_build_object('sub', v_instructor)::TEXT, TRUE);
-
+  -- CASO A: publicado y en revision. La copia NO se retira.
+  v_curso_prueba := gen_random_uuid();
   INSERT INTO public.courses (id, title, slug, description, level, status, is_free, instructor_id, specialty_id)
-  VALUES (v_curso_prueba, 'AUTOPRUEBA 119', 'autoprueba-119-' || v_curso_prueba,
-          'Curso de la autoprueba de la 119.', 'beginner', 'draft', TRUE, v_instructor, v_esp);
+  VALUES (v_curso_prueba, 'AUTOPRUEBA 119 A', 'autoprueba-119-' || v_curso_prueba,
+          'Caso A de la autoprueba.', 'beginner', 'draft', TRUE, v_instructor, v_esp);
 
   UPDATE public.courses SET status = 'published', published_at = now() WHERE id = v_curso_prueba;
   SELECT COUNT(*) INTO v_en_espejo FROM public.courses_publicados
    WHERE id = v_curso_prueba AND retirada_el IS NULL;
   IF v_en_espejo <> 1 THEN
-    RAISE WARNING 'FALLA: al publicar no entro vivo en el espejo';
+    RAISE WARNING 'FALLA (A): al publicar no entro vivo en el espejo';
     v_fallos := v_fallos + 1;
   END IF;
 
-  -- LO QUE ARREGLA ESTA MIGRACION: reenviar cambios NO retira
   UPDATE public.courses SET status = 'pending_review' WHERE id = v_curso_prueba;
   SELECT COUNT(*) INTO v_en_espejo FROM public.courses_publicados
    WHERE id = v_curso_prueba AND retirada_el IS NULL;
   IF v_en_espejo <> 1 THEN
-    RAISE WARNING 'FALLA: pasar a pending_review ha retirado la copia publicada';
+    RAISE WARNING 'FALLA (A): pending_review ha retirado la copia publicada';
     v_fallos := v_fallos + 1;
   END IF;
 
@@ -356,29 +382,78 @@ BEGIN
   SELECT COUNT(*) INTO v_en_espejo FROM public.courses_publicados
    WHERE id = v_curso_prueba AND retirada_el IS NULL;
   IF v_en_espejo <> 1 THEN
-    RAISE WARNING 'FALLA: changes_requested ha retirado la copia publicada';
+    RAISE WARNING 'FALLA (A): changes_requested ha retirado la copia publicada';
     v_fallos := v_fallos + 1;
   END IF;
 
-  -- Y archivar SI retira
-  UPDATE public.courses SET status = 'published' WHERE id = v_curso_prueba;
-  UPDATE public.courses SET status = 'archived' WHERE id = v_curso_prueba;
+  DELETE FROM public.courses WHERE id = v_curso_prueba;
+  DELETE FROM public.courses_publicados WHERE id = v_curso_prueba;
+
+  -- CASO B: EL CAMINO REAL. published -> pending_review -> draft SI retira, aunque el
+  -- estado anterior al salto ya no sea `published`.
+  v_curso_prueba := gen_random_uuid();
+  INSERT INTO public.courses (id, title, slug, description, level, status, is_free, instructor_id, specialty_id)
+  VALUES (v_curso_prueba, 'AUTOPRUEBA 119 B', 'autoprueba-119-' || v_curso_prueba,
+          'Caso B de la autoprueba.', 'beginner', 'draft', TRUE, v_instructor, v_esp);
+
+  UPDATE public.courses SET status = 'published', published_at = now() WHERE id = v_curso_prueba;
+  UPDATE public.courses SET status = 'pending_review' WHERE id = v_curso_prueba;
+  UPDATE public.courses SET status = 'draft' WHERE id = v_curso_prueba;
+
   SELECT COUNT(*) INTO v_en_espejo FROM public.courses_publicados
    WHERE id = v_curso_prueba AND retirada_el IS NOT NULL;
   IF v_en_espejo <> 1 THEN
-    RAISE WARNING 'FALLA: archivar no ha retirado la copia publicada';
+    RAISE WARNING 'FALLA (B): published -> pending_review -> draft NO ha retirado la copia';
     v_fallos := v_fallos + 1;
   END IF;
 
-  -- Limpieza del curso de la autoprueba
-  UPDATE public.courses SET status = 'draft', published_at = NULL WHERE id = v_curso_prueba;
+  SELECT COUNT(*) INTO v_en_espejo FROM public.courses_publicados
+   WHERE id = v_curso_prueba AND retirada_el IS NULL;
+  IF v_en_espejo <> 0 THEN
+    RAISE WARNING 'FALLA (B): la copia sigue viva con el curso en borrador';
+    v_fallos := v_fallos + 1;
+  END IF;
+
   DELETE FROM public.courses WHERE id = v_curso_prueba;
   DELETE FROM public.courses_publicados WHERE id = v_curso_prueba;
+
+  -- CASO C: archivar retira, viniendo de donde venga.
+  v_curso_prueba := gen_random_uuid();
+  INSERT INTO public.courses (id, title, slug, description, level, status, is_free, instructor_id, specialty_id)
+  VALUES (v_curso_prueba, 'AUTOPRUEBA 119 C', 'autoprueba-119-' || v_curso_prueba,
+          'Caso C de la autoprueba.', 'beginner', 'draft', TRUE, v_instructor, v_esp);
+
+  UPDATE public.courses SET status = 'published', published_at = now() WHERE id = v_curso_prueba;
+  UPDATE public.courses SET status = 'changes_requested' WHERE id = v_curso_prueba;
+  UPDATE public.courses SET status = 'archived' WHERE id = v_curso_prueba;
+
+  SELECT COUNT(*) INTO v_en_espejo FROM public.courses_publicados
+   WHERE id = v_curso_prueba AND retirada_el IS NOT NULL;
+  IF v_en_espejo <> 1 THEN
+    RAISE WARNING 'FALLA (C): archivar no ha retirado la copia publicada';
+    v_fallos := v_fallos + 1;
+  END IF;
+
+  DELETE FROM public.courses WHERE id = v_curso_prueba;
+  DELETE FROM public.courses_publicados WHERE id = v_curso_prueba;
+
+  -- CASO D: un curso que nunca se publico y pasa a draft no rompe nada.
+  v_curso_prueba := gen_random_uuid();
+  INSERT INTO public.courses (id, title, slug, description, level, status, is_free, instructor_id, specialty_id)
+  VALUES (v_curso_prueba, 'AUTOPRUEBA 119 D', 'autoprueba-119-' || v_curso_prueba,
+          'Caso D de la autoprueba.', 'beginner', 'draft', TRUE, v_instructor, v_esp);
+  UPDATE public.courses SET status = 'archived' WHERE id = v_curso_prueba;
+  SELECT COUNT(*) INTO v_en_espejo FROM public.courses_publicados WHERE id = v_curso_prueba;
+  IF v_en_espejo <> 0 THEN
+    RAISE WARNING 'FALLA (D): un curso sin publicar ha aparecido en el espejo';
+    v_fallos := v_fallos + 1;
+  END IF;
+  DELETE FROM public.courses WHERE id = v_curso_prueba;
 
   PERFORM set_config('request.jwt.claims', '{}', TRUE);
 
   IF v_fallos = 0 THEN
-    RAISE NOTICE 'TODO CORRECTO: el espejo se lee como debe y el trigger ya no retira al reenviar (12 comprobaciones)';
+    RAISE NOTICE 'TODO CORRECTO: el espejo se lee como debe y el trigger retira cuando toca y solo cuando toca (16 comprobaciones)';
   ELSE
     RAISE EXCEPTION 'REVISAR: % comprobaciones falladas', v_fallos;
   END IF;
@@ -397,7 +472,8 @@ SELECT
   has_table_privilege('anon', 'public.quiz_questions_publicadas', 'SELECT')         AS preguntas_las_lee_anon,
   has_column_privilege('authenticated', 'public.quiz_questions_publicadas', 'question', 'SELECT')       AS auth_lee_la_pregunta,
   has_column_privilege('authenticated', 'public.quiz_questions_publicadas', 'correct_answer', 'SELECT') AS auth_lee_la_respuesta,
-  (SELECT COUNT(*) FROM public.courses WHERE title = 'AUTOPRUEBA 119')              AS restos_de_la_autoprueba,
+  (SELECT COUNT(*) FROM public.courses WHERE title LIKE 'AUTOPRUEBA 119%')           AS restos_en_courses,
+  (SELECT COUNT(*) FROM public.courses_publicados WHERE title LIKE 'AUTOPRUEBA 119%') AS restos_en_el_espejo,
   CASE
     WHEN (SELECT COUNT(*) FROM public.courses_publicados WHERE retirada_el IS NULL)
          = (SELECT COUNT(*) FROM public.courses WHERE status = 'published')
@@ -407,7 +483,8 @@ SELECT
      AND NOT has_table_privilege('anon', 'public.quiz_questions_publicadas', 'SELECT')
      AND has_column_privilege('authenticated', 'public.quiz_questions_publicadas', 'question', 'SELECT')
      AND NOT has_column_privilege('authenticated', 'public.quiz_questions_publicadas', 'correct_answer', 'SELECT')
-     AND (SELECT COUNT(*) FROM public.courses WHERE title = 'AUTOPRUEBA 119') = 0
+     AND (SELECT COUNT(*) FROM public.courses WHERE title LIKE 'AUTOPRUEBA 119%') = 0
+     AND (SELECT COUNT(*) FROM public.courses_publicados WHERE title LIKE 'AUTOPRUEBA 119%') = 0
     THEN 'TODO CORRECTO'
     ELSE 'REVISAR'
   END AS veredicto;
