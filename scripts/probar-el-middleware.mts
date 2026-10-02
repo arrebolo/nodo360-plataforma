@@ -15,7 +15,11 @@
  *
  *   3. La suspensión se leía con la sesión de la propia persona, y `is_suspended` está
  *      cerrada a `authenticated`: 42501, fila vacía, y la puerta nunca se cerraba.
- *      Medido antes de tocar nada.
+ *      Medido antes de tocar nada. Ahora lo contesta `estoy_suspendido()` (118).
+ *
+ *   4. Y había una puerta de atrás por la URL: con `?_p=1` —un escape anti-bucle— el
+ *      middleware devolvía `next()` ANTES de mirar la sesión, así que `/dashboard?_p=1`
+ *      entraba sin comprobar nada. Se prueba en las tres zonas privadas.
  *
  * El caso 2 de punta a punta necesitaría un Supabase que no contestara, y la URL se
  * fija al construir. Así que la clasificación se comprueba sobre la función, y se dice
@@ -87,6 +91,18 @@ try {
     throw new Error(`no hay nada escuchando en ${SITIO}`)
   }
 
+  // ═══ Por qué camino va la suspensión ══════════════════════════════════════
+  //
+  // Importa para leer el resultado: con la 118 sin aplicar, lo que se está probando es
+  // el camino de reserva (cliente de servicio), no la función. Las dos respuestas deben
+  // ser la misma, y por eso existe la reserva, pero conviene saber cuál se midió.
+  const sonda = await svc.rpc('estoy_suspendido' as never)
+  console.log(
+    `\n=== la suspensión va por: ${
+      sonda.error ? `el camino de reserva (estoy_suspendido() no existe: ${sonda.error.code})` : 'estoy_suspendido() (118 aplicada)'
+    } ===`
+  )
+
   // ═══ La clasificación de errores ══════════════════════════════════════════
   console.log('\n=== «no hay sesión» frente a «no se pudo comprobar» ===')
   const { noSePudoComprobar, ES_COOKIE_DE_SESION } = await import('../middleware.ts')
@@ -155,6 +171,47 @@ try {
   // La excepcion de los admins (`fila.role !== 'admin'`) no se prueba aqui: haria
   // falta suspender una cuenta de admin, y no se crean cuentas de admin para probar ni
   // se toca una de verdad. Es la misma condicion que ya habia.
+
+  // ═══ EL FALLO 4: ningún parámetro de la URL se salta la puerta ════════════
+  console.log('\n=== ?_p=1 ya no es una puerta de atrás ===')
+  const suspendidaOtraVez = await nuevaCuenta('conparametro')
+  await svc.from('users')
+    .update({ is_suspended: true, suspended_reason: 'Prueba del parametro' })
+    .eq('id', suspendidaOtraVez.id)
+
+  for (const ruta of ['/dashboard', '/dashboard/instructor', '/admin']) {
+    const r = await pedir(`${ruta}?_p=1`, galleta(suspendidaOtraVez.sesion))
+    di(r.status === 307 && r.destino.includes('/cuenta-suspendida'),
+      `suspendida en ${ruta}?_p=1: a /cuenta-suspendida`,
+      `${r.status} ${r.destino}`)
+  }
+  // Y con cualquier otro parámetro inventado, lo mismo.
+  const otroParametro = await pedir('/dashboard?_p=1&salto=1&next=/admin', galleta(suspendidaOtraVez.sesion))
+  di(otroParametro.status === 307 && otroParametro.destino.includes('/cuenta-suspendida'),
+    'con más parámetros inventados, igual', `${otroParametro.status} ${otroParametro.destino}`)
+
+  for (const ruta of ['/dashboard', '/dashboard/instructor', '/admin']) {
+    const r = await pedir(`${ruta}?_p=1`)
+    di(r.status === 307 && r.destino.includes('/login'),
+      `sin sesión en ${ruta}?_p=1: al login`, `${r.status} ${r.destino}`)
+  }
+
+  const laPagina = await pedir('/cuenta-suspendida?reason=Prueba')
+  di(laPagina.status === 200, '/cuenta-suspendida responde 200', String(laPagina.status))
+
+  // ═══ LA DEFENSA EN PROFUNDIDAD, con una ruta que el middleware NO ve ══════
+  //
+  // El matcher es ['/dashboard/:path*', '/admin/:path*'], y `app/(private)/` tiene una
+  // tercera rama: /gobernanza/mentores. Ahí el middleware no corre, así que quien
+  // decide es el layout de lo privado. Es exactamente el caso para el que existe.
+  console.log('\n=== una ruta privada que el middleware no cubre ===')
+  const fueraDelMatcher = await pedir('/gobernanza/mentores', galleta(suspendidaOtraVez.sesion))
+  di(fueraDelMatcher.status === 307 && fueraDelMatcher.destino.includes('/cuenta-suspendida'),
+    '/gobernanza/mentores con cuenta suspendida: la para el LAYOUT',
+    `${fueraDelMatcher.status} ${fueraDelMatcher.destino}`)
+
+  await svc.from('users').update({ is_suspended: false, suspended_reason: null })
+    .eq('id', suspendidaOtraVez.id)
 
   // ═══ Rutas públicas, intactas ═════════════════════════════════════════════
   console.log('\n=== las rutas públicas no las toca ===')

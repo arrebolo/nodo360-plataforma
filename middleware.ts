@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { comprobarSuspension, urlDeCuentaSuspendida } from '@/lib/auth/suspension'
 
 /**
  * La puerta de las rutas privadas.
@@ -26,8 +26,19 @@ import { createAdminClient } from '@/lib/supabase/admin'
  *   3. UNA LECTURA QUE FALLA NO ES UN «NO». La suspensión se leía con la sesión de la
  *      propia persona, y `users.is_suspended` está cerrada a `authenticated`: la
  *      consulta entera moría con 42501, `userRow` llegaba vacío y la puerta NO se
- *      cerraba nunca. Medido. Se lee con el cliente de servicio, y si esa lectura falla
- *      se dice en el log en vez de dar por hecho que no está suspendida.
+ *      cerraba nunca. Medido. Ahora lo contesta `estoy_suspendido()` (migración 118), y
+ *      si no se puede averiguar se dice en el log en vez de dar por hecho que no.
+ *
+ *   4. NINGUN PARAMETRO DE LA URL SE SALTA NADA. Había un escape anti-bucle: con
+ *      `?_p=1` el middleware devolvía `next()` ANTES de mirar la sesión, así que
+ *      `/dashboard?_p=1` entraba sin comprobar nada —ni sesión ni suspensión—. Y era
+ *      inútil: los dos destinos a los que se desvía, /login y /cuenta-suspendida, son
+ *      públicos y no pasan por aquí, así que no hay bucle que evitar. Fuera.
+ *
+ * Y ESTO NO ES LA UNICA PUERTA: el layout de las páginas privadas comprueba lo mismo.
+ * Un middleware se puede saltar de muchas maneras —un matcher que no cubre una ruta
+ * nueva, un despliegue a medias—, y la comprobación que no se salta es la que está en
+ * el render.
  */
 
 const PREFIJOS_PRIVADOS = ['/dashboard', '/admin']
@@ -65,17 +76,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 2) Anti-bucle
-  if (request.nextUrl.searchParams.get('_p') === '1') {
-    return NextResponse.next()
-  }
-
-  // 3) Solo las rutas privadas
+  // 2) Solo las rutas privadas
   if (!PREFIJOS_PRIVADOS.some((prefijo) => pathname.startsWith(prefijo))) {
     return NextResponse.next()
   }
 
-  // 4) El cliente de Supabase, apuntando las cookies que quiera escribir
+  // 3) El cliente de Supabase, apuntando las cookies que quiera escribir
   let response = NextResponse.next({ request: { headers: request.headers } })
 
   // LA SESION AL DIA, en cualquier respuesta. Ver la regla 1 de arriba.
@@ -115,7 +121,7 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // 5) Quién es
+  // 4) Quién es
   const { data: { user }, error: errorDeSesion } = await supabase.auth.getUser()
 
   if (!user) {
@@ -137,33 +143,23 @@ export async function middleware(request: NextRequest) {
 
     const login = new URL('/login', request.url)
     login.searchParams.set('redirect', pathname)
-    login.searchParams.set('_p', '1')
     return conLaSesionAlDia(NextResponse.redirect(login))
   }
 
-  // 6) Suspensión, con el cliente de servicio
-  //
-  // Con la sesión de la propia persona esto devolvía 42501 —`is_suspended` y
-  // `suspended_reason` están cerradas a `authenticated`— y la puerta no se cerraba.
+  // 5) Suspensión. La política, en lib/auth/suspension.ts, compartida con el layout.
   try {
-    const { data: fila, error } = await createAdminClient()
-      .from('users')
-      .select('role, is_suspended, suspended_reason')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    if (error) {
-      // No se da por hecho que no está suspendida: se dice.
-      console.error('[middleware] No se pudo leer la suspensión:', error.code, error.message)
-    } else if (fila?.is_suspended && fila.role !== 'admin') {
+    const suspension = await comprobarSuspension(supabase, user.id)
+    if (suspension.desviar) {
       console.log('[middleware] Cuenta suspendida:', user.id.slice(0, 8) + '…')
-      const suspendida = new URL('/cuenta-suspendida', request.url)
-      if (fila.suspended_reason) suspendida.searchParams.set('reason', fila.suspended_reason)
-      suspendida.searchParams.set('_p', '1')
-      return conLaSesionAlDia(NextResponse.redirect(suspendida))
+      return conLaSesionAlDia(
+        NextResponse.redirect(urlDeCuentaSuspendida(request.url, suspension.motivo))
+      )
+    }
+    if (!suspension.sePudoComprobar) {
+      console.warn('[middleware] Suspensión sin comprobar: decide el layout de la página')
     }
   } catch (e) {
-    // Que falle esta comprobación no puede tumbar la navegación.
+    // Que falle esta comprobación no puede tumbar la navegación: el layout la repite.
     console.error('[middleware] Error comprobando la suspensión:', e)
   }
 
