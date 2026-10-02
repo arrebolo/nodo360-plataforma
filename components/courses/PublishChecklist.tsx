@@ -19,6 +19,15 @@ interface CourseData {
   specialty_id?: string | null
   jurisdiccion?: string | null
   /**
+   * La especialidad del curso esta entre las verificaciones VIGENTES del instructor.
+   *
+   * Que `specialty_id` tenga algo no basta: una verificacion se puede retirar o
+   * caducar despues de clasificar el curso, y entonces el servidor rechaza el envio
+   * aunque el campo este relleno. El checklist tiene que decir lo mismo que va a
+   * decir el servidor.
+   */
+  especialidadVerificada?: boolean
+  /**
    * Si la especialidad elegida se verifica por pais. Lo decide
    * instructor_specialties.requiere_acreditacion, no una lista de slugs, asi que lo
    * calcula quien pinta el checklist y se pasa hecho.
@@ -93,8 +102,8 @@ const checklistItems: ChecklistItem[] = [
     // algo que no se puede enviar es peor que no tenerlo.
     id: 'specialty',
     label: 'Especialidad',
-    description: 'Hace falta para enviar a revisión, y solo puedes elegir una en la que estés verificado',
-    check: (c) => Boolean(c.specialty_id),
+    description: 'Hace falta para enviar a revisión, y tienes que estar verificado en ella',
+    check: (c) => Boolean(c.specialty_id) && c.especialidadVerificada !== false,
     required: true,
     category: 'info',
   },

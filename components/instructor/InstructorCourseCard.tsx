@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import type { Impedimento } from '@/lib/instructor/puede-enviarse'
 import {
   Pencil,
   Eye,
@@ -35,6 +36,11 @@ interface Course {
 interface InstructorCourseCardProps {
   course: Course
   onStatusChange?: (courseId: string, newStatus: string) => void
+  /**
+   * Lo que impide enviar este curso a revisión, calculado en el servidor con las mismas
+   * reglas que va a aplicar el envío. `null` = nada lo impide.
+   */
+  impedimento?: Impedimento | null
 }
 
 const statusConfig = {
@@ -53,10 +59,21 @@ const levelConfig = {
   advanced: { label: 'Avanzado', color: 'bg-red-500/10 text-red-400' },
 }
 
-export default function InstructorCourseCard({ course, onStatusChange }: InstructorCourseCardProps) {
+export default function InstructorCourseCard({
+  course,
+  onStatusChange,
+  impedimento = null,
+}: InstructorCourseCardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDuplicating, setIsDuplicating] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(course.status)
+  // NI alert() NI confirm().
+  //
+  // Los dos desaparecen al primer clic y no dejan rastro: en la auditoria, el motivo
+  // por el que no se podia enviar un curso «solo salia en la consola». Lo que explica
+  // que falta se queda en la tarjeta, donde se puede leer con calma.
+  const [error, setError] = useState<string | null>(null)
+  const [confirmando, setConfirmando] = useState<null | 'enviar' | 'duplicar'>(null)
   const router = useRouter()
 
   const status = statusConfig[currentStatus] || statusConfig.draft
@@ -75,15 +92,12 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
     ? Math.round(course.total_duration_minutes / 60)
     : null
 
-  // Enviar a revisión (para cursos en draft o rejected)
+  // Enviar a revisión (para cursos en draft, rejected o changes_requested)
   const handleSubmitForReview = async () => {
     if (isSubmitting) return
-
-    if (!confirm('¿Enviar este curso a revisión? Un administrador lo revisará antes de publicarlo.')) {
-      return
-    }
-
+    setConfirmando(null)
     setIsSubmitting(true)
+    setError(null)
 
     try {
       const res = await fetch(`/api/instructor/courses/${course.id}/submit-review`, {
@@ -97,15 +111,15 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
         }
         router.refresh()
       } else {
-        const data = await res.json()
-        const errorMsg = data.details
-          ? `${data.error}: ${data.details}`
-          : data.error
-        alert(errorMsg || 'Error al enviar a revisión')
+        const data = await res.json().catch(() => ({}))
+        setError(
+          [data.error, data.details].filter(Boolean).join(': ') ||
+            `No se pudo enviar a revisión (${res.status}).`
+        )
       }
-    } catch (error) {
-      console.error('Error enviando a revisión:', error)
-      alert('Error al enviar a revisión')
+    } catch (e) {
+      console.error('Error enviando a revisión:', e)
+      setError('No se pudo enviar a revisión: no hubo respuesta del servidor.')
     } finally {
       setIsSubmitting(false)
     }
@@ -113,10 +127,9 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
 
   const handleDuplicate = async () => {
     if (isDuplicating) return
-
-    if (!confirm('¿Crear una copia de este curso como borrador?')) return
-
+    setConfirmando(null)
     setIsDuplicating(true)
+    setError(null)
 
     try {
       const res = await fetch(`/api/instructor/courses/${course.id}/duplicate`, {
@@ -124,14 +137,20 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
       })
 
       if (res.ok) {
-        // Recargar la página para ver el nuevo curso
-        window.location.reload()
+        // router.refresh() y no window.location.reload(): no hace falta volver a
+        // cargar la pagina entera, y asi no se pierde lo que haya escrito en los
+        // filtros de arriba.
+        router.refresh()
       } else {
-        alert('Error al duplicar el curso')
+        const data = await res.json().catch(() => ({}))
+        setError(
+          [data.error, data.details].filter(Boolean).join(': ') ||
+            `No se pudo duplicar el curso (${res.status}).`
+        )
       }
-    } catch (error) {
-      console.error('Error duplicando:', error)
-      alert('Error al duplicar el curso')
+    } catch (e) {
+      console.error('Error duplicando:', e)
+      setError('No se pudo duplicar el curso: no hubo respuesta del servidor.')
     } finally {
       setIsDuplicating(false)
     }
@@ -182,6 +201,47 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
         )}
       </div>
 
+      {/* LO QUE FALTA PARA PODER ENVIAR, dicho antes de que nadie lo intente */}
+      {impedimento && impedimento.clave !== 'estado' && (
+        <p className="mb-4 text-sm text-amber-300/90">{impedimento.motivo}</p>
+      )}
+
+      {/* LO QUE HA FALLADO, en la tarjeta */}
+      {error && (
+        <div
+          role="alert"
+          className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300"
+        >
+          <p className="font-semibold text-red-400">No se pudo hacer</p>
+          <p className="mt-1 text-red-300/90">{error}</p>
+        </div>
+      )}
+
+      {/* La confirmacion, dentro de la pagina */}
+      {confirmando && (
+        <div className="mb-4 rounded-xl border border-white/15 bg-white/5 p-3 text-sm">
+          <p className="text-white/80">
+            {confirmando === 'enviar'
+              ? '¿Enviar este curso a revisión? Lo revisará la administración antes de publicarlo.'
+              : '¿Crear una copia de este curso como borrador?'}
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              onClick={confirmando === 'enviar' ? handleSubmitForReview : handleDuplicate}
+              className="px-3 py-1.5 rounded-lg bg-brand-light/20 text-brand-light hover:bg-brand-light/30 transition-colors"
+            >
+              Sí, {confirmando === 'enviar' ? 'enviar' : 'duplicar'}
+            </button>
+            <button
+              onClick={() => setConfirmando(null)}
+              className="px-3 py-1.5 rounded-lg text-white/60 hover:text-white transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Footer: Ultima edicion + Acciones */}
       <div className="flex items-center justify-between pt-4 border-t border-white/10">
         <span className="flex items-center gap-1.5 text-xs text-white/40">
@@ -211,19 +271,26 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
             Editar
           </Link>
 
-          {/* Preview */}
+          {/* VISTA PREVIA.
+              /cursos/<slug> es la pagina publica, y de un curso sin publicar no
+              ensena el curso: ensena «no disponible». La vista previa del instructor
+              es otra ruta, y es la que sirve mientras se escribe. */}
           <Link
-            href={`/cursos/${course.slug}`}
-            target="_blank"
+            href={
+              currentStatus === 'published'
+                ? `/cursos/${course.slug}`
+                : `/dashboard/instructor/cursos/${course.id}/preview`
+            }
+            target={currentStatus === 'published' ? '_blank' : undefined}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
           >
             <Eye className="w-4 h-4" />
-            Preview
+            {currentStatus === 'published' ? 'Ver publicado' : 'Vista previa'}
           </Link>
 
           {/* Duplicar */}
           <button
-            onClick={handleDuplicate}
+            onClick={() => { setError(null); setConfirmando('duplicar') }}
             disabled={isDuplicating}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
             title="Duplicar curso"
@@ -232,20 +299,35 @@ export default function InstructorCourseCard({ course, onStatusChange }: Instruc
             {isDuplicating ? '...' : 'Duplicar'}
           </button>
 
-          {/* Enviar a revisión (para draft, rejected o changes_requested) */}
+          {/* ENVIAR A REVISION.
+              Si falta algo —sin especialidad, sin verificacion vigente, sin modulos o
+              sin lecciones—, el boton no manda una peticion que el servidor va a
+              rechazar: lleva al editor, que es donde se arregla, con el motivo a la
+              vista. Las reglas se calculan en el servidor y son las del envio. */}
           {(currentStatus === 'draft' || currentStatus === 'rejected' || currentStatus === 'changes_requested') && (
-            <button
-              onClick={handleSubmitForReview}
-              disabled={isSubmitting}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-brand-light bg-brand-light/10 hover:bg-brand-light/20 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
+            impedimento ? (
+              <Link
+                href={`/dashboard/instructor/cursos/${course.id}?aviso=${impedimento.clave}`}
+                title={impedimento.motivo}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-colors"
+              >
                 <Send className="w-4 h-4" />
-              )}
-              {isSubmitting ? 'Enviando...' : currentStatus === 'changes_requested' ? 'Editar y reenviar' : currentStatus === 'rejected' ? 'Reenviar' : 'Enviar a revisión'}
-            </button>
+                Falta algo para enviar
+              </Link>
+            ) : (
+              <button
+                onClick={() => { setError(null); setConfirmando('enviar') }}
+                disabled={isSubmitting}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-brand-light bg-brand-light/10 hover:bg-brand-light/20 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                {isSubmitting ? 'Enviando...' : currentStatus === 'changes_requested' ? 'Editar y reenviar' : currentStatus === 'rejected' ? 'Reenviar' : 'Enviar a revisión'}
+              </button>
+            )
           )}
 
           {/* Indicador de estado para pending_review */}

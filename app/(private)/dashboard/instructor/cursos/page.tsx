@@ -7,6 +7,7 @@ import InstructorCourseCard from "@/components/instructor/InstructorCourseCard";
 import CourseFilters from "@/components/instructor/CourseFilters";
 import CourseTabs from "@/components/instructor/CourseTabs";
 import LoadMoreButton from "@/components/instructor/LoadMoreButton";
+import { impedimentosParaEnviar } from "@/lib/instructor/puede-enviarse";
 
 export const metadata = {
   title: "Mis Cursos | Instructor",
@@ -63,7 +64,9 @@ export default async function InstructorCoursesPage({
       total_lessons,
       total_duration_minutes,
       updated_at,
-      thumbnail_url
+      thumbnail_url,
+      specialty_id,
+      jurisdiccion
     `);
 
   // Filtrar por instructor (excepto admin que ve todos)
@@ -135,6 +138,20 @@ export default async function InstructorCoursesPage({
       enrollmentCounts[e.course_id] = (enrollmentCounts[e.course_id] || 0) + 1;
     });
   }
+
+  // LO QUE IMPIDE ENVIAR CADA CURSO, con las mismas reglas que el servidor.
+  //
+  // Antes la tarjeta mandaba la peticion a ciegas y enseñaba el rechazo en un alert():
+  // se podia intentar enviar un curso sin especialidad y quedarse sin saber que
+  // arreglar. Ahora el boton lleva al editor con el motivo a la vista.
+  const impedimentos = await impedimentosParaEnviar(
+    (courses || []).map((c) => ({
+      id: c.id,
+      status: c.status,
+      specialty_id: (c as { specialty_id?: string | null }).specialty_id ?? null,
+      jurisdiccion: (c as { jurisdiccion?: string | null }).jurisdiccion ?? null,
+    }))
+  );
 
   // Agregar enrolled_count a cada curso
   let coursesWithStats = (courses || []).map((course) => ({
@@ -277,7 +294,11 @@ export default async function InstructorCoursesPage({
         <>
           <div className="grid gap-4">
             {coursesWithStats.map((course) => (
-              <InstructorCourseCard key={course.id} course={course} />
+              <InstructorCourseCard
+                key={course.id}
+                course={course}
+                impedimento={impedimentos[course.id] ?? null}
+              />
             ))}
           </div>
 

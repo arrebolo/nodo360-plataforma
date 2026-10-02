@@ -1,4 +1,5 @@
 import { requireInstructorLike } from '@/lib/auth/requireInstructor'
+import { misEspecialidadesVerificadas } from '@/lib/instructor/mis-especialidades'
 import { CourseFormCore } from '@/components/courses'
 import { createCourse } from '@/lib/courses/course-actions'
 import Link from 'next/link'
@@ -10,6 +11,11 @@ export const metadata = {
 
 export default async function NewInstructorCoursePage() {
   const { userId } = await requireInstructorLike()
+
+  // Sus verificaciones vigentes. Si solo tiene una, el formulario la preselecciona y
+  // la guarda al crear: asi el curso nace clasificado y el editor no muestra un campo
+  // relleno que en realidad esta vacio.
+  const especialidades = await misEspecialidadesVerificadas(userId)
 
   // Server Action wrapper - cursos de instructor inician como borrador
   async function handleCreate(formData: FormData) {
@@ -78,8 +84,10 @@ export default async function NewInstructorCoursePage() {
       <CourseFormCore
         action={handleCreate}
         backUrl="/dashboard/instructor/cursos"
-        submitLabel="Crear Curso"
+        submitLabel="Crear curso"
         submittingLabel="Creando..."
+        especialidades={especialidades}
+        especialidadObligatoria={especialidades.length > 0}
       />
     </div>
   )

@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from "react";
 import { LearningPathSelect } from "./LearningPathSelect";
 import { esRedireccion } from "@/lib/navegacion/es-redireccion";
+import { useCambiosSinGuardar } from "@/components/instructor/CambiosSinGuardar";
 
 type CourseLevel = "beginner" | "intermediate" | "advanced";
 type CourseStatus = "draft" | "published" | "pending_review" | "rejected" | "archived" | "coming_soon";
@@ -40,7 +41,17 @@ type Props = {
   }[];
   courseId?: string;
   /** Si true, el botón mostrará advertencia de re-aprobación */
-  isPublished?: boolean;
+  /**
+   * El curso se publico ALGUNA VEZ (published_at IS NOT NULL), no «esta publicado
+   * ahora».
+   *
+   * Es la misma condicion que usan los triggers de la 114 y la 115, y el editor del
+   * examen de esta misma pantalla. Con `status === 'published'` quedaba un hueco:
+   * basta con cambiar la descripcion para que la 030 mande el curso a
+   * pending_review, y ahi el formulario habria dejado recalificarlo mientras el
+   * servidor lo rechaza.
+   */
+  seHaPublicado?: boolean;
   onSave: (payload: {
     title: string;
     slug: string;
@@ -57,11 +68,13 @@ type Props = {
 export default function CourseForm({
   initial,
   courseId,
-  isPublished,
+  seHaPublicado,
   onSave,
   especialidades = [],
 }: Props) {
   const [isPending, startTransition] = useTransition();
+  // Para que «Enviar a revision» sepa que hay cambios sin guardar.
+  const { marcarCambios } = useCambiosSinGuardar();
   const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
@@ -74,9 +87,16 @@ export default function CourseForm({
     price: initial?.price ?? null,
     thumbnail_url: initial?.thumbnail_url ?? "",
     banner_url: initial?.banner_url ?? "",
-    // Si solo esta verificado en una, preseleccionada: no hay nada que elegir.
-    specialty_id:
-      initial?.specialty_id ?? (especialidades.length === 1 ? especialidades[0].id : ""),
+    // NO SE PRESELECCIONA NADA.
+    //
+    // Antes, con una sola especialidad verificada, el selector aparecia relleno sin
+    // que el curso tuviera nada guardado: parecia hecho y no lo estaba, el checklist
+    // lo daba por cumplido y el envio se rechazaba igual. Un campo que miente sobre
+    // su propio estado es peor que un campo vacio.
+    //
+    // La preseleccion de verdad esta donde si queda guardada: al CREAR el curso. Aqui
+    // se muestra lo que hay en la base, y si no hay nada, vacio.
+    specialty_id: initial?.specialty_id ?? "",
     jurisdiccion: initial?.jurisdiccion ?? "",
   });
 
@@ -86,6 +106,7 @@ export default function CourseForm({
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((p) => ({ ...p, [key]: value }));
+    marcarCambios(true);
   }
 
   const inputClasses = "w-full rounded-xl border border-white/10 bg-[#0d1117] px-4 py-3 text-white placeholder:text-white/40 focus:border-brand-light/50 focus:outline-none focus:ring-1 focus:ring-brand-light/30 transition";
@@ -216,7 +237,7 @@ export default function CourseForm({
                   // Al cambiar de especialidad, la jurisdiccion anterior deja de valer.
                   update("jurisdiccion", "");
                 }}
-                disabled={isPublished}
+                disabled={seHaPublicado}
               >
                 <option value="">Elige la especialidad…</option>
                 {especialidades.map((e) => (
@@ -226,10 +247,15 @@ export default function CourseForm({
                 ))}
               </select>
               <p className="text-xs text-white/50">
-                {isPublished
+                {seHaPublicado
                   ? "La especialidad de un curso publicado la cambia la administración."
                   : "Solo las especialidades en las que estás verificado."}
               </p>
+              {!seHaPublicado && !form.specialty_id && especialidades.length === 1 && (
+                <p className="text-xs text-amber-400/90">
+                  Elígela y guarda: hasta que guardes, el curso sigue sin clasificar.
+                </p>
+              )}
             </div>
         
             {hacenFaltaPaises && (
@@ -242,7 +268,7 @@ export default function CourseForm({
                   className={selectClasses}
                   value={form.jurisdiccion}
                   onChange={(e) => update("jurisdiccion", e.target.value)}
-                  disabled={isPublished}
+                  disabled={seHaPublicado}
                 >
                   <option value="">Elige el país…</option>
                   {paises.map((j) => (
@@ -396,14 +422,14 @@ export default function CourseForm({
         type="submit"
         disabled={isPending}
         className={`w-full sm:w-auto rounded-xl px-6 py-3 text-sm font-semibold text-white hover:opacity-90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition ${
-          isPublished
+          seHaPublicado
             ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:shadow-amber-500/20"
             : "bg-gradient-to-r from-brand-light to-brand hover:shadow-brand/20"
         }`}
       >
         {isPending
           ? "Guardando..."
-          : isPublished
+          : seHaPublicado
             ? "Guardar (requiere re-aprobación)"
             : "Guardar curso"}
       </button>

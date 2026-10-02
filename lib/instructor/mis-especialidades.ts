@@ -82,3 +82,36 @@ export async function misEspecialidadesVerificadas(
       .map((v) => v.jurisdiccion as string),
   }))
 }
+
+/**
+ * La especialidad de un curso, se esté verificado en ella o no.
+ *
+ * POR QUE NO VALE BUSCARLA EN `misEspecialidadesVerificadas`
+ *   Si la verificación se retiró o caducó, la especialidad no está en esa lista, y
+ *   `requiereJurisdiccion` caía a `false`: el checklist dejaba de pedir la jurisdicción
+ *   justo en el caso en que hay que arreglar algo. Lo que pide jurisdicción es la
+ *   especialidad (`requiere_acreditacion`), no el estado de la verificación.
+ */
+export async function laEspecialidadDelCurso(
+  specialtyId: string
+): Promise<{ id: string; slug: string; nombre: string; requiereJurisdiccion: boolean } | null> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('instructor_specialties')
+    .select('id, slug, nombre, requiere_acreditacion')
+    .eq('id', specialtyId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[laEspecialidadDelCurso]', error.message)
+    return null
+  }
+  if (!data) return null
+
+  return {
+    id: data.id as string,
+    slug: data.slug as string,
+    nombre: data.nombre as string,
+    requiereJurisdiccion: Boolean(data.requiere_acreditacion),
+  }
+}

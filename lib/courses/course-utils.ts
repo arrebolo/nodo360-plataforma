@@ -54,6 +54,8 @@ export interface CourseFormData {
   price?: number | null
   thumbnail_url?: string | null
   banner_url?: string | null
+  specialty_id?: string | null
+  jurisdiccion?: string | null
 }
 
 /**
@@ -157,5 +159,9 @@ export function extractCourseFromFormData(formData: FormData): CourseFormData {
     price: formData.get('price') ? parseFloat(formData.get('price') as string) : null,
     thumbnail_url: (formData.get('thumbnail_url') as string) || null,
     banner_url: (formData.get('banner_url') as string) || null,
+    // La especialidad se puede elegir YA AL CREAR. Antes solo se podia poner despues,
+    // en el editor, y un curso nacia sin clasificar sin que nada lo dijera.
+    specialty_id: (formData.get('specialty_id') as string) || null,
+    jurisdiccion: (formData.get('jurisdiccion') as string) || null,
   }
 }

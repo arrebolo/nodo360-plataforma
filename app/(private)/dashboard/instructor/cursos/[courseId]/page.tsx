@@ -4,17 +4,32 @@ import { Eye, ExternalLink, ArrowLeft, Layers, Clock, XCircle, AlertTriangle, Se
 import CourseForm from "@/components/instructor/CourseForm";
 import { PublishChecklist } from "@/components/courses/PublishChecklist";
 import { SubmitForReviewButton } from "@/components/instructor/SubmitForReviewButton";
+import { CambiosSinGuardar } from "@/components/instructor/CambiosSinGuardar";
 import { CourseQuizEditor } from "@/components/admin/CourseQuizEditor";
 import { requireInstructorLike } from "@/lib/auth/requireInstructor";
 import { getMyCourseForEdit, getMyCourseStats, updateMyCourse } from "@/lib/instructor/courses";
-import { misEspecialidadesVerificadas } from "@/lib/instructor/mis-especialidades";
+import {
+  misEspecialidadesVerificadas,
+  laEspecialidadDelCurso,
+} from "@/lib/instructor/mis-especialidades";
+import {
+  especialidadVerificadaDelCurso,
+  MOTIVOS,
+  type ClaveDelImpedimento,
+} from "@/lib/instructor/puede-enviarse";
 
 export default async function EditInstructorCoursePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseId: string }>;
+  // `?aviso=` lo pone el boton «Enviar a revision» de «Mis cursos» cuando falta algo:
+  // en vez de un alert que se cierra y no deja rastro, trae aqui —donde se arregla— el
+  // motivo, a la vista.
+  searchParams?: Promise<{ aviso?: string }>;
 }) {
   const { courseId } = await params;
+  const { aviso } = (await searchParams) ?? {};
   const { userId } = await requireInstructorLike();
 
   let course;
@@ -29,7 +44,21 @@ export default async function EditInstructorCoursePage({
   // Las especialidades en las que esta persona esta verificada. Es lo que decide que
   // puede elegir en el formulario, y lo que el servidor comprobara al enviar.
   const especialidades = await misEspecialidadesVerificadas(userId);
-  const laDelCurso = especialidades.find((e) => e.id === course.specialty_id);
+
+  // LA ESPECIALIDAD DEL CURSO, aunque su verificacion ya no este: es ella la que dice
+  // si hace falta jurisdiccion, no el estado de la verificacion.
+  const laDelCurso = course.specialty_id
+    ? await laEspecialidadDelCurso(course.specialty_id)
+    : null;
+
+  // Y SI ESTA VERIFICADA, se lo pregunta a `puede_ensenar(especialidad, jurisdiccion)`:
+  // la misma funcion que decide el envio. Comparar la especialidad contra una lista no
+  // basta, porque la verificacion es TAMBIEN por jurisdiccion —una de Fiscalidad en
+  // España no vale para un curso de Fiscalidad en Mexico— y porque caduca.
+  const especialidadVerificada = await especialidadVerificadaDelCurso(
+    course.specialty_id,
+    course.jurisdiccion
+  );
 
   async function onSave(payload: any) {
     "use server";
@@ -38,6 +67,9 @@ export default async function EditInstructorCoursePage({
   }
 
   return (
+    // El formulario y el boton de enviar son hermanos y no se ven entre ellos: este
+    // envoltorio es lo que permite que el boton sepa que hay cambios sin guardar.
+    <CambiosSinGuardar>
     <div className="min-h-screen bg-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Header con título y estado */}
@@ -159,6 +191,26 @@ export default async function EditInstructorCoursePage({
           </div>
         )}
 
+        {/* POR QUE NO SE PUDO ENVIAR, si se llega desde «Mis cursos» */}
+        {aviso && aviso in MOTIVOS && (
+          <div
+            role="alert"
+            className="mb-8 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl"
+          >
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-amber-400 mb-1">
+                  Todavía no se puede enviar a revisión
+                </h3>
+                <p className="text-white/70 text-sm">
+                  {MOTIVOS[aviso as ClaveDelImpedimento]}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* QUE HAY QUE CAMBIAR
             Pedir cambios no es rechazar, y no se le dice igual: el curso sigue en
             pie y lo que falta es concreto. El comentario se ensena TAL CUAL lo
@@ -226,7 +278,9 @@ export default async function EditInstructorCoursePage({
                 }}
                 especialidades={especialidades}
                 courseId={courseId}
-                isPublished={course.status === 'published'}
+                // published_at, no el estado: es la misma condicion que los triggers de
+                // la 114 y la 115 y que el editor del examen de esta pantalla.
+                seHaPublicado={Boolean(course.published_at)}
                 onSave={onSave}
               />
             </div>
@@ -252,6 +306,11 @@ export default async function EditInstructorCoursePage({
                 // Lo decide instructor_specialties.requiere_acreditacion, no una lista
                 // de slugs: se calcula aqui y se pasa hecho.
                 requiereJurisdiccion: laDelCurso?.requiereJurisdiccion ?? false,
+                // `laDelCurso` sale de las verificaciones vigentes, asi que si el
+                // curso tiene una especialidad que ya no esta verificada —retirada o
+                // caducada— esto es false y el checklist lo marca pendiente, igual
+                // que hara el servidor al enviar.
+                especialidadVerificada: especialidadVerificada ?? undefined,
               }}
               stats={stats}
             />
@@ -313,5 +372,6 @@ export default async function EditInstructorCoursePage({
         </div>
       </div>
     </div>
+    </CambiosSinGuardar>
   );
 }
