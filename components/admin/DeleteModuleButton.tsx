@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
 import { mensajeDeRespuesta } from '@/lib/ui/errores'
+import { DialogoDeConfirmacion } from '@/components/ui/DialogoDeConfirmacion'
 
 interface DeleteModuleButtonProps {
   moduleId: string
@@ -30,13 +31,14 @@ export function DeleteModuleButton({
   // El error, EN PANTALLA. Antes era un alert(), que lo cierra cualquier cosa y no
   // deja rastro: en la auditoria estas acciones «fallaban sin avisar».
   const [error, setError] = useState<string | null>(null)
+  // Y LA CONFIRMACION, TAMBIEN EN PANTALLA. Era un confirm() del navegador, y en la
+  // re-auditoria «borrar un modulo no pide confirmacion»: el dialogo nativo lo gobierna
+  // el navegador y se descarta solo segun quien mire.
+  const [confirmando, setConfirmando] = useState(false)
   const router = useRouter()
 
   const handleDelete = async () => {
-    if (!confirm(`¿Eliminar el módulo "${moduleTitle}"?\n\nEsto eliminará todas las lecciones del módulo.\nEsta acción no se puede deshacer.`)) {
-      return
-    }
-
+    setConfirmando(false)
     setError(null)
 
     setIsDeleting(true)
@@ -61,9 +63,26 @@ export function DeleteModuleButton({
 
   return (
     <div className="flex flex-col items-end gap-1">
+      <DialogoDeConfirmacion
+        abierto={confirmando}
+        titulo={`¿Borrar el módulo «${moduleTitle}»?`}
+        textoDeConfirmar="Sí, borrar el módulo"
+        trabajando={isDeleting}
+        onConfirmar={handleDelete}
+        onCancelar={() => setConfirmando(false)}
+      >
+        <p>Se borra el módulo y todas sus lecciones.</p>
+        <p>
+          El progreso de quien ya las hizo no se borra: desde la copia publicada cuelga
+          de su propia copia, no de estas filas. Los módulos que queden se renumeran.
+        </p>
+        <p className="text-white/50">No se puede deshacer.</p>
+      </DialogoDeConfirmacion>
+
       <button
-        onClick={handleDelete}
+        onClick={() => { setError(null); setConfirmando(true) }}
         disabled={isDeleting}
+        title={`Borrar el módulo «${moduleTitle}»`}
         className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition disabled:opacity-50"
       >
         <Trash2 className={`w-4 h-4 ${isDeleting ? 'animate-pulse' : ''}`} />
