@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { Impedimento } from '@/lib/instructor/puede-enviarse'
 import { estadoVisibleDelCurso } from '@/lib/cursos/estado-visible'
+import { FechaLocal } from '@/components/ui/FechaLocal'
 import {
   Pencil,
   Eye,
@@ -50,6 +51,10 @@ interface InstructorCourseCardProps {
   impedimento?: Impedimento | null
 }
 
+/** «1 modulos» no. El numero manda en la palabra. */
+const cuenta = (n: number, singular: string, plural: string) =>
+  `${n} ${n === 1 ? singular : plural}`
+
 const levelConfig = {
   beginner: { label: 'Principiante', color: 'bg-green-500/10 text-green-400' },
   intermediate: { label: 'Intermedio', color: 'bg-yellow-500/10 text-yellow-400' },
@@ -80,15 +85,6 @@ export default function InstructorCourseCard({
     { para: 'autor' }
   )
   const level = levelConfig[course.level] || levelConfig.beginner
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    })
-  }
 
   const durationHours = course.total_duration_minutes
     ? Math.round(course.total_duration_minutes / 60)
@@ -188,7 +184,8 @@ export default function InstructorCourseCard({
         </span>
         <span className="flex items-center gap-1.5">
           <BookOpen className="w-4 h-4" />
-          {course.total_modules || 0} modulos · {course.total_lessons || 0} lecciones
+          {cuenta(course.total_modules || 0, 'módulo', 'módulos')} ·{' '}
+          {cuenta(course.total_lessons || 0, 'lección', 'lecciones')}
         </span>
         {(durationHours ?? 0) > 0 && (
           <span className="flex items-center gap-1.5">
@@ -199,14 +196,29 @@ export default function InstructorCourseCard({
         {course.enrolled_count !== undefined && (
           <span className="flex items-center gap-1.5">
             <Users className="w-4 h-4" />
-            {course.enrolled_count} alumnos
+            {cuenta(course.enrolled_count, 'alumno', 'alumnos')}
           </span>
         )}
       </div>
 
       {/* LO QUE FALTA PARA PODER ENVIAR, dicho antes de que nadie lo intente */}
       {impedimento && impedimento.clave !== 'estado' && (
-        <p className="mb-4 text-sm text-amber-300/90">{impedimento.motivo}</p>
+        <p className="mb-4 text-sm text-amber-300/90">
+          {impedimento.motivo}
+          {/* Y DONDE SE ARREGLA. Sin verificación aprobada, el editor no ofrece
+              especialidades: el enlace no es un adorno, es el único camino. */}
+          {impedimento.enlace && (
+            <>
+              {' '}
+              <Link
+                href={impedimento.enlace.href}
+                className="font-medium text-amber-200 underline hover:text-amber-100"
+              >
+                {impedimento.enlace.texto}
+              </Link>
+            </>
+          )}
+        </p>
       )}
 
       {/* LO QUE HA FALLADO, en la tarjeta */}
@@ -249,7 +261,12 @@ export default function InstructorCourseCard({
       <div className="flex items-center justify-between pt-4 border-t border-white/10">
         <span className="flex items-center gap-1.5 text-xs text-white/40">
           <Calendar className="w-3.5 h-3.5" />
-          Editado {formatDate(course.updated_at)}
+          {/* LA FECHA, EN UN COMPONENTE QUE NO ROMPE LA HIDRATACION.
+              Esto era `toLocaleDateString('es-ES')` aqui mismo, y formateaba la fecha dos
+              veces —una en el servidor y otra en el navegador— cada una con SU huso: con
+              el servidor en UTC y quien mira en Bogota, los dos escribian dias distintos
+              y React no podia hidratar. Es el aviso #418 de la auditoria. */}
+          Editado <FechaLocal iso={course.updated_at} />
         </span>
 
         {/* Acciones */}
@@ -310,7 +327,14 @@ export default function InstructorCourseCard({
           {(currentStatus === 'draft' || currentStatus === 'rejected' || currentStatus === 'changes_requested') && (
             impedimento ? (
               <Link
-                href={`/dashboard/instructor/cursos/${course.id}?aviso=${impedimento.clave}`}
+                href={
+                  // Al editor, que es donde se arregla… salvo cuando NO se arregla alli:
+                  // sin ninguna verificacion aprobada el editor no tiene selector de
+                  // especialidad que ofrecer, y el camino es pedir la verificacion.
+                  impedimento.enlace
+                    ? impedimento.enlace.href
+                    : `/dashboard/instructor/cursos/${course.id}?aviso=${impedimento.clave}`
+                }
                 title={impedimento.motivo}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-colors"
               >

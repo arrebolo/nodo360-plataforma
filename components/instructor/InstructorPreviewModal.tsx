@@ -293,7 +293,10 @@ export function InstructorPreviewModal({
                 </div>
                 <div className="flex items-center gap-1">
                   <Users className="w-3.5 h-3.5 text-green-400" />
-                  <span>{instructor.total_students.toLocaleString()}</span>
+                  {/* CON IDIOMA EXPLICITO: `toLocaleString()` a secas usa el idioma
+                      de quien formatea, y el del servidor no es el del navegador —«1,234»
+                      frente a «1.234»—, que es otro texto que no coincide al hidratar. */}
+                  <span>{instructor.total_students.toLocaleString('es-ES')}</span>
                 </div>
                 {instructor.total_reviews > 0 && instructor.average_rating && (
                   <div className="flex items-center gap-1">

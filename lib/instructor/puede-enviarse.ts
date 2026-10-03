@@ -27,6 +27,7 @@ import { createClient } from '@/lib/supabase/server'
 export type ClaveDelImpedimento =
   | 'estado'
   | 'sin-especialidad'
+  | 'sin-ninguna-verificacion'
   | 'sin-verificacion'
   | 'sin-modulos'
   | 'sin-lecciones'
@@ -35,17 +36,46 @@ export type Impedimento = {
   clave: ClaveDelImpedimento
   /** La frase que se le enseña a quien escribe el curso. */
   motivo: string
+  /** A dónde se va a arreglar, si no es al editor. */
+  enlace?: { href: string; texto: string }
 }
 
 export const MOTIVOS: Record<ClaveDelImpedimento, string> = {
   estado: 'Solo se pueden enviar a revisión los cursos en borrador, rechazados o con cambios solicitados.',
   'sin-especialidad':
     'Este curso no tiene especialidad asignada. Elígela en el editor y guarda antes de enviarlo.',
+  // ESTE AVISO EXISTE PORQUE EL OTRO MENTIA.
+  //
+  // Sin ninguna verificación aprobada, el editor NO ENSEÑA SELECTOR de especialidad
+  // —solo se pueden elegir las verificadas, porque ofrecer otra sería invitar a un
+  // rechazo—, así que «elígela en el editor» mandaba a una pantalla donde no había nada
+  // que elegir. El orden real es el contrario: primero la verificación, después la
+  // especialidad del curso.
+  'sin-ninguna-verificacion':
+    'Todavía no estás verificado en ninguna especialidad, así que el editor no puede ofrecerte ninguna para este curso. La verificación se pide una vez por especialidad y la aprueba una persona.',
   'sin-verificacion':
     'No estás verificado en la especialidad de este curso, o no para su jurisdicción. Puedes pedirlo en Mi verificación.',
   'sin-modulos': 'El curso necesita al menos un módulo antes de enviarlo a revisión.',
   'sin-lecciones': 'El curso necesita al menos una lección antes de enviarlo a revisión.',
 }
+
+/** A dónde se arregla cada cosa, cuando no se arregla en el editor. */
+export const ENLACES: Partial<Record<ClaveDelImpedimento, { href: string; texto: string }>> = {
+  'sin-ninguna-verificacion': {
+    href: '/dashboard/instructor/verificacion',
+    texto: 'Pedir la verificación',
+  },
+  'sin-verificacion': {
+    href: '/dashboard/instructor/verificacion',
+    texto: 'Mi verificación',
+  },
+}
+
+const impedimento = (clave: ClaveDelImpedimento): Impedimento => ({
+  clave,
+  motivo: MOTIVOS[clave],
+  ...(ENLACES[clave] ? { enlace: ENLACES[clave] } : {}),
+})
 
 const SE_PUEDE_ENVIAR = new Set(['draft', 'rejected', 'changes_requested'])
 
@@ -64,7 +94,16 @@ export type CursoParaEnviar = {
  * argumentos—, pero solo para los que de verdad podrían enviarse.
  */
 export async function impedimentosParaEnviar(
-  cursos: CursoParaEnviar[]
+  cursos: CursoParaEnviar[],
+  opciones: {
+    /**
+     * De quién son los cursos, si son de una sola persona. Con esto, un curso sin
+     * especialidad puede distinguir entre «elígela» y «todavía no puedes elegir
+     * ninguna». Sin esto —un admin mirando cursos de otras personas— el aviso se queda
+     * en el general.
+     */
+    instructorId?: string
+  } = {}
 ): Promise<Record<string, Impedimento | null>> {
   const resultado: Record<string, Impedimento | null> = {}
   if (cursos.length === 0) return resultado
@@ -72,7 +111,7 @@ export async function impedimentosParaEnviar(
   const candidatos = cursos.filter((c) => SE_PUEDE_ENVIAR.has(c.status ?? ''))
   for (const c of cursos) {
     if (!SE_PUEDE_ENVIAR.has(c.status ?? '')) {
-      resultado[c.id] = { clave: 'estado', motivo: MOTIVOS.estado }
+      resultado[c.id] = impedimento('estado')
     }
   }
   if (candidatos.length === 0) return resultado
@@ -93,9 +132,25 @@ export async function impedimentosParaEnviar(
   const porModulos = cuenta(modulos as { course_id: string }[] | null)
   const porLecciones = cuenta(lecciones as { course_id: string }[] | null)
 
+  // ¿TIENE ESTA PERSONA ALGUNA VERIFICACION APROBADA? Se pregunta una vez, y solo si
+  // hay algun curso sin especialidad: es lo que decide cual de los dos avisos es verdad.
+  let tieneAlgunaVerificacion: boolean | null = null
+  if (opciones.instructorId && candidatos.some((c) => !c.specialty_id)) {
+    const { misEspecialidadesVerificadas } = await import('@/lib/instructor/mis-especialidades')
+    try {
+      tieneAlgunaVerificacion = (await misEspecialidadesVerificadas(opciones.instructorId)).length > 0
+    } catch (e) {
+      // Si no se pudo averiguar, no se afirma: se deja el aviso general.
+      console.error('[impedimentosParaEnviar] misEspecialidadesVerificadas:', e)
+    }
+  }
+
   for (const c of candidatos) {
     if (!c.specialty_id) {
-      resultado[c.id] = { clave: 'sin-especialidad', motivo: MOTIVOS['sin-especialidad'] }
+      resultado[c.id] =
+        tieneAlgunaVerificacion === false
+          ? impedimento('sin-ninguna-verificacion')
+          : impedimento('sin-especialidad')
       continue
     }
 
@@ -108,16 +163,16 @@ export async function impedimentosParaEnviar(
     if (error) {
       console.error('[impedimentosParaEnviar] puede_ensenar:', error.message)
     } else if (puede !== true) {
-      resultado[c.id] = { clave: 'sin-verificacion', motivo: MOTIVOS['sin-verificacion'] }
+      resultado[c.id] = impedimento('sin-verificacion')
       continue
     }
 
     if (!(porModulos[c.id] > 0)) {
-      resultado[c.id] = { clave: 'sin-modulos', motivo: MOTIVOS['sin-modulos'] }
+      resultado[c.id] = impedimento('sin-modulos')
       continue
     }
     if (!(porLecciones[c.id] > 0)) {
-      resultado[c.id] = { clave: 'sin-lecciones', motivo: MOTIVOS['sin-lecciones'] }
+      resultado[c.id] = impedimento('sin-lecciones')
       continue
     }
 
