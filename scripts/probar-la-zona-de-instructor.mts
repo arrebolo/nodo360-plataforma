@@ -405,6 +405,8 @@ try {
     ['guía', '/dashboard/instructor/guia'],
     ['verificación', '/dashboard/instructor/verificacion'],
     ['estadísticas', '/dashboard/instructor/estadisticas'],
+    ['referidos', '/dashboard/instructor/referidos'],
+    ['onboarding', '/dashboard/instructor/onboarding'],
   ]
   for (const [nombre, ruta] of pantallas) {
     const m = await nav.ir(ruta, { espera: 2800 })

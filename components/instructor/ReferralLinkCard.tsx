@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { FechaLocal } from '@/components/ui/FechaLocal'
 import {
   Link2,
   Copy,
@@ -238,7 +239,10 @@ export default function ReferralLinkCard({ link, onDelete, onToggle }: ReferralL
       {/* Footer con fecha */}
       <div className="mt-3 pt-3 border-t border-white/5 flex justify-between items-center text-xs text-white/40">
         <span>
-          Creado: {new Date(link.created_at).toLocaleDateString('es-ES')}
+          {/* La fecha, en el componente que no rompe la hidratacion: esta tarjeta la
+              pinta el servidor, y formatear aqui con el huso de quien mira da un texto
+              distinto al del servidor. Es el #418. */}
+          Creado: <FechaLocal iso={link.created_at} />
         </span>
         <span>
           Últimos 7d: {link.clicks_7d} clics
