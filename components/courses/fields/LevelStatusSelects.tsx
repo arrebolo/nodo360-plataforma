@@ -27,7 +27,7 @@ export function LevelStatusSelects({
       <div>
         <LabelWithTooltip
           label="Nivel"
-          tooltip="Principiante: sin conocimientos previos. Intermedio: conoce lo basico. Avanzado: experiencia previa requerida"
+          tooltip="Principiante: sin conocimientos previos. Intermedio: conoce lo básico. Avanzado: experiencia previa requerida"
           required
           htmlFor="course-level"
         />
@@ -53,7 +53,7 @@ export function LevelStatusSelects({
       <div>
         <LabelWithTooltip
           label="Estado"
-          tooltip="Borrador: solo tu lo ves. En revision: esperando aprobacion. Publicado: visible para estudiantes"
+          tooltip="Borrador: solo tú lo ves. En revisión: esperando aprobación. Publicado: visible para estudiantes"
           required
           htmlFor="course-status"
         />

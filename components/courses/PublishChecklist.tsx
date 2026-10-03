@@ -63,7 +63,7 @@ const checklistItems: ChecklistItem[] = [
   // Informacion basica
   {
     id: 'title',
-    label: 'Titulo del curso',
+    label: 'Título del curso',
     description: 'Mínimo 10 caracteres',
     check: (c) => (c.title?.length ?? 0) >= 10,
     required: true,
@@ -79,7 +79,7 @@ const checklistItems: ChecklistItem[] = [
   },
   {
     id: 'description',
-    label: 'Descripcion corta',
+    label: 'Descripción corta',
     description: 'Entre 50 y 160 caracteres (SEO)',
     check: (c) => {
       const len = c.description?.length ?? 0
@@ -90,7 +90,7 @@ const checklistItems: ChecklistItem[] = [
   },
   {
     id: 'long_description',
-    label: 'Descripcion completa',
+    label: 'Descripción completa',
     description: 'Mínimo 200 caracteres',
     check: (c) => (c.long_description?.length ?? 0) >= 200,
     required: false,
@@ -130,7 +130,7 @@ const checklistItems: ChecklistItem[] = [
   {
     id: 'modules',
     label: 'Módulos del curso',
-    description: 'Al menos 1 modulo creado',
+    description: 'Al menos 1 módulo creado',
     check: (_, stats) => stats.modulesCount >= 1,
     required: true,
     category: 'content'
@@ -145,7 +145,7 @@ const checklistItems: ChecklistItem[] = [
   },
   {
     id: 'duration',
-    label: 'Duracion del contenido',
+    label: 'Duración del contenido',
     description: 'Al menos 15 minutos de contenido',
     check: (_, stats) => stats.totalDurationMinutes >= 15,
     required: false,
@@ -209,7 +209,7 @@ export function PublishChecklist({
   }, [results])
 
   const categoryLabels = {
-    info: 'Informacion',
+    info: 'Información',
     content: 'Contenido',
     media: 'Medios'
   }

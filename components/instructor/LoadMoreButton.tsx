@@ -52,7 +52,7 @@ export default function LoadMoreButton({
         ) : (
           <>
             <ChevronDown className="w-5 h-5" />
-            Cargar mas
+            Cargar más
           </>
         )}
       </button>

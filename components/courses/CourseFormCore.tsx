@@ -147,7 +147,7 @@ export function CourseFormCore({
 
     if (especialidadObligatoria && !specialtyId) {
 
-      toast.error('Elige la especialidad del curso: sin ella no se podra enviar a revision.')
+      toast.error('Elige la especialidad del curso: sin ella no se podrá enviar a revisión.')
 
       return
 
@@ -155,7 +155,7 @@ export function CourseFormCore({
 
     if (hacenFaltaPaises && !jurisdiccion) {
 
-      toast.error('Esta especialidad se verifica por pais: elige la jurisdiccion.')
+      toast.error('Esta especialidad se verifica por país: elige la jurisdicción.')
 
       return
 
@@ -338,7 +338,7 @@ export function CourseFormCore({
         {/* Imagenes del curso */}
         <div className="space-y-6 pt-6 border-t border-white/10">
           <h3 className="text-lg font-semibold text-white">
-            Imagenes del curso
+            Imágenes del curso
           </h3>
 
           <ImageUpload
@@ -359,7 +359,7 @@ export function CourseFormCore({
             onUpload={(url) => setBannerUrl(url)}
             aspectRatio="banner"
             label="Banner del Curso"
-            hint="Imagen de cabecera en la pagina del curso. Recomendado: 1920x640px (3:1)"
+            hint="Imagen de cabecera en la página del curso. Recomendado: 1920x640px (3:1)"
             maxSizeMB={3}
           />
         </div>

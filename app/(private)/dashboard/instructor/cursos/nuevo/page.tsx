@@ -68,7 +68,7 @@ export default async function NewInstructorCoursePage() {
           <p className="text-blue-300 font-medium">Proceso de publicación</p>
           <p className="text-white/60 mt-1">
             Tu curso comenzará como borrador. Cuando esté listo, podrás enviarlo a revisión.
-            Un mentor lo revisara antes de publicarlo.
+            Un mentor lo revisará antes de publicarlo.
           </p>
           <Link
             href="/dashboard/instructor/guia"

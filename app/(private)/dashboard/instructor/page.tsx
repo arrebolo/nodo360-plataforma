@@ -43,7 +43,7 @@ const BENEFITS = [
     // especialidad». Todo el catalogo es gratuito, y /pricing lo dice.
     icon: BookOpen,
     title: 'Publica en tu especialidad',
-    description: 'Tu curso entra en el catalogo, gratuito como el resto',
+    description: 'Tu curso entra en el catálogo, gratuito como el resto',
     color: 'text-blue-400',
     bgColor: 'bg-blue-500/20',
   },
@@ -208,7 +208,7 @@ export default async function InstructorPage() {
                     ¿Nuevo como instructor?
                   </h3>
                   <p className="text-sm text-white/60 mt-0.5">
-                    Sigue nuestra guia paso a paso para crear y publicar tu primer curso
+                    Sigue nuestra guía paso a paso para crear y publicar tu primer curso
                   </p>
                 </div>
               </div>

@@ -111,7 +111,7 @@ export default function InstructorOnboardingPage() {
         {
           id: 1,
           title: 'Completa tu perfil',
-          description: 'Tu foto y una biografia corta: quien eres y de que puedes hablar con conocimiento. Las areas de conocimiento no se escriben aqui, salen del paso siguiente.',
+          description: 'Tu foto y una biografía corta: quién eres y de qué puedes hablar con conocimiento. Las áreas de conocimiento no se escriben aquí, salen del paso siguiente.',
           icon: User,
           link: '/dashboard/perfil',
           linkText: 'Editar perfil',
@@ -123,10 +123,10 @@ export default function InstructorOnboardingPage() {
           title: 'Verificate en una especialidad',
           description: especialidadesVerificadas.length > 0
             ? `Verificado en ${especialidadesVerificadas.join(', ')}. Estar verificado en una especialidad habilita solo en esa.`
-            : 'La verificacion es por especialidad, no general. Si esa especialidad tiene banco de preguntas hay examen; si no, entrevista y parte practica. En los dos casos decide una persona, y sin ella no se puede enviar un curso a revision.',
+            : 'La verificación es por especialidad, no general. Si esa especialidad tiene banco de preguntas hay examen; si no, entrevista y parte práctica. En los dos casos decide una persona, y sin ella no se puede enviar un curso a revisión.',
           icon: Award,
           link: '/dashboard/instructor/verificacion',
-          linkText: especialidadesVerificadas.length > 0 ? 'Ver mis verificaciones' : 'Pedir la verificacion',
+          linkText: especialidadesVerificadas.length > 0 ? 'Ver mis verificaciones' : 'Pedir la verificación',
           isComplete: estaVerificado,
           isLoading: false,
         },
@@ -142,8 +142,8 @@ export default function InstructorOnboardingPage() {
         },
         {
           id: 4,
-          title: 'Envia a revision',
-          description: 'Hace falta estar verificado en la especialidad del curso, y que el curso la tenga asignada. Hoy lo revisa el equipo de Nodo360; cuando haya mentores verificados, cada curso lo revisaran dos.',
+          title: 'Envía a revisión',
+          description: 'Hace falta estar verificado en la especialidad del curso, y que el curso la tenga asignada. Hoy lo revisa el equipo de Nodo360; cuando haya mentores verificados, cada curso lo revisarán dos.',
           icon: Send,
           link: '/dashboard/instructor/guia',
           linkText: 'Ver guía de revisión',
@@ -153,7 +153,7 @@ export default function InstructorOnboardingPage() {
         {
           id: 5,
           title: 'Se publica',
-          description: 'Entra en el catalogo con tu nombre y tu biografia, gratuito como todos los demas. Hoy no hay remuneracion para instructores; si en el futuro hay monetizacion, las condiciones se acordaran por escrito antes de cualquier cobro.',
+          description: 'Entra en el catálogo con tu nombre y tu biografía, gratuito como todos los demás. Hoy no hay remuneración para instructores; si en el futuro hay monetización, las condiciones se acordarán por escrito antes de cualquier cobro.',
           icon: Rocket,
           link: '/dashboard/instructor/cursos',
           linkText: 'Ver mis cursos',
@@ -200,7 +200,7 @@ export default function InstructorOnboardingPage() {
               <Sparkles className="w-6 h-6 text-brand-light" />
             </div>
             <h1 className="text-2xl font-bold text-white">
-              Guia de inicio para instructores
+              Guía de inicio para instructores
             </h1>
           </div>
           <p className="text-white/60">
@@ -335,7 +335,7 @@ export default function InstructorOnboardingPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-white font-medium text-sm hover:bg-white/15 transition-colors"
             >
               <BookOpen className="w-4 h-4" />
-              Guia de revisión
+              Guía de revisión
             </Link>
             <Link
               href="/dashboard/mensajes"
