@@ -70,3 +70,12 @@ jobs:
       #
       # No toca la base: solo lee el codigo, asi que no necesita credenciales.
       - run: npx tsx scripts/comprobar-lecturas-publicas.mts
+
+      # Que ninguna pantalla de instructor o de mentor llame a /api/admin.
+      #
+      # Sigue el grafo de imports porque un grep no sirve: cuando se hizo, un grep
+      # sobre las paginas del instructor daba cero y la regla estaba incumplida tres
+      # niveles mas abajo, en un componente compartido con el panel.
+      #
+      # No toca la base: solo lee el codigo.
+      - run: npx tsx scripts/comprobar-zonas-de-api.mts
