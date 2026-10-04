@@ -13,7 +13,7 @@ export function TitleField({ value, onChange, error }: TitleFieldProps) {
     <div className="mb-6">
       <LabelWithTooltip
         label="Título del Curso"
-        tooltip="Un titulo claro y descriptivo que indique el tema principal del curso"
+        tooltip="Un título claro y descriptivo que indique el tema principal del curso"
         required
         htmlFor="course-title"
       />

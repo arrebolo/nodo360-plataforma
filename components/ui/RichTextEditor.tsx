@@ -7,8 +7,10 @@ import Image from '@tiptap/extension-image'
 import Youtube from '@tiptap/extension-youtube'
 import Placeholder from '@tiptap/extension-placeholder'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 import { common, createLowlight } from 'lowlight'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { DialogoDeUnDato } from '@/components/ui/DialogoDeUnDato'
 
 const lowlight = createLowlight(common)
 
@@ -60,6 +62,30 @@ export function RichTextEditor({
           class: 'bg-[#1e1e1e] rounded-xl p-4 my-4 overflow-x-auto text-sm'
         }
       }),
+      // TABLAS.
+      //
+      // Faltaban, y se echaban de menos escribiendo: una comparativa de carteras o de
+      // comisiones en viñetas no se lee. Sin la extension no vale pegar el HTML de una
+      // tabla: el esquema del editor no conoce esos nodos y los tira al pegar.
+      //
+      // `resizable: false` a proposito: el ancho de columna que se arrastra con el raton
+      // se guarda en el HTML en pixeles, y lo que aqui se escribe se lee despues en un
+      // movil. Que lo reparta el navegador.
+      Table.configure({
+        resizable: false,
+        HTMLAttributes: {
+          class: 'w-full my-4 border-collapse overflow-hidden rounded-xl'
+        }
+      }),
+      TableRow,
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: 'border border-white/15 bg-white/10 px-3 py-2 text-left font-semibold'
+        }
+      }),
+      TableCell.configure({
+        HTMLAttributes: { class: 'border border-white/15 px-3 py-2 align-top' }
+      }),
       Placeholder.configure({
         placeholder
       })
@@ -83,34 +109,44 @@ export function RichTextEditor({
     }
   }, [content, editor])
 
-  const setLink = useCallback(() => {
+  /**
+   * QUE SE ESTA PIDIENDO, si se esta pidiendo algo.
+   *
+   * Los tres botones de medios pedian la URL con `window.prompt()`, que bloquea la
+   * pestaña entera y en algunos navegadores esta desactivado o se descarta solo: en la
+   * auditoria, «el boton de enlace bloquea el navegador». Ahora es un dialogo de la
+   * pagina, y ademas puede explicar que URL se espera.
+   */
+  const [pidiendo, setPidiendo] = useState<null | 'enlace' | 'imagen' | 'youtube'>(null)
+
+  const urlDelEnlace = editor?.getAttributes('link').href ?? ''
+
+  const ponerElDato = useCallback(
+    (valor: string) => {
+      if (!editor) return
+      const que = pidiendo
+      setPidiendo(null)
+      if (que === 'enlace') {
+        // Vacio quita el enlace: es la unica forma de desenlazar sin borrar el texto.
+        if (valor === '') {
+          editor.chain().focus().extendMarkRange('link').unsetLink().run()
+        } else {
+          editor.chain().focus().extendMarkRange('link').setLink({ href: valor }).run()
+        }
+        return
+      }
+      if (!valor) return
+      if (que === 'imagen') editor.chain().focus().setImage({ src: valor }).run()
+      if (que === 'youtube') editor.chain().focus().setYoutubeVideo({ src: valor }).run()
+    },
+    [editor, pidiendo]
+  )
+
+  const insertarTabla = useCallback(() => {
     if (!editor) return
-    const previousUrl = editor.getAttributes('link').href
-    const url = window.prompt('URL del enlace:', previousUrl)
-
-    if (url === null) return
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run()
-      return
-    }
-
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-  }, [editor])
-
-  const addImage = useCallback(() => {
-    if (!editor) return
-    const url = window.prompt('URL de la imagen:')
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
-    }
-  }, [editor])
-
-  const addYoutube = useCallback(() => {
-    if (!editor) return
-    const url = window.prompt('URL del video de YouTube:')
-    if (url) {
-      editor.chain().focus().setYoutubeVideo({ src: url }).run()
-    }
+    // Tres columnas con cabecera y dos filas de datos: lo mas comun es comparar tres
+    // cosas, y quitar una columna cuesta menos que inventarse la estructura.
+    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
   }, [editor])
 
   if (!editor) {
@@ -210,23 +246,30 @@ export function RichTextEditor({
           {/* Medios */}
           <div className="flex items-center gap-0.5 px-2">
             <ToolbarButton
-              onClick={setLink}
+              onClick={() => setPidiendo('enlace')}
               active={editor.isActive('link')}
               title="Insertar enlace"
             >
               <LinkIcon />
             </ToolbarButton>
             <ToolbarButton
-              onClick={addImage}
+              onClick={() => setPidiendo('imagen')}
               title="Insertar imagen"
             >
               <ImageIcon />
             </ToolbarButton>
             <ToolbarButton
-              onClick={addYoutube}
-              title="Insertar video YouTube"
+              onClick={() => setPidiendo('youtube')}
+              title="Insertar vídeo de YouTube"
             >
               <YoutubeIcon />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={insertarTabla}
+              active={editor.isActive('table')}
+              title="Insertar tabla (3 columnas con cabecera)"
+            >
+              <TableIcon />
             </ToolbarButton>
           </div>
 
@@ -252,6 +295,39 @@ export function RichTextEditor({
 
       {/* Editor content */}
       <EditorContent editor={editor} />
+
+      {/* LO QUE ANTES PEDIA prompt(). Un dialogo por cada cosa, con su ayuda. */}
+      <DialogoDeUnDato
+        abierto={pidiendo === 'enlace'}
+        titulo="Enlace"
+        ayuda="Déjalo en blanco para quitar el enlace y dejar solo el texto."
+        etiqueta="Dirección (empezando por https://)"
+        marcaDeAgua="https://ejemplo.com/pagina"
+        valorInicial={urlDelEnlace}
+        textoDeConfirmar="Poner el enlace"
+        onConfirmar={ponerElDato}
+        onCancelar={() => setPidiendo(null)}
+      />
+      <DialogoDeUnDato
+        abierto={pidiendo === 'imagen'}
+        titulo="Imagen"
+        ayuda="La dirección de una imagen ya publicada. Se verá con el ancho del texto."
+        etiqueta="Dirección de la imagen"
+        marcaDeAgua="https://ejemplo.com/imagen.jpg"
+        textoDeConfirmar="Insertar la imagen"
+        onConfirmar={ponerElDato}
+        onCancelar={() => setPidiendo(null)}
+      />
+      <DialogoDeUnDato
+        abierto={pidiendo === 'youtube'}
+        titulo="Vídeo de YouTube"
+        ayuda="Pega la dirección del vídeo tal cual, la de la barra del navegador."
+        etiqueta="Dirección del vídeo"
+        marcaDeAgua="https://www.youtube.com/watch?v=…"
+        textoDeConfirmar="Insertar el vídeo"
+        onConfirmar={ponerElDato}
+        onCancelar={() => setPidiendo(null)}
+      />
     </div>
   )
 }
@@ -372,6 +448,14 @@ function YoutubeIcon() {
   return (
     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
       <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+    </svg>
+  )
+}
+
+function TableIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM4 10h16M4 14h16M10 4v16M16 4v16" />
     </svg>
   )
 }

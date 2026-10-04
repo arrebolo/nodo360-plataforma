@@ -20,8 +20,8 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Guia del instructor',
-  description: 'Conoce el proceso de revision de cursos, criterios de aprobacion y consejos para publicar tu curso en Nodo360.',
+  title: 'Guía del instructor',
+  description: 'Conoce el proceso de revisión de cursos, criterios de aprobación y consejos para publicar tu curso en Nodo360.',
   // Fuera de los buscadores. Es una pagina operativa del flujo de instructor:
   // no esta en el sitemap y solo la enlazan cuatro pantallas del panel privado,
   // asi que indexarla solo servia para que alguien llegase de fuera a un
@@ -34,12 +34,12 @@ const approvalCriteria = [
   {
     icon: FileText,
     title: 'Contenido original y de calidad',
-    description: 'El curso debe contener informacion precisa, actualizada y ser de tu propia creacion.',
+    description: 'El curso debe contener información precisa, actualizada y ser de tu propia creación.',
   },
   {
     icon: BookOpen,
     title: 'Mínimo 3 módulos con lecciones',
-    description: 'Estructura tu curso en al menos 3 modulos con contenido sustancial en cada uno.',
+    description: 'Estructura tu curso en al menos 3 módulos con contenido sustancial en cada uno.',
   },
   // Habia un criterio «Video o contenido multimedia: incluye videos
   // explicativos...». Las 111 lecciones publicadas tienen video_url a NULL: el
@@ -47,13 +47,13 @@ const approvalCriteria = [
   // que hay publicado.
   {
     icon: FileText,
-    title: 'Descripcion clara del curso',
-    description: 'Explica que aprendera el estudiante, requisitos previos y para quien es el curso.',
+    title: 'Descripción clara del curso',
+    description: 'Explica qué aprenderá el estudiante, requisitos previos y para quién es el curso.',
   },
   {
     icon: Image,
     title: 'Thumbnail y banner de calidad',
-    description: 'Imagenes profesionales que representen el contenido del curso.',
+    description: 'Imágenes profesionales que representen el contenido del curso.',
   },
 ]
 
@@ -65,18 +65,18 @@ const rejectionReasons = [
   },
   {
     icon: Video,
-    title: 'Calidad de video/audio baja',
+    title: 'Calidad de vídeo o audio baja',
     description: 'Videos borrosos, audio con ruido o mala iluminacion.',
   },
   {
     icon: AlertTriangle,
-    title: 'Informacion incorrecta',
+    title: 'Información incorrecta',
     description: 'Datos erroneos sobre Bitcoin, blockchain o conceptos tecnicos.',
   },
   {
     icon: BookOpen,
     title: 'Falta de estructura',
-    description: 'Contenido desorganizado sin progresion logica de aprendizaje.',
+    description: 'Contenido desorganizado sin progresión lógica de aprendizaje.',
   },
 ]
 
@@ -88,7 +88,7 @@ const tips = [
   'Usa ejemplos reales y casos de uso prácticos',
   'Añade recursos descargables (PDFs, checklists, etc.)',
   'Pide comentarios a colegas antes de enviar a revisión',
-  'Verifica que todos los links y recursos funcionen',
+  'Verifica que todos los enlaces y recursos funcionen',
 ]
 
 const faqs = [
@@ -96,19 +96,19 @@ const faqs = [
     // Decia «entre 24-48 horas habiles» y «+24 horas tras las correcciones».
     // course_reviews tiene 0 filas: ningun curso ha pasado nunca por este
     // flujo, asi que ese plazo no lo ha medido nadie.
-    question: '¿Cuanto tiempo tarda la revisión?',
+    question: '¿Cuánto tiempo tarda la revisión?',
     answer: 'Cada curso se revisa antes de publicarse. Hoy lo revisa el equipo de Nodo360; no hay un plazo fijo, pero recibirás respuesta por correo.',
   },
   {
     // Decia «mentores certificados de Nodo360».
     // instructor_certifications tiene 0 filas y hay un unico mentor: no hay
     // ninguna certificacion emitida detras de esa palabra.
-    question: '¿Quien revisa los cursos?',
+    question: '¿Quién revisa los cursos?',
     answer: 'Hoy la revisión la hace el equipo de Nodo360. Cuando haya mentores verificados, cada curso lo revisarán dos.',
   },
   {
-    question: '¿Que pasa si mi curso es rechazado?',
-    answer: 'Recibiras un email detallado con los motivos del rechazo y recomendaciones para mejorar. Podrás hacer los cambios y volver a enviar sin limite de intentos.',
+    question: '¿Qué pasa si mi curso es rechazado?',
+    answer: 'Recibirás un correo detallado con los motivos del rechazo y recomendaciones para mejorar. Podrás hacer los cambios y volver a enviar sin límite de intentos.',
   },
   {
     question: '¿Puedo editar mi curso después de publicado?',
@@ -148,10 +148,10 @@ export default function GuiaRevisionPage() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-light/10 border border-brand-light/20 text-brand-light text-sm mb-6">
             <FileSearch className="w-4 h-4" />
-            Guia para instructores
+            Guía para instructores
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Guia de Revisión de Cursos
+            Guía de revisión de cursos
           </h1>
           <p className="text-xl text-white/60 max-w-2xl mx-auto">
             Todo lo que necesitas saber para que tu curso sea aprobado y publicado en Nodo360
@@ -164,7 +164,7 @@ export default function GuiaRevisionPage() {
             <div className="p-2 rounded-lg bg-brand-light/20">
               <FileSearch className="w-5 h-5 text-brand-light" />
             </div>
-            ¿Como funciona la revisión?
+            ¿Cómo funciona la revisión?
           </h2>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
             <div className="grid md:grid-cols-3 gap-6">
@@ -190,7 +190,7 @@ export default function GuiaRevisionPage() {
                 <div className="w-12 h-12 rounded-full bg-brand-light/20 flex items-center justify-center mx-auto mb-3">
                   <span className="text-brand-light font-bold">3</span>
                 </div>
-                <h3 className="font-semibold text-white mb-2">Recibiras respuesta</h3>
+                <h3 className="font-semibold text-white mb-2">Recibirás respuesta</h3>
                 <p className="text-sm text-white/60">
                   Te notificaremos por email si fue aprobado o si necesita cambios
                 </p>
@@ -218,7 +218,7 @@ export default function GuiaRevisionPage() {
             <div className="p-2 rounded-lg bg-success/20">
               <CheckCircle className="w-5 h-5 text-success" />
             </div>
-            Criterios de aprobacion
+            Criterios de aprobación
           </h2>
           <div className="grid gap-4">
             {approvalCriteria.map((criteria, index) => {
@@ -396,7 +396,7 @@ export default function GuiaRevisionPage() {
                 href="/dashboard/instructor/onboarding"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/15 transition-colors"
               >
-                Ver guia de inicio
+                Ver guía de inicio
               </Link>
             </div>
           </div>

@@ -34,16 +34,38 @@ interface Props {
    * marcadas como vista previa gratuita— y no habia forma de revisar el contenido ni
    * el video antes de enviar el curso a revision.
    *
-   * Se pasa una funcion y no un patron de URL porque el destino depende de quien mira:
-   * el instructor va a SU editor de la leccion (el curso esta en borrador, la pagina
-   * publica no existiria todavia), y una pantalla publica iria a /cursos/...
+   * DATOS, NO UNA FUNCION. La primera version recibia
+   * `(moduloId, leccionId) => string`, y eso TUMBABA LA PAGINA: este componente es
+   * `'use client'`, y una funcion no se puede serializar de un componente de servidor a
+   * uno de cliente. El error era «Functions cannot be passed directly to Client
+   * Components», que en produccion sale como «Algo salio mal» y el React minificado
+   * #441: la vista previa no se podia abrir, ni desde la tarjeta ni desde el editor.
+   *
+   * El destino sigue dependiendo de quien mira, pero eso se dice con datos: el
+   * instructor va a SU editor de la leccion —el curso esta en borrador y la pagina
+   * publica no existiria todavia— y una pantalla publica iria a /cursos/...
    *
    * Sin esta propiedad, se comporta como antes: texto sin enlace.
    */
-  enlaceDeLeccion?: (moduloId: string, leccionId: string) => string
+  enlace?:
+    | { tipo: 'editor'; courseId: string }
+    | { tipo: 'publico'; courseSlug: string }
 }
 
-export default function CourseModulesPreview({ courseSlug, modules, enlaceDeLeccion }: Props) {
+/** El destino de una leccion, segun quien mira. Sin `enlace`, no hay destino. */
+function destinoDeLaLeccion(
+  enlace: Props['enlace'],
+  moduloId: string,
+  leccion: Lesson
+): string | null {
+  if (!enlace) return null
+  if (enlace.tipo === 'editor') {
+    return `/dashboard/instructor/cursos/${enlace.courseId}/modulos/${moduloId}/lecciones/${leccion.id}`
+  }
+  return `/cursos/${enlace.courseSlug}/${leccion.slug}`
+}
+
+export default function CourseModulesPreview({ courseSlug, modules, enlace }: Props) {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
     new Set([modules[0]?.id])
   )
@@ -126,7 +148,7 @@ export default function CourseModulesPreview({ courseSlug, modules, enlaceDeLecc
             {isExpanded && (
               <div className="border-t border-black/5 divide-y divide-black/5">
                 {module.lessons.map((lesson, lessonIndex) => {
-                  const destino = enlaceDeLeccion?.(module.id, lesson.id)
+                  const destino = destinoDeLaLeccion(enlace, module.id, lesson)
                   // Con destino es un enlace; sin el, lo de antes. Y entonces el
                   // candado y la opacidad no pintan nada: quien puede abrirlas todas
                   // no esta viendo un escaparate, esta revisando su propio curso.

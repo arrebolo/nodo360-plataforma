@@ -151,7 +151,13 @@ export default async function InstructorCoursesPage({
       status: c.status,
       specialty_id: (c as { specialty_id?: string | null }).specialty_id ?? null,
       jurisdiccion: (c as { jurisdiccion?: string | null }).jurisdiccion ?? null,
-    }))
+    })),
+    // DE QUIEN SON LOS CURSOS, para poder decir la verdad cuando falta la especialidad:
+    // sin ninguna verificacion aprobada el editor no ofrece ninguna especialidad, asi
+    // que «eligela en el editor» manda a una pantalla donde no hay nada que elegir. Un
+    // admin ve cursos de otras personas, y entonces esa distincion no es suya: no se
+    // pasa el id y el aviso se queda en el general.
+    { instructorId: isAdmin ? undefined : userId }
   );
 
   // Agregar enrolled_count a cada curso
@@ -183,21 +189,38 @@ export default async function InstructorCoursesPage({
   const publishedCourses = tabCounts.published;
   const draftCourses = tabCounts.draft;
 
-  // Total de alumnos (necesita calcular de todos los cursos)
-  let totalStudentsQuery = supabase.from("course_enrollments").select("course_id");
-  if (!isAdmin && courseIds.length > 0) {
-    // Solo contar de los cursos del instructor
-    const { data: allInstructorCourses } = await supabase
-      .from("courses")
-      .select("id")
-      .eq("instructor_id", userId);
-    const allIds = allInstructorCourses?.map((c) => c.id) || [];
-    if (allIds.length > 0) {
-      totalStudentsQuery = totalStudentsQuery.in("course_id", allIds);
+  // LOS ALUMNOS, LOS DE QUIEN MIRA.
+  //
+  // Esto contaba las matriculas de TODA LA PLATAFORMA cuando el instructor no tenia
+  // ningun curso en la lista: el filtro estaba condicionado a `courseIds.length > 0`, y
+  // `courseIds` son solo los cursos LISTADOS —los que pasan la pestaña y los filtros—.
+  // Con la lista vacia no se filtraba nada, y la cabecera anunciaba «12 Alumnos total» a
+  // un instructor con 0 cursos. Lo mismo pasaba si el instructor existia pero no tenia
+  // cursos: `allIds` vacio dejaba la consulta sin filtrar.
+  //
+  // Los ids de la lista no sirven para esta cifra: la cabecera habla de todo lo del
+  // instructor, no de lo que se este viendo. Asi que se piden sus cursos y se filtra por
+  // ellos SIEMPRE; si no tiene ninguno, son cero y no hace falta preguntar.
+  //
+  // Y cuenta PERSONAS, no matriculas: pone «Alumnos», y quien se matricula en tres
+  // cursos del mismo instructor es un alumno, no tres.
+  const idsParaContar = isAdmin
+    ? null
+    : ((await supabase.from("courses").select("id").eq("instructor_id", userId)).data ?? [])
+        .map((c) => c.id);
+
+  let totalStudents = 0;
+  if (idsParaContar === null || idsParaContar.length > 0) {
+    let consulta = supabase.from("course_enrollments").select("user_id");
+    if (idsParaContar !== null) consulta = consulta.in("course_id", idsParaContar);
+    const { data: matriculas, error: errorMatriculas } = await consulta;
+    // SI LA CONSULTA FALLA, cero y se dice: `data` a null no es «cero matriculas», y
+    // dar un cero silencioso aqui es como se anuncio un 12 que no existia.
+    if (errorMatriculas) {
+      console.error("[Instructor Cursos] alumnos:", errorMatriculas.message);
     }
+    totalStudents = new Set((matriculas ?? []).map((m) => m.user_id)).size;
   }
-  const { data: allEnrollments } = await totalStudentsQuery;
-  const totalStudents = allEnrollments?.length || 0;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -267,7 +290,7 @@ export default async function InstructorCoursesPage({
           {totalCourses === 0 ? (
             <>
               <h3 className="text-lg font-medium text-white mb-2">
-                Aun no tienes cursos
+                Aún no tienes cursos
               </h3>
               <p className="text-sm text-white/60 mb-4">
                 Crea tu primer curso y empieza a compartir tu conocimiento.
@@ -286,7 +309,7 @@ export default async function InstructorCoursesPage({
                 No hay cursos con estos filtros
               </h3>
               <p className="text-white/50">
-                Prueba a cambiar los filtros de busqueda
+                Prueba a cambiar los filtros de búsqueda
               </p>
             </>
           )}

@@ -92,7 +92,7 @@ export default function CourseFilters({ totalCourses, filteredCount }: CourseFil
           <option value="published">Publicados</option>
           <option value="draft">Borradores</option>
           <option value="archived">Archivados</option>
-          <option value="coming_soon">Proximamente</option>
+          <option value="coming_soon">Próximamente</option>
         </select>
 
         {/* Nivel */}
@@ -130,11 +130,11 @@ export default function CourseFilters({ totalCourses, filteredCount }: CourseFil
           onChange={(e) => handleFilterChange('sort', e.target.value)}
           className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#f7931a]/50 cursor-pointer"
         >
-          <option value="recent">Mas recientes</option>
-          <option value="oldest">Mas antiguos</option>
+          <option value="recent">Más recientes</option>
+          <option value="oldest">Más antiguos</option>
           <option value="title">Título A-Z</option>
           <option value="title_desc">Título Z-A</option>
-          <option value="students">Mas alumnos</option>
+          <option value="students">Más alumnos</option>
         </select>
 
         {/* Limpiar filtros */}

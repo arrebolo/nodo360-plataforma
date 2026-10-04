@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
 import { mensajeDeRespuesta } from '@/lib/ui/errores'
+import { DialogoDeConfirmacion } from '@/components/ui/DialogoDeConfirmacion'
 
 interface DeleteLessonButtonProps {
   lessonId: string
@@ -32,13 +33,13 @@ export function DeleteLessonButton({
   // El error, EN PANTALLA. Antes era un alert(), que lo cierra cualquier cosa y no
   // deja rastro: en la auditoria estas acciones «fallaban sin avisar».
   const [error, setError] = useState<string | null>(null)
+  // Y LA CONFIRMACION, TAMBIEN EN PANTALLA: el confirm() del navegador se descarta solo
+  // segun quien mire, y en la re-auditoria el borrado «no pedia confirmacion».
+  const [confirmando, setConfirmando] = useState(false)
   const router = useRouter()
 
   const handleDelete = async () => {
-    if (!confirm(`¿Eliminar la lección "${lessonTitle}"?\n\nDesaparece del curso. El progreso de quien ya la hizo no se borra: desde la 117 cuelga de la copia publicada.\nEsta acción no se puede deshacer.`)) {
-      return
-    }
-
+    setConfirmando(false)
     setError(null)
 
     setIsDeleting(true)
@@ -63,9 +64,27 @@ export function DeleteLessonButton({
 
   return (
     <div className="flex flex-col items-end gap-1">
+      <DialogoDeConfirmacion
+        abierto={confirmando}
+        titulo={`¿Borrar la lección «${lessonTitle}»?`}
+        textoDeConfirmar="Sí, borrar la lección"
+        trabajando={isDeleting}
+        onConfirmar={handleDelete}
+        onCancelar={() => setConfirmando(false)}
+      >
+        <p>Desaparece del curso y las lecciones que queden se renumeran.</p>
+        <p>
+          El progreso de quien ya la hizo no se borra: desde la copia publicada cuelga de
+          su propia copia, no de esta fila. Si alguien se queda al 100 % porque faltaba
+          justo esta, podrá pedir su certificado como siempre.
+        </p>
+        <p className="text-white/50">No se puede deshacer.</p>
+      </DialogoDeConfirmacion>
+
       <button
-        onClick={handleDelete}
+        onClick={() => { setError(null); setConfirmando(true) }}
         disabled={isDeleting}
+        title={`Borrar la lección «${lessonTitle}»`}
         className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition disabled:opacity-50"
       >
         <Trash2 className={`w-4 h-4 ${isDeleting ? 'animate-pulse' : ''}`} />

@@ -37,7 +37,7 @@ export function PricingToggles({
             className="w-5 h-5 rounded border-white/10 bg-white/5 text-brand-light focus:ring-2 focus:ring-brand-light/20"
           />
           <span className="text-white font-medium">Curso Gratuito</span>
-          <Tooltip content="El curso sera accesible sin pago. Ideal para cursos introductorios" />
+          <Tooltip content="El curso será accesible sin pago. Ideal para cursos introductorios" />
         </label>
 
         <label className="flex items-center gap-2 cursor-pointer">
@@ -50,7 +50,7 @@ export function PricingToggles({
             className="w-5 h-5 rounded border-white/10 bg-white/5 text-brand focus:ring-2 focus:ring-brand/20"
           />
           <span className="text-white font-medium">Premium</span>
-          <Tooltip content="Requiere suscripcion Premium para acceder. Se incluye en la membresia" />
+          <Tooltip content="Requiere suscripción Premium para acceder. Se incluye en la membresía" />
         </label>
       </div>
 
@@ -58,7 +58,7 @@ export function PricingToggles({
         <div>
           <LabelWithTooltip
             label="Precio (USD)"
-            tooltip="Precio en dolares. Usa 0 para curso gratuito. Hoy no hay pasarela de pago: todo el catalogo es gratuito"
+            tooltip="Precio en dólares. Usa 0 para curso gratuito. Hoy no hay pasarela de pago: todo el catálogo es gratuito"
             htmlFor="course-price"
           />
           <input

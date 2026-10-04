@@ -14,6 +14,7 @@ import {
 } from "@/lib/instructor/mis-especialidades";
 import {
   especialidadVerificadaDelCurso,
+  ENLACES,
   MOTIVOS,
   type ClaveDelImpedimento,
 } from "@/lib/instructor/puede-enviarse";
@@ -189,6 +190,15 @@ export default async function EditInstructorCoursePage({
                 <p className="text-white/70 text-sm">
                   {MOTIVOS[aviso as ClaveDelImpedimento]}
                 </p>
+                {/* Y EL CAMINO, cuando no pasa por esta pantalla. */}
+                {ENLACES[aviso as ClaveDelImpedimento] && (
+                  <Link
+                    href={ENLACES[aviso as ClaveDelImpedimento]!.href}
+                    className="mt-2 inline-block text-sm font-medium text-amber-300 underline hover:text-amber-200"
+                  >
+                    {ENLACES[aviso as ClaveDelImpedimento]!.texto}
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -209,7 +219,7 @@ export default async function EditInstructorCoursePage({
                   {course.rejection_reason}
                 </p>
                 <p className="text-white/50 text-sm mt-2">
-                  Haz los cambios y vuelve a enviar el curso a revision. No hace falta
+                  Haz los cambios y vuelve a enviar el curso a revisión. No hace falta
                   empezar de cero: el curso sigue siendo tuyo y conserva todo lo que
                   ya tenia.
                 </p>

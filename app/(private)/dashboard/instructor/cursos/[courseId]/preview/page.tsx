@@ -171,9 +171,10 @@ export default async function CoursePreviewPage({ params }: PreviewPageProps) {
                 // Cada leccion abre SU editor. El curso esta en borrador, asi que la
                 // pagina publica no serviria; y lo que hace falta aqui es poder
                 // revisar el contenido y el video antes de enviar a revision.
-                enlaceDeLeccion={(moduloId, leccionId) =>
-                  `/dashboard/instructor/cursos/${courseId}/modulos/${moduloId}/lecciones/${leccionId}`
-                }
+                //
+                // DATOS, no una funcion: pasarle una funcion a un componente de cliente
+                // tumbaba esta pagina entera con un 500.
+                enlace={{ tipo: 'editor', courseId }}
               />
             ) : (
               <div className="bg-dark-surface border border-white/10 rounded-2xl p-6 sm:p-8 text-center">

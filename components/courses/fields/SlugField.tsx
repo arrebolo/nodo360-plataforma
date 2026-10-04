@@ -13,7 +13,7 @@ export function SlugField({ value, onChange, error }: SlugFieldProps) {
     <div className="mb-6">
       <LabelWithTooltip
         label="Slug (URL amigable)"
-        tooltip="Se genera automaticamente del titulo. Solo letras minusculas, numeros y guiones"
+        tooltip="Se genera automáticamente del título. Solo letras minúsculas, números y guiones"
         required
         htmlFor="course-slug"
       />
