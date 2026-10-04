@@ -32,7 +32,19 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 // CONFIGURACIÓN DE DATOS DE PRUEBA
 // ============================================
 
-const ADMIN_EMAIL = 'albertonunezdiaz@gmail.com'
+/**
+ * EL CORREO ENTRA POR ARGUMENTO, no escrito aqui.
+ *
+ *   npx tsx scripts/seed-testing-data.ts tu-correo@ejemplo.com
+ *
+ * Estaba escrito dentro, y el repositorio es publico: una direccion de verdad en un
+ * fichero versionado se queda en el historial para siempre y se cosecha sola.
+ */
+const ADMIN_EMAIL = process.argv[2] ?? process.env.NODO360_ADMIN_EMAIL ?? ''
+if (!ADMIN_EMAIL) {
+  console.error('Falta el correo de la cuenta admin.\n  uso: npx tsx scripts/seed-testing-data.ts <correo>')
+  process.exit(1)
+}
 
 const TEST_COURSES = [
   {

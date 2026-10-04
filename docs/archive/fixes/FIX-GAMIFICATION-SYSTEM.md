@@ -57,7 +57,7 @@ npx tsx scripts/initialize-gamification-for-existing-users.ts
 ✅ PROCESO COMPLETADO
    Usuarios procesados: 3
 
-👤 albertonunezdiaz@gmail.com
+👤 <correo-del-admin>
    📚 Lecciones completadas: 19
    ✅ XP total otorgado: 190
    📊 Stats actualizadas:
@@ -264,7 +264,7 @@ npm run dev
 Después de aplicar la solución:
 
 ```
-👤 Usuario: albertonunezdiaz@gmail.com
+👤 Usuario: <correo-del-admin>
 📚 Lecciones completadas: 19
 ✨ XP Total: 195 XP (19 lecciones × 10 XP + badges)
 🎯 Nivel: 2

@@ -147,8 +147,8 @@ DECLARE
     ARRAY['cursos.nodo360+x@gmail.com',  'cursosnodo360@gmail.com'],
     ARRAY['CURSOS.Nodo360@Gmail.COM',    'cursosnodo360@gmail.com'],
     ARRAY['cursos.nodo360@googlemail.com', 'cursosnodo360@gmail.com'],
-    ARRAY['maria.perez+facturas@outlook.com', 'maria.perez@outlook.com'],
-    ARRAY['maria.perez@outlook.com',     'maria.perez@outlook.com'],
+    ARRAY['una.persona+facturas@ejemplo.invalid', 'una.persona@ejemplo.invalid'],
+    ARRAY['una.persona@ejemplo.invalid',  'una.persona@ejemplo.invalid'],
     ARRAY['sin-arroba',                  'sin-arroba']
   ];
   v_caso     text[];
@@ -168,7 +168,7 @@ BEGIN
   RAISE NOTICE 'PRUEBA 1  los % casos de normalizacion salen bien              PASA', array_length(v_casos, 1);
 
   -- 2. Los puntos NO se quitan fuera de Gmail: son parte del nombre
-  IF public.correo_normalizado('a.b@outlook.com') <> 'a.b@outlook.com' THEN
+  IF public.correo_normalizado('a.b@ejemplo.invalid') <> 'a.b@ejemplo.invalid' THEN
     RAISE EXCEPTION 'PRUEBA 2 FALLIDA: se quitaron los puntos en un dominio que no es Gmail.';
   END IF;
   RAISE NOTICE 'PRUEBA 2  fuera de Gmail los puntos se respetan                PASA';
@@ -266,7 +266,7 @@ SELECT
 
   -- La normalizacion, en la propia fila del resultado
   public.correo_normalizado('cursos.nodo360+x@gmail.com')                         AS ejemplo_gmail,
-  public.correo_normalizado('maria.perez+f@outlook.com')                          AS ejemplo_otro,
+  public.correo_normalizado('una.persona+f@ejemplo.invalid')                       AS ejemplo_otro,
 
   -- Cuantas cuentas comparten buzon HOY (se quedan como estan)
   (SELECT count(*) FROM (
@@ -287,7 +287,7 @@ SELECT
      AND EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_un_buzon_una_cuenta'
                    AND tgrelid = 'public.users'::regclass)
      AND public.correo_normalizado('cursos.nodo360+x@gmail.com') = 'cursosnodo360@gmail.com'
-     AND public.correo_normalizado('maria.perez+f@outlook.com') = 'maria.perez@outlook.com'
+     AND public.correo_normalizado('una.persona+f@ejemplo.invalid') = 'una.persona@ejemplo.invalid'
      AND NOT has_column_privilege('anon', 'public.users', 'email_normalizado', 'SELECT')
       THEN 'TODO CORRECTO'
     ELSE 'REVISAR: mira las columnas de esta misma fila'
