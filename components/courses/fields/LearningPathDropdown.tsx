@@ -15,12 +15,29 @@ interface LearningPathDropdownProps {
   selectedPathIds: string[]
   onChange: (pathIds: string[]) => void
   disabled?: boolean
+  /**
+   * A quién preguntarle las rutas: '/api/instructor' desde la zona del instructor,
+   * '/api/admin' desde el panel. El mismo convenio que `DeleteModuleButton`.
+   *
+   * Está aquí porque este componente lo usa `CourseFormCore`, y `CourseFormCore` lo
+   * usan LAS DOS zonas: /admin/cursos/nuevo y /dashboard/instructor/cursos/nuevo.
+   * Mientras la URL estuvo escrita dentro, crear un curso como instructor llamaba a
+   * `/api/admin/learning-paths` —el único incumplimiento que quedaba de la regla—, y
+   * «funcionaba» solo porque ese GET no comprobaba el rol. Al cerrarlo, el formulario
+   * del instructor se habría quedado sin rutas: los dos cambios van juntos.
+   *
+   * Y no es solo el nombre: la ruta del instructor devuelve SOLO LAS ACTIVAS, así que
+   * deja de ofrecer una ruta apagada en la que meter el curso no lo mete en ninguna
+   * parte.
+   */
+  api?: string
 }
 
 export function LearningPathDropdown({
   selectedPathIds,
   onChange,
   disabled = false,
+  api = '/api/admin',
 }: LearningPathDropdownProps) {
   const [paths, setPaths] = useState<LearningPath[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -42,7 +59,7 @@ export function LearningPathDropdown({
   useEffect(() => {
     const fetchPaths = async () => {
       try {
-        const res = await fetch('/api/admin/learning-paths')
+        const res = await fetch(`${api}/learning-paths`)
         if (res.ok) {
           const data = await res.json()
           setPaths(data.paths || [])
@@ -54,7 +71,8 @@ export function LearningPathDropdown({
       }
     }
     fetchPaths()
-  }, [])
+    // `api` entra en la lista: si no, cambiar de zona no volveria a pedirlas.
+  }, [api])
 
   const handleToggle = (pathId: string) => {
     const isSelected = selectedPathIds.includes(pathId)

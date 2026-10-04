@@ -1,21 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { exigirAdminEnApi } from '@/lib/admin/auth-api'
 
-// GET: Listar todas las rutas de aprendizaje
+/**
+ * El catálogo COMPLETO de rutas de aprendizaje, activas e inactivas.
+ *
+ * EXIGE ADMIN, y hasta la auditoría no lo hacía: bastaba tener sesión. O sea que
+ * cualquier alumno podía pedir a una ruta de `/api/admin` la lista entera, inactivas
+ * incluidas —las que no se ven en la web— y eso es estructura de la plataforma, no
+ * contenido suyo.
+ *
+ * No era grave: son nombres de rutas, y las activas ya se ven en /rutas. Lo que sí era
+ * es engañoso, porque quien audite «qué rutas de /api/admin dejan pasar a quien no es
+ * admin» tenía que leerse el código para descubrir que esta sí.
+ *
+ * QUIEN LAS NECESITA SIN SER ADMIN usa `/api/instructor/learning-paths`, que devuelve
+ * lo mismo con dos diferencias: exige solo sesión y devuelve SOLO LAS ACTIVAS, que es
+ * lo único que tiene sentido ofrecer para asignar un curso.
+ */
 export async function GET(request: NextRequest) {
   // Rate limiting
   const rateLimitResponse = await checkRateLimit(request, 'api')
   if (rateLimitResponse) return rateLimitResponse
 
   try {
-    const supabase = await createClient()
+    const guarda = await exigirAdminEnApi()
+    if (!guarda.ok) return guarda.respuesta
 
-    // Verificar autenticacion
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
+    const supabase = await createClient()
 
     const { data: paths, error } = await supabase
       .from('learning_paths')

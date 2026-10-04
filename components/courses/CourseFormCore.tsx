@@ -50,6 +50,13 @@ interface CourseFormCoreProps {
   }[]
   /** Si hay que elegir especialidad para poder crear. */
   especialidadObligatoria?: boolean
+  /**
+   * A quién le pregunta este formulario por las rutas de aprendizaje:
+   * '/api/instructor' desde la zona del instructor, '/api/admin' desde el panel.
+   * Este componente lo usan las dos zonas, y ninguna pantalla de
+   * /dashboard/instructor debe llamar a /api/admin.
+   */
+  api?: string
 }
 
 export function CourseFormCore({
@@ -60,6 +67,7 @@ export function CourseFormCore({
   submittingLabel = 'Guardando...',
   especialidades = [],
   especialidadObligatoria = false,
+  api = '/api/admin',
 }: CourseFormCoreProps) {
   const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -214,6 +222,7 @@ export function CourseFormCore({
           selectedPathIds={selectedPathIds}
           onChange={setSelectedPathIds}
           disabled={isPending}
+          api={api}
         />
 
         {especialidades.length > 0 && (

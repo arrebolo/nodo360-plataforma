@@ -253,6 +253,19 @@ try {
     .select('id', { count: 'exact' }).eq('is_active', false).limit(0)
   console.log(`   dato  en la base hay ${inactivas ?? 0} ruta(s) inactiva(s), que antes se ofrecían`)
 
+  // Y LA DEL PANEL YA NO DEJA PASAR A UN INSTRUCTOR.
+  //
+  // `/api/admin/learning-paths` comprobaba solo que hubiera sesión, así que cualquier
+  // cuenta —alumno incluido— pedía a una ruta de /api/admin el catálogo completo, con
+  // las rutas inactivas dentro. Lo que la hacía fácil de pasar por alto es que
+  // «funcionaba»: el formulario de crear curso del instructor la llamaba y recibía
+  // 200, de modo que cerrarla y darle su ruta propia tenían que ir en el mismo cambio.
+  const delPanel = await pedir('/api/admin/learning-paths', { cookie: a.cookie })
+  di(delPanel.status === 403, 'GET /api/admin/learning-paths con sesión de instructor: 403',
+     `${delPanel.status} ${JSON.stringify(delPanel.json).slice(0, 80)}`)
+  const sinSesionPanel = await pedir('/api/admin/learning-paths')
+  di(sinSesionPanel.status === 401, 'y sin sesión: 401', String(sinSesionPanel.status))
+
   if (ofrecidas.length > 0) {
     const asignar = await pedir(`/api/instructor/courses/${a.curso}/paths`, {
       cookie: a.cookie, metodo: 'POST',

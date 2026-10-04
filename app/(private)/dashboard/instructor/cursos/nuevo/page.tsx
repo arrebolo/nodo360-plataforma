@@ -82,6 +82,9 @@ export default async function NewInstructorCoursePage() {
 
       {/* Form */}
       <CourseFormCore
+        // Las rutas, por la ruta del instructor: ninguna pantalla de esta zona
+        // llama a /api/admin, y ademas asi solo se ofrecen las rutas ACTIVAS.
+        api="/api/instructor"
         action={handleCreate}
         backUrl="/dashboard/instructor/cursos"
         submitLabel="Crear curso"
