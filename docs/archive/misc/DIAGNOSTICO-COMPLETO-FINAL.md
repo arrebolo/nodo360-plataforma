@@ -59,7 +59,7 @@
 #### 4️⃣ TABLA: course_enrollments
 ```
 📊 Total inscripciones: 2
-✅ Usuario: albertonunezdiaz@gmail.com
+✅ Usuario: <correo-del-admin>
 ```
 
 | Curso | Progreso | Fecha |
@@ -76,9 +76,9 @@
 
 | Email | Role |
 |-------|------|
-| admin@nodo360.com | student |
-| albertonunezdiaz@gmail.com | admin |
-| test@nodo360.com | student |
+| <correo-del-mentor> | student |
+| <correo-del-admin> | admin |
+| <correo-de-pruebas> | student |
 
 ---
 
@@ -96,7 +96,7 @@
 ```json
 {
   "id": "cd7dec65-e013-4776-8ca2-e94a56d3b50f",
-  "user_id": "34c7dd0a-3854-4b76-8d11-16cd778e3269",
+  "user_id": "<usuario-1-admin>",
   "course_id": "ce6b8d54-b1a3-40f1-ac7a-2730d8002862",
   "enrolled_at": "2025-11-20T13:43:58.014+00:00",
   "progress_percentage": 0,

@@ -114,13 +114,31 @@ export async function POST(request: Request) {
 
     console.log('[Feedback API] ✅ Feedback guardado:', data.id)
 
-    // Enviar notificación por email
+    // ────────────────────────────────────────────────────────────────────────────
+    // A DONDE VA EL AVISO: a una variable de entorno, no escrito aqui.
+    //
+    // Estaba escrito dentro —una direccion personal— y el repositorio es publico: una
+    // direccion de verdad en un fichero versionado se queda en el historial para
+    // siempre y se cosecha sola.
+    //
+    // SI LA VARIABLE FALTA, NO SE ROMPE NADA. El feedback ya esta guardado en la base
+    // cuando llegamos aqui; el correo es solo el aviso. Asi que se registra en voz alta
+    // —con qué variable falta y qué id de feedback se queda sin avisar, para poder
+    // recuperarlo del panel— y la peticion sigue devolviendo success.
+    // ────────────────────────────────────────────────────────────────────────────
+    const destinatario = process.env.FEEDBACK_EMAIL_TO?.trim()
     const resend = getResend()
-    if (resend) {
+
+    if (!destinatario) {
+      console.error(
+        `[Feedback API] ⚠️ FEEDBACK_EMAIL_TO no está definida: el feedback ${data.id} ` +
+        `queda guardado pero sin avisar por correo. Está en /admin/feedback.`
+      )
+    } else if (resend) {
       try {
         await resend.emails.send({
           from: REMITENTE_NODO360,
-          to: 'arrebolo@gmail.com',
+          to: destinatario,
           replyTo: userEmail,
           subject: '🔔 Nuevo Feedback - Nodo360',
           html: `
@@ -172,7 +190,7 @@ export async function POST(request: Request) {
             </html>
           `
         })
-        console.log('[Feedback API] ✅ Email enviado a arrebolo@gmail.com')
+        console.log('[Feedback API] ✅ Email enviado al destinatario de FEEDBACK_EMAIL_TO')
       } catch (emailError) {
         // No fallar si el email no se envía, el feedback ya está guardado
         console.error('[Feedback API] ⚠️ Error enviando email (no crítico):', emailError)

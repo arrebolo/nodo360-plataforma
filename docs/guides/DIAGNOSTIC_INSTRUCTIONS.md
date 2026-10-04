@@ -51,12 +51,12 @@ AND table_schema = 'public';
 -- Opción 1: Tabla 'users'
 SELECT id, email, role, full_name
 FROM public.users
-WHERE email = 'albertonunezdiaz@gmail.com';
+WHERE email = '<correo-del-admin>';
 
 -- Opción 2: Tabla 'profiles'
 SELECT user_id, email, role, full_name
 FROM public.profiles
-WHERE email = 'albertonunezdiaz@gmail.com';
+WHERE email = '<correo-del-admin>';
 ```
 
 ### 2. Actualizar rol a 'admin' si es necesario
@@ -65,12 +65,12 @@ WHERE email = 'albertonunezdiaz@gmail.com';
 -- Si usas tabla 'users'
 UPDATE public.users
 SET role = 'admin'
-WHERE email = 'albertonunezdiaz@gmail.com';
+WHERE email = '<correo-del-admin>';
 
 -- Si usas tabla 'profiles'
 UPDATE public.profiles
 SET role = 'admin'
-WHERE email = 'albertonunezdiaz@gmail.com';
+WHERE email = '<correo-del-admin>';
 ```
 
 ### 3. Verificar políticas RLS
@@ -122,7 +122,7 @@ npm run dev
 
 ### Paso 3: Hacer login
 1. Ir a http://localhost:3000/login
-2. Hacer login con `albertonunezdiaz@gmail.com`
+2. Hacer login con `<correo-del-admin>`
 
 ### Paso 4: Revisar logs en la terminal
 
@@ -197,7 +197,7 @@ Buscar logs con estos emojis:
 
 1. **Ejecutar SQL de verificación** en Supabase
 2. **Borrar cookies** del navegador
-3. **Hacer login** con albertonunezdiaz@gmail.com
+3. **Hacer login** con <correo-del-admin>
 4. **Revisar logs** en terminal (buscar 🚀🚀🚀, 👑👑👑)
 5. **Reportar resultados** con logs completos
 

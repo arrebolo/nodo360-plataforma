@@ -13,7 +13,7 @@ Se ejecutó `scripts/test-enrollment.ts` con los siguientes resultados:
 
 ```
 ✅ Tabla course_enrollments: Existe
-✅ Usuario de prueba: Encontrado (test@nodo360.com)
+✅ Usuario de prueba: Encontrado (<correo-de-pruebas>)
 ✅ Curso "Seguridad en Crypto": Encontrado (seguridad-crypto-basico)
 ✅ INSERT directo: FUNCIONA
 ✅ Verificación con JOINs: FUNCIONA
@@ -145,7 +145,7 @@ Si no hay estos logs, la página tiene problemas cargando.
 **Causa:** Usuario no está logueado
 **Solución:**
 1. Ir a `/login`
-2. Iniciar sesión con `test@nodo360.com` / contraseña
+2. Iniciar sesión con `<correo-de-pruebas>` / contraseña
 3. Volver al curso
 4. Intentar de nuevo
 

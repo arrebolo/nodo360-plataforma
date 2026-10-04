@@ -58,7 +58,7 @@ npx tsx scripts/apply-learning-paths-migration.ts
 DELETE FROM user_selected_paths
 WHERE user_id = (
   SELECT id FROM users
-  WHERE email = 'albertonunezdiaz@gmail.com'
+  WHERE email = '<correo-del-admin>'
 );
 ```
 

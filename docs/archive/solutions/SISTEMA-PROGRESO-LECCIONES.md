@@ -442,7 +442,7 @@ JOIN users u ON up.user_id = u.id
 JOIN lessons l ON up.lesson_id = l.id
 JOIN modules m ON l.module_id = m.id
 JOIN courses c ON m.course_id = c.id
-WHERE u.email = 'albertonunezdiaz@gmail.com'
+WHERE u.email = '<correo-del-admin>'
 ORDER BY up.completed_at DESC;
 ```
 

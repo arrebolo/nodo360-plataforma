@@ -350,7 +350,7 @@ http://localhost:3000/cursos/introduccion-criptomonedas
 ```
 🔍 [ModuleListEnhanced] Cargando progreso desde API...
    courseId: ce6b8d54-b1a3-40f1-ac7a-2730d8002862
-   userId: 34c7dd0a-3854-4b76-8d11-16cd778e3269
+   userId: <usuario-1-admin>
    📡 Llamando a: /api/course-progress?courseId=...
 📥 [ModuleListEnhanced] Response: { status: 200, ok: true, statusText: "OK" }
 ✅ [ModuleListEnhanced] Progreso cargado: { completedCount: 0, stats: {...} }

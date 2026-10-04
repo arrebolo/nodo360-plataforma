@@ -187,11 +187,12 @@ FROM public.users
 WHERE id NOT IN (SELECT DISTINCT user_id FROM public.user_roles)
 ON CONFLICT (user_id, role) DO NOTHING;
 
--- 10. Asignar rol admin al usuario actual (albertonunezdiaz@gmail.com)
+-- 10. Asignar rol admin al usuario actual
+-- SUSTITUYE el correo de abajo por el tuyo antes de ejecutarlo.
 INSERT INTO public.user_roles (user_id, role, notes)
 SELECT id, 'admin', 'Admin principal del sistema'
 FROM public.users
-WHERE email = 'albertonunezdiaz@gmail.com'
+WHERE email = 'TU_CORREO@ejemplo.invalid'
 ON CONFLICT (user_id, role) DO NOTHING;
 
 -- 11. Vista útil para ver usuarios con sus roles

@@ -443,7 +443,7 @@ if (window.gtag) {
 
 ### Contacto
 
-- **Email**: albertonunezdiaz@gmail.com
+- **Email**: <correo-del-admin>
 - **Sitio**: https://nodo360.com
 - **Hosting**: Hostalia
 
