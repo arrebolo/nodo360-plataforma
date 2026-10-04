@@ -6,7 +6,10 @@
  * - Progreso parcial
  * - Datos de gamificación
  *
- * Uso: npx tsx scripts/seed-testing-data.ts
+ * Uso: npx tsx scripts/seed-testing-data.ts <correo-de-la-cuenta-admin>
+ *
+ * El correo ENTRA POR ARGUMENTO (o en NODO360_ADMIN_EMAIL): no se escribe aqui, que
+ * este fichero esta en un repositorio publico. Sin el, el script no arranca.
  *
  * ADVERTENCIA: Este script BORRA datos existentes de prueba antes de crear nuevos
  */

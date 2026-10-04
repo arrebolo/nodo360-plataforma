@@ -1,7 +1,10 @@
 /**
  * Script: Diagnóstico de consulta de badges
  * 
- * Ejecutar: npx tsx scripts/test-badges-query.ts
+ * Ejecutar: npx tsx scripts/test-badges-query.ts <correo-de-la-cuenta>
+ *
+ * El correo ENTRA POR ARGUMENTO (o en NODO360_ADMIN_EMAIL): no se escribe aqui, que
+ * este fichero esta en un repositorio publico. Sin el, el script no arranca.
  */
 
 const { createClient } = require('@supabase/supabase-js')
