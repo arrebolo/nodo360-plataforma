@@ -24,6 +24,21 @@
  *   Si un curso de prueba tuviera una matrícula de alguien que NO es de prueba, no se
  *   toca y se dice en voz alta. Preferible un resto que borrarle algo a un alumno.
  *
+ *   Y SI UNA CONSULTA DE LA RED DE SEGURIDAD FALLA, EL SCRIPT PARA SIN BORRAR NADA.
+ *   Una consulta que falla devuelve `data: null`, que con `?? []` se lee exactamente
+ *   igual que «no hay ninguna matrícula ajena». O sea que el error no solo no avisa:
+ *   convierte la red de seguridad en un permiso. Aquí todas las consultas pasan por
+ *   `exigir()`, que lanza; el criterio es fallo = parar.
+ *
+ * LA COPIA PUBLICADA SE RETIRA ANTES DE BORRAR EL CURSO
+ *   Medido: borrar un curso de trabajo publicado SALE BIEN y deja su copia publicada
+ *   VIVA Y LEGIBLE POR UN ANÓNIMO —con sus módulos y sus lecciones—, porque no hay
+ *   ninguna clave ajena de `courses_publicados` hacia `courses`. Un curso de prueba que
+ *   se hubiera publicado durante una prueba se quedaba así: fuera de las tablas de
+ *   trabajo y en el catálogo público. El barrido limpia el espejo primero, en orden de
+ *   claves ajenas, y la comprobación final lo mira también —incluidos los huérfanos
+ *   cuyo curso de trabajo ya no existe, que no se pueden encontrar mirando `courses`—.
+ *
  * LAS TABLAS NO SE RECUERDAN, SE ENUMERAN: las filas que cuelgan de una cuenta se
  * buscan preguntando al catálogo qué tablas tienen `user_id`, no con una lista escrita
  * aquí, que es lo que envejece.
@@ -46,19 +61,47 @@ const DOMINIO = '@nodo360-pruebas.invalid'
 const linea = (t: string) => console.log('\n' + t + '\n' + '─'.repeat(t.length))
 const tapa = (c?: string | null) => (c ?? '').replace(/^(.{6}).*@/, '$1…@')
 
+/**
+ * FALLO = PARAR. Toda lectura pasa por aqui.
+ *
+ * Un `select` que falla devuelve `data: null`, y con `?? []` eso se lee igual que «no
+ * hay filas». En un script que borra, eso no es un aviso perdido: es que la red de
+ * seguridad —«¿tiene este curso matriculas de alguien que no es de prueba?»— contesta
+ * «no» cuando lo que ha pasado es que no se pudo preguntar.
+ */
+function exigir<T>(que: string, r: { data: T | null; error: { message: string; code?: string } | null }): T {
+  if (r.error) {
+    throw new Error(`no se pudo ${que}: ${r.error.code ?? ''} ${r.error.message}`.trim())
+  }
+  if (r.data === null) {
+    throw new Error(`no se pudo ${que}: la consulta no devolvio datos ni error`)
+  }
+  return r.data
+}
+
+/** Igual, para los recuentos: `count` puede ser null sin que haya error. */
+function exigirCuenta(que: string, r: { count: number | null; error: { message: string; code?: string } | null }): number {
+  if (r.error) {
+    throw new Error(`no se pudo ${que}: ${r.error.code ?? ''} ${r.error.message}`.trim())
+  }
+  if (r.count === null) {
+    throw new Error(`no se pudo ${que}: sin recuento y sin error`)
+  }
+  return r.count
+}
+
 console.log(BORRAR ? '\nMODO BORRAR\n' : '\nSOLO MIRANDO (añade --borrar para borrar de verdad)\n')
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 1. Las cuentas de prueba
 // ═══════════════════════════════════════════════════════════════════════════════
 linea('1. Cuentas de prueba')
-const { data: cuentas, error: ec } = await svc.from('users')
+const cuentas = exigir('leer las cuentas de prueba', await svc.from('users')
   .select('id, email, full_name, role, created_at')
-  .ilike('email', `%${DOMINIO}`)
-if (ec) throw new Error('no se pudieron leer las cuentas: ' + ec.message)
-const idsDePrueba = new Set((cuentas ?? []).map((u) => u.id as string))
-console.log(`  ${cuentas?.length ?? 0}`)
-for (const u of cuentas ?? []) {
+  .ilike('email', `%${DOMINIO}`))
+const idsDePrueba = new Set(cuentas.map((u) => u.id as string))
+console.log(`  ${cuentas.length}`)
+for (const u of cuentas) {
   console.log(`    ${u.id}  ${String(u.role).padEnd(11)} ${tapa(u.email)}  (${String(u.created_at).slice(0, 16)})`)
 }
 
@@ -66,25 +109,27 @@ for (const u of cuentas ?? []) {
 // 2. Los cursos de prueba
 // ═══════════════════════════════════════════════════════════════════════════════
 linea('2. Cursos de prueba')
-const { data: todos, error: ecur } = await svc.from('courses')
-  .select('id, title, slug, status, instructor_id, created_at')
-if (ecur) throw new Error('no se pudieron leer los cursos: ' + ecur.message)
+const todos = exigir('leer los cursos', await svc.from('courses')
+  .select('id, title, slug, status, instructor_id, created_at'))
 
 const esDePrueba = (c: { title: string; slug: string; instructor_id: string | null }) =>
   /^qa-/.test(c.slug ?? '') || /^PRUEBA /.test(c.title ?? '') ||
   (c.instructor_id ? idsDePrueba.has(c.instructor_id) : false)
 
-const cursos = (todos ?? []).filter((c) => esDePrueba(c as never))
+const cursos = todos.filter((c) => esDePrueba(c as never))
 console.log(`  ${cursos.length}`)
 
 const cursosABorrar: string[] = []
 for (const c of cursos) {
-  const { data: matriculas } = await svc.from('course_enrollments')
-    .select('user_id').eq('course_id', c.id)
-  const ajenas = (matriculas ?? []).filter((m) => !idsDePrueba.has(m.user_id as string))
+  // LA CONSULTA DE LA RED DE SEGURIDAD. Si falla, el script para: ver `exigir()`.
+  const matriculas = exigir(
+    `leer las matriculas del curso ${c.id}`,
+    await svc.from('course_enrollments').select('user_id').eq('course_id', c.id)
+  )
+  const ajenas = matriculas.filter((m) => !idsDePrueba.has(m.user_id as string))
   const marca = ajenas.length > 0 ? '  ⚠️ NO SE TOCA' : ''
   console.log(`    ${c.id}  ${String(c.status).padEnd(16)} «${c.title}»${marca}`)
-  console.log(`        slug=${c.slug}  matriculas=${matriculas?.length ?? 0} (ajenas: ${ajenas.length})`)
+  console.log(`        slug=${c.slug}  matriculas=${matriculas.length} (ajenas: ${ajenas.length})`)
   if (ajenas.length > 0) {
     console.log('        tiene matriculas de cuentas que NO son de prueba: se deja y se avisa')
     continue
@@ -96,9 +141,9 @@ for (const c of cursos) {
 // 3. Verificaciones de prueba
 // ═══════════════════════════════════════════════════════════════════════════════
 linea('3. Verificaciones de prueba')
-const { data: certs } = await svc.from('instructor_certifications')
-  .select('id, user_id, certification_number, status')
-const certsDePrueba = (certs ?? []).filter(
+const certs = exigir('leer las verificaciones', await svc.from('instructor_certifications')
+  .select('id, user_id, certification_number, status'))
+const certsDePrueba = certs.filter(
   (v) => idsDePrueba.has(v.user_id as string) || /^qa-/i.test(String(v.certification_number ?? ''))
 )
 console.log(`  ${certsDePrueba.length}`)
@@ -123,20 +168,68 @@ linea('5. Filas colgando de las cuentas de prueba')
 const porTabla: Record<string, number> = {}
 for (const t of conUserId) {
   if (idsDePrueba.size === 0) break
-  const { count, error } = await svc.from(t).select('user_id', { count: 'exact', head: true })
-    .in('user_id', [...idsDePrueba])
-  if (error) { console.log(`    ${t}: no se pudo contar (${error.code})`); continue }
-  if (count) { porTabla[t] = count; console.log(`    ${t}: ${count}`) }
+  // FALLO = PARAR, tambien aqui. Antes un error de permisos se saltaba la tabla con un
+  // `continue`: la fila se quedaba sin contar, no se borraba, y el final decia TODO
+  // CORRECTO porque solo miraba las cuentas.
+  const cuantas = exigirCuenta(
+    `contar ${t} de las cuentas de prueba`,
+    await svc.from(t).select('user_id', { count: 'exact', head: true }).in('user_id', [...idsDePrueba])
+  )
+  if (cuantas) { porTabla[t] = cuantas; console.log(`    ${t}: ${cuantas}`) }
 }
 if (Object.keys(porTabla).length === 0) console.log('    ninguna')
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// 6. La copia publicada: lo que el espejo guarda de los cursos de prueba
+// ═══════════════════════════════════════════════════════════════════════════════
+linea('6. La copia publicada de los cursos de prueba')
+
+/**
+ * LOS HUERFANOS NO SE ENCUENTRAN MIRANDO `courses`.
+ *
+ * Borrar un curso de trabajo publicado sale bien y deja su copia viva: no hay ninguna
+ * clave ajena de `courses_publicados` hacia `courses`. Asi que un curso de prueba que
+ * se publicara durante una prueba y se borrara despues ya NO esta en `courses`, y
+ * buscarlo por ahi no lo encuentra nunca. Hay que mirar el espejo por su lado.
+ */
+const idsDeTrabajo = new Set(todos.map((c) => c.id as string))
+const enElEspejo = exigir('leer courses_publicados', await svc.from('courses_publicados')
+  .select('id, title, slug, retirada_el, publicado_el'))
+
+const espejoDePrueba = enElEspejo.filter((c) => {
+  const suyo = cursos.some((x) => x.id === c.id)            // su curso de trabajo es de prueba
+  const marcado = /^qa-/.test(String(c.slug ?? '')) || /^PRUEBA /.test(String(c.title ?? ''))
+  const huerfano = !idsDeTrabajo.has(c.id as string)
+  return suyo || (marcado && huerfano) || marcado
+})
+console.log(`  filas en el espejo de cursos de prueba: ${espejoDePrueba.length}`)
+for (const c of espejoDePrueba) {
+  const huerfano = !idsDeTrabajo.has(c.id as string)
+  console.log(`    ${c.id}  ${c.retirada_el ? 'retirada' : 'VIVA'}${huerfano ? '  HUERFANA (su curso de trabajo ya no existe)' : ''}`)
+  console.log(`        «${c.title}»  slug=${c.slug}`)
+}
+
+// Y los huerfanos de verdad: cualquier fila del espejo sin curso de trabajo, sea de
+// prueba o no. Si aparece alguno que no es de prueba, se dice y no se toca.
+const huerfanosAjenos = enElEspejo.filter(
+  (c) => !idsDeTrabajo.has(c.id as string) && !espejoDePrueba.includes(c)
+)
+if (huerfanosAjenos.length > 0) {
+  console.log(`\n  ⚠️ HAY ${huerfanosAjenos.length} FILA(S) HUERFANA(S) QUE NO SON DE PRUEBA:`)
+  for (const c of huerfanosAjenos) {
+    console.log(`    ${c.id}  ${c.retirada_el ? 'retirada' : 'VIVA Y LEGIBLE POR ANON'}  «${c.title}» /${c.slug}`)
+  }
+  console.log('  Este barrido NO las toca: son contenido de la plataforma, no restos de una prueba.')
+}
+
 if (!BORRAR) {
-  const nada = idsDePrueba.size === 0 && cursos.length === 0 && certsDePrueba.length === 0
+  const nada = idsDePrueba.size === 0 && cursos.length === 0
+    && certsDePrueba.length === 0 && espejoDePrueba.length === 0
   console.log(nada ? '\nNO HAY RESTOS.' : '\nHay restos. Para borrarlos: npx tsx scripts/limpiar-restos-de-pruebas.mts --borrar')
   process.exit(0)
 }
 
-linea('6. Borrando')
+linea('7. Borrando')
 let errores = 0
 const quita = async (que: string, fn: () => Promise<{ error: { message: string } | null }>) => {
   const { error } = await fn()
@@ -156,6 +249,32 @@ for (const t of orden) {
   if (!porTabla[t]) continue
   await quita(`${t}`, () => svc.from(t).delete().in('user_id', [...idsDePrueba]))
 }
+// LA COPIA PUBLICADA, ANTES DEL CURSO, y en orden de claves ajenas: las preguntas
+// cuelgan de los modulos publicados, las lecciones del modulo y del curso, los modulos
+// del curso. Al reves falla con 23503.
+//
+// Se BORRAN y no se retiran: son filas de prueba, y lo que impide borrar una fila del
+// espejo —el progreso y los certificados que apuntan a ella con RESTRICT— ya se ha
+// quitado arriba, porque era de las cuentas de prueba. Si algo siguiera apuntando, el
+// borrado fallaria con 23503 y se veria: por eso el error se cuenta y no se traga.
+const idsDelEspejoABorrar = espejoDePrueba.map((c) => c.id as string)
+for (const id of idsDelEspejoABorrar) {
+  const modulos = exigir(
+    `leer los modulos publicados del curso ${id}`,
+    await svc.from('modules_publicados').select('id').eq('course_id', id)
+  )
+  for (const m of modulos) {
+    await quita(`preguntas publicadas del modulo ${String(m.id).slice(0, 8)}`,
+      () => svc.from('quiz_questions_publicadas').delete().eq('module_id', m.id as string))
+  }
+  await quita(`lecciones publicadas del curso ${id.slice(0, 8)}`,
+    () => svc.from('lessons_publicadas').delete().eq('course_id', id))
+  await quita(`modulos publicados del curso ${id.slice(0, 8)}`,
+    () => svc.from('modules_publicados').delete().eq('course_id', id))
+  await quita(`copia publicada del curso ${id.slice(0, 8)}`,
+    () => svc.from('courses_publicados').delete().eq('id', id))
+}
+
 for (const id of cursosABorrar) {
   await quita(`curso ${id.slice(0, 8)}`, () => svc.from('courses').delete().eq('id', id))
 }
@@ -170,12 +289,37 @@ for (const id of idsDePrueba) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-linea('7. Lo que queda')
-const { count: quedanCuentas } = await svc.from('users')
-  .select('id', { count: 'exact', head: true }).ilike('email', `%${DOMINIO}`)
-const { data: quedanCursos } = await svc.from('courses').select('id, title, slug, instructor_id')
-const sueltos = (quedanCursos ?? []).filter((c) => esDePrueba(c as never))
-console.log(`  cuentas de prueba: ${quedanCuentas}`)
-console.log(`  cursos de prueba:  ${sueltos.length}${sueltos.length ? ' -> ' + sueltos.map((c) => c.slug).join(', ') : ''}`)
-console.log(`\n${errores === 0 && quedanCuentas === 0 ? 'TODO CORRECTO' : `errores: ${errores}`}`)
-process.exit(errores === 0 ? 0 : 1)
+linea('8. Lo que queda')
+const quedanCuentas = exigirCuenta('contar las cuentas que quedan', await svc.from('users')
+  .select('id', { count: 'exact', head: true }).ilike('email', `%${DOMINIO}`))
+const quedanCursos = exigir('releer los cursos', await svc.from('courses')
+  .select('id, title, slug, instructor_id'))
+const sueltos = quedanCursos.filter((c) => esDePrueba(c as never))
+
+// Y EL ESPEJO, que es donde quedaban los restos invisibles. Se mira por su lado, con
+// los ids de trabajo que quedan: un huerfano no aparece en ninguna otra parte.
+const idsQueQuedan = new Set(quedanCursos.map((c) => c.id as string))
+const espejoQueQueda = exigir('releer courses_publicados', await svc.from('courses_publicados')
+  .select('id, title, slug, retirada_el'))
+const espejoSuelto = espejoQueQueda.filter(
+  (c) => /^qa-/.test(String(c.slug ?? '')) || /^PRUEBA /.test(String(c.title ?? ''))
+)
+const huerfanosQueQuedan = espejoQueQueda.filter((c) => !idsQueQuedan.has(c.id as string))
+const modulosSueltos = exigir('releer modules_publicados', await svc.from('modules_publicados')
+  .select('id, course_id'))
+  .filter((m) => !espejoQueQueda.some((c) => c.id === m.course_id))
+const leccionesSueltas = exigir('releer lessons_publicadas', await svc.from('lessons_publicadas')
+  .select('id, course_id'))
+  .filter((l) => !espejoQueQueda.some((c) => c.id === l.course_id))
+
+console.log(`  cuentas de prueba:            ${quedanCuentas}`)
+console.log(`  cursos de prueba en trabajo:  ${sueltos.length}${sueltos.length ? ' -> ' + sueltos.map((c) => c.slug).join(', ') : ''}`)
+console.log(`  cursos de prueba en el espejo: ${espejoSuelto.length}${espejoSuelto.length ? ' -> ' + espejoSuelto.map((c) => c.slug).join(', ') : ''}`)
+console.log(`  huérfanos en el espejo:       ${huerfanosQueQuedan.length}${huerfanosQueQuedan.length ? ' -> ' + huerfanosQueQuedan.map((c) => c.slug + (c.retirada_el ? '' : ' (VIVO)')).join(', ') : ''}`)
+console.log(`  módulos y lecciones publicados sin su curso: ${modulosSueltos.length} / ${leccionesSueltas.length}`)
+
+const limpio = errores === 0 && quedanCuentas === 0 && sueltos.length === 0
+  && espejoSuelto.length === 0 && huerfanosQueQuedan.length === 0
+  && modulosSueltos.length === 0 && leccionesSueltas.length === 0
+console.log(`\n${limpio ? 'TODO CORRECTO' : `REVISAR: errores ${errores}`}`)
+process.exit(limpio ? 0 : 1)
