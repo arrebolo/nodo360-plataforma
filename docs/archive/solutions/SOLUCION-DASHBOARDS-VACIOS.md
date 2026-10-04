@@ -12,7 +12,7 @@
 ✅ 6 cursos en BD (publicados)
 ✅ 17 módulos
 ✅ 52 lecciones
-✅ 2 inscripciones (albertonunezdiaz@gmail.com)
+✅ 2 inscripciones (<correo-del-admin>)
 ✅ 3 usuarios
 ```
 

@@ -8,6 +8,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// EL CORREO ENTRA POR ARGUMENTO: este fichero esta en un repositorio publico.
+const CORREO = process.argv[2] ?? process.env.NODO360_ADMIN_EMAIL ?? ''
+if (!CORREO) {
+  console.error('Falta el correo de la cuenta.\n  uso: npx tsx <este fichero> <correo>')
+  process.exit(1)
+}
+
 async function testEnrollmentsQuery() {
   console.log('🔍 [Test] Probando query de enrollments con join correcto...\n')
   console.log('═══════════════════════════════════════════════════════════\n')
@@ -20,7 +27,7 @@ async function testEnrollmentsQuery() {
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('id, email, role')
-      .eq('email', 'albertonunezdiaz@gmail.com')
+      .eq('email', CORREO)
       .single()
 
     if (userError || !user) {

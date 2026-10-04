@@ -13,6 +13,13 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY
 const supabase = createClient(url, key)
 
+// EL CORREO ENTRA POR ARGUMENTO: este fichero esta en un repositorio publico.
+const CORREO = process.argv[2] ?? process.env.NODO360_ADMIN_EMAIL ?? ''
+if (!CORREO) {
+  console.error('Falta el correo de la cuenta.\n  uso: npx tsx <este fichero> <correo>')
+  process.exit(1)
+}
+
 async function testBadgesQuery() {
   console.log('🔍 DIAGNÓSTICO DE CONSULTA DE BADGES\n')
   
@@ -20,7 +27,7 @@ async function testBadgesQuery() {
   const { data: users } = await supabase
     .from('users')
     .select('id, email')
-    .eq('email', 'albertonunezdiaz@gmail.com')
+    .eq('email', CORREO)
     .single()
   
   if (!users) {

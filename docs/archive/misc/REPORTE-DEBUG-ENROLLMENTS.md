@@ -65,9 +65,9 @@
 ┌─────────┬────────────────────────────────────────┬──────────────────────────────┬───────────┐
 │ (index) │ id                                     │ email                        │ role      │
 ├─────────┼────────────────────────────────────────┼──────────────────────────────┼───────────┤
-│ 0       │ fd5a64c2-6cc7-460c-b467-25e01a3ca39f   │ test@nodo360.com             │ student   │
-│ 1       │ 3c73f33c-2e93-45db-ae36-f571e62da420   │ admin@nodo360.com            │ student   │
-│ 2       │ 34c7dd0a-3854-4b76-8d11-16cd778e3269   │ albertonunezdiaz@gmail.com   │ admin     │
+│ 0       │ <usuario-3-alumno>                     │ <correo-de-pruebas>          │ student   │
+│ 1       │ <usuario-2-mentor>                     │ <correo-del-mentor>          │ student   │
+│ 2       │ <usuario-1-admin>                      │ <correo-del-admin>           │ admin     │
 └─────────┴────────────────────────────────────────┴──────────────────────────────┴───────────┘
 ```
 
