@@ -166,6 +166,7 @@ export default async function LessonListPage({ params }: PageProps) {
                     {/* Acciones */}
                     <div className="flex items-center gap-3">
                       <ReorderLessonButtons
+                        api="/api/admin"
                         lessonId={lesson.id}
                         moduleId={moduleId}
                         currentIndex={index}
@@ -180,6 +181,7 @@ export default async function LessonListPage({ params }: PageProps) {
                       </Link>
 
                       <DeleteLessonButton
+                         api="/api/admin"
                         lessonId={lesson.id}
                         lessonTitle={lesson.title}
                         moduleId={moduleId}

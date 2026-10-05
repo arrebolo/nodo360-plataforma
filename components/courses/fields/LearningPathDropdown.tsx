@@ -30,14 +30,21 @@ interface LearningPathDropdownProps {
    * deja de ofrecer una ruta apagada en la que meter el curso no lo mete en ninguna
    * parte.
    */
-  api?: string
+  /**
+   * SIN VALOR POR OMISION, a proposito: cada pantalla dice su zona y si alguien la
+   * olvida no compila. Con `api = '/api/admin'` por defecto, olvidarse en una pantalla
+   * de instructor no daba ni un aviso —llamaba al panel y, mientras ese endpoint dejara
+   * pasar, «funcionaba»—. Eso es exactamente como llego aqui el unico incumplimiento
+   * que quedaba de la regla.
+   */
+  api: string
 }
 
 export function LearningPathDropdown({
   selectedPathIds,
   onChange,
   disabled = false,
-  api = '/api/admin',
+  api,
 }: LearningPathDropdownProps) {
   const [paths, setPaths] = useState<LearningPath[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -97,8 +104,15 @@ export function LearningPathDropdown({
 
       <div className="relative">
         {/* Trigger Button */}
+        {/* `aria-label` NO ES ADORNO: el botón se llama «Seleccionar rutas…» y la
+            etiqueta de al lado, «Ruta de Aprendizaje» —en singular—, así que no había
+            forma de nombrarlo ni desde una prueba ni desde un lector de pantalla. Un
+            desplegable que no se puede nombrar no se puede comprobar. */}
         <button
           type="button"
+          aria-label="Rutas de aprendizaje"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
           onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
           disabled={disabled || loading}
           className={`w-full flex items-center justify-between gap-2 px-4 py-3 bg-[#0d1117] border border-white/10 rounded-xl text-left transition ${
@@ -128,7 +142,11 @@ export function LearningPathDropdown({
 
         {/* Dropdown Menu */}
         {isOpen && !loading && (
-          <div className="absolute z-50 w-full mt-2 py-2 bg-[#161b22] border border-white/10 rounded-xl shadow-xl max-h-64 overflow-auto">
+          <div
+            role="listbox"
+            aria-label="Rutas de aprendizaje disponibles"
+            className="absolute z-50 w-full mt-2 py-2 bg-[#161b22] border border-white/10 rounded-xl shadow-xl max-h-64 overflow-auto"
+          >
             {paths.length === 0 ? (
               <div className="px-4 py-3 text-white/50 text-sm text-center">
                 No hay rutas de aprendizaje disponibles
@@ -140,6 +158,8 @@ export function LearningPathDropdown({
                   <button
                     key={path.id}
                     type="button"
+                    role="option"
+                    aria-selected={isSelected}
                     onClick={() => handleToggle(path.id)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition ${
                       isSelected

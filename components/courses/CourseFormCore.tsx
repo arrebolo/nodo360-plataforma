@@ -56,7 +56,14 @@ interface CourseFormCoreProps {
    * Este componente lo usan las dos zonas, y ninguna pantalla de
    * /dashboard/instructor debe llamar a /api/admin.
    */
-  api?: string
+  /**
+   * SIN VALOR POR OMISION, a proposito: cada pantalla dice su zona y si alguien la
+   * olvida no compila. Con `api = '/api/admin'` por defecto, olvidarse en una pantalla
+   * de instructor no daba ni un aviso —llamaba al panel y, mientras ese endpoint dejara
+   * pasar, «funcionaba»—. Eso es exactamente como llego aqui el unico incumplimiento
+   * que quedaba de la regla.
+   */
+  api: string
 }
 
 export function CourseFormCore({
@@ -67,7 +74,7 @@ export function CourseFormCore({
   submittingLabel = 'Guardando...',
   especialidades = [],
   especialidadObligatoria = false,
-  api = '/api/admin',
+  api,
 }: CourseFormCoreProps) {
   const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string>>({})

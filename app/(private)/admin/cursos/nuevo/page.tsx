@@ -47,6 +47,7 @@ export default async function NuevoCursoPage() {
 
         {/* Formulario */}
         <CourseFormCore
+          api="/api/admin"
           action={handleCreate}
           backUrl="/admin/cursos"
           submitLabel="Crear Curso"
