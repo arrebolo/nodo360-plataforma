@@ -1,7 +1,10 @@
 -- ============================================================================
 -- 059: quita la columna modules.requires_quiz
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR. Es DDL, no se puede ejecutar por PostgREST.
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05:
+--   modules.requires_quiz no existe.
+--   El marcador anterior decia «pendiente» y estaba viejo: se escribe al crear
+--   el fichero y nadie lo cambia al aplicarlo.
 --   Fichero listo para el editor SQL: C:/Users/alber/059-aplicar.sql
 --
 -- POR QUE SE QUITA Y NO SE DOCUMENTA POR QUE SE QUEDA

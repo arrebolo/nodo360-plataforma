@@ -1,7 +1,10 @@
 -- ============================================================================
 -- 073: la passphrase no dejaba a nadie fuera del incidente de Coldcard
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05:
+--   las 6 comprobaciones de su propia verificacion: 0 textos viejos, 6 nuevos.
+--   El marcador anterior decia «pendiente» y estaba viejo: se escribe al crear
+--   el fichero y nadie lo cambia al aplicarlo.
 --   Fichero listo para el editor SQL: C:/Users/alber/073-aplicar.sql
 --   Este fichero YA ES la version llana: seis UPDATE sueltos con replace() y
 --   una unica consulta de verificacion al final. Sin bloque DO, sin PL/pgSQL y

@@ -1,7 +1,10 @@
 -- ============================================================================
 -- MIGRACION 027: eliminar la vista quiz_questions_public
 --
--- *** PENDIENTE DE APLICAR ***
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05:
+--   la vista quiz_questions_public no existe (no esta en el OpenAPI).
+--   El marcador anterior decia «pendiente» y estaba viejo: se escribe al crear
+--   el fichero y nadie lo cambia al aplicarlo.
 --
 -- QUE ES Y DE DONDE SALE
 -- La creo la PARTE 2B de docs/migrations/021_rls_quiz_security.sql como via

@@ -1,7 +1,10 @@
 -- ============================================================================
 -- 076: devolver el completed_at que se borro solo el 27/09/2026
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05:
+--   0 matriculas al 100% sin completed_at, que es su propio criterio.
+--   El marcador anterior decia «pendiente» y estaba viejo: se escribe al crear
+--   el fichero y nadie lo cambia al aplicarlo.
 --   Copia para pegar: tmp/076-aplicar.sql
 --
 -- LO QUE PASO, CON HORA

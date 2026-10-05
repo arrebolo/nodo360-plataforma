@@ -1,7 +1,10 @@
 -- ============================================================================
 -- 074: revocar los cinco certificados emitidos sin completar el curso
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR. Hay DDL, asi que va por el editor SQL.
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05:
+--   certificates.revoked_at y revoked_reason existen, 5 certificados revocados, y verificar_certificado devuelve «revocado».
+--   El marcador anterior decia «pendiente» y estaba viejo: se escribe al crear
+--   el fichero y nadie lo cambia al aplicarlo.
 --   Copia para pegar: tmp/074-aplicar.sql (identica a este fichero).
 --   Respaldo previo:  tmp/074-volver-atras.sql
 --
