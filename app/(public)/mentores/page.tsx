@@ -68,9 +68,14 @@ export default async function MentoresPage({
   }
 
   // Obtener perfiles de usuarios que son mentores
+  //
+  // SIN `role`: esta pagina es publica y la lectura la hace la clave anonima.
+  // Pedia la columna y no la usaba —quien es mentor lo dice `user_roles`, que es
+  // de donde sale `mentorUserIds`—, asi que lo unico que hacia era obligar a
+  // que el rol de las personas fuera legible por cualquiera.
   const { data: users } = await supabase
     .from('users')
-    .select('id, full_name, avatar_url, role')
+    .select('id, full_name, avatar_url')
     .in('id', mentorUserIds)
 
   // Obtener puntos de mentor para cada usuario

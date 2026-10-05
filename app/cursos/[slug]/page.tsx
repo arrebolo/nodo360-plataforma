@@ -118,11 +118,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
       total_duration_minutes,
       enrolled_count,
       instructor_id,
+      firmado_por_la_plataforma,
       instructor:users!courses_instructor_id_fkey (
         id,
         full_name,
-        avatar_url,
-        role
+        avatar_url
       ),
       modules (
         id,
@@ -195,6 +195,17 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const canManage =
     !!user &&
     (isPreview || perfil?.role === 'admin' || course.instructor_id === user.id)
+
+  // QUIEN FIRMA. La ficha ya no pregunta por el rol de nadie: lo dice el propio
+  // curso (migracion 121). Y si lo firma la plataforma, el objeto del autor no
+  // llega al navegador: ni pintado ni en el HTML.
+  const autor = course.firmado_por_la_plataforma
+    ? null
+    : (course.instructor as unknown as {
+        id: string
+        full_name: string | null
+        avatar_url: string | null
+      } | null)
 
   // 4. Verificar inscripción
   const { data: enrollment } = user
@@ -350,7 +361,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
             banner_url: course.banner_url ?? null,
             thumbnail_url: course.thumbnail_url ?? null,
             instructor_id: course.instructor_id ?? null,
-            instructor: course.instructor as unknown as { id: string; full_name: string | null; avatar_url: string | null; role: string | null } | null,
+            firmado_por_la_plataforma: course.firmado_por_la_plataforma ?? false,
+            // EL AUTOR, SOLO SI NO FIRMA LA PLATAFORMA. Se decide aqui, en el
+            // servidor: lo que no se quita antes de renderizar viaja en el HTML
+            // de la pagina aunque la ficha pinte «Creado por Nodo360».
+            instructor: autor,
           }}
           canManage={canManage}
           isEnrolled={isEnrolled}

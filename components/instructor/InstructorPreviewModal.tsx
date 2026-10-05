@@ -25,6 +25,7 @@ interface InstructorData {
    * `is_verified` que se calculaba con
    *     user.role === 'instructor' || user.role === 'mentor'
    * es decir: TENER EL ROL era estar verificado, y el tick no significaba nada.
+   * (Ese `role` ya no se lee en ningun sitio de este fichero: ver el titulo.)
    */
   sello: string | null
   total_courses: number
@@ -58,7 +59,7 @@ export function InstructorPreviewModal({
       // Get user data
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('id, full_name, avatar_url, role')
+        .select('id, full_name, avatar_url')
         .eq('id', instructorId)
         .single()
 
@@ -79,11 +80,16 @@ export function InstructorPreviewModal({
       // leer un parrafo. Fuera, el modal se abre sin biografia.
       const { data: publico } = await (supabase as unknown as SupabaseClient)
         .from('perfiles_publicos')
-        .select('bio')
+        .select('bio, es_instructor, es_mentor')
         .eq('id', instructorId)
         .maybeSingle()
 
-      const biografia = (publico as { bio: string | null } | null)?.bio ?? null
+      const perfilPublico = publico as {
+        bio: string | null
+        es_instructor: boolean | null
+        es_mentor: boolean | null
+      } | null
+      const biografia = perfilPublico?.bio ?? null
 
       // Los sellos, por la vista publica de la 093. La tabla de
       // certificaciones no la lee ninguna sesion: lleva dentro el numero de
@@ -119,7 +125,27 @@ export function InstructorPreviewModal({
         full_name: user.full_name,
         avatar_url: user.avatar_url,
         bio: biografia,
-        headline: user.role === 'instructor' ? 'Instructor' : user.role === 'mentor' ? 'Mentor' : null,
+        // EL TITULO, SIN PREGUNTAR POR EL ROL DE NADIE.
+        //
+        // Este modal lo abre un visitante sin sesion al pulsar el nombre del
+        // autor, asi que esa lectura la hace la CLAVE ANONIMA, que es publica.
+        // Antes era `user.role === 'instructor' || === 'mentor'` sobre la tabla.
+        //
+        // Y NO VALE MOVERLO A `perfiles_publicos.role`: medido, por la vista
+        // tambien se puede filtrar, y `role=eq.admin` devuelve fila. Revocar la
+        // columna solo en la tabla dejaria la enumeracion de admins abierta para
+        // cualquier admin que sea tambien autor publico.
+        //
+        // `es_instructor` y `es_mentor` son columnas DERIVADAS de la propia
+        // vista (104): dicen si esa persona tiene perfil de instructor activo o
+        // elegibilidad de mentor, que es lo que el titulo quiere decir, y no
+        // dejan preguntar quien administra la plataforma. El resultado en
+        // pantalla es el mismo, comprobado fila por fila con las dos que ve anon.
+        headline: perfilPublico?.es_instructor
+          ? 'Instructor'
+          : perfilPublico?.es_mentor
+            ? 'Mentor'
+            : null,
         sello:
           vivos.length === 0
             ? null
