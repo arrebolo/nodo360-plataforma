@@ -128,12 +128,25 @@ async function approveCourse(courseId: string, formData: FormData) {
   // Enviar email al instructor (non-blocking)
   if (course?.users) {
     const instructor = course.users as any
+    // EL RESULTADO SE MIRA, NO SOLO EL `.catch()`.
+    //
+    // Estos ayudantes NO LANZAN cuando Resend rechaza el envio: devuelven
+    // `{ success, error }`. Asi que un `.catch()` a secas no se ejecuta nunca y un
+    // correo perdido no dejaba rastro: el curso quedaba aprobado y su autor sin
+    // enterarse. Sigue sin esperarse a proposito —quien aprueba no tiene que esperar
+    // al correo— pero ahora el fallo se registra.
     sendCourseApprovedEmail({
       to: instructor.email,
       instructorName: instructor.full_name || 'Instructor',
       courseName: course.title,
       courseSlug: course.slug,
-    }).catch(err => console.error('Error enviando email de aprobación:', err))
+    })
+      .then((envio) => {
+        if (!envio.success) {
+          console.error(`[Admin] Correo de curso aprobado NO enviado (curso ${courseId}):`, envio.error)
+        }
+      })
+      .catch((err) => console.error('[Admin] Error enviando el correo de aprobación:', err))
 
     // LA NOTIFICACION EN LA PLATAFORMA, que hasta ahora no se creaba.
     // Al aprobar desde aqui el instructor recibia el correo y nada mas: si lo tenia
@@ -229,6 +242,13 @@ async function requestChanges(courseId: string, formData: FormData) {
   if (course?.users) {
     const instructor = course.users as any
 
+    // EL RESULTADO SE MIRA, NO SOLO EL `.catch()`.
+    //
+    // Estos ayudantes NO LANZAN cuando Resend rechaza el envio: devuelven
+    // `{ success, error }`. Asi que un `.catch()` a secas no se ejecuta nunca y un
+    // correo perdido no dejaba rastro: el curso quedaba aprobado y su autor sin
+    // enterarse. Sigue sin esperarse a proposito —quien aprueba no tiene que esperar
+    // al correo— pero ahora el fallo se registra.
     sendCourseChangesRequestedEmail({
       to: instructor.email,
       instructorName: instructor.full_name || 'Instructor',
@@ -236,7 +256,13 @@ async function requestChanges(courseId: string, formData: FormData) {
       courseId: courseId,
       mentorComments: [comment],
       revisadoPor: 'El equipo de Nodo360',
-    }).catch(err => console.error('Error enviando email de cambios solicitados:', err))
+    })
+      .then((envio) => {
+        if (!envio.success) {
+          console.error(`[Admin] Correo de cambios solicitados NO enviado (curso ${courseId}):`, envio.error)
+        }
+      })
+      .catch((err) => console.error('[Admin] Error enviando el correo de cambios solicitados:', err))
 
     broadcastCourseChangesRequested(
       instructor.id,
@@ -296,13 +322,26 @@ async function rejectCourse(courseId: string, formData: FormData) {
   // Enviar email al instructor (non-blocking)
   if (course?.users) {
     const instructor = course.users as any
+    // EL RESULTADO SE MIRA, NO SOLO EL `.catch()`.
+    //
+    // Estos ayudantes NO LANZAN cuando Resend rechaza el envio: devuelven
+    // `{ success, error }`. Asi que un `.catch()` a secas no se ejecuta nunca y un
+    // correo perdido no dejaba rastro: el curso quedaba aprobado y su autor sin
+    // enterarse. Sigue sin esperarse a proposito —quien aprueba no tiene que esperar
+    // al correo— pero ahora el fallo se registra.
     sendCourseRejectedEmail({
       to: instructor.email,
       instructorName: instructor.full_name || 'Instructor',
       courseName: course.title,
       courseId: courseId,
       rejectionReason: reason.trim(),
-    }).catch(err => console.error('Error enviando email de rechazo:', err))
+    })
+      .then((envio) => {
+        if (!envio.success) {
+          console.error(`[Admin] Correo de rechazo NO enviado (curso ${courseId}):`, envio.error)
+        }
+      })
+      .catch((err) => console.error('[Admin] Error enviando el correo de rechazo:', err))
   }
 
   revalidatePath('/admin/cursos/pendientes')

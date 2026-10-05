@@ -64,12 +64,25 @@ async function approveCourse(courseId: string) {
   if (course?.status === 'published' && course?.users) {
     // Auto-published! Send approval email and notification
     const instructor = course.users as any
+    // EL RESULTADO SE MIRA, NO SOLO EL `.catch()`.
+    //
+    // Estos ayudantes NO LANZAN cuando Resend rechaza el envio: devuelven
+    // `{ success, error }`. Asi que un `.catch()` a secas no se ejecuta nunca y un
+    // correo perdido no dejaba rastro: el curso quedaba aprobado y su autor sin
+    // enterarse. Sigue sin esperarse a proposito —quien aprueba no tiene que esperar
+    // al correo— pero ahora el fallo se registra.
     sendCourseApprovedEmail({
       to: instructor.email,
       instructorName: instructor.full_name || 'Instructor',
       courseName: course.title,
       courseSlug: course.slug,
-    }).catch(err => console.error('Error enviando email de aprobación:', err))
+    })
+      .then((envio) => {
+        if (!envio.success) {
+          console.error(`[Mentor] Correo de curso aprobado NO enviado (curso ${courseId}):`, envio.error)
+        }
+      })
+      .catch((err) => console.error('[Mentor] Error enviando el correo de aprobación:', err))
 
     createInAppNotification(
       instructor.id,

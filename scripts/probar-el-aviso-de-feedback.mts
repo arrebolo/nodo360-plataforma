@@ -12,14 +12,23 @@
  *   poder avisar sería cambiar un problema pequeño por uno grande.
  *
  * LO QUE SE COMPRUEBA, con una cuenta de usar y tirar
- *   1. sin `FEEDBACK_EMAIL_TO`: responde success, la fila se guarda, y el servidor lo
- *      registra diciendo qué id se queda sin avisar
- *   2. con `FEEDBACK_EMAIL_TO` apuntando a un dominio que no existe: Resend falla, el
- *      error se traga como no crítico, y la fila se guarda igual
- *   3. sin sesión: 401, y no se guarda nada
+ *   1. sin sesión: 401, y no se guarda nada
+ *   2. con sesión: responde success y la fila queda guardada con su mensaje y su autor,
+ *      pase lo que pase con el correo
  *
- * El destino de la prueba es `@ejemplo.invalid` A PROPOSITO: así se recorre el camino
- * del envío sin mandarle un correo a nadie de verdad.
+ * Y LOS TRES MONTAJES DEL SERVIDOR, que se eligen al arrancarlo. Lo que distingue a uno
+ * de otro está en el REGISTRO del servidor, no en la respuesta —la respuesta es 200 en
+ * los tres, que es justo lo que hay que garantizar—:
+ *
+ *   sin FEEDBACK_EMAIL_TO          «FEEDBACK_EMAIL_TO no está definida: el feedback … »
+ *   FEEDBACK_EMAIL_TO=no-es-correo «Aviso NO enviado del feedback …: validation_error … »
+ *   FEEDBACK_EMAIL_TO=algo@valido  «Aviso enviado del feedback … »
+ *
+ * CUIDADO CON EL DESTINO QUE SE ELIGE. `@ejemplo.invalid` NO sirve para probar el error:
+ * Resend lo ACEPTA y lo encola —el rebote es posterior—, así que recorre la rama del
+ * éxito. Medido. Para ejercitar la rama del error hace falta algo que Resend rechace en
+ * el momento, como una dirección sin arroba. Y para no escribirle a nadie de verdad,
+ * cualquiera de los dos primeros montajes.
  */
 import fs from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
@@ -115,8 +124,10 @@ try {
 
   console.log(
     conVariable
-      ? '\n   (con la variable definida, el envío se intenta; si el dominio no existe,\n' +
-        '    el error se traga como no crítico y la fila se queda guardada igual)'
+      ? '\n   (con la variable definida, el envío se intenta y el RESULTADO se mira:\n' +
+        '    si Resend lo rechaza, el servidor registra «Aviso NO enviado del feedback\n' +
+        '    <id>: <motivo>» y la fila se queda guardada igual. `emails.send()` no lanza:\n' +
+        '    devuelve { data, error }, y sin mirarlo un aviso perdido no dejaba rastro)'
       : '\n   (sin la variable, el servidor registra «FEEDBACK_EMAIL_TO no está definida»\n' +
         '    con el id del feedback, y la petición sigue devolviendo success: lo de arriba)'
   )

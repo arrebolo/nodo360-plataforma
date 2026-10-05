@@ -58,7 +58,7 @@ Ctrl + Shift + R
 
 **Test rápido:**
 ```bash
-npx tsx scripts/test-enrollments-query.ts
+npx tsx scripts/test-enrollments-query.ts <tu-correo>
 ```
 
 **Debe mostrar:**
