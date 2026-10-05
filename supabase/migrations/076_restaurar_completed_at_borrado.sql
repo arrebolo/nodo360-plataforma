@@ -1,10 +1,12 @@
 -- ============================================================================
 -- 076: devolver el completed_at que se borro solo el 27/09/2026
 -- ============================================================================
--- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05:
---   0 matriculas al 100% sin completed_at, que es su propio criterio.
---   El marcador anterior decia «pendiente» y estaba viejo: se escribe al crear
---   el fichero y nadie lo cambia al aplicarlo.
+-- ESTADO: FALTA MEDIR. La evidencia que use NO distingue.
+--   Dije «0 matriculas al 100% sin completed_at», y eso pasaria igual SIN la
+--   reparacion: la matricula que esta migracion arregla se queda al 78%, asi que
+--   no entra en ese recuento. Lo que hay que mirar es lo que mira su propia
+--   consulta final: el completed_at exacto de la matricula del certificado
+--   NODO-20260115-B3M20. Esta en tmp/auditoria-pendientes.sql.
 --   Copia para pegar: tmp/076-aplicar.sql
 --
 -- LO QUE PASO, CON HORA
