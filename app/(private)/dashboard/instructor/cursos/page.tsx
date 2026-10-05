@@ -36,17 +36,33 @@ export default async function InstructorCoursesPage({
   const isAdmin = role === "admin";
   const limit = parseInt(limitParam || "10");
 
-  // Query para contar por estado (sin filtros de busqueda) - para tabs
-  let countQuery = supabase.from("courses").select("status");
-  if (!isAdmin) {
-    countQuery = countQuery.eq("instructor_id", userId);
-  }
-  const { data: allCoursesForCount } = await countQuery;
+  // LOS RECUENTOS DE LAS PESTAÑAS, EXACTOS.
+  //
+  // Esto era un `select("status")` y se contaba aquí, con el mismo techo invisible que
+  // tenía /admin/cursos: PostgREST devuelve como mucho 1.000 filas, así que a partir del
+  // curso 1.001 las pestañas habrían empezado a quedarse cortas sin decir nada. Con un
+  // admin mirando es más fácil de alcanzar, porque cuenta los de toda la plataforma.
+  //
+  // Tres peticiones en paralelo con `head: true`: ni una fila viaja.
+  const contarCursos = async (estado?: string) => {
+    let consulta = supabase.from("courses").select("id", { count: "exact", head: true });
+    if (!isAdmin) consulta = consulta.eq("instructor_id", userId);
+    if (estado) consulta = consulta.eq("status", estado);
+    const { count, error } = await consulta;
+    if (error) console.error(`[Instructor Cursos] recuento de ${estado ?? "todos"}:`, error.message);
+    return count ?? 0;
+  };
+
+  const [todosLosCursos, publicadosCuenta, borradoresCuenta] = await Promise.all([
+    contarCursos(),
+    contarCursos("published"),
+    contarCursos("draft"),
+  ]);
 
   const tabCounts = {
-    all: allCoursesForCount?.length || 0,
-    published: allCoursesForCount?.filter((c) => c.status === "published").length || 0,
-    draft: allCoursesForCount?.filter((c) => c.status === "draft").length || 0,
+    all: todosLosCursos,
+    published: publicadosCuenta,
+    draft: borradoresCuenta,
   };
 
   // Query base para lista

@@ -595,6 +595,42 @@ try {
   di(/Aún no tienes cursos/.test(texto), '«Aún no tienes cursos», con tilde')
   di(!/Aun no tienes/.test(texto), 'y no «Aun no tienes»')
 
+  // ── Y LAS PESTAÑAS, CONTRA LA BASE ──────────────────────────────────────────
+  //
+  // Los recuentos salían de un `select("status")` que se contaba en el servidor, y eso
+  // tiene un techo invisible: PostgREST devuelve como mucho 1.000 filas, así que a
+  // partir del curso 1.001 las pestañas se habrían quedado cortas SIN DECIR NADA. Con
+  // 16 cursos no se nota —y por eso no se arregla cuando se note—, pero lo que sí se
+  // puede comprobar es que el recuento cuadra con la base, que es lo que protege la
+  // zona de aquí en adelante.
+  await nav.ponerLaSesion(conCurso.cookie)
+  await nav.ir('/dashboard/instructor/cursos', { espera: 3000 })
+  texto = await nav.texto()
+  laPaginaCargo(texto, '«Mis cursos» del instructor con curso')
+
+  for (const [pestana, etiqueta, estado] of [
+    ['all', 'Todos', null],
+    ['published', 'Publicados', 'published'],
+    ['draft', 'Borradores', 'draft'],
+  ] as [string, string, string | null][]) {
+    let consulta = svc.from('courses')
+      .select('id', { count: 'exact', head: true }).eq('instructor_id', conCurso.id)
+    if (estado) consulta = consulta.eq('status', estado)
+    const cuantos = exigirCuenta(await consulta)
+
+    // DENTRO DE SU PESTAÑA, por `data-pestana`. Buscar «Publicados» seguido de un número
+    // en el texto de la página daba verde CON EL NÚMERO CAMBIADO: esa palabra sale tres
+    // veces —la pestaña, el filtro de estado y el de tipo— y casaba con otra de ellas.
+    // Se descubrió forzando el rojo, y por eso los botones llevan ahora `data-pestana`.
+    const loQueDice = await nav.evaluar<string | null>(
+      `document.querySelector('[role=tab][data-pestana=${pestana}]')?.innerText?.replace(/\\s+/g, ' ').trim() ?? null`
+    )
+    di(loQueDice !== null, `existe la pestaña «${etiqueta}»`, String(loQueDice))
+    di(loQueDice === `${etiqueta} ${cuantos}`,
+       `y dice ${cuantos}, como la base`,
+       `dice «${loQueDice}», esperaba «${etiqueta} ${cuantos}»`)
+  }
+
   // ── 5. EL AVISO LLEVA A PEDIR LA VERIFICACIÓN ────────────────────────────────
   console.log('\n5. Sin ninguna verificación, el aviso lleva a pedirla')
   const sinVerificar = await nuevoInstructor('sin-verificar', null, true)
