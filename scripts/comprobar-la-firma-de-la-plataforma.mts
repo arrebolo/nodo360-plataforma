@@ -166,10 +166,24 @@ const anon = createClient(
   env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
   { auth: { persistSession: false } }
 )
-const { error: eVista } = await anon.from('perfiles_publicos').select('id, role').limit(1)
-di(!eVista,
-  'anon sigue pudiendo leer el rol por la vista perfiles_publicos (es la puerta buena)',
-  eVista ? `${eVista.code}: ${eVista.message.slice(0, 60)}` : 'la lee')
+// Lo que el modal del autor necesita de verdad: la biografia y si esa persona es
+// instructor o mentor. NO `role`: medido, por la vista tambien se puede filtrar,
+// y `role=eq.admin` devuelve fila, asi que la 122 se lo quitara tambien a la
+// vista. Estas tres columnas son las que tienen que seguir ahi.
+const { data: dVista, error: eVista } = await anon
+  .from('perfiles_publicos')
+  .select('id, bio, es_instructor, es_mentor')
+  .limit(1)
+di(!eVista, 'anon lee de perfiles_publicos lo que el modal del autor necesita',
+  eVista ? `${eVista.code}: ${eVista.message.slice(0, 60)}` : 'bio, es_instructor, es_mentor')
+di((dVista?.length ?? 0) === 1, 'y la vista le da fila (no esta vacia para anon)',
+  `${dVista?.length ?? 0} filas`)
+
+// Y la otra mitad: que el titulo no necesite preguntar quien administra. Mientras
+// `role` siga en la vista esto sigue en verde a proposito —lo cierra la 122—,
+// pero el numero tiene que estar a la vista para saber que queda pendiente.
+const { data: dAdmins } = await anon.from('perfiles_publicos').select('id').eq('role', 'admin')
+console.log(`   ...  por la vista, role=eq.admin devuelve ${dAdmins?.length ?? 0} fila(s). La 122 quita «role» de la vista y esto pasara a 0.`)
 
 console.log(
   fallos === 0
