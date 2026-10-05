@@ -99,7 +99,7 @@ Si no aparece, hay un problema de autenticación.
 npx tsx scripts/verify-database-state.ts
 
 # Test 2: Enrollments
-npx tsx scripts/test-enrollments-query.ts
+npx tsx scripts/test-enrollments-query.ts <tu-correo>
 
 # Test 3: Admin
 npx tsx scripts/test-admin-query.ts

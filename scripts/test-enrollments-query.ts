@@ -1,3 +1,11 @@
+/**
+ * Script: Diagnóstico de la consulta de matriculas, con el join correcto.
+ *
+ * Ejecutar: npx tsx scripts/test-enrollments-query.ts <correo-de-la-cuenta>
+ *
+ * El correo ENTRA POR ARGUMENTO (o en NODO360_ADMIN_EMAIL): no se escribe aqui, que
+ * este fichero esta en un repositorio publico. Sin el, el script no arranca.
+ */
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 

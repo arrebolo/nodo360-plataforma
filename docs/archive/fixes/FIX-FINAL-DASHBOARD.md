@@ -99,7 +99,7 @@ remotePatterns: [
 ### Script de Test Ejecutado: ✅ EXITOSO
 
 ```bash
-npx tsx scripts/test-enrollments-query.ts
+npx tsx scripts/test-enrollments-query.ts <tu-correo>
 ```
 
 **Resultado:**
@@ -227,7 +227,7 @@ Cmd + Shift + R   (Mac)
 
 3. **Ejecutar script de test:**
    ```bash
-   npx tsx scripts/test-enrollments-query.ts
+   npx tsx scripts/test-enrollments-query.ts <tu-correo>
    ```
    - Si funciona aquí pero no en navegador → problema de autenticación
    - Si falla aquí → revisar FK en BD

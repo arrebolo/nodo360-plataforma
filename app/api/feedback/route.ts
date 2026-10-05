@@ -136,7 +136,14 @@ export async function POST(request: Request) {
       )
     } else if (resend) {
       try {
-        await resend.emails.send({
+        // EL RESULTADO SE MIRA. `emails.send()` NO LANZA cuando la API de Resend
+        // rechaza el envio —dominio sin verificar, destinatario invalido, cuota—:
+        // devuelve `{ data, error }` y sigue. Con solo un try/catch alrededor, un
+        // aviso perdido no dejaba ni una linea en el registro; se vio midiendo, con
+        // el destinatario apuntando a un dominio que no existe: respuesta 200, fila
+        // guardada y NI UN mensaje del servidor. El catch se queda para lo que si
+        // lanza: que no haya red.
+        const { error: errorDelEnvio } = await resend.emails.send({
           from: REMITENTE_NODO360,
           to: destinatario,
           replyTo: userEmail,
@@ -190,10 +197,18 @@ export async function POST(request: Request) {
             </html>
           `
         })
-        console.log('[Feedback API] ✅ Email enviado al destinatario de FEEDBACK_EMAIL_TO')
+        if (errorDelEnvio) {
+          console.error(
+            `[Feedback API] ⚠️ Aviso NO enviado del feedback ${data.id}: ` +
+            `${errorDelEnvio.name ?? 'error'} — ${errorDelEnvio.message}. Está en /admin/feedback.`
+          )
+        } else {
+          console.log(`[Feedback API] ✅ Aviso enviado del feedback ${data.id}`)
+        }
       } catch (emailError) {
-        // No fallar si el email no se envía, el feedback ya está guardado
-        console.error('[Feedback API] ⚠️ Error enviando email (no crítico):', emailError)
+        // Lo que sí lanza: que no haya red. El feedback ya está guardado, así que
+        // esto no rompe la petición; solo se deja dicho con el id.
+        console.error(`[Feedback API] ⚠️ Aviso NO enviado del feedback ${data.id}:`, emailError)
       }
     }
 
