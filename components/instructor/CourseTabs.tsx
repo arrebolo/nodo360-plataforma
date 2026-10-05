@@ -42,10 +42,24 @@ export default function CourseTabs({ counts }: CourseTabsProps) {
   ]
 
   return (
-    <div className="flex items-center gap-1 p-1 bg-white/5 rounded-xl mb-6">
+    // `role="tablist"` y cada botón con su `role="tab"`, su `aria-selected` y su
+    // `data-pestana`. No es solo marcado correcto: estos botones no tenían NADA que los
+    // identificara —ni href, ni etiqueta, ni atributo—, y «Publicados» aparece tres
+    // veces en esta pantalla (la pestaña, el filtro de estado y el de tipo). Una prueba
+    // que buscaba «Publicados» seguido de un número daba verde con el número cambiado,
+    // porque casaba con otra de las tres. Lo que no se puede nombrar no se puede
+    // comprobar.
+    <div
+      role="tablist"
+      aria-label="Filtrar cursos por estado"
+      className="flex items-center gap-1 p-1 bg-white/5 rounded-xl mb-6"
+    >
       {tabs.map((tab) => (
         <button
           key={tab.id}
+          role="tab"
+          aria-selected={currentTab === tab.id}
+          data-pestana={tab.id}
           onClick={() => handleTabChange(tab.id)}
           disabled={isPending}
           className={`

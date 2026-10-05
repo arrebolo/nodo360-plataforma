@@ -160,23 +160,36 @@ export default async function AdminCoursesPage({
     supabase.from('course_enrollments').select('id', { count: 'exact', head: true }),
   ])
 
-  // CUANTOS HAY DE CADA ESTADO, en UNA consulta y no en siete: se piden los estados y se
-  // cuentan aquí. Sin esto, las pestañas nuevas serían un salto a ciegas —nadie pulsa
-  // «Archivados» para descubrir si hay alguno— y los cinco archivados de hoy seguirían
+  // CUANTOS HAY DE CADA ESTADO. Sin esto, las pestañas serían un salto a ciegas —nadie
+  // pulsa «Archivados» para descubrir si hay alguno— y los cinco archivados seguirían
   // igual de escondidos que cuando no había pestaña.
-  const { data: todosLosEstados, error: errorEstados } = await supabase
-    .from('courses')
-    .select('status')
-  if (errorEstados) {
-    console.error('[Admin Courses] no se pudieron contar los estados:', errorEstados.message)
-  }
+  //
+  // SIETE RECUENTOS EXACTOS, Y NO UN `select('status')` QUE SE CUENTE AQUI. Esa era la
+  // primera versión y tenía un techo invisible: PostgREST devuelve como mucho 1.000
+  // filas, así que a partir del curso 1.001 los recuentos habrían empezado a quedarse
+  // cortos SIN DECIR NADA —la pestaña diría 1.000 y seguiría pareciendo un número—. Con
+  // 16 cursos no se nota, y es justo por eso que no se arregla cuando se note.
+  //
+  // Van en paralelo y con `head: true`: siete peticiones que no traen ni una fila.
+  const recuentos = await Promise.all(
+    ESTADOS.map((estado) =>
+      supabase.from('courses').select('id', { count: 'exact', head: true }).eq('status', estado)
+    )
+  )
   const porEstado = Object.fromEntries(ESTADOS.map((e) => [e, 0])) as Record<EstadoDeCurso, number>
-  let conEstadoRaro = 0
-  for (const c of todosLosEstados ?? []) {
-    const e = String(c.status ?? '') as EstadoDeCurso
-    if (e in porEstado) porEstado[e]++
-    else conEstadoRaro++
-  }
+  ESTADOS.forEach((estado, i) => {
+    const { count, error } = recuentos[i]
+    if (error) {
+      console.error(`[Admin Courses] no se pudo contar «${estado}»:`, error.message)
+      return
+    }
+    porEstado[estado] = count ?? 0
+  })
+
+  // Y LOS DE UN ESTADO QUE ESTA PANTALLA NO CONOCE, por resta: el total exacto menos la
+  // suma de los siete. Así no hace falta una octava consulta, y sigue siendo exacto.
+  const sumaDeLosSiete = ESTADOS.reduce((t, e) => t + porEstado[e], 0)
+  const conEstadoRaro = Math.max(0, (coursesCount ?? 0) - sumaDeLosSiete)
 
   const totalCoursesGlobal = coursesCount ?? 0
   const totalModulesGlobal = modulesCount ?? 0
