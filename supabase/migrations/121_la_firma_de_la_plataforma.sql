@@ -1,17 +1,40 @@
--- 121a. La firma de la plataforma, la exencion por rol de base y el borrado de un
---       curso con copia publicada viva.
+-- 121. La firma de la plataforma, la exencion por rol de base y el borrado de un
+--      curso con copia publicada viva.
 --
---       APLICADA A MANO EL 2026-10-05 en el editor SQL de produccion, con
---       «TODO CORRECTO» en la fila de verificacion: 15/1 en los cursos, 15 y 0
---       discrepancias en el espejo, las dos columnas bien puestas, los dos
---       triggers activos, dos funciones ya por rol de base y 0 restos.
+--      APLICADA A MANO EL 2026-10-05 en el editor SQL de produccion, con «TODO
+--      CORRECTO» en la fila de verificacion. Los numeros que salieron aquel dia:
 --
---       El SQL es el que se ejecuto, sin una coma de diferencia. Hay hueco en el
---       120 a proposito: esta reservado para cerrar las tablas de trabajo a anon
---       y a authenticated (bloque 3), como dice docs/VUELTA-ATRAS-COPIA-PUBLICADA.md.
+--        cursos:  15 firmados por la plataforma,  1 por una persona,  0 sin autor
+--        espejo:  15 filas firmadas por la plataforma, 0 por una persona,
+--                 0 huerfanas, 0 discrepancias con su curso
+--                 (15 filas en total: 10 vivas y 5 retiradas)
+--        y ademas: las dos columnas bien puestas, los dos triggers activos, dos
+--                 funciones ya por rol de base, 0 restos de la autoprueba.
+--
+--      LAS ASERCIONES SE CAMBIARON DESPUES A INVARIANTES. Al aplicarla, el
+--      relleno y la verificacion exigian esos recuentos exactos —15 / 1 / 0—, y
+--      eso solo vale en esta base y solo ese dia: en cuanto se publique un curso
+--      mas, un fichero asi se levanta diciendo que algo va mal cuando va bien, y
+--      no se puede volver a ejecutar en ninguna otra parte. Lo que ahora se exige
+--      son propiedades que tienen que cumplirse SIEMPRE: que ningun curso este
+--      sin autor, que la firma de cada curso coincida con la regla aplicada a su
+--      autor, y que el espejo no discrepe de su curso. Los recuentos siguen
+--      saliendo por pantalla, como informacion, no como condicion.
+--
+--      Los CAMBIOS EN LA BASE son los que se ejecutaron, letra por letra: las dos
+--      columnas, sus COMMENT, las cuatro funciones, los triggers y el UPDATE del
+--      relleno. Lo unico distinto son las comprobaciones.
+--
+--      Hay hueco en el 120 a proposito: esta reservado para cerrar las tablas de
+--      trabajo a anon y a authenticated (bloque 3), como dice
+--      docs/VUELTA-ATRAS-COPIA-PUBLICADA.md. La segunda mitad de este trabajo
+--      —REVOCAR users.role a anon y la politica de filas por funcion— es la 122.
+--
+--      Los slug de la autoprueba siguen diciendo «qa-121a»: es el marcador que de
+--      verdad se ejecuto, y cambiarlo seria tocar lo aplicado por estetica.
 --
 -- ============================================================================
--- MIGRACION 121a: la firma de la plataforma, la exencion por rol de base,
+-- MIGRACION 121: la firma de la plataforma, la exencion por rol de base,
 --                 y el borrado de un curso con copia publicada
 --
 -- Es el primero de tres pasos. NO REVOCA NADA: la revocacion de `users.role` a
@@ -30,7 +53,7 @@
 -- publica. Mientras eso siga asi, no se puede cerrar la enumeracion de cuentas:
 -- medido, filtrar por una columna sin permiso da 42501, de modo que revocar
 -- `role` es lo que convierte «dime quienes son los admin» en una pregunta que no
--- se puede hacer. Pero revocarla hoy dejaria las 15 fichas firmadas con el
+-- se puede hacer. Pero revocarla hoy dejaria las fichas de la plataforma firmadas con el
 -- nombre y apellido de una persona en vez de con el de la plataforma: lo
 -- contrario de lo que se busca.
 --
@@ -90,7 +113,7 @@
 --     lessons        -> lessons_publicadas         19 columnas, 0 faltan
 --     quiz_questions -> quiz_questions_publicadas  11 columnas, 0 faltan
 --
--- Cada espejo añade `publicado_el`, `version` y `retirada_el`, y nada mas. La 121a
+-- Cada espejo añade `publicado_el`, `version` y `retirada_el`, y nada mas. La 121
 -- solo toca `courses`, asi que los otros tres pares se quedan como estan: la
 -- comprobacion es en un solo sentido —que al espejo no le falte nada del origen—,
 -- de modo que las columnas de mas del espejo nunca estorban.
@@ -160,7 +183,7 @@
 --   · La autoprueba de la 119 fallaria si se volviera a ejecutar: su caso A borra
 --     un curso dejando la copia viva a proposito. No es un problema real —las
 --     migraciones no se re-ejecutan— pero quien la copie como plantilla tiene que
---     saberlo: desde la 121a, borrar un curso con copia viva exige retirarla
+--     saberlo: desde la 121, borrar un curso con copia viva exige retirarla
 --     antes o pedir la salida de emergencia.
 --   · `limpiar-restos-de-pruebas.mts` ya retira el espejo antes del curso (se
 --     endurecio en la #314), asi que no se entera.
@@ -205,10 +228,16 @@ COMMENT ON COLUMN public.courses.owner_role IS
   'ABANDONADA, y no se reutilizo a proposito: es una copia del rol de una persona, que es la forma del problema que la 121 quita. Para la firma esta firmado_por_la_plataforma. Se retira en otra migracion.';
 
 -- ============================================================================
--- 2. El relleno inicial: los cursos (15 / 1) y el espejo (15 / 0)
+-- 2. El relleno inicial: cada curso segun el rol de su autor de hoy
 -- ============================================================================
 -- Va ANTES del trigger a proposito, para que se lea en este orden: primero el
 -- estado de hoy, despues la regla que lo defiende.
+--
+-- LOS RECUENTOS SALEN POR PANTALLA, PERO NO SON LA CONDICION. Lo que se exige son
+-- tres invariantes que valen en cualquier base y en cualquier momento: ningun
+-- curso sin autor, la firma de cada curso igual a la regla aplicada a su autor, y
+-- el espejo sin discrepancias con su curso. Lo que salio el dia que se aplico
+-- esta en la cabecera del fichero.
 --
 -- No mueve `updated_at`: el unico trigger que lo escribe es el de la 030, y solo
 -- en la rama que devuelve a revision un curso publicado cuando cambia una de sus
@@ -224,6 +253,7 @@ DECLARE
   v_e_persona    integer;
   v_huerfanas    integer;
   v_desacuerdo   integer;
+  v_descuadre    integer;
   v_e_total      integer;
   v_e_vivas      integer;
 BEGIN
@@ -241,10 +271,17 @@ BEGIN
   RAISE NOTICE 'RELLENO  cursos: plataforma %   persona %   sin autor %',
     v_plataforma, v_persona, v_sin_autor;
 
-  IF v_plataforma <> 15 OR v_persona <> 1 OR v_sin_autor <> 0 THEN
+  -- INVARIANTE 1: ningun curso sin autor.
+  --
+  -- El relleno decide la firma MIRANDO EL ROL DEL AUTOR, asi que un curso sin
+  -- autor deja la firma sin decidir: se queda en false y la ficha lo pintaria
+  -- como de la plataforma por el otro camino —el de «no hay a quien atribuirlo»—,
+  -- con lo que el dato y la pantalla dirian cosas distintas. Eso no se arregla
+  -- por defecto: hay que mirarlo.
+  IF v_sin_autor <> 0 THEN
     RAISE EXCEPTION
-      'El relleno de los cursos no cuadra con lo medido (15 / 1 / 0): salio % / % / %. La causa mas probable es benigna —se ha creado o publicado algun curso desde la medicion—, pero el reparto de la firma hay que decidirlo mirando, no por defecto. Pararse y revisarlo.',
-      v_plataforma, v_persona, v_sin_autor;
+      'Hay % cursos sin autor, y la firma se decide por el rol del autor: no hay nada de donde deducirla. Asignales autor o decide su firma a mano antes de aplicar esto.',
+      v_sin_autor;
   END IF;
 
   -- ── El espejo, copiando del origen (TAMBIEN las filas retiradas) ───────────
@@ -269,9 +306,23 @@ BEGIN
   RAISE NOTICE 'RELLENO  espejo: plataforma %   persona %   huerfanas %  (de % filas, % vivas)',
     v_e_plataforma, v_e_persona, v_huerfanas, v_e_total, v_e_vivas;
 
-  -- LA COMPROBACION QUE DE VERDAD IMPORTA, y no es un recuento: ninguna fila del
-  -- espejo con curso vivo puede discrepar de su curso. Un recuento fijo se rompe
-  -- en cuanto se publica un curso mas; esto no.
+  -- INVARIANTE 2: la firma de cada curso coincide con la regla aplicada a su
+  -- autor. Es la unica forma de comprobar el relleno sin depender de cuantos
+  -- cursos haya: se vuelve a calcular la regla y se exige que no sobre ni falte
+  -- ninguno. Con EXISTS y no con IN, para que un autor nulo de false y no NULL.
+  SELECT count(*) INTO v_descuadre
+    FROM public.courses c
+   WHERE c.firmado_por_la_plataforma IS DISTINCT FROM EXISTS (
+           SELECT 1 FROM public.users u
+            WHERE u.id = c.instructor_id AND u.role = 'admin');
+
+  IF v_descuadre <> 0 THEN
+    RAISE EXCEPTION
+      '% cursos tienen una firma que no coincide con el rol de su autor. El relleno no ha hecho su trabajo: pararse.',
+      v_descuadre;
+  END IF;
+
+  -- INVARIANTE 3: ninguna fila del espejo con curso vivo discrepa de su curso.
   SELECT count(*) INTO v_desacuerdo
     FROM public.courses_publicados cp
     JOIN public.courses c ON c.id = cp.id
@@ -283,11 +334,6 @@ BEGIN
       v_desacuerdo;
   END IF;
 
-  IF v_e_plataforma <> 15 OR v_e_persona <> 0 THEN
-    RAISE EXCEPTION
-      'El relleno del espejo no cuadra con lo medido (15 de la plataforma, 0 de una persona): salio % / %. Pararse y revisarlo.',
-      v_e_plataforma, v_e_persona;
-  END IF;
 
   IF v_huerfanas <> 0 THEN
     RAISE WARNING
@@ -295,7 +341,7 @@ BEGIN
       v_huerfanas;
   END IF;
 
-  RAISE NOTICE 'RELLENO  cuadra: cursos 15/1/0, espejo 15/0, sin discrepancias  PASA';
+  RAISE NOTICE 'RELLENO  todos con autor, la firma cuadra con su autor, el espejo no discrepa  PASA';
 END
 $relleno$;
 
@@ -450,7 +496,7 @@ END
 $fn$;
 
 COMMENT ON FUNCTION public.controlar_publicacion_de_cursos() IS
-  'Un curso nace en borrador y solo la administracion lo deja en published o rejected. Desde la 121a la exencion es por ROL DE BASE (postgres, supabase_admin, service_role) y no por ausencia de identidad, que tambien eximia a la clave anonima.';
+  'Un curso nace en borrador y solo la administracion lo deja en published o rejected. Desde la 121 la exencion es por ROL DE BASE (postgres, supabase_admin, service_role) y no por ausencia de identidad, que tambien eximia a la clave anonima.';
 
 CREATE OR REPLACE FUNCTION public.la_fecha_de_publicacion_no_se_borra()
 RETURNS trigger
@@ -495,7 +541,7 @@ END
 $fn$;
 
 COMMENT ON FUNCTION public.la_fecha_de_publicacion_no_se_borra() IS
-  'published_at significa «se publico alguna vez» y es la condicion de los triggers de la 114 y la 115. Impide volverla a NULL con una sesion abierta, y que quien no es admin la cambie. Desde la 121a la exencion es por ROL DE BASE y no por ausencia de identidad.';
+  'published_at significa «se publico alguna vez» y es la condicion de los triggers de la 114 y la 115. Impide volverla a NULL con una sesion abierta, y que quien no es admin la cambie. Desde la 121 la exencion es por ROL DE BASE y no por ausencia de identidad.';
 
 -- ============================================================================
 -- 5. No se borra un curso con copia publicada viva
@@ -721,7 +767,7 @@ BEGIN
   END IF;
   IF NOT v_firma THEN
     RAISE EXCEPTION
-      'PRUEBA 5 FALLIDA: el curso esta firmado por la plataforma y su copia publicada dice que no. La columna esta en el espejo pero el valor no viaja: sin esto, en cuanto las fichas se lean del espejo (bloque 3) los 15 cursos saldrian firmados por una persona.';
+      'PRUEBA 5 FALLIDA: el curso esta firmado por la plataforma y su copia publicada dice que no. La columna esta en el espejo pero el valor no viaja: sin esto, en cuanto las fichas se lean del espejo (bloque 3) los cursos de la plataforma saldrian firmados por una persona.';
   END IF;
   RAISE NOTICE 'PRUEBA 5  la firma llega a la copia publicada al publicar          PASA';
 
@@ -850,14 +896,37 @@ COMMIT;
 -- ============================================================================
 -- 7. VERIFICACION: una sola fila
 -- ============================================================================
+-- NINGUN RECUENTO DE PRODUCCION EN EL VEREDICTO. Los recuentos salen como
+-- informacion —hacen falta para leer la fila— pero lo que decide son propiedades
+-- que valen en cualquier base: las dos columnas puestas, los dos triggers
+-- activos, las dos funciones ya por rol de base, y tres ceros que tienen que ser
+-- cero siempre.
+--
+-- Lo que salio el 2026-10-05, para comparar: 15 y 1 en los cursos, 15 y 0 en el
+-- espejo, de 15 filas con 10 vivas.
 
 SELECT
+  -- Informacion: el reparto de hoy
   (SELECT count(*) FROM public.courses WHERE firmado_por_la_plataforma)            AS firmados_por_la_plataforma,
   (SELECT count(*) FROM public.courses WHERE NOT firmado_por_la_plataforma)        AS firmados_por_persona,
+  (SELECT count(*) FROM public.courses_publicados WHERE firmado_por_la_plataforma) AS espejo_firmado_plataforma,
+  (SELECT count(*) FROM public.courses_publicados)                                 AS espejo_filas,
+
+  -- Lo que tiene que ser cero SIEMPRE
+  (SELECT count(*) FROM public.courses WHERE instructor_id IS NULL)                AS cursos_sin_autor,
+  (SELECT count(*) FROM public.courses c
+    WHERE c.firmado_por_la_plataforma IS DISTINCT FROM EXISTS (
+            SELECT 1 FROM public.users u WHERE u.id = c.instructor_id AND u.role = 'admin'))
+                                                                                   AS firma_que_no_cuadra,
+  (SELECT count(*) FROM public.courses_publicados cp JOIN public.courses c ON c.id = cp.id
+    WHERE cp.firmado_por_la_plataforma IS DISTINCT FROM c.firmado_por_la_plataforma) AS espejo_en_desacuerdo,
+  (SELECT count(*) FROM public.courses WHERE slug LIKE 'qa-121a%')                 AS restos,
+
+  -- Lo que tiene que estar puesto
   (SELECT count(*) FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'courses'
+    WHERE table_schema = 'public' AND table_name IN ('courses', 'courses_publicados')
       AND column_name = 'firmado_por_la_plataforma'
-      AND is_nullable = 'NO' AND column_default = 'false')                          AS columna_bien_puesta,
+      AND is_nullable = 'NO' AND column_default = 'false')                          AS columnas_bien_puestas,
   (SELECT tgenabled FROM pg_trigger
     WHERE tgname = 'trg_la_firma_de_la_plataforma')                                AS firma_activo,
   (SELECT tgenabled FROM pg_trigger
@@ -865,33 +934,23 @@ SELECT
   (SELECT count(*) FROM pg_proc p
     WHERE p.proname IN ('controlar_publicacion_de_cursos', 'la_fecha_de_publicacion_no_se_borra')
       AND pg_get_functiondef(p.oid) LIKE '%current_user IN%')                      AS funciones_por_rol_de_base,
-  (SELECT count(*) FROM public.courses_publicados WHERE firmado_por_la_plataforma) AS espejo_firmado_plataforma,
-  (SELECT count(*) FROM public.courses_publicados cp JOIN public.courses c ON c.id = cp.id
-    WHERE cp.firmado_por_la_plataforma IS DISTINCT FROM c.firmado_por_la_plataforma) AS espejo_en_desacuerdo,
-  (SELECT count(*) FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'courses_publicados'
-      AND column_name = 'firmado_por_la_plataforma'
-      AND is_nullable = 'NO' AND column_default = 'false')                          AS columna_del_espejo,
-  (SELECT count(*) FROM public.courses WHERE slug LIKE 'qa-121a%')                 AS restos,
+
   CASE
     WHEN (SELECT count(*) FROM information_schema.columns
-           WHERE table_schema = 'public' AND table_name = 'courses'
+           WHERE table_schema = 'public' AND table_name IN ('courses', 'courses_publicados')
              AND column_name = 'firmado_por_la_plataforma'
-             AND is_nullable = 'NO' AND column_default = 'false') = 1
-     AND (SELECT count(*) FROM public.courses WHERE firmado_por_la_plataforma) = 15
-     AND (SELECT count(*) FROM public.courses WHERE NOT firmado_por_la_plataforma) = 1
+             AND is_nullable = 'NO' AND column_default = 'false') = 2
      AND (SELECT tgenabled FROM pg_trigger WHERE tgname = 'trg_la_firma_de_la_plataforma') = 'O'
      AND (SELECT tgenabled FROM pg_trigger WHERE tgname = 'trg_no_borrar_un_curso_con_copia_viva') = 'O'
      AND (SELECT count(*) FROM pg_proc p
            WHERE p.proname IN ('controlar_publicacion_de_cursos', 'la_fecha_de_publicacion_no_se_borra')
              AND pg_get_functiondef(p.oid) LIKE '%current_user IN%') = 2
-     AND (SELECT count(*) FROM public.courses_publicados WHERE firmado_por_la_plataforma) = 15
+     AND (SELECT count(*) FROM public.courses WHERE instructor_id IS NULL) = 0
+     AND (SELECT count(*) FROM public.courses c
+           WHERE c.firmado_por_la_plataforma IS DISTINCT FROM EXISTS (
+                   SELECT 1 FROM public.users u WHERE u.id = c.instructor_id AND u.role = 'admin')) = 0
      AND (SELECT count(*) FROM public.courses_publicados cp JOIN public.courses c ON c.id = cp.id
            WHERE cp.firmado_por_la_plataforma IS DISTINCT FROM c.firmado_por_la_plataforma) = 0
-     AND (SELECT count(*) FROM information_schema.columns
-           WHERE table_schema = 'public' AND table_name = 'courses_publicados'
-             AND column_name = 'firmado_por_la_plataforma'
-             AND is_nullable = 'NO' AND column_default = 'false') = 1
      AND (SELECT count(*) FROM public.courses WHERE slug LIKE 'qa-121a%') = 0
     THEN 'TODO CORRECTO'
     ELSE 'REVISAR'
