@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import CoursesGrid from '@/components/admin/CoursesGrid'
+import { estadoVisibleDelCurso } from '@/lib/cursos/estado-visible'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { Plus, BookOpen, GraduationCap, Users, Clock } from 'lucide-react'
@@ -23,19 +24,57 @@ type SearchParams = {
   status?: string
 }
 
-function normalizeStatus(status?: string) {
+/**
+ * LOS SIETE ESTADOS QUE `courses.status` PUEDE TENER.
+ *
+ * Esto aceptaba tres —draft, pending_review y published— y devolvía `null` para los
+ * otros cuatro, así que `?status=archived` se trataba como «sin filtro» y enseñaba el
+ * catálogo entero: parecía que no había archivados. Hoy hay cinco. Lo mismo con
+ * `rejected`, `coming_soon` y `changes_requested`, que solo se veían en la vista sin
+ * filtrar, mezclados con todo lo demás.
+ *
+ * El orden es el del recorrido de un curso, no el alfabético: así las pestañas se leen
+ * como lo que son, un camino.
+ */
+const ESTADOS = [
+  'draft',
+  'pending_review',
+  'changes_requested',
+  'rejected',
+  'published',
+  'coming_soon',
+  'archived',
+] as const
+
+type EstadoDeCurso = (typeof ESTADOS)[number]
+
+function normalizeStatus(status?: string): EstadoDeCurso | null {
   const raw = (status || '').toLowerCase()
-  if (raw === 'draft') return 'draft'
-  if (raw === 'pending_review') return 'pending_review'
-  if (raw === 'published') return 'published'
-  return null
+  return (ESTADOS as readonly string[]).includes(raw) ? (raw as EstadoDeCurso) : null
 }
 
-function statusLabel(status: 'draft' | 'pending_review' | 'published' | null) {
-  if (status === 'draft') return 'Borradores'
-  if (status === 'pending_review') return 'Pendientes'
-  if (status === 'published') return 'Publicados'
-  return null
+/**
+ * El nombre sale del traductor compartido, no de una segunda tabla aquí.
+ *
+ * Tener dos listas de nombres es exactamente lo que hizo que un curso esperando revisión
+ * se llamara «Borrador» en una pantalla, `pending_review` en otra y «En revisión» en la
+ * tercera. La pastilla de cada tarjeta ya usa `estadoVisibleDelCurso`: las pestañas usan
+ * el mismo, y así no pueden desfasarse.
+ *
+ * En plural, que es lo que pide una pestaña que agrupa: el traductor habla de UN curso.
+ */
+const PLURALES: Record<EstadoDeCurso, string> = {
+  draft: 'Borradores',
+  pending_review: 'Pendientes',
+  changes_requested: 'Con cambios pedidos',
+  rejected: 'Rechazados',
+  published: 'Publicados',
+  coming_soon: 'Próximamente',
+  archived: 'Archivados',
+}
+
+function statusLabel(status: EstadoDeCurso | null) {
+  return status ? PLURALES[status] : null
 }
 
 // ✅ Metadata dinámica según filtro
@@ -107,19 +146,37 @@ export default async function AdminCoursesPage({
   // ----------------------------
   const resultsCount = courses?.length || 0
 
+  // La consulta de `pending_review` que habia aqui sobra: el recuento por estado de
+  // mas abajo la da, y de una sola lectura para los siete.
   const [
     { count: coursesCount },
     { count: modulesCount },
     { count: lessonsCount },
     { count: enrollmentsCount },
-    { count: pendingCount },
   ] = await Promise.all([
     supabase.from('courses').select('id', { count: 'exact', head: true }),
     supabase.from('modules').select('id', { count: 'exact', head: true }),
     supabase.from('lessons').select('id', { count: 'exact', head: true }),
     supabase.from('course_enrollments').select('id', { count: 'exact', head: true }),
-    supabase.from('courses').select('id', { count: 'exact', head: true }).eq('status', 'pending_review'),
   ])
+
+  // CUANTOS HAY DE CADA ESTADO, en UNA consulta y no en siete: se piden los estados y se
+  // cuentan aquí. Sin esto, las pestañas nuevas serían un salto a ciegas —nadie pulsa
+  // «Archivados» para descubrir si hay alguno— y los cinco archivados de hoy seguirían
+  // igual de escondidos que cuando no había pestaña.
+  const { data: todosLosEstados, error: errorEstados } = await supabase
+    .from('courses')
+    .select('status')
+  if (errorEstados) {
+    console.error('[Admin Courses] no se pudieron contar los estados:', errorEstados.message)
+  }
+  const porEstado = Object.fromEntries(ESTADOS.map((e) => [e, 0])) as Record<EstadoDeCurso, number>
+  let conEstadoRaro = 0
+  for (const c of todosLosEstados ?? []) {
+    const e = String(c.status ?? '') as EstadoDeCurso
+    if (e in porEstado) porEstado[e]++
+    else conEstadoRaro++
+  }
 
   const totalCoursesGlobal = coursesCount ?? 0
   const totalModulesGlobal = modulesCount ?? 0
@@ -163,44 +220,41 @@ export default async function AdminCoursesPage({
           >
             Todos
           </Link>
-          <Link
-            href="/admin/cursos?status=draft"
-            className={`px-3 py-1.5 rounded-lg text-sm border transition ${
-              statusFilter === 'draft'
-                ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-200'
-                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-            }`}
-          >
-            Borradores
-          </Link>
-          <Link
-            href="/admin/cursos?status=pending_review"
-            className={`px-3 py-1.5 rounded-lg text-sm border transition flex items-center gap-2 ${
-              statusFilter === 'pending_review'
-                ? 'bg-orange-500/20 border-orange-500/40 text-orange-200'
-                : pendingCount && pendingCount > 0
-                  ? 'bg-orange-500/10 border-orange-500/30 text-orange-300 hover:bg-orange-500/20'
-                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-            }`}
-          >
-            <Clock className="w-4 h-4" />
-            Pendientes
-            {(pendingCount ?? 0) > 0 && (
-              <span className="px-1.5 py-0.5 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
-                {pendingCount}
-              </span>
-            )}
-          </Link>
-          <Link
-            href="/admin/cursos?status=published"
-            className={`px-3 py-1.5 rounded-lg text-sm border transition ${
-              statusFilter === 'published'
-                ? 'bg-green-500/10 border-green-500/30 text-green-200'
-                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-            }`}
-          >
-            Publicados
-          </Link>
+          {ESTADOS.map((estado) => {
+            const activa = statusFilter === estado
+            const cuantos = porEstado[estado]
+            // El color de la pastilla del traductor, para que una pestaña y la etiqueta
+            // de la tarjeta que filtra signifiquen lo mismo a la vista.
+            const visible = estadoVisibleDelCurso({ status: estado }, { para: 'admin' })
+            return (
+              <Link
+                key={estado}
+                href={`/admin/cursos?status=${estado}`}
+                className={`px-3 py-1.5 rounded-lg text-sm border transition flex items-center gap-2 ${
+                  activa ? visible.clases : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+                }`}
+              >
+                <span aria-hidden="true">{visible.icono}</span>
+                {PLURALES[estado]}
+                <span
+                  className={`px-1.5 py-0.5 text-xs font-bold rounded-full min-w-[20px] text-center ${
+                    cuantos > 0 ? 'bg-white/15 text-white' : 'bg-white/5 text-white/40'
+                  }`}
+                >
+                  {cuantos}
+                </span>
+              </Link>
+            )
+          })}
+
+          {/* Un estado que el código no conoce no se esconde: se dice. Es la misma regla
+              que la del traductor, que enseña el valor crudo en vez de disfrazarlo de
+              borrador —que es lo que escondió cuatro estados durante meses—. */}
+          {conEstadoRaro > 0 && (
+            <span className="px-3 py-1.5 rounded-lg text-sm border border-amber-500/40 bg-amber-500/10 text-amber-200">
+              ⚠️ {conEstadoRaro} con un estado que esta pantalla no conoce
+            </span>
+          )}
 
           <div className="ml-auto flex items-center gap-3 text-sm">
             {label ? (
