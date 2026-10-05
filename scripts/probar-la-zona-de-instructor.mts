@@ -77,6 +77,23 @@ const di = (ok: boolean, t: string, extra = '') => {
 }
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
+/**
+ * ¿CARGÓ LA PÁGINA? Precondición de toda aserción negativa.
+ *
+ * «No dice "Algo salió mal"», «no dice "Aun no tienes"», «no llamó a confirm()»: las
+ * sesenta y cinco aserciones de esta forma que hay en scripts/ pasan **con la página
+ * vacía**, y también con un 500. O sea que miden lo que dicen solo si antes se sabe que
+ * hay una página. Esto es lo que lo sabe, y se comprueba en cada pantalla antes de
+ * creerse nada de lo que no dice.
+ *
+ * El rasgo elegido es la cabecera del sitio, que está en todas las pantallas privadas.
+ */
+const laPaginaCargo = (texto: string, donde: string) => {
+  const cargo = texto.includes('Nodo360') && texto.length > 200
+  di(cargo, `la pantalla de ${donde} ha cargado`, `${texto.length} caracteres`)
+  return cargo
+}
+
 /** Un recuento, o se para: `count` a null no es cero filas. */
 const exigirCuenta = (r: { count: number | null; error: { message: string } | null }) => {
   if (r.error) throw new Error('no se pudo contar: ' + r.error.message)
@@ -374,13 +391,18 @@ async function limpiar() {
     await svc.from('courses').delete().eq('id', id)
   }
   for (const id of creado.usuarios) {
+    // Las matriculas primero: el de «sin nada» esta matriculado en cursos de verdad
+    // para que la comprobacion del recuento pueda fallar.
+    await svc.from('course_enrollments').delete().eq('user_id', id)
     await svc.from('instructor_certifications').delete().eq('user_id', id)
     await svc.from('users').delete().eq('id', id)
     await svc.auth.admin.deleteUser(id)
   }
   const { count } = await svc.from('courses').select('id', { count: 'exact', head: true })
     .like('slug', `${MARCA}%`)
-  console.log(`\nlimpieza: ${creado.cursos.length} cursos y ${creado.usuarios.length} usuarios borrados; restos: ${count ?? '?'}`)
+  const { count: matriculasSueltas } = await svc.from('course_enrollments')
+    .select('id', { count: 'exact', head: true }).in('user_id', creado.usuarios.length ? creado.usuarios : ['00000000-0000-0000-0000-000000000000'])
+  console.log(`\nlimpieza: ${creado.cursos.length} cursos y ${creado.usuarios.length} usuarios borrados; restos: ${count ?? '?'} cursos, ${matriculasSueltas ?? '?'} matrículas`)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -399,6 +421,35 @@ try {
   console.log('\nDatos de prueba…')
   const conCurso = await nuevoInstructor('con-curso', especialidad, true)
   const sinNada = await nuevoInstructor('sin-nada', null, false)
+
+  /**
+   * Y EL DE «SIN NADA» SE MATRICULA EN DOS CURSOS, COMO ALUMNO.
+   *
+   * Sin esto, la comprobación de «con 0 cursos, 0 alumnos» NO PODIA FALLAR, y se
+   * descubrió rompiendo el código a propósito: con el defecto original puesto —el filtro
+   * condicionado a los cursos LISTADOS— seguía diciendo 0.
+   *
+   * El motivo es la RLS: medido, `course_enrollments` no le enseña NI UNA FILA a una
+   * sesión que no tenga matrículas propias (45 en la base, 0 visibles). Así que la
+   * consulta sin filtrar devolvía cero de todas formas y las dos versiones, la rota y la
+   * buena, decían lo mismo.
+   *
+   * El caso real era otro: alberto21 es instructor Y está matriculado en cursos como
+   * alumno, así que la consulta sin filtrar le devolvía SUS PROPIAS matrículas —doce— y
+   * la cabecera las presentaba como «Alumnos total». Para que la comprobación distinga,
+   * el instructor de prueba tiene que estar matriculado en algo:
+   *
+   *     correcto: 0  (no enseña a nadie)
+   *     roto:     2  (sus propias matrículas, contadas como alumnos suyos)
+   */
+  const { data: paraMatricular } = await svc.from('courses')
+    .select('id').eq('status', 'published').limit(2)
+  for (const c of paraMatricular ?? []) {
+    const { error } = await svc.from('course_enrollments')
+      .insert({ user_id: sinNada.id, course_id: c.id })
+    if (error) throw new Error(`matricular a sin-nada: ${error.message}`)
+  }
+  console.log(`   el instructor sin cursos está matriculado en ${paraMatricular?.length ?? 0} cursos como alumno`)
   console.log(`   instructor con curso: ${conCurso.curso}`)
   console.log(`   instructor sin cursos ni verificación`)
 
@@ -412,6 +463,7 @@ try {
   let texto = await nav.texto()
   let html = await nav.html()
 
+  laPaginaCargo(texto, 'la vista previa')
   di(!/Algo salió mal|Algo salio mal/i.test(texto), 'no sale la pantalla de error global',
      texto.slice(0, 120).replace(/\n/g, ' '))
   di(!ms.some((m) => /#441|Functions cannot be passed/i.test(m.texto)),
@@ -535,8 +587,10 @@ try {
   await nav.ponerLaSesion(sinNada.cookie)
   await nav.ir('/dashboard/instructor/cursos', { espera: 3000 })
   texto = await nav.texto()
+  laPaginaCargo(texto, '«Mis cursos» sin cursos')
   const alumnos = /(\d+)\s*\n?\s*Alumnos total/i.exec(texto)
-  di(alumnos?.[1] === '0', 'con 0 cursos, 0 alumnos',
+  di(alumnos?.[1] === '0',
+     'con 0 cursos, 0 alumnos (y está matriculado en 2: no son suyos)',
      alumnos ? `dice ${alumnos[1]}` : 'no se encontró la cifra: ' + texto.slice(0, 160).replace(/\n/g, ' | '))
   di(/Aún no tienes cursos/.test(texto), '«Aún no tienes cursos», con tilde')
   di(!/Aun no tienes/.test(texto), 'y no «Aun no tienes»')
@@ -548,6 +602,7 @@ try {
   await nav.ir('/dashboard/instructor/cursos', { espera: 3000 })
   texto = await nav.texto()
   html = await nav.html()
+  laPaginaCargo(texto, '«Mis cursos» sin verificación')
   di(/no estás verificado en ninguna especialidad/i.test(texto),
      'dice que todavía no hay ninguna verificación',
      texto.slice(0, 200).replace(/\n/g, ' '))
@@ -596,6 +651,9 @@ try {
   ] as [string, string][]) {
     await nav.ir(ruta, { espera: 2500 })
     texto = await nav.texto()
+    // SIN ESTA LINEA, «sin erratas» pasaba con la pagina vacia: una errata que no
+    // aparece porque no hay nada que leer cuenta igual que una errata corregida.
+    laPaginaCargo(texto, nombre)
     const malas = ERRATAS.filter((e) => texto.includes(e))
     di(malas.length === 0, `sin erratas: ${nombre}`, malas.join(' | '))
   }
@@ -603,9 +661,17 @@ try {
   // El checklist, con un curso a medias: es donde estaban «Informacion» y «Duracion».
   await nav.ir(`/dashboard/instructor/cursos/${conCurso.curso}`, { espera: 3000 })
   texto = await nav.texto()
-  di(/Información/.test(texto) || !/Informacion/.test(texto), 'el checklist dice «Información»')
-  di(/Duración del contenido|Duración/.test(texto) || !/Duracion/.test(texto),
-     'y «Duración del contenido»')
+  // POSITIVAS, no «está bien o no está». Estas dos eran
+  //     di(/Información/.test(texto) || !/Informacion/.test(texto), …)
+  // y la segunda mitad es verdad siempre que la palabra no aparezca: con el checklist
+  // sin pintar, o con la página vacía, pasaban igual. El mismo defecto que el `||` del
+  // desplegable de rutas, en mi propia PR de tildes y sin que nadie lo señalara.
+  laPaginaCargo(texto, 'el editor del curso')
+  di(/Información/.test(texto), 'el checklist dice «Información», con tilde',
+     texto.match(/Informaci\wn/)?.[0] ?? 'no aparece ninguna de las dos')
+  di(/Duración/.test(texto), 'y «Duración», con tilde',
+     texto.match(/Duraci\wn/)?.[0] ?? 'no aparece ninguna de las dos')
+  di(!/Informacion|Duracion/.test(texto), 'y ninguna de las dos sin tilde')
 
   // ── 8. CREAR CURSO: EL DESPLEGABLE DE RUTAS, Y A QUIEN LE PREGUNTA ───────────
   //
