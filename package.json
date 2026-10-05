@@ -15,7 +15,8 @@
     "migrate-courses": "tsx scripts/migrate-courses.ts",
     "prebuild": "tsx scripts/validar-enlazado.ts",
     "generar:cursos": "node scripts/generar-cursos-publicados.mjs",
-    "comprobar:lecturas": "tsx scripts/comprobar-lecturas-publicas.mts"
+    "comprobar:lecturas": "tsx scripts/comprobar-lecturas-publicas.mts",
+    "comprobar:zonas": "tsx scripts/comprobar-zonas-de-api.mts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

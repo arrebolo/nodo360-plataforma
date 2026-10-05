@@ -16,7 +16,14 @@ interface ReorderModuleButtonsProps {
    * de /dashboard/instructor debe llamar a /api/admin, y porque los cuatro botones del
    * editor del instructor recibian 403.
    */
-  api?: string
+  /**
+   * SIN VALOR POR OMISION, a proposito: cada pantalla dice su zona y si alguien la
+   * olvida no compila. Con `api = '/api/admin'` por defecto, olvidarse en una pantalla
+   * de instructor no daba ni un aviso —llamaba al panel y, mientras ese endpoint dejara
+   * pasar, «funcionaba»—. Eso es exactamente como llego aqui el unico incumplimiento
+   * que quedaba de la regla.
+   */
+  api: string
 }
 
 export function ReorderModuleButtons({
@@ -24,7 +31,7 @@ export function ReorderModuleButtons({
   courseId,
   currentIndex,
   totalModules,
-  api = '/api/admin',
+  api,
 }: ReorderModuleButtonsProps) {
   const [isReordering, setIsReordering] = useState(false)
   // El error, EN PANTALLA. Antes era un alert(), que lo cierra cualquier cosa y no

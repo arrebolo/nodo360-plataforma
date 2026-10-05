@@ -100,6 +100,7 @@ export default async function ModulosPage({ params }: ModulosPageProps) {
 
                     {/* Botones de reorden */}
                     <ReorderModuleButtons
+                      api="/api/admin"
                       moduleId={module.id}
                       courseId={course.id}
                       currentIndex={index}
@@ -139,6 +140,7 @@ export default async function ModulosPage({ params }: ModulosPageProps) {
                       <Edit className="w-4 h-4" />
                     </Link>
                     <DeleteModuleButton
+                      api="/api/admin"
                       moduleId={module.id}
                       moduleTitle={module.title}
                       courseId={course.id}
