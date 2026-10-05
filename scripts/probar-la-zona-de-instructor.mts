@@ -225,17 +225,36 @@ class Navegador {
   nativosLlamados() { return this.evaluar<string[]>('window.__nativos || []') }
 
   /**
-   * Pulsa el primer elemento cuyo texto o título contenga esto.
+   * Pulsa el primer elemento cuyo texto, título o `aria-label` contenga esto.
    *
    * Reintenta un par de segundos: en desarrollo la página se compila al pedirla y el
    * botón puede no estar todavía. Sin esperar, la prueba falla una vez de cada tantas y
    * eso es peor que no tenerla, porque el rojo deja de significar nada.
+   *
+   * Y SI NO ENCUENTRA NADA, ES UN FALLO. Esto faltaba, y costó una comprobación falsa:
+   * `pulsar('Rutas de aprendizaje')` no encontraba nada —la etiqueta del desplegable
+   * dice «Ruta de Aprendizaje», en singular, y además es un `<label>`, que esto no
+   * mira— y el resultado se usaba en un `||` con otra condición, así que la aserción
+   * pasaba sin que el clic hubiera ocurrido. De las doce llamadas de esta prueba, SIETE
+   * tiraban el resultado: siete clics que podían no estar pulsando nada.
+   *
+   * Ahora el que no encuentra su objetivo lo apunta como fallo él mismo, de modo que da
+   * igual que quien llame mire el resultado o no.
+   *
+   * Y EL AMBITO IMPORTA, que fue el segundo hallazgo del mismo día. «Cancelar» aparece
+   * en varios sitios de la misma pantalla, y esto pulsaba EL PRIMERO DEL DOM: en la
+   * ficha de un módulo, el «Cancelar» del formulario de edición, que es un enlace y SE
+   * VA DE LA PAGINA. La comprobación de «al cancelar el módulo sigue estando» pasaba
+   * sin haber cancelado nada: se había navegado fuera. Para eso está `dentroDe`, que
+   * acota la búsqueda —`'[role=dialog]'` para lo que pertenece a un diálogo—.
    */
-  async pulsar(queDice: string, { intentos = 8 } = {}) {
+  async pulsar(queDice: string, { intentos = 8, dentroDe = '' } = {}) {
     for (let i = 0; i < intentos; i++) {
       const hecho = await this.evaluar<boolean>(`(() => {
         const q = ${JSON.stringify(queDice)}.toLowerCase();
-        const todos = [...document.querySelectorAll('button, a, [role=button]')];
+        const raiz = ${JSON.stringify(dentroDe)} ? document.querySelector(${JSON.stringify(dentroDe)}) : document;
+        if (!raiz) return false;
+        const todos = [...raiz.querySelectorAll('button, a, [role=button]')];
         const el = todos.find((e) =>
           (e.innerText || '').toLowerCase().includes(q) ||
           (e.getAttribute('title') || '').toLowerCase().includes(q) ||
@@ -250,6 +269,7 @@ class Navegador {
       }
       await esperar(400)
     }
+    di(false, `pulsar «${queDice}»${dentroDe ? ' dentro de ' + dentroDe : ''}: no hay ningún elemento con ese texto, title o aria-label`)
     return false
   }
 
@@ -457,7 +477,7 @@ try {
   di(cuantosModulos === alEmpezar, 'con el diálogo abierto todavía no se ha borrado nada',
      `módulos: ${cuantosModulos} de ${alEmpezar}`)
 
-  await nav.pulsar('Cancelar')
+  await nav.pulsar('Cancelar', { dentroDe: '[role=dialog]' })
   texto = await nav.texto()
   di(!/¿Borrar el módulo/.test(texto), 'al cancelar, el diálogo se va')
   cuantosModulos = exigirCuenta(await svc.from('modules')
@@ -478,7 +498,7 @@ try {
   let confirmado = false
   for (let intento = 0; intento < 4; intento++) {
     await nav.pulsar('Borrar el módulo')
-    confirmado = await nav.pulsar('Sí, borrar el módulo')
+    confirmado = await nav.pulsar('Sí, borrar el módulo', { dentroDe: '[role=dialog]' })
     for (let i = 0; i < 25; i++) {
       cuantosModulos = exigirCuenta(await svc.from('modules')
         .select('id', { count: 'exact', head: true }).eq('course_id', conCurso.curso!))
@@ -549,7 +569,7 @@ try {
     const abierto = await nav.pulsar(boton)
     texto = await nav.texto()
     di(abierto && texto.includes(titulo), `«${boton}» abre un diálogo de la página`)
-    await nav.pulsar('Cancelar')
+    await nav.pulsar('Cancelar', { dentroDe: '[role=dialog]' })
   }
   nativos = await nav.nativosLlamados()
   di(!nativos.some((n) => n.startsWith('prompt')), 'nadie llamó a prompt() del navegador',
@@ -597,23 +617,60 @@ try {
   await nav.ponerLaSesion(conCurso.cookie)
   await nav.ir('/dashboard/instructor/cursos/nuevo', { espera: 4000 })
 
-  const alPanel = nav.peticiones.filter((r) => r.includes('/api/admin/'))
-  const alInstructor = nav.peticiones.filter((r) => r.includes('/api/instructor/learning-paths'))
-  di(alPanel.length === 0, 'la pantalla NO llama a /api/admin', alPanel.join(' | '))
-  di(alInstructor.length > 0, 'y sí llama a /api/instructor/learning-paths',
-     alInstructor.join(' | '))
-  di(!nav.peticiones.some((r) => /40[13] .*learning-paths/.test(r)),
-     'sin 401 ni 403 al pedir las rutas',
-     nav.peticiones.filter((r) => /learning-paths/.test(r)).join(' | '))
+  // EL LIMITADOR, OTRA VEZ: a estas alturas la prueba ha hecho muchas peticiones y
+  // `/api/instructor/learning-paths` contesta 429. Un 429 deja el desplegable vacío,
+  // así que hay que recargar hasta tener un 200 de verdad antes de comprobar nada.
+  let rutasOk = false
+  for (let intento = 0; intento < 4; intento++) {
+    rutasOk = nav.peticiones.some((r) => /→ 200 .*learning-paths/.test(r))
+    if (rutasOk) break
+    if (nav.peticiones.some((r) => /→ 429 .*learning-paths/.test(r))) {
+      console.log('   (429 al pedir las rutas: el limitador. Esperando 25 s y recargando)')
+      await esperar(25000)
+      await nav.ir('/dashboard/instructor/cursos/nuevo', { espera: 4000 })
+      continue
+    }
+    break
+  }
 
-  // Y que las ofrezca de verdad: el desplegable las pinta al abrirlo.
+  const alPanel = nav.peticiones.filter((r) => r.includes('/api/admin/'))
+  const deLasRutas = nav.peticiones.filter((r) => /learning-paths/.test(r))
+  di(alPanel.length === 0, 'la pantalla NO llama a /api/admin', alPanel.join(' | '))
+  di(deLasRutas.some((r) => r.startsWith('GET /api/instructor/learning-paths')),
+     'y sí llama a /api/instructor/learning-paths', deLasRutas.join(' | '))
+  // EXIGE 200, no «que no sea 401 ni 403». Con la version anterior, un 429 —que deja el
+  // desplegable igual de vacio que un 403— pasaba como si todo estuviera bien.
+  di(rutasOk, 'y la respuesta es 200', deLasRutas.join(' | '))
+
+  // Y QUE LAS OFREZCA DE VERDAD, contra lo que hay en la base.
+  //
+  // Esta comprobación era falsa y pasaba siempre. Pulsaba «Rutas de aprendizaje», que
+  // no es el nombre de nada —el botón dice «Seleccionar rutas…»—, y lo compensaba con
+  // un `||` sobre un selector que contaba `label input[type=checkbox]`: medido, los dos
+  // nodos que contaba eran las casillas de «Curso Gratuito» y «Premium». Ninguna de las
+  // dos mitades miraba las rutas.
+  //
+  // Ahora: el disparador tiene `aria-label`, las opciones tienen `role="option"`, las
+  // dos aserciones van por separado, y lo que se cuenta se compara con las rutas
+  // ACTIVAS de la base. Si el desplegable se quedara vacío, esto se pone en rojo.
   const abierto = await nav.pulsar('Rutas de aprendizaje')
-  const cuantasRutas = await nav.evaluar<number>(
-    `document.querySelectorAll('[role=option], button[data-ruta], label input[type=checkbox]').length`
+  di(abierto, 'el desplegable de rutas se puede abrir por su nombre')
+
+  const ofrecidas = await nav.evaluar<string[]>(
+    `[...document.querySelectorAll('[role=option]')].map((e) => e.innerText.replace(/\\s+/g, ' ').trim())`
   )
+  const activasEnLaBase = exigirCuenta(await svc.from('learning_paths')
+    .select('id', { count: 'exact', head: true }).eq('is_active', true))
+  di(ofrecidas.length === activasEnLaBase,
+     `ofrece las ${activasEnLaBase} rutas activas de la base`,
+     `ofrece ${ofrecidas.length}: ${ofrecidas.join(' / ')}`)
+
+  const { count: inactivas } = await svc.from('learning_paths')
+    .select('id', { count: 'exact', head: true }).eq('is_active', false)
+  console.log(`   (en la base hay ${inactivas} inactiva(s), que no deben salir)`)
+
   const textoRutas = await nav.texto()
-  di(abierto || cuantasRutas > 0, 'el desplegable de rutas responde')
-  di(!/No se pudieron? (leer|cargar) las rutas|Error cargando rutas/i.test(textoRutas),
+  di(!/No se pudieron? (leer|cargar) las rutas|Error cargando rutas|No hay rutas de aprendizaje disponibles/i.test(textoRutas),
      'y no dice que no pudo leerlas')
 
   // ── 9. LA ZONA DE PELIGRO DE LA FICHA DEL MODULO ────────────────────────────
@@ -634,7 +691,7 @@ try {
     .select('id', { count: 'exact', head: true }).eq('id', conCurso.moduloSinLecciones!))
   di(sigueElVacio === 1, 'con el diálogo abierto no se ha borrado nada')
 
-  await nav.pulsar('Cancelar')
+  await nav.pulsar('Cancelar', { dentroDe: '[role=dialog]' })
   sigueElVacio = exigirCuenta(await svc.from('modules')
     .select('id', { count: 'exact', head: true }).eq('id', conCurso.moduloSinLecciones!))
   di(sigueElVacio === 1, 'al cancelar sigue estando')
@@ -643,7 +700,7 @@ try {
   // hace unas cuantas escrituras y `checkRateLimit` permite 30 por minuto.
   for (let intento = 0; intento < 4; intento++) {
     await nav.pulsar('Eliminar')
-    await nav.pulsar('Sí, borrar el módulo')
+    await nav.pulsar('Sí, borrar el módulo', { dentroDe: '[role=dialog]' })
     for (let i = 0; i < 25; i++) {
       sigueElVacio = exigirCuenta(await svc.from('modules')
         .select('id', { count: 'exact', head: true }).eq('id', conCurso.moduloSinLecciones!))
