@@ -1,6 +1,10 @@
 -- ============================================================================
 -- SCRIPT: Configurar requisitos de instructor para una cuenta
--- SUSTITUYE el correo de v_user_email por el que toque antes de ejecutarlo.
+--
+-- HAY UN SOLO SITIO QUE TOCAR: el SET de abajo. El correo estaba escrito en siete
+-- lineas distintas —la declaracion y seis consultas de comprobacion—, y siete sitios
+-- que cambiar a mano son siete sitios donde olvidarse de uno y creerse el resultado de
+-- otra cuenta.
 -- ============================================================================
 -- Este script:
 -- 1. Obtiene el user_id del usuario
@@ -11,6 +15,13 @@
 -- 6. Verifica que cumple requisitos
 -- ============================================================================
 
+-- ============================================================================
+-- EL UNICO VALOR QUE HAY QUE CAMBIAR
+-- ============================================================================
+-- Va antes del BEGIN a proposito: asi es de sesion y lo leen tambien las consultas
+-- de comprobacion del final, que estan despues del COMMIT.
+SET app.cuenta = 'TU_CORREO@ejemplo.invalid';
+
 -- Usar transacción para poder hacer rollback si algo falla
 BEGIN;
 
@@ -20,7 +31,7 @@ BEGIN;
 DO $$
 DECLARE
   v_user_id UUID;
-  v_user_email TEXT := 'TU_CORREO@ejemplo.invalid';
+  v_user_email TEXT := current_setting('app.cuenta');
   v_path_id UUID;
   v_path_slug TEXT;
   v_course RECORD;
@@ -281,7 +292,7 @@ SELECT
   u.full_name,
   u.role
 FROM users u
-WHERE u.email = 'TU_CORREO@ejemplo.invalid';
+WHERE u.email = current_setting('app.cuenta');
 
 -- Mostrar suscripción
 SELECT
@@ -292,13 +303,13 @@ SELECT
   s.ends_at
 FROM subscriptions s
 JOIN users u ON s.user_id = u.id
-WHERE u.email = 'TU_CORREO@ejemplo.invalid';
+WHERE u.email = current_setting('app.cuenta');
 
 -- Verificar función has_premium_access
 SELECT
   has_premium_access(u.id) as tiene_premium
 FROM users u
-WHERE u.email = 'TU_CORREO@ejemplo.invalid';
+WHERE u.email = current_setting('app.cuenta');
 
 -- Mostrar cursos completados
 SELECT
@@ -308,7 +319,7 @@ SELECT
 FROM course_enrollments ce
 JOIN courses c ON ce.course_id = c.id
 JOIN users u ON ce.user_id = u.id
-WHERE u.email = 'TU_CORREO@ejemplo.invalid'
+WHERE u.email = current_setting('app.cuenta')
 ORDER BY ce.enrolled_at;
 
 -- Mostrar quizzes aprobados
@@ -320,7 +331,7 @@ SELECT
 FROM course_final_quiz_attempts cfqa
 JOIN courses c ON cfqa.course_id = c.id
 JOIN users u ON cfqa.user_id = u.id
-WHERE u.email = 'TU_CORREO@ejemplo.invalid';
+WHERE u.email = current_setting('app.cuenta');
 
 -- ============================================================================
 -- VERIFICAR ELEGIBILIDAD PARA EXAMEN
@@ -334,7 +345,7 @@ CROSS JOIN LATERAL (
     (SELECT id FROM instructor_exams WHERE is_active = true LIMIT 1)
   )
 ) ged
-WHERE u.email = 'TU_CORREO@ejemplo.invalid';
+WHERE u.email = current_setting('app.cuenta');
 
 COMMIT;
 
