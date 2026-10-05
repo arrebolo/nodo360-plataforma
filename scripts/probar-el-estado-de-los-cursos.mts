@@ -172,6 +172,86 @@ try {
   di(admin.html.includes(`/admin/cursos/pendientes/${c!.id}`),
     'y da acceso a revisarlo desde la propia tarjeta')
 
+  // ═══ LAS SIETE PESTAÑAS, Y QUE FILTREN ═══════════════════════════════════
+  //
+  // `normalizeStatus()` aceptaba tres estados y devolvia `null` para los otros cuatro,
+  // asi que `?status=archived` se trataba como «sin filtro» y enseñaba el catalogo
+  // entero: parecia que no habia archivados cuando hay cinco. Lo mismo con `rejected`,
+  // `coming_soon` y `changes_requested`.
+  console.log('\n=== /admin/cursos: las siete pestañas ===')
+  const PESTANAS: [string, string][] = [
+    ['draft', 'Borradores'],
+    ['pending_review', 'Pendientes'],
+    ['changes_requested', 'Con cambios pedidos'],
+    ['rejected', 'Rechazados'],
+    ['published', 'Publicados'],
+    ['coming_soon', 'Próximamente'],
+    ['archived', 'Archivados'],
+  ]
+  for (const [estado, etiqueta] of PESTANAS) {
+    di(admin.html.includes(`/admin/cursos?status=${estado}`),
+       `hay pestaña para «${etiqueta}» (${estado})`)
+    di(admin.html.includes(etiqueta), `y se lee «${etiqueta}»`)
+  }
+
+  // Y EL RECUENTO DE CADA UNA, contra la base. Sin esto la pestaña seria un salto a
+  // ciegas: nadie pulsa «Archivados» para averiguar si hay alguno.
+  for (const [estado, etiqueta] of PESTANAS) {
+    const { count, error } = await svc.from('courses')
+      .select('id', { count: 'exact', head: true }).eq('status', estado)
+    if (error) throw new Error(`contar ${estado}: ${error.message}`)
+    // DENTRO DE SU PESTAÑA, no en cualquier parte del HTML. Buscar `>0<` a secas da
+    // verde con cualquier cero de la página —y hay varios—, que es la clase de
+    // comprobación que pasa sin medir nada.
+    const laPestana = new RegExp(
+      `<a[^>]*href="/admin/cursos\\?status=${estado}"[\\s\\S]{0,600}?</a>`
+    ).exec(admin.html)?.[0] ?? ''
+    di(laPestana.length > 0, `se encuentra la pestaña de «${etiqueta}» en el HTML`)
+    di(new RegExp(`>\\s*${count}\\s*<`).test(laPestana),
+       `y lleva su recuento (${count})`,
+       laPestana.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80))
+  }
+
+  // LO QUE DE VERDAD IMPORTA: que el filtro filtre. Se prueba con `archived`, que es el
+  // estado que mas cursos tiene fuera de los tres de antes, y comparando con lo que dice
+  // la base: ni uno de mas ni uno de menos.
+  const { data: archivados } = await svc.from('courses')
+    .select('id, title, slug').eq('status', 'archived')
+  const { data: publicados } = await svc.from('courses')
+    .select('id, title, slug').eq('status', 'published').limit(1)
+  const filtrada = await pedir('/admin/cursos?status=archived', galletaAdmin)
+  di(filtrada.status === 200, '?status=archived responde 200', String(filtrada.status))
+
+  // «MOSTRANDO: ARCHIVADOS», DONDE LO DICE, no la palabra en cualquier parte. Esta
+  // aserción era `includes('Mostrando:') && includes('Archivados')` y se descubrió
+  // forzando el rojo: con el filtro roto seguía en verde, porque «Archivados» está en el
+  // HTML de todas formas —es el nombre de una pestaña—.
+  di(/Mostrando:[\s\S]{0,160}?>\s*Archivados\s*</.test(filtrada.html),
+     'y dice «Mostrando: Archivados» ahí donde lo dice',
+     /Mostrando:[\s\S]{0,160}?<\/span>/.exec(filtrada.html)?.[0]?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() ?? 'no aparece')
+
+  const salenTodos = (archivados ?? []).every((c) => filtrada.html.includes(c.slug as string))
+  di(salenTodos, `salen los ${archivados?.length ?? 0} cursos archivados de la base`,
+     (archivados ?? []).filter((c) => !filtrada.html.includes(c.slug as string)).map((c) => c.slug).join(', '))
+
+  // Y NINGUNO DE LOS DEMAS. Esta es la que de verdad distingue «filtra» de «no filtra»:
+  // con la lista sin filtrar, los archivados salen igual, asi que comprobar que salen no
+  // demuestra nada por si solo. Se comprueban TODOS los no archivados, no uno.
+  const { data: noArchivados } = await svc.from('courses')
+    .select('id, slug, status').neq('status', 'archived')
+  const colados = (noArchivados ?? []).filter((c) => filtrada.html.includes(c.slug as string))
+  di(colados.length === 0,
+     `y NO sale ninguno de los ${noArchivados?.length ?? 0} que no están archivados`,
+     colados.map((c) => `${c.slug} (${c.status})`).join(', '))
+
+  // Un estado que no existe no se trata como un filtro: se cae a «todos», y la pantalla
+  // lo dice. Lo que no puede hacer es enseñar el catalogo entero diciendo que filtra.
+  const inventada = await pedir('/admin/cursos?status=inventado', galletaAdmin)
+  di(inventada.status === 200, '?status=inventado responde 200', String(inventada.status))
+  di(/Mostrando:[\s\S]{0,160}?>\s*Todos\s*</.test(inventada.html),
+     'y dice «Mostrando: Todos», no que filtra por algo que no existe',
+     /Mostrando:[\s\S]{0,160}?<\/span>/.exec(inventada.html)?.[0]?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() ?? 'no aparece')
+
   console.log('\n=== /admin/cursos/pendientes ===')
   const pend = await pedir('/admin/cursos/pendientes', galletaAdmin)
   di(pend.status === 200, 'responde 200', String(pend.status))
