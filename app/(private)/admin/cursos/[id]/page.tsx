@@ -199,7 +199,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
 
         {/* Quiz Final del Curso */}
         <div className="bg-dark-surface border border-white/10 rounded-2xl p-6">
-          <CourseQuizEditor courseId={course.id} courseName={course.title} />
+          <CourseQuizEditor courseId={course.id} courseName={course.title} api="/api/admin" />
         </div>
       </div>
     </div>

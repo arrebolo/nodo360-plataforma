@@ -27,7 +27,9 @@
  *   5. el editor de lecciones no llama a prompt(): enlace, imagen y vídeo abren diálogo,
  *      y hay botón de tabla
  *   6. las erratas de tildes que se corrigieron no han vuelto
- *   7. NADA DE ESO CAMBIA CON EL NAVEGADOR EN OTRO HUSO Y OTRO IDIOMA
+ *   7. crear curso pide las rutas a /api/instructor, no al panel, y las ofrece
+ *   8. la «Zona de peligro» de la ficha del módulo pide confirmación
+ *   9. NADA DE ESO CAMBIA CON EL NAVEGADOR EN OTRO HUSO Y OTRO IDIOMA
  *
  * LO DEL HUSO NO ES UN ADORNO
  *   El aviso de hidratación #418 de la auditoría no se reproducía con el navegador en el
@@ -74,6 +76,13 @@ const di = (ok: boolean, t: string, extra = '') => {
   console.log(`   ${ok ? 'OK  ' : 'FALLA'} ${t}${extra ? '  -> ' + extra : ''}`)
 }
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/** Un recuento, o se para: `count` a null no es cero filas. */
+const exigirCuenta = (r: { count: number | null; error: { message: string } | null }) => {
+  if (r.error) throw new Error('no se pudo contar: ' + r.error.message)
+  if (r.count === null) throw new Error('no se pudo contar: sin recuento y sin error')
+  return r.count
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // EL NAVEGADOR
@@ -216,17 +225,36 @@ class Navegador {
   nativosLlamados() { return this.evaluar<string[]>('window.__nativos || []') }
 
   /**
-   * Pulsa el primer elemento cuyo texto o título contenga esto.
+   * Pulsa el primer elemento cuyo texto, título o `aria-label` contenga esto.
    *
    * Reintenta un par de segundos: en desarrollo la página se compila al pedirla y el
    * botón puede no estar todavía. Sin esperar, la prueba falla una vez de cada tantas y
    * eso es peor que no tenerla, porque el rojo deja de significar nada.
+   *
+   * Y SI NO ENCUENTRA NADA, ES UN FALLO. Esto faltaba, y costó una comprobación falsa:
+   * `pulsar('Rutas de aprendizaje')` no encontraba nada —la etiqueta del desplegable
+   * dice «Ruta de Aprendizaje», en singular, y además es un `<label>`, que esto no
+   * mira— y el resultado se usaba en un `||` con otra condición, así que la aserción
+   * pasaba sin que el clic hubiera ocurrido. De las doce llamadas de esta prueba, SIETE
+   * tiraban el resultado: siete clics que podían no estar pulsando nada.
+   *
+   * Ahora el que no encuentra su objetivo lo apunta como fallo él mismo, de modo que da
+   * igual que quien llame mire el resultado o no.
+   *
+   * Y EL AMBITO IMPORTA, que fue el segundo hallazgo del mismo día. «Cancelar» aparece
+   * en varios sitios de la misma pantalla, y esto pulsaba EL PRIMERO DEL DOM: en la
+   * ficha de un módulo, el «Cancelar» del formulario de edición, que es un enlace y SE
+   * VA DE LA PAGINA. La comprobación de «al cancelar el módulo sigue estando» pasaba
+   * sin haber cancelado nada: se había navegado fuera. Para eso está `dentroDe`, que
+   * acota la búsqueda —`'[role=dialog]'` para lo que pertenece a un diálogo—.
    */
-  async pulsar(queDice: string, { intentos = 8 } = {}) {
+  async pulsar(queDice: string, { intentos = 8, dentroDe = '' } = {}) {
     for (let i = 0; i < intentos; i++) {
       const hecho = await this.evaluar<boolean>(`(() => {
         const q = ${JSON.stringify(queDice)}.toLowerCase();
-        const todos = [...document.querySelectorAll('button, a, [role=button]')];
+        const raiz = ${JSON.stringify(dentroDe)} ? document.querySelector(${JSON.stringify(dentroDe)}) : document;
+        if (!raiz) return false;
+        const todos = [...raiz.querySelectorAll('button, a, [role=button]')];
         const el = todos.find((e) =>
           (e.innerText || '').toLowerCase().includes(q) ||
           (e.getAttribute('title') || '').toLowerCase().includes(q) ||
@@ -241,6 +269,7 @@ class Navegador {
       }
       await esperar(400)
     }
+    di(false, `pulsar «${queDice}»${dentroDe ? ' dentro de ' + dentroDe : ''}: no hay ningún elemento con ese texto, title o aria-label`)
     return false
   }
 
@@ -264,6 +293,8 @@ const creado: { usuarios: string[]; cursos: string[] } = { usuarios: [], cursos:
 type Instructor = {
   id: string; correo: string; cookie: string
   curso?: string; modulos: string[]; lecciones: string[]
+  /** Para la «Zona de peligro»: con lecciones, su botón está desactivado. */
+  moduloSinLecciones?: string
 }
 
 async function nuevoInstructor(sufijo: string, especialidadId: string | null, conCurso: boolean): Promise<Instructor> {
@@ -297,6 +328,14 @@ async function nuevoInstructor(sufijo: string, especialidadId: string | null, co
     if (ec) throw new Error(`curso ${sufijo}: ${ec.message}`)
     creado.cursos.push(c!.id)
     instructor.curso = c!.id
+
+    // Un modulo SIN LECCIONES, que es el unico caso en que la «Zona de peligro» de la
+    // ficha del modulo deja borrar: con lecciones, el boton esta desactivado.
+    const { data: vacio, error: ev } = await svc.from('modules')
+      .insert({ course_id: c!.id, title: 'Módulo sin lecciones', order_index: 9 })
+      .select('id').single()
+    if (ev) throw new Error(`modulo vacio: ${ev.message}`)
+    instructor.moduloSinLecciones = vacio!.id
 
     for (const i of [0, 1]) {
       const { data: m, error: em } = await svc.from('modules')
@@ -427,17 +466,23 @@ try {
   di(!nativos.some((n) => n.startsWith('confirm')), 'nadie llamó a confirm() del navegador',
      nativos.join(' | '))
 
-  let { count: cuantosModulos } = await svc.from('modules')
-    .select('id', { count: 'exact', head: true }).eq('course_id', conCurso.curso!)
-  di(cuantosModulos === 2, 'con el diálogo abierto todavía no se ha borrado nada',
-     `módulos: ${cuantosModulos}`)
+  // LOS RECUENTOS, RELATIVOS. Estaban escritos a mano (2 y 1) y se rompieron al añadir
+  // un módulo más a los datos de prueba: una prueba que depende de cuántas filas crea
+  // el fixture falla cada vez que el fixture crece, y eso ensena a no mirar los rojos.
+  const alEmpezar = exigirCuenta(await svc.from('modules')
+    .select('id', { count: 'exact', head: true }).eq('course_id', conCurso.curso!))
+  console.log(`   (el curso tiene ${alEmpezar} módulos al empezar)`)
+  let cuantosModulos = exigirCuenta(await svc.from('modules')
+    .select('id', { count: 'exact', head: true }).eq('course_id', conCurso.curso!))
+  di(cuantosModulos === alEmpezar, 'con el diálogo abierto todavía no se ha borrado nada',
+     `módulos: ${cuantosModulos} de ${alEmpezar}`)
 
-  await nav.pulsar('Cancelar')
+  await nav.pulsar('Cancelar', { dentroDe: '[role=dialog]' })
   texto = await nav.texto()
   di(!/¿Borrar el módulo/.test(texto), 'al cancelar, el diálogo se va')
-  ;({ count: cuantosModulos } = await svc.from('modules')
+  cuantosModulos = exigirCuenta(await svc.from('modules')
     .select('id', { count: 'exact', head: true }).eq('course_id', conCurso.curso!))
-  di(cuantosModulos === 2, 'y no se borró nada', `módulos: ${cuantosModulos}`)
+  di(cuantosModulos === alEmpezar, 'y no se borró nada', `módulos: ${cuantosModulos}`)
 
   /**
    * EL LIMITADOR DE PETICIONES ES PARTE DEL ENTORNO, no un fallo.
@@ -453,15 +498,15 @@ try {
   let confirmado = false
   for (let intento = 0; intento < 4; intento++) {
     await nav.pulsar('Borrar el módulo')
-    confirmado = await nav.pulsar('Sí, borrar el módulo')
+    confirmado = await nav.pulsar('Sí, borrar el módulo', { dentroDe: '[role=dialog]' })
     for (let i = 0; i < 25; i++) {
-      ;({ count: cuantosModulos } = await svc.from('modules')
+      cuantosModulos = exigirCuenta(await svc.from('modules')
         .select('id', { count: 'exact', head: true }).eq('course_id', conCurso.curso!))
-      if (cuantosModulos === 1) break
+      if (cuantosModulos === alEmpezar - 1) break
       if (nav.peticiones.some((r) => /429 .*modules/.test(r))) break
       await esperar(600)
     }
-    if (cuantosModulos === 1) break
+    if (cuantosModulos === alEmpezar - 1) break
     if (nav.peticiones.some((r) => /429 .*modules/.test(r))) {
       console.log('   (429 al borrar: el limitador. Esperando 25 s y reintentando)')
       await esperar(25000)
@@ -475,15 +520,15 @@ try {
   // prueba puede contarlo en vez de dejar un «siguen siendo 2» sin explicacion.
   // EL DIAGNOSTICO, SOLO SI FALLA. Un «siguen siendo 2» sin nada mas no se puede
   // investigar; en verde, la lista de peticiones solo tapa el resultado.
-  let porQue = `módulos: ${cuantosModulos}`
-  if (cuantosModulos !== 1) {
+  let porQue = `módulos: ${cuantosModulos}, esperaba ${alEmpezar - 1}`
+  if (cuantosModulos !== alEmpezar - 1) {
     const loQueDice = (await nav.texto()).split(/\r?\n/)
       .filter((l) => /no se pudo|error|429|demasiad|intenta/i.test(l))
     const alApi = nav.peticiones.filter((r) => r.includes('/api/'))
     porQue += (loQueDice.length ? '; la página dice: ' + loQueDice.join(' / ') : '')
       + (alApi.length ? '; a la API: ' + alApi.join(' | ') : '; NINGUNA petición a la API')
   }
-  di(cuantosModulos === 1, 'al confirmar, el módulo se borra', porQue)
+  di(cuantosModulos === alEmpezar - 1, 'al confirmar, el módulo se borra', porQue)
 
   // ── 4. «MIS CURSOS» NO INVENTA ALUMNOS ────────────────────────────────────────
   console.log('\n4. «Mis cursos» de quien no tiene cursos')
@@ -524,7 +569,7 @@ try {
     const abierto = await nav.pulsar(boton)
     texto = await nav.texto()
     di(abierto && texto.includes(titulo), `«${boton}» abre un diálogo de la página`)
-    await nav.pulsar('Cancelar')
+    await nav.pulsar('Cancelar', { dentroDe: '[role=dialog]' })
   }
   nativos = await nav.nativosLlamados()
   di(!nativos.some((n) => n.startsWith('prompt')), 'nadie llamó a prompt() del navegador',
@@ -562,13 +607,120 @@ try {
   di(/Duración del contenido|Duración/.test(texto) || !/Duracion/.test(texto),
      'y «Duración del contenido»')
 
-  // ── 8. OTRA VEZ, CON EL NAVEGADOR EN OTRO HUSO Y OTRO IDIOMA ─────────────────
+  // ── 8. CREAR CURSO: EL DESPLEGABLE DE RUTAS, Y A QUIEN LE PREGUNTA ───────────
+  //
+  // El formulario de crear curso llamaba a `/api/admin/learning-paths`, tres niveles
+  // por debajo de la pagina (CourseFormCore -> LearningPathDropdown, con la URL escrita
+  // dentro). Al cerrar ese endpoint a quien no es admin, el desplegable se habria
+  // quedado VACIO sin que nada lo dijera: de ahi que los dos cambios fueran juntos.
+  console.log('\n8. Crear curso: las rutas de aprendizaje')
+  await nav.ponerLaSesion(conCurso.cookie)
+  await nav.ir('/dashboard/instructor/cursos/nuevo', { espera: 4000 })
+
+  // EL LIMITADOR, OTRA VEZ: a estas alturas la prueba ha hecho muchas peticiones y
+  // `/api/instructor/learning-paths` contesta 429. Un 429 deja el desplegable vacío,
+  // así que hay que recargar hasta tener un 200 de verdad antes de comprobar nada.
+  let rutasOk = false
+  for (let intento = 0; intento < 4; intento++) {
+    rutasOk = nav.peticiones.some((r) => /→ 200 .*learning-paths/.test(r))
+    if (rutasOk) break
+    if (nav.peticiones.some((r) => /→ 429 .*learning-paths/.test(r))) {
+      console.log('   (429 al pedir las rutas: el limitador. Esperando 25 s y recargando)')
+      await esperar(25000)
+      await nav.ir('/dashboard/instructor/cursos/nuevo', { espera: 4000 })
+      continue
+    }
+    break
+  }
+
+  const alPanel = nav.peticiones.filter((r) => r.includes('/api/admin/'))
+  const deLasRutas = nav.peticiones.filter((r) => /learning-paths/.test(r))
+  di(alPanel.length === 0, 'la pantalla NO llama a /api/admin', alPanel.join(' | '))
+  di(deLasRutas.some((r) => r.startsWith('GET /api/instructor/learning-paths')),
+     'y sí llama a /api/instructor/learning-paths', deLasRutas.join(' | '))
+  // EXIGE 200, no «que no sea 401 ni 403». Con la version anterior, un 429 —que deja el
+  // desplegable igual de vacio que un 403— pasaba como si todo estuviera bien.
+  di(rutasOk, 'y la respuesta es 200', deLasRutas.join(' | '))
+
+  // Y QUE LAS OFREZCA DE VERDAD, contra lo que hay en la base.
+  //
+  // Esta comprobación era falsa y pasaba siempre. Pulsaba «Rutas de aprendizaje», que
+  // no es el nombre de nada —el botón dice «Seleccionar rutas…»—, y lo compensaba con
+  // un `||` sobre un selector que contaba `label input[type=checkbox]`: medido, los dos
+  // nodos que contaba eran las casillas de «Curso Gratuito» y «Premium». Ninguna de las
+  // dos mitades miraba las rutas.
+  //
+  // Ahora: el disparador tiene `aria-label`, las opciones tienen `role="option"`, las
+  // dos aserciones van por separado, y lo que se cuenta se compara con las rutas
+  // ACTIVAS de la base. Si el desplegable se quedara vacío, esto se pone en rojo.
+  const abierto = await nav.pulsar('Rutas de aprendizaje')
+  di(abierto, 'el desplegable de rutas se puede abrir por su nombre')
+
+  const ofrecidas = await nav.evaluar<string[]>(
+    `[...document.querySelectorAll('[role=option]')].map((e) => e.innerText.replace(/\\s+/g, ' ').trim())`
+  )
+  const activasEnLaBase = exigirCuenta(await svc.from('learning_paths')
+    .select('id', { count: 'exact', head: true }).eq('is_active', true))
+  di(ofrecidas.length === activasEnLaBase,
+     `ofrece las ${activasEnLaBase} rutas activas de la base`,
+     `ofrece ${ofrecidas.length}: ${ofrecidas.join(' / ')}`)
+
+  const { count: inactivas } = await svc.from('learning_paths')
+    .select('id', { count: 'exact', head: true }).eq('is_active', false)
+  console.log(`   (en la base hay ${inactivas} inactiva(s), que no deben salir)`)
+
+  const textoRutas = await nav.texto()
+  di(!/No se pudieron? (leer|cargar) las rutas|Error cargando rutas|No hay rutas de aprendizaje disponibles/i.test(textoRutas),
+     'y no dice que no pudo leerlas')
+
+  // ── 9. LA ZONA DE PELIGRO DE LA FICHA DEL MODULO ────────────────────────────
+  console.log('\n9. La «Zona de peligro» de la ficha del módulo')
+  await nav.ir(`/dashboard/instructor/cursos/${conCurso.curso}/modulos/${conCurso.moduloSinLecciones}`, { espera: 3500 })
+  texto = await nav.texto()
+  di(/Zona de peligro/.test(texto), 'la pantalla tiene zona de peligro')
+
+  const pulsadoPeligro = await nav.pulsar('Eliminar')
+  di(pulsadoPeligro, 'se puede pulsar «Eliminar»')
+  texto = await nav.texto()
+  di(/¿Borrar el módulo/.test(texto), 'y pide confirmación EN LA PÁGINA (no la pedía)',
+     texto.slice(0, 120).replace(/\n/g, ' '))
+  nativos = await nav.nativosLlamados()
+  di(!nativos.some((n) => n.startsWith('confirm')), 'sin confirm() del navegador')
+
+  let sigueElVacio = exigirCuenta(await svc.from('modules')
+    .select('id', { count: 'exact', head: true }).eq('id', conCurso.moduloSinLecciones!))
+  di(sigueElVacio === 1, 'con el diálogo abierto no se ha borrado nada')
+
+  await nav.pulsar('Cancelar', { dentroDe: '[role=dialog]' })
+  sigueElVacio = exigirCuenta(await svc.from('modules')
+    .select('id', { count: 'exact', head: true }).eq('id', conCurso.moduloSinLecciones!))
+  di(sigueElVacio === 1, 'al cancelar sigue estando')
+
+  // Con el reintento del limitador, igual que el borrado de la seccion 3: esta prueba
+  // hace unas cuantas escrituras y `checkRateLimit` permite 30 por minuto.
+  for (let intento = 0; intento < 4; intento++) {
+    await nav.pulsar('Eliminar')
+    await nav.pulsar('Sí, borrar el módulo', { dentroDe: '[role=dialog]' })
+    for (let i = 0; i < 25; i++) {
+      sigueElVacio = exigirCuenta(await svc.from('modules')
+        .select('id', { count: 'exact', head: true }).eq('id', conCurso.moduloSinLecciones!))
+      if (sigueElVacio === 0) break
+      await esperar(600)
+    }
+    if (sigueElVacio === 0) break
+    console.log('   (no se borró: espero 25 s por si es el limitador, y reintento)')
+    await esperar(25000)
+    await nav.ir(`/dashboard/instructor/cursos/${conCurso.curso}/modulos/${conCurso.moduloSinLecciones}`, { espera: 3000 })
+  }
+  di(sigueElVacio === 0, 'al confirmar, el módulo se borra', `quedan ${sigueElVacio}`)
+
+  // ── 10. OTRA VEZ, CON EL NAVEGADOR EN OTRO HUSO Y OTRO IDIOMA ────────────────
   //
   // Y CON LA FECHA EN EL BORDE DEL DIA, que es la parte que importa: una fecha a las
   // 23:30 del huso del servidor cae en OTRO DIA para quien esté doce horas más allá, y
   // entonces el servidor y el navegador escriben textos distintos. Sin empujar la fecha
   // al borde, dos husos distintos dan el mismo día y la prueba pasa sin comprobar nada.
-  console.log('\n8. Lo mismo con el navegador en otro huso, y la fecha en el borde del día')
+  console.log('\n10. Lo mismo con el navegador en otro huso, y la fecha en el borde del día')
   const bordeDelDia = new Date()
   bordeDelDia.setHours(23, 30, 0, 0)
   await svc.from('courses').update({ updated_at: bordeDelDia.toISOString() }).eq('id', conCurso.curso!)

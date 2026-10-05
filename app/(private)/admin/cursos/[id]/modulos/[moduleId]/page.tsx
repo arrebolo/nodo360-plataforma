@@ -5,6 +5,7 @@ import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 import { ArrowLeft, Save, Layers, Trash2 } from 'lucide-react'
+import { ConfirmarYEnviar } from '@/components/ui/ConfirmarYEnviar'
 
 interface EditModulePageProps {
   params: Promise<{ id: string; moduleId: string }>
@@ -249,15 +250,29 @@ export default async function EditModulePage({ params }: EditModulePageProps) {
                     : 'Esta acción no se puede deshacer.'}
                 </p>
               </div>
+              {/* LA CONFIRMACION QUE FALTABA: ver el mismo sitio en el editor del
+                  instructor. Un clic y el modulo se iba. */}
               <form action={deleteAction}>
-                <button
-                  type="submit"
+                <ConfirmarYEnviar
+                  titulo={`¿Borrar el módulo «${module.title}»?`}
+                  textoDeConfirmar="Sí, borrar el módulo"
                   disabled={lessonCount !== null && lessonCount > 0}
                   className="flex items-center gap-2 px-4 py-2 bg-error/20 text-error border border-error/30 rounded-lg hover:bg-error/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  explicacion={
+                    <>
+                      <p>Se borra el módulo. Las lecciones no: si tuviera alguna, este
+                      botón está desactivado y hay que borrarlas primero.</p>
+                      <p>
+                        El progreso de quien ya hizo sus lecciones no se borra: desde la
+                        copia publicada cuelga de su propia copia, no de estas filas.
+                      </p>
+                      <p className="text-white/50">No se puede deshacer.</p>
+                    </>
+                  }
                 >
                   <Trash2 className="w-4 h-4" />
                   Eliminar
-                </button>
+                </ConfirmarYEnviar>
               </form>
             </div>
           </div>

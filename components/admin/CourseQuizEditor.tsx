@@ -38,12 +38,19 @@ interface CourseQuizEditorProps {
    * reexporta— y el permiso lo decide `permisoSobreElExamen()`. Esta aqui para que
    * ninguna pantalla de /dashboard/instructor llame a /api/admin.
    */
-  api?: string
+  /**
+   * SIN VALOR POR OMISION, a proposito: cada pantalla dice su zona y si alguien la
+   * olvida no compila. Con `api = '/api/admin'` por defecto, olvidarse en una pantalla
+   * de instructor no daba ni un aviso —llamaba al panel y, mientras ese endpoint dejara
+   * pasar, «funcionaba»—. Eso es exactamente como llego aqui el unico incumplimiento
+   * que quedaba de la regla.
+   */
+  api: string
   courseId: string
   courseName?: string
 }
 
-export function CourseQuizEditor({ courseId, courseName, api = '/api/admin' }: CourseQuizEditorProps) {
+export function CourseQuizEditor({ courseId, courseName, api }: CourseQuizEditorProps) {
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [modules, setModules] = useState<Module[]>([])
   const [isLoading, setIsLoading] = useState(true)
