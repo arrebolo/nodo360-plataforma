@@ -55,7 +55,8 @@ export default async function CoursePreviewPage({ params }: PreviewPageProps) {
       total_lessons,
       total_duration_minutes,
       enrolled_count,
-      instructor_id
+      instructor_id,
+      firmado_por_la_plataforma
     `)
     .eq('id', courseId)
     .single()
@@ -150,6 +151,10 @@ export default async function CoursePreviewPage({ params }: PreviewPageProps) {
             enrolled_count: course.enrolled_count ?? 0,
             banner_url: course.banner_url ?? null,
             thumbnail_url: course.thumbnail_url ?? null,
+            // La firma de verdad del curso. El preview no pasa el objeto del
+            // autor, asi que un curso sin firmar sigue mostrando Nodo360: es lo
+            // que habia antes y no se cambia aqui.
+            firmado_por_la_plataforma: course.firmado_por_la_plataforma ?? false,
           }}
           isEnrolled={false}
           progressPct={null}

@@ -58,7 +58,7 @@ export function InstructorPreviewModal({
       // Get user data
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('id, full_name, avatar_url, role')
+        .select('id, full_name, avatar_url')
         .eq('id', instructorId)
         .single()
 
@@ -79,11 +79,12 @@ export function InstructorPreviewModal({
       // leer un parrafo. Fuera, el modal se abre sin biografia.
       const { data: publico } = await (supabase as unknown as SupabaseClient)
         .from('perfiles_publicos')
-        .select('bio')
+        .select('bio, role')
         .eq('id', instructorId)
         .maybeSingle()
 
-      const biografia = (publico as { bio: string | null } | null)?.bio ?? null
+      const perfilPublico = publico as { bio: string | null; role: string | null } | null
+      const biografia = perfilPublico?.bio ?? null
 
       // Los sellos, por la vista publica de la 093. La tabla de
       // certificaciones no la lee ninguna sesion: lleva dentro el numero de
@@ -119,7 +120,18 @@ export function InstructorPreviewModal({
         full_name: user.full_name,
         avatar_url: user.avatar_url,
         bio: biografia,
-        headline: user.role === 'instructor' ? 'Instructor' : user.role === 'mentor' ? 'Mentor' : null,
+        // EL ROL, DE LA VISTA Y NO DE LA TABLA. Este modal lo abre un visitante
+        // sin sesion al pulsar el nombre del autor, asi que esa lectura la hace
+        // la CLAVE ANONIMA, que es publica. `perfiles_publicos` (104) ya trae
+        // `role` y solo da fila a quien es instructor, mentor o autor de un
+        // curso publicado: es la puerta pensada para esto, y sigue abierta
+        // cuando la 121b le quite `users.role` a anon.
+        headline:
+          perfilPublico?.role === 'instructor'
+            ? 'Instructor'
+            : perfilPublico?.role === 'mentor'
+              ? 'Mentor'
+              : null,
         sello:
           vivos.length === 0
             ? null

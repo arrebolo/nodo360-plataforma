@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { CourseWithInstructor } from '@/types/database'
+import { sinLosAutoresQueFirmaLaPlataforma } from '@/lib/courses/firma'
 
 /**
  * Cursos publicados que ofrecer a alguien que ha llegado a un curso que no
@@ -65,7 +66,7 @@ export async function getSuggestedPublishedCourses(
       const primeraRuta = (enlaces || []).find((e) => e.learning_path)
       const nombre =
         (primeraRuta?.learning_path as unknown as { name: string } | null)?.name ?? null
-      return { courses: cursos, pathName: nombre }
+      return { courses: sinLosAutoresQueFirmaLaPlataforma(cursos), pathName: nombre }
     }
   }
 
@@ -79,7 +80,11 @@ export async function getSuggestedPublishedCourses(
     .limit(limit)
 
   return {
-    courses: (generales || []) as unknown as CourseWithInstructor[],
+    // El autor fuera si firma la plataforma, igual que en el catalogo: estas
+    // tarjetas las ve quien no puede entrar en un curso, con sesion o sin ella.
+    courses: sinLosAutoresQueFirmaLaPlataforma(
+      (generales || []) as unknown as CourseWithInstructor[]
+    ),
     pathName: null,
   }
 }

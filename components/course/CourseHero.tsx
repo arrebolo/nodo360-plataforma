@@ -15,7 +15,6 @@ export type CourseAuthor = {
   id: string
   full_name: string | null
   avatar_url?: string | null
-  role?: string | null
 }
 
 export type CourseHeroCourse = {
@@ -39,6 +38,12 @@ export type CourseHeroCourse = {
   // Author info
   instructor_id?: string | null
   instructor?: CourseAuthor | null
+  /**
+   * Si lo firma la plataforma. Obligatoria, por lo mismo que en CourseCard: un
+   * valor por defecto convertiria un olvido en una fuga silenciosa del nombre
+   * de una persona. Sale de `courses.firmado_por_la_plataforma` (121a).
+   */
+  firmado_por_la_plataforma: boolean
 }
 
 export type CourseHeroProps = {
@@ -209,7 +214,7 @@ export default function CourseHero({
 
             {/* Autor */}
             {(() => {
-              const isNodo360 = !course.instructor_id || course.instructor?.role === 'admin'
+              const isNodo360 = course.firmado_por_la_plataforma || !course.instructor?.id
 
               if (isNodo360) {
                 return (
