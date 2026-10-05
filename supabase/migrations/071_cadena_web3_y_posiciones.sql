@@ -1,10 +1,10 @@
 -- ============================================================================
 -- 071: la cadena de Web3, y las posiciones de las rutas por primera vez
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR. Lleva DDL (ADD CONSTRAINT), no se puede
---   ejecutar por PostgREST.
---   Fichero listo para el editor SQL: C:/Users/alber/071-aplicar.sql
---   Estado antes y despues, solo lectura:  C:/Users/alber/071-comprobar.sql
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05 (auditoria v2):
+--   existe la restriccion learning_path_courses_ruta_curso_unico, la ruta
+--   ecosistema-ethereum esta desactivada y «Como funciona Bitcoin» sigue en dos
+--   rutas, que son sus tres condiciones.
 --
 -- EL ORDEN DE LAS RUTAS NO ESTABA MAL: NO EXISTIA
 --   learning_path_courses.position estaba a 0 en casi todas las filas. La ruta

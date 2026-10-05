@@ -1,14 +1,14 @@
 -- ============================================================================
 -- 074: revocar los cinco certificados emitidos sin completar el curso
 -- ============================================================================
--- ESTADO: FALTA MEDIR. Mi evidencia servia a medias.
---   `revoked_at` y `revoked_reason` las añade TAMBIEN la 075, y el «revocado» que
---   devuelve el RPC sale del cuerpo de la 075: ninguna de las dos cosas distingue.
---   Lo unico propio de esta migracion son las CINCO revocaciones, y «revocados = 5»
---   es un recuento, no una identidad. La comprobacion buena —los cinco numeros con
---   su motivo exacto— esta en tmp/auditoria-pendientes.sql.
---   Copia para pegar: tmp/074-aplicar.sql (identica a este fichero).
---   Respaldo previo:  tmp/074-volver-atras.sql
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05 (auditoria v2):
+--   los CINCO certificados que revoca estan revocados con SU motivo exacto, y
+--   ninguno de los cinco se ha quedado sin revocar.
+--
+--   La evidencia que use primero —«existen revoked_at y revoked_reason, y el RPC
+--   devuelve revocado»— NO SERVIA: esas dos columnas las añade tambien la 075 y
+--   ese «revocado» sale del cuerpo de la 075. Lo unico que distingue a esta
+--   migracion son sus cinco filas, por numero y por motivo.
 --
 -- EL CASO
 --   Cinco matriculas quedaron marcadas como completadas con el curso a medias,

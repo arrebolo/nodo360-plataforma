@@ -1,13 +1,15 @@
 -- ============================================================================
 -- 076: devolver el completed_at que se borro solo el 27/09/2026
 -- ============================================================================
--- ESTADO: FALTA MEDIR. La evidencia que use NO distingue.
---   Dije «0 matriculas al 100% sin completed_at», y eso pasaria igual SIN la
---   reparacion: la matricula que esta migracion arregla se queda al 78%, asi que
---   no entra en ese recuento. Lo que hay que mirar es lo que mira su propia
---   consulta final: el completed_at exacto de la matricula del certificado
---   NODO-20260115-B3M20. Esta en tmp/auditoria-pendientes.sql.
---   Copia para pegar: tmp/076-aplicar.sql
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05 (auditoria v2):
+--   la matricula del certificado NODO-20260115-B3M20 tiene completed_at =
+--   2026-01-15 10:44:04+00, que es el instante exacto que escribe esta
+--   migracion, y ese certificado sigue vigente. Son sus dos condiciones.
+--
+--   La evidencia que use primero —«0 matriculas al 100% sin completed_at»— NO
+--   SERVIA, y lo canto la revision: la matricula que esta migracion arregla se
+--   queda al 78%, asi que nunca entraba en ese recuento y habria pasado igual
+--   sin la reparacion.
 --
 -- LO QUE PASO, CON HORA
 --   El 27/09/2026 a las 18:51:44, mientras se auditaban las matriculas, una

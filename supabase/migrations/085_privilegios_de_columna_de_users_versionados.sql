@@ -1,8 +1,21 @@
 -- ============================================================================
 -- 085: los permisos de columna de public.users, por fin escritos
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
---   Copia para pegar: tmp/085-aplicar.sql
+-- ESTADO: APLICADA, y en parte superada por la 086. Comprobado contra la base
+--   el 2026-10-05 (auditoria v2):
+--
+--   De las ONCE columnas que concede, authenticated puede escribir NUEVE:
+--     full_name, bio, avatar_url, avatar_path, website, twitter, linkedin,
+--     github, wants_beta_notification
+--
+--   Las dos que faltan son active_path_id y active_path_selected_at, y faltan A
+--   PROPOSITO: la 086 —aplicada despues— las retiro para que la ruta activa se
+--   escriba solo por activar_ruta(). O sea que esto no es un relleno a medias,
+--   es una migracion posterior haciendo su trabajo. Las nueve que quedan son
+--   exactamente las del formulario de perfil.
+--
+--   Y existen tambien su funcion tocar_updated_at() y su trigger
+--   trigger_users_updated_at.
 --
 -- POR QUE EXISTE
 --   La 049 hizo REVOKE ALL sobre public.users y devolvio solo GRANT SELECT de
