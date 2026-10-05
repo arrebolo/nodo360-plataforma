@@ -197,7 +197,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
     (isPreview || perfil?.role === 'admin' || course.instructor_id === user.id)
 
   // QUIEN FIRMA. La ficha ya no pregunta por el rol de nadie: lo dice el propio
-  // curso (migracion 121a). Y si lo firma la plataforma, el objeto del autor no
+  // curso (migracion 121). Y si lo firma la plataforma, el objeto del autor no
   // llega al navegador: ni pintado ni en el HTML.
   const autor = course.firmado_por_la_plataforma
     ? null

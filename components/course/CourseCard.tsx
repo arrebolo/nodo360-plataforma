@@ -40,7 +40,7 @@ type CourseCardProps = {
    * OBLIGATORIA A PROPOSITO, sin valor por defecto. Antes esto se deducia del
    * ROL del autor (`instructor?.role === 'admin'`), y eso obligaba a que la
    * clave anonima pudiera leer el rol de las personas. Ahora lo dice el propio
-   * curso, en `courses.firmado_por_la_plataforma` (migracion 121a), y cada
+   * curso, en `courses.firmado_por_la_plataforma` (migracion 121), y cada
    * pantalla tiene que pasarlo: si le pusieramos un `false` por defecto, la
    * pantalla que se olvidara firmaria los cursos de la plataforma con el nombre
    * y apellido de una persona sin que nadie se enterase.

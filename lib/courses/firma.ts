@@ -1,7 +1,7 @@
 /**
  * Quién firma un curso.
  *
- * Hasta la migración 121a esto se decidía preguntando por el ROL DE UNA PERSONA:
+ * Hasta la migración 121 esto se decidía preguntando por el ROL DE UNA PERSONA:
  *
  *     const isNodo360 = !course.instructor_id || course.instructor?.role === 'admin'
  *

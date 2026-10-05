@@ -4,7 +4,7 @@
  *   npx tsx scripts/comprobar-la-firma-de-la-plataforma.mts [http://localhost:3157]
  *
  * QUÉ VIGILA, Y POR QUÉ NO BASTA CON MIRAR EL COMPONENTE
- *   Hasta la migración 121a la ficha decidía si poner «Creado por Nodo360» o
+ *   Hasta la migración 121 la ficha decidía si poner «Creado por Nodo360» o
  *   «Por <persona>» preguntando por el ROL del autor:
  *
  *       const isNodo360 = !course.instructor_id || course.instructor?.role === 'admin'
@@ -159,7 +159,7 @@ for (const c of firmadosConAutor) {
 // ── 3. Y el rol tampoco se pide ────────────────────────────────────────────
 // La otra mitad del trabajo: que ninguna de estas páginas necesite leer
 // `users.role` con la clave anónima. Se comprueba contra la base, que es donde
-// se va a revocar (121b), y no contra el HTML.
+// se va a revocar (122), y no contra el HTML.
 console.log('\n=== lo que la clave anónima necesita leer ===')
 const anon = createClient(
   env.NEXT_PUBLIC_SUPABASE_URL as string,

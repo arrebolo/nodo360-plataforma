@@ -100,7 +100,7 @@ export interface Course {
    *
    * Es una decision editorial del curso, NO el rol de su autor: antes se
    * deducia de `users.role === 'admin'`, y eso obligaba a que la clave anonima
-   * pudiera leer el rol de las personas. Migracion 121a. Solo la
+   * pudiera leer el rol de las personas. Migracion 121. Solo la
    * administracion la cambia, y lo impide un trigger.
    */
   firmado_por_la_plataforma: boolean

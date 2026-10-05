@@ -158,7 +158,7 @@ try {
   // ── 6. Borrar un curso: DOS CERRADURAS, y cada una con su codigo ─────────
   //
   // Esta comprobacion decia «borrar un curso con matriculas esta impedido» y
-  // miraba solo `Boolean(error)`. Desde la migracion 121a hay un trigger que
+  // miraba solo `Boolean(error)`. Desde la migracion 121 hay un trigger que
   // frena el borrado ANTES, por tener copia publicada viva, asi que habria
   // seguido en verde sin volver a medir las matriculas nunca. Un verde que mide
   // otra cosa es peor que un rojo: ahora cada mitad exige SU codigo.
@@ -167,7 +167,7 @@ try {
 
   const conCopiaViva = await svc.from('courses').delete().eq('id', c!.id)
   di(conCopiaViva.error?.code === '42501',
-    'con la copia publicada viva, borrar da 42501 (trigger de la 121a)',
+    'con la copia publicada viva, borrar da 42501 (trigger de la 121)',
     conCopiaViva.error ? conCopiaViva.error.code : '*** SE BORRO')
 
   // Archivar retira la copia (trigger de la 119). Y entonces lo que impide

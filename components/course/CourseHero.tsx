@@ -41,7 +41,7 @@ export type CourseHeroCourse = {
   /**
    * Si lo firma la plataforma. Obligatoria, por lo mismo que en CourseCard: un
    * valor por defecto convertiria un olvido en una fuga silenciosa del nombre
-   * de una persona. Sale de `courses.firmado_por_la_plataforma` (121a).
+   * de una persona. Sale de `courses.firmado_por_la_plataforma` (121).
    */
   firmado_por_la_plataforma: boolean
 }

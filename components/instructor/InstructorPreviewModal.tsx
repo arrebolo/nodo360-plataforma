@@ -125,7 +125,7 @@ export function InstructorPreviewModal({
         // la CLAVE ANONIMA, que es publica. `perfiles_publicos` (104) ya trae
         // `role` y solo da fila a quien es instructor, mentor o autor de un
         // curso publicado: es la puerta pensada para esto, y sigue abierta
-        // cuando la 121b le quite `users.role` a anon.
+        // cuando la 122 le quite `users.role` a anon.
         headline:
           perfilPublico?.role === 'instructor'
             ? 'Instructor'
