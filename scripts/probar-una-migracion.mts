@@ -29,12 +29,19 @@
  *       inventadas. Si una autoprueba cuenta cursos reales, aquí dirá otra cosa:
  *       eso lo dice la aplicación de verdad, y por eso sigue habiendo revisión
  *       humana antes de aplicar.
- *   NO  nada de una migración que no toque `public.users`. EL ANDAMIO ESTA
- *       ESCRITO A MANO y solo modela esa tabla: con cualquier otra fallaría por
- *       objetos que no existen, y ese fallo no diría nada. Y por estar escrito a
- *       mano, SE DESFASA: ya se le habían olvidado `email_normalizado` y
- *       `anunciar_logros`. Lo que lo arregla de verdad es cargar un volcado de
- *       esquema de producción, y eso está pendiente.
+ *   NO  nada de los objetos que el andamio no tiene. ESTA ESCRITO A MANO, y
+ *       hoy modela cinco: `users`, `instructor_profiles`, `user_roles`,
+ *       `courses` y la vista `perfiles_publicos`, con sus permisos por columna,
+ *       sus políticas y sus triggers MEDIDOS en producción. Una migración que
+ *       toque cualquier otra cosa fallará aquí por objetos que no existen, y
+ *       ese fallo no dice nada de la migración.
+ *   NO  nada que dependa del TEXTO de una política de producción: los recuentos
+ *       de filas que cada rol ve están medidos, pero `pg_policies` no se puede
+ *       leer desde fuera, así que las políticas del andamio son las más
+ *       restrictivas compatibles con lo medido, no copias.
+ *       Y por estar escrito a mano, SE DESFASA: ya se le habían olvidado
+ *       `email_normalizado` y `anunciar_logros`. Lo que lo arregla de verdad es
+ *       cargar un volcado de esquema de producción, y eso está pendiente.
  *
  *   O sea: esto no sustituye a aplicarla. Evita darte un fichero que ni arranca.
  */
@@ -214,12 +221,126 @@ CREATE POLICY users_read_own ON public.users
 CREATE POLICY users_update_own ON public.users
   FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
+-- ── Lo que hace falta para la politica POR FUNCION ────────────────────────
+-- La 123 decide quien es «funcion publica» con el mismo WHERE que la vista
+-- perfiles_publicos: perfil de instructor activo, mentor activo en user_roles, o
+-- autor de un curso publicado. Sin estas tres tablas, la 123 no se puede probar.
+
+CREATE TABLE public.instructor_profiles (
+  user_id uuid PRIMARY KEY REFERENCES public.users(id),
+  is_active boolean NOT NULL DEFAULT true,
+  accepts_messages boolean NOT NULL DEFAULT true
+);
+
+-- Fiel al original (scripts/add-user-roles-system.sql): «role» es el MISMO enum
+-- que users.role —la 034 lo castea a ::TEXT, que es lo que lo delata— y
+-- «is_active» ADMITE NULL, asi que un «AND is_active» con NULL no casa. Si aqui
+-- fuera «text NOT NULL», el banco dejaria pasar comparaciones que en produccion
+-- fallan y escondería el caso del NULL.
+CREATE TABLE public.user_roles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  role user_role NOT NULL DEFAULT 'student',
+  granted_by uuid REFERENCES public.users(id),
+  granted_at timestamptz DEFAULT now(),
+  expires_at timestamptz,
+  is_active boolean DEFAULT true,
+  notes text,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+CREATE TYPE course_status AS ENUM
+  ('draft','published','archived','coming_soon','pending_review','rejected','changes_requested');
+
+CREATE TABLE public.courses (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  title text NOT NULL,
+  status course_status NOT NULL DEFAULT 'draft',
+  instructor_id uuid REFERENCES public.users(id),
+  firmado_por_la_plataforma boolean NOT NULL DEFAULT false
+);
+GRANT SELECT ON public.courses TO anon, authenticated;
+GRANT ALL ON public.courses TO service_role;
+GRANT SELECT ON public.instructor_profiles TO anon, authenticated;
+GRANT ALL ON public.instructor_profiles TO service_role;
+GRANT SELECT ON public.user_roles TO anon, authenticated;
+GRANT ALL ON public.user_roles TO service_role;
+
+-- ── LA RLS DE LAS TRES, QUE ES LO QUE DECIDE SI UNA POLITICA PUEDE MIRARLAS ──
+--
+-- Medido contra produccion el 2026-10-06, con la clave de servicio y con la
+-- anonima:
+--
+--   instructor_profiles   servicio 1 fila    anon 1 fila
+--   user_roles            servicio 2 filas   anon 0 filas   <- tapada
+--   courses               servicio 16 filas  anon 10 filas  <- solo publicados
+--
+-- Los RECUENTOS estan medidos; EL TEXTO de las politicas no se puede leer desde
+-- fuera (PostgREST no da el catalogo y no hay volcado todavia). Asi que aqui va
+-- la mas restrictiva compatible con lo medido, que es ademas la que pone a
+-- prueba lo que importa: con «user_roles» tapada, un EXISTS dentro de una
+-- politica no ve a los mentores, y solo una funcion SECURITY DEFINER los ve.
+
+ALTER TABLE public.instructor_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Active profiles are public" ON public.instructor_profiles
+  FOR SELECT USING (is_active = true);
+
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY user_roles_propio ON public.user_roles
+  FOR SELECT TO authenticated USING (user_id = auth.uid());
+
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY courses_publicados ON public.courses
+  FOR SELECT USING (status = 'published');
+
 -- Cuatro filas de mentira: un admin, un instructor, un mentor y un estudiante.
 INSERT INTO public.users (email, full_name, role) VALUES
   ('admin@ejemplo.invalid',      'Cuenta de administracion', 'admin'),
   ('instructor@ejemplo.invalid', 'Cuenta de instructor',     'instructor'),
   ('mentor@ejemplo.invalid',     'Cuenta de mentor',         'mentor'),
   ('alumno@ejemplo.invalid',     'Cuenta de alumno',         'student');
+
+-- El instructor, con perfil activo. El mentor, activo en user_roles. Y el admin,
+-- autor de un curso publicado: las tres funciones publicas, una por cabeza, para
+-- que la politica de la 123 se pueda probar en las tres ramas.
+INSERT INTO public.instructor_profiles (user_id, is_active, accepts_messages)
+  SELECT id, true, true FROM public.users WHERE role = 'instructor';
+
+INSERT INTO public.user_roles (user_id, role, is_active)
+  SELECT id, 'mentor', true FROM public.users WHERE role = 'mentor';
+
+INSERT INTO public.courses (slug, title, status, instructor_id, firmado_por_la_plataforma)
+  SELECT 'curso-de-la-plataforma', 'Curso firmado por la plataforma', 'published', id, true
+    FROM public.users WHERE role = 'admin';
+
+-- Y uno firmado por una PERSONA, que es el caso que la autoprueba de la 123
+-- tiene que poder seguir mostrando con su autor.
+INSERT INTO public.courses (slug, title, status, instructor_id, firmado_por_la_plataforma)
+  SELECT 'curso-de-una-persona', 'Curso firmado por una persona', 'published', id, false
+    FROM public.users WHERE role = 'instructor';
+
+-- La vista, igual que la deja la 104 (con «role»: la 123 es la que lo quita).
+CREATE OR REPLACE VIEW public.perfiles_publicos AS
+  SELECT u.id, u.full_name, u.avatar_url, u.role, u.bio,
+    CASE WHEN ip.user_id IS NOT NULL THEN u.website  END AS website,
+    CASE WHEN ip.user_id IS NOT NULL THEN u.twitter  END AS twitter,
+    CASE WHEN ip.user_id IS NOT NULL THEN u.linkedin END AS linkedin,
+    CASE WHEN ip.user_id IS NOT NULL THEN u.github   END AS github,
+    (ip.user_id IS NOT NULL) AS es_instructor,
+    (me.user_id IS NOT NULL) AS es_mentor,
+    (au.autor    IS NOT NULL) AS es_autor
+  FROM public.users u
+  LEFT JOIN public.instructor_profiles ip ON ip.user_id = u.id AND ip.is_active
+  LEFT JOIN (SELECT DISTINCT user_id FROM public.user_roles
+              WHERE role = 'mentor' AND is_active) me ON me.user_id = u.id
+  LEFT JOIN (SELECT DISTINCT instructor_id AS autor FROM public.courses
+              WHERE status = 'published' AND instructor_id IS NOT NULL) au ON au.autor = u.id
+  WHERE ip.user_id IS NOT NULL OR me.user_id IS NOT NULL OR au.autor IS NOT NULL;
+
+REVOKE ALL ON public.perfiles_publicos FROM PUBLIC;
+GRANT SELECT ON public.perfiles_publicos TO anon, authenticated;
 `
 
 const sql = fs.readFileSync(fichero, 'utf8')
@@ -250,7 +371,9 @@ try {
     await db.exec(ANDAMIO)
     const { rows } = await db.query<{ n: number }>('select count(*)::int n from public.users')
     console.log(`   esquema: ANDAMIO ESCRITO A MANO, ${rows[0].n} filas de mentira`)
-    console.log('   solo modela public.users; para el resto hace falta el volcado')
+    console.log('   modela users, instructor_profiles, user_roles, courses y')
+    console.log('   perfiles_publicos, con su RLS. NADA MAS: para el resto del')
+    console.log('   esquema hace falta el volcado')
     console.log('   (docs/VOLCADO-DE-ESQUEMA.md)')
   }
   console.log()
