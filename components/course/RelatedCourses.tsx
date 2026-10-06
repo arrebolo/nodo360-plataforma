@@ -55,6 +55,7 @@ export function RelatedCourses({
             isCompleted={false}
             progressPercent={0}
             isComingSoon={course.total_lessons === 0}
+            firmadoPorLaPlataforma={course.firmado_por_la_plataforma}
             onView={() => router.push(`/cursos/${course.slug}`)}
             onStart={() => router.push(`/cursos/${course.slug}`)}
             onContinue={() => router.push(`/cursos/${course.slug}`)}

@@ -17,7 +17,6 @@ type InstructorInfo = {
   id: string
   full_name: string | null
   avatar_url?: string | null
-  role?: string | null
 }
 
 type CourseCardProps = {
@@ -34,6 +33,19 @@ type CourseCardProps = {
   isComingSoon?: boolean
   learningPath?: LearningPathInfo | null
   instructor?: InstructorInfo | null
+  /**
+   * Si el curso lo firma la plataforma: «Creado por Nodo360» en vez de
+   * «Por <persona>».
+   *
+   * OBLIGATORIA A PROPOSITO, sin valor por defecto. Antes esto se deducia del
+   * ROL del autor (`instructor?.role === 'admin'`), y eso obligaba a que la
+   * clave anonima pudiera leer el rol de las personas. Ahora lo dice el propio
+   * curso, en `courses.firmado_por_la_plataforma` (migracion 121), y cada
+   * pantalla tiene que pasarlo: si le pusieramos un `false` por defecto, la
+   * pantalla que se olvidara firmaria los cursos de la plataforma con el nombre
+   * y apellido de una persona sin que nadie se enterase.
+   */
+  firmadoPorLaPlataforma: boolean
   /**
    * El texto del sello de quien firma el curso, o nada.
    *
@@ -62,6 +74,7 @@ export function CourseCard({
   isComingSoon = false,
   learningPath,
   instructor,
+  firmadoPorLaPlataforma,
   sello,
   onStart,
   onContinue,
@@ -173,7 +186,7 @@ export function CourseCard({
 
         {/* Instructor */}
         {(() => {
-          const isNodo360 = !instructor?.id || instructor?.role === 'admin'
+          const isNodo360 = firmadoPorLaPlataforma || !instructor?.id
 
           if (isNodo360) {
             return (
