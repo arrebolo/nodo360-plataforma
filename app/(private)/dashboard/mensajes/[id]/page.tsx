@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import PageHeader from '@/components/ui/PageHeader'
 import { ArrowLeft, MessageCircle } from 'lucide-react'
 import ChatView from '@/components/messages/ChatView'
@@ -46,7 +47,10 @@ export default async function ConversacionPage({ params }: PageProps) {
     ? conversation.participant_2
     : conversation.participant_1
 
-  const { data: otherUser } = await supabase
+  // Con el cliente de servicio, por lo mismo que en las dos rutas: la
+  // participacion ya esta comprobada arriba —si no, se ha hecho redirect— y la
+  // politica por funcion de la 123 no le dara esta fila a otra sesion.
+  const { data: otherUser } = await createAdminClient()
     .from('users')
     .select('full_name')
     .eq('id', otherUserId)

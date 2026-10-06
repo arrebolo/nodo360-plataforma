@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireInstructorLike } from '@/lib/auth/requireInstructor'
 import PageHeader from '@/components/ui/PageHeader'
 import {
@@ -131,7 +132,14 @@ export default async function EstadisticasAlumnosPage() {
     .limit(10)
 
   const recentUserIds = [...new Set((recentEnrollments || []).map(e => e.user_id))]
-  const { data: users } = await supabase
+  // Con el cliente de SERVICIO. La politica por funcion de la 123 solo dara a una
+  // sesion las fichas de quien tiene pagina publica —instructor, mentor o autor de
+  // un curso publicado—, y estas son de alumnos.
+  //
+  // Acotado por construccion: los ids salen de las matriculas de SUS cursos
+  // (`courseIds` viene de `instructor_id = userId`), y requireInstructorLike()
+  // esta delante.
+  const { data: users } = await createAdminClient()
     .from('users')
     .select('id, full_name, avatar_url')
     .in('id', recentUserIds.length > 0 ? recentUserIds : ['00000000-0000-0000-0000-000000000000'])

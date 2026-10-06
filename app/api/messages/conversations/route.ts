@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
  * GET /api/messages/conversations
@@ -32,15 +33,25 @@ export async function GET() {
       return NextResponse.json({ error: 'Error al obtener conversaciones' }, { status: 500 })
     }
 
+    const servicio = createAdminClient()
+
     // Obtener info de los otros participantes y último mensaje
     const conversationsWithDetails = await Promise.all(
       (conversations || []).map(async (conv) => {
         const otherUserId = conv.participant_1 === user.id ? conv.participant_2 : conv.participant_1
 
-        // Info del otro usuario
-        const { data: otherUser } = await supabase
+        // LA FICHA DEL INTERLOCUTOR, CON EL CLIENTE DE SERVICIO.
+        //
+        // Antes se leia con la sesion de quien mira, y eso dejara de funcionar
+        // con la politica por funcion de la 123: el interlocutor normalmente no
+        // es instructor, ni mentor, ni autor de un curso publicado.
+        //
+        // Se puede usar el servicio porque la lista de conversaciones de arriba
+        // ya esta acotada por la RLS a las de esta persona: aqui solo se llega
+        // con interlocutores suyos. Y sin `role`: no se publica.
+        const { data: otherUser } = await servicio
           .from('users')
-          .select('id, full_name, avatar_url, role')
+          .select('id, full_name, avatar_url')
           .eq('id', otherUserId)
           .single()
 
@@ -63,7 +74,7 @@ export async function GET() {
 
         return {
           id: conv.id,
-          otherUser: otherUser || { id: otherUserId, full_name: 'Usuario', avatar_url: null, role: 'student' },
+          otherUser: otherUser || { id: otherUserId, full_name: 'Usuario', avatar_url: null },
           lastMessage: lastMessage || null,
           unreadCount: unreadCount || 0,
           lastMessageAt: conv.last_message_at,

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireMentor } from '@/lib/auth/requireMentor'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -44,14 +45,26 @@ export default async function MentorPendingCoursesPage() {
       updated_at,
       published_at,
       status,
-      users!courses_instructor_id_fkey (
-        id,
-        full_name,
-        avatar_url
-      )
+      instructor_id
     `)
     .eq('status', 'pending_review')
     .order('updated_at', { ascending: true })
+
+  // LOS NOMBRES, APARTE Y CON EL SERVICIO.
+  //
+  // Era un embed `users!...(id, full_name, avatar_url)`. Con la politica por
+  // funcion de la 123, la ficha de quien no tiene pagina publica no se la da la
+  // base a otra sesion, asi que el embed volveria vacio o —si fuera !inner—
+  // dejaria fuera la fila entera.
+  //
+  // La consulta de arriba NO se toca: lleva su RLS y es la que decide que filas
+  // puede ver quien pregunta. Aqui solo se resuelven los nombres de los ids que
+  // ya ha devuelto.
+  const idsDeAutor = [...new Set((courses ?? []).map((c: { instructor_id: string | null }) => c.instructor_id).filter(Boolean))] as string[]
+  const { data: autores } = idsDeAutor.length
+    ? await createAdminClient().from('users').select('id, full_name, avatar_url').in('id', idsDeAutor)
+    : { data: [] }
+  const autorPorId = new Map((autores ?? []).map((u) => [u.id, u]))
 
   if (error) {
     console.error('Error fetching pending courses:', error)
@@ -130,7 +143,7 @@ export default async function MentorPendingCoursesPage() {
         {courses && courses.length > 0 ? (
           <div className="space-y-4">
             {courses.map((course: any) => {
-              const instructor = course.users
+              const instructor = autorPorId.get(course.instructor_id as string) ?? null
               const stats = courseStats[course.id] || { modules: 0, lessons: 0 }
               const counts = reviewCounts[course.id] || { approve: 0, request_changes: 0 }
               const mentorVote = mentorVotes[course.id] || null
@@ -211,7 +224,7 @@ export default async function MentorPendingCoursesPage() {
                           {instructor?.avatar_url ? (
                             <Image
                               src={instructor.avatar_url}
-                              alt={instructor.full_name}
+                              alt={instructor.full_name ?? ''}
                               width={20}
                               height={20}
                               className="w-5 h-5 rounded-full"

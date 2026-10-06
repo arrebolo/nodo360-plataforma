@@ -9,7 +9,6 @@ interface OtherUser {
   id: string
   full_name: string
   avatar_url: string | null
-  role: string
 }
 
 interface LastMessage {
@@ -215,7 +214,6 @@ export default function ConversationList({ currentUserId }: ConversationListProp
                 </div>
 
                 <p className="text-xs text-white/30 capitalize mt-0.5">
-                  {conv.otherUser.role}
                 </p>
               </div>
             </Link>

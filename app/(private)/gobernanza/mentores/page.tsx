@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import PageHeader from '@/components/ui/PageHeader'
 import {
   ArrowLeft,
@@ -50,15 +51,31 @@ export default async function GobernanzaMentoresPage() {
       quorum_met,
       voting_starts_at,
       voting_ends_at,
-      created_at,
-      users!mentor_applications_user_id_fkey (
-        id,
-        full_name,
-        avatar_url
-      )
+      created_at
     `)
     .eq('status', 'voting')
     .order('voting_ends_at', { ascending: true })
+
+  // LAS FICHAS DE QUIEN APLICA, APARTE Y CON EL SERVICIO.
+  //
+  // Era un embed `users!mentor_applications_user_id_fkey(...)`. Quien aplica a
+  // mentor es, por definicion, alguien que AUN NO lo es: un alumno. La politica
+  // por funcion de la 123 no da su ficha a otra sesion, asi que el embed
+  // volveria vacio y la tarjeta de voto se quedaria sin nombre ni avatar.
+  //
+  // La consulta de arriba no se toca —lleva su RLS— y aqui solo se resuelven los
+  // nombres de los ids que ya ha devuelto. Se adjuntan como `users` para que
+  // MentorVoteCard siga leyendo lo mismo. Delante esta el redirect que exige
+  // rol mentor o admin.
+  const idsQueAplican = [...new Set((applications ?? []).map((a) => a.user_id))]
+  const { data: fichas } = idsQueAplican.length
+    ? await createAdminClient().from('users').select('id, full_name, avatar_url').in('id', idsQueAplican)
+    : { data: [] }
+  const fichaPorId = new Map((fichas ?? []).map((u) => [u.id, u]))
+  const aplicacionesConFicha = (applications ?? []).map((a) => ({
+    ...a,
+    users: fichaPorId.get(a.user_id) ?? null,
+  }))
 
   // Obtener votos del usuario actual
   const applicationIds = applications?.map(a => a.id) || []
@@ -112,7 +129,7 @@ export default async function GobernanzaMentoresPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {applications.map((app: any) => (
+            {aplicacionesConFicha.map((app: any) => (
               <MentorVoteCard
                 key={app.id}
                 application={app}
