@@ -55,40 +55,81 @@ Ahí hay dos cosas:
   el de transacción no sirve para `pg_dump`.
 
 - **Database password**. Solo se enseña **al crear el proyecto**. Si no la tienes
-  apuntada, en esa misma página hay **Reset database password** — ojo, eso la
-  cambia, así que cualquier otro sitio que la use habrá que actualizarlo.
-  La plataforma **no** la usa: la aplicación entra por la API con las claves
-  `anon` y `service_role`, así que resetearla no rompe nada del sitio.
+  apuntada, en esa misma página hay **Reset database password**.
+
+### Resetearla no rompe nada: comprobado
+
+Antes de decirlo, buscado. En todo el árbol —código, scripts y el workflow— **no
+hay una sola conexión directa a Postgres**:
+
+| qué se buscó | resultado |
+|---|---|
+| `DATABASE_URL`, `POSTGRES_URL`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `PGPASSWORD`, `PGHOST` | **ninguna referencia** |
+| `pg`, `postgres`, `postgres-js`, `prisma`, `drizzle`, `knex`, `@vercel/postgres`, `kysely` en `package.json` | **ninguna dependencia** |
+| esos mismos paquetes en `node_modules` (por si entraran de transitivo) | **ninguno instalado** |
+| `import` de alguno de ellos en `app/`, `lib/`, `components/`, `scripts/` | **ninguno** |
+
+Todo habla con Supabase **por la API**, con `NEXT_PUBLIC_SUPABASE_ANON_KEY` y
+`SUPABASE_SERVICE_ROLE_KEY`. La contraseña de la base no la usa nada de la
+plataforma, así que cambiarla **no corta ningún servicio**. Lo único que dejaría
+de funcionar es una conexión que alguien tuviera abierta a mano desde su
+ordenador.
+
+**Guárdala en un gestor de contraseñas**, con el nombre del proyecto. No en un
+fichero, no en una nota del escritorio y desde luego no en este repositorio: es
+la llave que salta por encima de la RLS y de todos los permisos por columna que
+hemos ido poniendo.
 
 ---
 
 ## 3. El comando
 
-En PowerShell, en una sola sesión. La contraseña vive en una variable de entorno
-y se borra al final:
+En PowerShell, en una sola sesión. La contraseña **no se ve al teclearla** y se
+borra al terminar **pase lo que pase**, también si `pg_dump` falla:
 
 ```powershell
 # 1. Donde se guarda: FUERA del repositorio
 $destino = "$env:USERPROFILE\nodo360-esquema"
 New-Item -ItemType Directory -Force $destino | Out-Null
 
-# 2. La contraseña, solo en esta sesión. Te la pide y no se queda escrita.
-$env:PGPASSWORD = Read-Host -Prompt "Contrasena de la base (no se guarda)"
+# 2. La contraseña: no se ve al teclearla y no queda escrita en ningún sitio
+$seguro = Read-Host -Prompt "Contrasena de la base" -AsSecureString
+$bstr   = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($seguro)
 
-# 3. El volcado: SOLO ESQUEMA, con permisos y políticas, sin una sola fila
-& "C:\Program Files\PostgreSQL\18\bin\pg_dump.exe" `
-    --host=aws-0-<region>.pooler.supabase.com `
-    --port=5432 `
-    --username=postgres.<ref> `
-    --dbname=postgres `
-    --schema-only `
-    --schema=public `
-    --no-password `
-    --file="$destino\esquema-publico.sql"
+try {
+    $env:PGPASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
 
-# 4. Y fuera la contraseña de la sesión
-Remove-Item Env:PGPASSWORD
+    # 3. El volcado: SOLO ESQUEMA, con permisos y políticas, sin una sola fila
+    & "C:\Program Files\PostgreSQL\18\bin\pg_dump.exe" `
+        --host=aws-0-<region>.pooler.supabase.com `
+        --port=5432 `
+        --username=postgres.<ref> `
+        --dbname=postgres `
+        --schema-only `
+        --schema=public `
+        --no-password `
+        --file="$destino\esquema-publico.sql"
+
+    if ($LASTEXITCODE -ne 0) { Write-Warning "pg_dump fallo con codigo $LASTEXITCODE" }
+}
+finally {
+    # 4. Y fuera de la sesion, aunque pg_dump se haya caido
+    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+    Remove-Item Env:PGPASSWORD -ErrorAction SilentlyContinue
+}
 ```
+
+Tres detalles que importan:
+
+- **`-AsSecureString`**: no se ve lo que tecleas, y no queda en el historial de
+  PowerShell. Con `Read-Host` a secas, la contraseña aparece en pantalla.
+- **`try`/`finally`**: si `pg_dump` falla —host mal escrito, red, permisos—, la
+  variable se borra igual. Sin el `finally`, una contraseña se queda en la
+  sesión hasta que cierras la ventana.
+- **`ZeroFreeBSTR`**: además de borrar la variable, sobrescribe la copia en
+  memoria que hizo falta para convertirla.
+
+Probado en PowerShell 5.1, que es el de esta máquina.
 
 Sustituye `<region>` y `<ref>` por lo que diga el panel.
 
