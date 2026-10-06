@@ -268,6 +268,26 @@ GRANT ALL ON public.instructor_profiles TO service_role;
 GRANT SELECT ON public.user_roles TO anon, authenticated;
 GRANT ALL ON public.user_roles TO service_role;
 
+-- El trigger de la firma, de la 121: la autoprueba de la 123 monta su caso
+-- cambiando esa columna, y sin este trigger el banco no podria decir si ese
+-- UPDATE pasa o se levanta. Exime a postgres, que es quien ejecuta la migracion.
+CREATE OR REPLACE FUNCTION public.la_firma_de_la_plataforma() RETURNS trigger
+LANGUAGE plpgsql SECURITY INVOKER SET search_path = public, pg_temp AS $ffp$
+DECLARE
+  v_antes boolean := CASE WHEN TG_OP = 'INSERT' THEN false
+                          ELSE OLD.firmado_por_la_plataforma END;
+BEGIN
+  IF NEW.firmado_por_la_plataforma IS NOT DISTINCT FROM v_antes THEN RETURN NEW; END IF;
+  IF current_user IN ('postgres', 'supabase_admin') THEN RETURN NEW; END IF;
+  IF public.es_admin_actual() THEN RETURN NEW; END IF;
+  RAISE EXCEPTION 'La firma de la plataforma la pone y la quita solo la administracion.'
+    USING ERRCODE = '42501';
+END $ffp$;
+
+CREATE TRIGGER trg_la_firma_de_la_plataforma
+  BEFORE INSERT OR UPDATE ON public.courses
+  FOR EACH ROW EXECUTE FUNCTION public.la_firma_de_la_plataforma();
+
 -- ── LA RLS DE LAS TRES, QUE ES LO QUE DECIDE SI UNA POLITICA PUEDE MIRARLAS ──
 --
 -- Medido contra produccion el 2026-10-06, con la clave de servicio y con la
@@ -311,14 +331,32 @@ INSERT INTO public.instructor_profiles (user_id, is_active, accepts_messages)
 INSERT INTO public.user_roles (user_id, role, is_active)
   SELECT id, 'mentor', true FROM public.users WHERE role = 'mentor';
 
+-- LOS CURSOS, con la forma MEDIDA en produccion el 2026-10-06:
+--
+--   published  firmado por la plataforma  10
+--   archived   firmado por la plataforma   5
+--   draft      firmado por PERSONA         1
+--
+-- Lo que importa de esa tabla, y lo que el andamio tenia mal: NO HAY NINGUN
+-- CURSO PUBLICADO FIRMADO POR PERSONA. El andamio tenia uno, y eso es peor que
+-- no tenerlo: hacia pasar en verde la autoprueba de la 123, que en produccion
+-- se levanto por no encontrarlo. Un andamio que tiene datos que produccion no
+-- tiene no avala nada: avala lo contrario.
+--
+-- Uno por combinacion, no diez: lo que se modela es la FORMA, no el volumen.
 INSERT INTO public.courses (slug, title, status, instructor_id, firmado_por_la_plataforma)
-  SELECT 'curso-de-la-plataforma', 'Curso firmado por la plataforma', 'published', id, true
+  SELECT 'curso-de-la-plataforma', 'Curso publicado de la plataforma', 'published', id, true
     FROM public.users WHERE role = 'admin';
 
--- Y uno firmado por una PERSONA, que es el caso que la autoprueba de la 123
--- tiene que poder seguir mostrando con su autor.
 INSERT INTO public.courses (slug, title, status, instructor_id, firmado_por_la_plataforma)
-  SELECT 'curso-de-una-persona', 'Curso firmado por una persona', 'published', id, false
+  SELECT 'curso-retirado', 'Curso archivado de la plataforma', 'archived', id, true
+    FROM public.users WHERE role = 'admin';
+
+-- El de una persona es BORRADOR, como el unico que hay en produccion
+-- (auditoria-ethereum-v2). Asi la rama de autor NO tiene datos aqui tampoco, y
+-- la autoprueba tiene que montarse el caso, que es lo que se le exige.
+INSERT INTO public.courses (slug, title, status, instructor_id, firmado_por_la_plataforma)
+  SELECT 'curso-de-una-persona', 'Borrador firmado por una persona', 'draft', id, false
     FROM public.users WHERE role = 'instructor';
 
 -- La vista, igual que la deja la 104 (con «role»: la 123 es la que lo quita).
