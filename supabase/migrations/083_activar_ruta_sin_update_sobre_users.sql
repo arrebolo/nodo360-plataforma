@@ -1,8 +1,13 @@
 -- ============================================================================
 -- 083: activar una ruta sin que nadie pueda escribir en public.users
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
---   Copia para pegar: tmp/083-aplicar.sql
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05 (auditoria v2):
+--   la funcion activar_ruta(text) existe.
+--
+--   Antes la di por NO aplicada, y era un falso negativo mio: la sondee
+--   llamandola SIN ARGUMENTOS, y a eso PostgREST contesta PGRST202, «no hay
+--   funcion con esos argumentos», que no es lo mismo que no existir. Con p_slug
+--   contesta con su propio error, «Hace falta una sesion para activar una ruta».
 --
 -- EL PROBLEMA
 --   La migracion 049 hizo REVOKE ALL ON public.users FROM authenticated y

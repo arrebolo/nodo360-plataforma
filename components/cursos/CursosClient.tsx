@@ -147,7 +147,8 @@ export function CursosClient({ allCourses, matriculas = {}, sellos = {} }: Curso
                     progressPercent={matriculas[course.id]?.progreso ?? 0}
                     isComingSoon={course.status === 'coming_soon'}
                     learningPath={learningPath}
-                    instructor={course.instructor as { id: string; full_name: string | null; avatar_url: string | null; role: string | null } | null}
+                    instructor={course.instructor as { id: string; full_name: string | null; avatar_url: string | null } | null}
+                    firmadoPorLaPlataforma={course.firmado_por_la_plataforma}
                     sello={sellos?.[(course.instructor as { id?: string } | null)?.id ?? ''] ?? null}
                     onView={() => router.push(`/cursos/${course.slug}`)}
                     onStart={() => router.push(`/cursos/${course.slug}`)}

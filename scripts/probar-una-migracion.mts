@@ -29,6 +29,12 @@
  *       inventadas. Si una autoprueba cuenta cursos reales, aquí dirá otra cosa:
  *       eso lo dice la aplicación de verdad, y por eso sigue habiendo revisión
  *       humana antes de aplicar.
+ *   NO  nada de una migración que no toque `public.users`. EL ANDAMIO ESTA
+ *       ESCRITO A MANO y solo modela esa tabla: con cualquier otra fallaría por
+ *       objetos que no existen, y ese fallo no diría nada. Y por estar escrito a
+ *       mano, SE DESFASA: ya se le habían olvidado `email_normalizado` y
+ *       `anunciar_logros`. Lo que lo arregla de verdad es cargar un volcado de
+ *       esquema de producción, y eso está pendiente.
  *
  *   O sea: esto no sustituye a aplicarla. Evita darte un fichero que ni arranca.
  */
@@ -99,6 +105,20 @@ $$;
 
 CREATE TYPE user_role AS ENUM ('student', 'instructor', 'mentor', 'admin');
 
+-- Hace falta antes de la tabla: la columna generada email_normalizado la llama.
+-- Copiada de la 106, con su IMMUTABLE, que es lo que permite generar con ella.
+CREATE OR REPLACE FUNCTION public.correo_normalizado(p_correo text)
+RETURNS text LANGUAGE sql IMMUTABLE SET search_path = pg_temp AS $cn$
+  SELECT CASE
+    WHEN p_correo IS NULL OR position('@' in p_correo) = 0 THEN lower(p_correo)
+    WHEN lower(split_part(p_correo, '@', 2)) IN ('gmail.com', 'googlemail.com')
+      THEN replace(split_part(lower(split_part(p_correo, '@', 1)), '+', 1), '.', '')
+           || '@gmail.com'
+    ELSE split_part(lower(split_part(p_correo, '@', 1)), '+', 1)
+         || '@' || lower(split_part(p_correo, '@', 2))
+  END
+$cn$;
+
 CREATE TABLE public.users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email text,
@@ -124,7 +144,13 @@ CREATE TABLE public.users (
   wants_beta_notification boolean NOT NULL DEFAULT false,
   welcome_email_sent_at timestamptz,
   email_confirmed_at timestamptz,
-  website text
+  website text,
+  -- La 113 la crea y la 122 la aplico de verdad. Sin ella, una migracion que la
+  -- toque fallaria aqui por una razon que no es la suya.
+  anunciar_logros boolean NOT NULL DEFAULT false,
+  -- GENERADA, como en la 106. Importa que lo sea: a una columna generada no se
+  -- le puede escribir, y una migracion que lo intente tiene que fallar AQUI.
+  email_normalizado text GENERATED ALWAYS AS (public.correo_normalizado(email)) STORED
 );
 
 -- es_admin_actual(), como la 034: SECURITY DEFINER y mirando la fila propia.
@@ -168,8 +194,11 @@ CREATE TRIGGER trg_proteger_la_cuenta_admin BEFORE UPDATE OR DELETE ON public.us
 -- LOS PERMISOS, los medidos: cinco columnas legibles, nueve escribibles.
 REVOKE ALL ON public.users FROM anon, authenticated;
 GRANT SELECT (id, full_name, avatar_url, role, created_at) ON public.users TO anon, authenticated;
+-- DIEZ desde la 122: las nueve de la 085 (menos las dos que retiro la 086) mas
+-- anunciar_logros.
 GRANT UPDATE (full_name, bio, avatar_url, avatar_path, website,
-              twitter, linkedin, github, wants_beta_notification)
+              twitter, linkedin, github, wants_beta_notification,
+              anunciar_logros)
   ON public.users TO authenticated;
 GRANT ALL ON public.users TO service_role;
 
@@ -200,13 +229,34 @@ const db = await PGlite.create()
 const version = (await db.query<{ version: string }>('select version()')).rows[0].version
 console.log(`   motor: ${version.split(' on ')[0]}`)
 
-// ── El andamio ──────────────────────────────────────────────────────────────
+// ── El esquema: el volcado de produccion si existe, y si no el andamio ──────
+//
+// `tmp/esquema-produccion.sql` lo saca `docs/VOLCADO-DE-ESQUEMA.md` con
+// `pg_dump --schema-only`. Vive en `tmp/`, que está en .gitignore: no se sube, y
+// este repositorio es público. Si está, el banco deja de depender de una tabla
+// escrita a mano; si no está, usa el andamio y LO DICE, para que nadie confunda
+// un aval completo con uno parcial.
+const VOLCADO = 'tmp/esquema-produccion.sql'
+const hayVolcado = fs.existsSync(VOLCADO)
+
 try {
-  await db.exec(ANDAMIO)
-  const { rows } = await db.query<{ n: number }>('select count(*)::int n from public.users')
-  console.log(`   andamio montado: ${rows[0].n} filas de mentira en public.users\n`)
+  if (hayVolcado) {
+    // Los roles no vienen en un pg_dump, así que se crean antes: es la primera
+    // parte del andamio, hasta el CREATE SCHEMA.
+    await db.exec(ANDAMIO.slice(0, ANDAMIO.indexOf('CREATE SCHEMA')))
+    await db.exec(fs.readFileSync(VOLCADO, 'utf8'))
+    console.log(`   esquema: ${VOLCADO} (volcado de producción)`)
+  } else {
+    await db.exec(ANDAMIO)
+    const { rows } = await db.query<{ n: number }>('select count(*)::int n from public.users')
+    console.log(`   esquema: ANDAMIO ESCRITO A MANO, ${rows[0].n} filas de mentira`)
+    console.log('   solo modela public.users; para el resto hace falta el volcado')
+    console.log('   (docs/VOLCADO-DE-ESQUEMA.md)')
+  }
+  console.log()
 } catch (e) {
-  console.error('*** El ANDAMIO no monta, así que no se ha probado la migración:')
+  console.error(`*** El esquema no monta (${hayVolcado ? VOLCADO : 'andamio'}),`)
+  console.error('    así que NO SE HA PROBADO la migración:')
   console.error('   ' + (e as Error).message)
   process.exit(1)
 }

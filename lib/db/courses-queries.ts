@@ -9,6 +9,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/utils/logger'
+import { sinElAutorSiFirmaLaPlataforma, sinLosAutoresQueFirmaLaPlataforma } from '@/lib/courses/firma'
 import type {
   Course,
   CourseWithInstructor,
@@ -41,8 +42,7 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
       instructor:instructor_id (
         id,
         full_name,
-        avatar_url,
-        role
+        avatar_url
       ),
       learning_path_courses (
         learning_path:learning_paths (
@@ -63,7 +63,10 @@ export async function getAllCourses(): Promise<CourseWithInstructor[]> {
   }
 
   console.log(`✅ [getAllCourses] ${data?.length || 0} cursos encontrados`)
-  return data || []
+
+  // EL AUTOR FUERA SI FIRMA LA PLATAFORMA, y aqui y no en la tarjeta: lo que no
+  // se quita en el servidor viaja en el HTML de la pagina aunque no se pinte.
+  return sinLosAutoresQueFirmaLaPlataforma(data || [])
 }
 
 /**
@@ -86,8 +89,7 @@ export async function getCourseBySlug(
         id,
         full_name,
         avatar_url,
-        bio,
-        role
+        bio
       ),
       modules (
         *,
@@ -116,7 +118,10 @@ export async function getCourseBySlug(
     modules: data?.modules?.length || 0,
   })
 
-  return data
+  // Igual que en el catalogo. Hoy no la llama nadie —la ficha publica tiene su
+  // propia consulta en app/cursos/[slug]/page.tsx—, pero se deja cerrada para
+  // que quien la use mañana no reabra el agujero sin darse cuenta.
+  return sinElAutorSiFirmaLaPlataforma(data)
 }
 
 /**

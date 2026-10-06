@@ -58,10 +58,17 @@ const SENSIBLES = [
   'welcome_email_sent_at', 'email_confirmed_at', 'last_seen_at',
 ] as const
 
-/** Las que sí edita de su perfil (085, menos las dos que retiró la 086). */
+/**
+ * Las que sí edita de su perfil: las nueve de la 085 —menos las dos que retiró
+ * la 086— más `anunciar_logros`, que la 122 creó y concedió.
+ *
+ * Son exactamente las diez que manda `ProfileForm`. Si alguna dejara de estar
+ * concedida, el formulario volvería a fallar entero: un PATCH es atómico.
+ */
 const DEL_PERFIL = [
   'full_name', 'bio', 'avatar_url', 'avatar_path',
   'website', 'twitter', 'linkedin', 'github', 'wants_beta_notification',
+  'anunciar_logros',
 ] as const
 
 const MARCA = `qa-escritura-${Date.now()}`
@@ -160,7 +167,7 @@ try {
     `${conLectura.status}`)
 
   // ── 3. Las nueve del perfil: todas tienen que poder escribirse ────────────
-  console.log('\n=== las nueve columnas del perfil ===')
+  console.log('\n=== las diez columnas del perfil ===')
   const noEscriben: string[] = []
   for (const col of DEL_PERFIL) {
     const r = await escribir(usuario, { [col]: valorPara(col) })
@@ -171,7 +178,7 @@ try {
       noEscriben.push(`${col} (${r.estado} ${motivo})`)
     }
   }
-  di(noEscriben.length === 0, 'las nueve se escriben',
+  di(noEscriben.length === 0, 'las diez se escriben',
     noEscriben.length ? '*** no: ' + noEscriben.join(', ') : `${DEL_PERFIL.length} de ${DEL_PERFIL.length}`)
 
   // ── 4. Las sensibles: ninguna, y comprobando que el valor no se movió ─────

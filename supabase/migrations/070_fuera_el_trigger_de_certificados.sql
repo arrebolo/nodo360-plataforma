@@ -1,9 +1,12 @@
 -- ============================================================================
 -- 070: fuera el trigger que emitia certificados sin pasar por el codigo
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR. Es DDL, no se puede ejecutar por PostgREST.
---   Fichero listo para el editor SQL: C:/Users/alber/070-aplicar.sql
---   Estado antes y despues, solo lectura:  C:/Users/alber/070-comprobar.sql
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05 (auditoria v2):
+--   el trigger trigger_auto_certificate_on_completion no existe, y ninguna de
+--   sus tres funciones tampoco —auto_issue_course_certificate(),
+--   backfill_missing_certificates() e issue_course_certificate_manual(uuid,uuid),
+--   consultadas por FIRMA EXACTA con to_regprocedure—. A la tercera no se la
+--   puede sondear llamandola: emitiria un certificado.
 --
 -- EL FALLO, CON SU CASO
 --   El 26/09/2026 a las 23:49:26 una cuenta creada ese mismo dia recibio el
