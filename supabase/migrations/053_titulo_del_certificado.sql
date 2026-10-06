@@ -1,7 +1,11 @@
 -- ============================================================================
 -- 053: /verificar muestra el titulo del certificado, no el vigente del curso
 -- ============================================================================
--- ESTADO: ESCRITA, SIN APLICAR (25/09/2026).
+-- ESTADO: NO ES OBSERVABLE, y da igual. Su unica aportacion es el cuerpo de
+--   verificar_certificado, y esa funcion la BORRO Y RECREO la 074, y la volvio a
+--   reemplazar la 075. Que hoy devuelva `titulo_certificado` no dice nada de esta
+--   migracion: las dos siguientes traen esa columna en su propio cuerpo. Lo que
+--   importa es que la version viva sea la de la 075, y eso se comprueba alli.
 --   Es DDL: hay que ejecutarla en el SQL Editor de Supabase. Fichero listo en
 --   C:/Users/alber/053-aplicar.sql
 --

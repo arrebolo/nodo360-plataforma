@@ -1,7 +1,11 @@
 -- ============================================================================
 -- MIGRACION 027: eliminar la vista quiz_questions_public
 --
--- *** PENDIENTE DE APLICAR ***
+-- ESTADO: EL EFECTO ESTA HECHO. La vista quiz_questions_public no existe
+--   (comprobado el 2026-10-05), y esta migracion es exactamente un
+--   `DROP VIEW IF EXISTS` y nada mas, asi que no queda nada por hacer. Lo que la
+--   evidencia NO puede decir es si la ejecuto esta migracion o alguien a mano:
+--   para un DROP, las dos cosas dejan la base igual y hoy es un no-op.
 --
 -- QUE ES Y DE DONDE SALE
 -- La creo la PARTE 2B de docs/migrations/021_rls_quiz_security.sql como via

@@ -1,8 +1,9 @@
 -- ============================================================================
 -- 087: el banco de preguntas del examen de instructor deja de ser legible
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
---   Copia para pegar: tmp/087-aplicar.sql
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05 (auditoria v2):
+--   existe la politica «Solo administracion gestiona el banco» y la vieja
+--   «Admins can manage questions» ya no existe.
 --
 -- QUE SE MIDIO, Y COMO
 --   Con una pregunta señuelo y un intento temporal, los dos borrados despues:

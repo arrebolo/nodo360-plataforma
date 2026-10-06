@@ -1,8 +1,10 @@
 -- ============================================================================
 -- 086: la ruta activa solo se escribe por activar_ruta()
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
---   Copia para pegar: tmp/086-aplicar.sql
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05 (auditoria v2):
+--   ni active_path_id ni active_path_selected_at son escribibles por
+--   authenticated, que es justo lo que retira. Encaja con la 085, que las
+--   concedia: esta es posterior y manda.
 --
 -- QUE HACE
 --   Retira el UPDATE de columna sobre active_path_id y active_path_selected_at

@@ -1,7 +1,10 @@
 -- ============================================================================
 -- 059: quita la columna modules.requires_quiz
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR. Es DDL, no se puede ejecutar por PostgREST.
+-- ESTADO: EL EFECTO ESTA HECHO. modules.requires_quiz no existe (comprobado el
+--   2026-10-05), y esta migracion es un DROP COLUMN con su comprobacion previa y
+--   nada mas. Igual que la 027: no distingue quien lo hizo, pero no queda nada
+--   por hacer y hoy es un no-op.
 --   Fichero listo para el editor SQL: C:/Users/alber/059-aplicar.sql
 --
 -- POR QUE SE QUITA Y NO SE DOCUMENTA POR QUE SE QUEDA

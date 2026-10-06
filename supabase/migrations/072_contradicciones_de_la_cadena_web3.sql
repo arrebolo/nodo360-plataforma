@@ -1,9 +1,10 @@
 -- ============================================================================
 -- 072: las contradicciones de la cadena de Web3, y la cita mal puesta
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR. Son UPDATE sobre lessons.content; se podria
---   hacer por PostgREST, pero el texto lleva HTML con comillas y acentos y va
---   mejor en el editor SQL, donde se ve lo que se escribe.
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05:
+--   las 9 sustituciones estan hechas: 0 textos viejos, 9 nuevos, y el espejo igual.
+--   El marcador anterior decia «pendiente» y estaba viejo: se escribe al crear
+--   el fichero y nadie lo cambia al aplicarlo.
 --   Fichero listo para el editor SQL: C:/Users/alber/072-aplicar.sql
 --   Estado antes y despues, solo lectura:  C:/Users/alber/072-comprobar.sql
 --

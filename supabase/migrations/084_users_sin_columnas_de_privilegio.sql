@@ -1,8 +1,10 @@
 -- ============================================================================
 -- 084: authenticated no puede escribir ninguna columna que dé privilegios
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
---   Copia para pegar: tmp/084-aplicar.sql
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05 (auditoria v2):
+--   de las catorce columnas de privilegio o de identidad de users, NINGUNA es
+--   escribible por authenticated ni por anon. Es lo que esta migracion
+--   garantiza, y es lo que hace que nadie pueda ascenderse a admin.
 --
 -- POR QUE EXISTE
 --   Al comprobar los privilegios sobre public.users salio esto:

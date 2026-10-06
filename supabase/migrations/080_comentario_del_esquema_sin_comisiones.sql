@@ -1,7 +1,10 @@
 -- ============================================================================
 -- 080: el esquema public deja de anunciar un sistema de comisiones
 -- ============================================================================
--- ESTADO: PENDIENTE DE APLICAR.
+-- ESTADO: APLICADA. Comprobado contra la base el 2026-10-05:
+--   el titulo del OpenAPI ya dice «Esquema de la plataforma educativa» y no menciona comisiones.
+--   El marcador anterior decia «pendiente» y estaba viejo: se escribe al crear
+--   el fichero y nadie lo cambia al aplicarlo.
 --   Copia para pegar: tmp/080-aplicar.sql
 --
 -- LO QUE HAY HOY
