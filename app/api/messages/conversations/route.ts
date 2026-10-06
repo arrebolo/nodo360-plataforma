@@ -114,10 +114,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No puedes crear una conversación contigo mismo' }, { status: 400 })
     }
 
-    // Verificar que el otro usuario existe
-    const { data: otherUser, error: userError } = await supabase
+    // COMPROBAR QUE EL DESTINATARIO EXISTE, CON EL CLIENTE DE SERVICIO.
+    //
+    // ESTE ERA UN FALLO DE VERDAD, y el guardian lo eximia porque la variable se
+    // llama `userId`: ese id VIENE DEL CUERPO de la peticion y cuatro lineas mas
+    // arriba se comprueba que es DISTINTO del de la sesion. O sea que es, por
+    // definicion, la ficha de otra persona leida con la sesion de quien escribe.
+    // Con la politica por funcion de la 123 devolveria vacio para cualquier
+    // alumno, y abrir una conversacion con el habria contestado «Usuario no
+    // encontrado».
+    //
+    // SOLO `id`, no el nombre: lo unico que hace falta aqui es saber si existe,
+    // y asi esta lectura no devuelve ni un dato de nadie. Quien pregunta ya
+    // tiene sesion.
+    //
+    // OJO, LO QUE ESTO *NO* ARREGLA: hoy cualquier cuenta con sesion puede abrir
+    // conversacion con cualquier id. No hay regla de quien puede escribir a
+    // quien, y eso es una decision de producto, no de permisos; esta levantado
+    // como pregunta y no se cambia aqui por mi cuenta.
+    const { data: otherUser, error: userError } = await createAdminClient()
       .from('users')
-      .select('id, full_name')
+      .select('id')
       .eq('id', userId)
       .single()
 
