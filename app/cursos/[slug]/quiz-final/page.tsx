@@ -25,7 +25,12 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
   // Verificar usuario autenticado
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Obtener curso + OWNER (mentor/instructor)
+  // Obtener el curso.
+  //
+  // Antes esto embebia tambien `owner:users!courses_owner_id_fkey(id, full_name,
+  // avatar_url, role)` y NO SE USABA PARA NADA: `owner_id` esta a NULL en los 16
+  // cursos y la 121 la documento como abandonada. Era, de paso, la unica lectura
+  // de `users.role` que quedaba en una pagina publica.
   const { data: course, error: courseError } = await supabase
     .from('courses')
     .select(`
@@ -33,13 +38,7 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
       title,
       slug,
       status,
-      instructor_id,
-      owner:users!courses_owner_id_fkey (
-        id,
-        full_name,
-        avatar_url,
-        role
-      )
+      instructor_id
     `)
     .eq('slug', slug)
     .single()

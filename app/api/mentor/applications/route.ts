@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 export const dynamic = 'force-dynamic'
@@ -61,12 +62,7 @@ export async function GET(request: NextRequest) {
         voting_ends_at,
         decided_at,
         can_reapply_at,
-        created_at,
-        users!mentor_applications_user_id_fkey (
-          id,
-          full_name,
-          avatar_url
-        )
+        created_at
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -101,7 +97,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Para mentores, verificar si ya votaron en cada aplicación en voting
-    let applicationsWithVoteStatus = applications || []
+    // LAS FICHAS DE QUIEN APLICA, APARTE Y CON EL SERVICIO.
+    //
+    // Era un embed. Quien aplica a mentor es, por definicion, alguien que aun no
+    // lo es, asi que la politica por funcion de la 123 no dara su ficha a otra
+    // sesion. Se adjuntan igual que antes para NO cambiar la forma de esta
+    // respuesta —hoy no la pide nadie, pero cambiar una API en silencio es como
+    // se rompen las cosas mañana—.
+    //
+    // La consulta de arriba no se toca: ya esta acotada por rol, y un usuario
+    // normal solo ve sus propias aplicaciones.
+    const idsQueAplican = [...new Set((applications ?? []).map((a) => a.user_id))]
+    const { data: fichas } = idsQueAplican.length
+      ? await createAdminClient().from('users').select('id, full_name, avatar_url').in('id', idsQueAplican)
+      : { data: [] }
+    const fichaPorId = new Map((fichas ?? []).map((u) => [u.id, u]))
+
+    let applicationsWithVoteStatus = (applications ?? []).map((a) => ({
+      ...a,
+      users: fichaPorId.get(a.user_id) ?? null,
+    }))
     if (userRole === 'mentor') {
       const votingApps = applicationsWithVoteStatus.filter(a => a.status === 'voting')
       if (votingApps.length > 0) {

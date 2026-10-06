@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/admin/auth'
 import Link from 'next/link'
 import { Clock, Eye, CheckCircle, XCircle, User, Calendar, BookOpen } from 'lucide-react'
@@ -44,15 +45,26 @@ export default async function PendingCoursesPage() {
       updated_at,
       instructor_id,
       published_at,
-      status,
-      users!courses_instructor_id_fkey (
-        id,
-        full_name,
-        avatar_url
-      )
+      status
     `)
     .eq('status', 'pending_review')
     .order('updated_at', { ascending: true })
+
+  // LOS NOMBRES, APARTE Y CON EL SERVICIO.
+  //
+  // Era un embed `users!...(id, full_name, avatar_url)`. Con la politica por
+  // funcion de la 123, la ficha de quien no tiene pagina publica no se la da la
+  // base a otra sesion, asi que el embed volveria vacio o —si fuera !inner—
+  // dejaria fuera la fila entera.
+  //
+  // La consulta de arriba NO se toca: lleva su RLS y es la que decide que filas
+  // puede ver quien pregunta. Aqui solo se resuelven los nombres de los ids que
+  // ya ha devuelto.
+  const idsDeAutor = [...new Set((courses ?? []).map((c: { instructor_id: string | null }) => c.instructor_id).filter(Boolean))] as string[]
+  const { data: autores } = idsDeAutor.length
+    ? await createAdminClient().from('users').select('id, full_name, avatar_url').in('id', idsDeAutor)
+    : { data: [] }
+  const autorPorId = new Map((autores ?? []).map((u) => [u.id, u]))
 
   if (error) {
     console.error('Error fetching pending courses:', error)
@@ -118,7 +130,7 @@ export default async function PendingCoursesPage() {
         ) : (
           <div className="space-y-4">
             {coursesWithStats.map((course: any) => {
-              const instructor = course.users
+              const instructor = autorPorId.get(course.instructor_id as string) ?? null
               // Primera publicacion o revision de algo ya publicado: no es lo mismo, y
               // en la segunda hay una version viva en el catalogo que no se toca.
               const estado = estadoVisibleDelCurso(course)

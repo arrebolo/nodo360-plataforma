@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
  * GET /api/messages/conversations
@@ -32,15 +33,25 @@ export async function GET() {
       return NextResponse.json({ error: 'Error al obtener conversaciones' }, { status: 500 })
     }
 
+    const servicio = createAdminClient()
+
     // Obtener info de los otros participantes y último mensaje
     const conversationsWithDetails = await Promise.all(
       (conversations || []).map(async (conv) => {
         const otherUserId = conv.participant_1 === user.id ? conv.participant_2 : conv.participant_1
 
-        // Info del otro usuario
-        const { data: otherUser } = await supabase
+        // LA FICHA DEL INTERLOCUTOR, CON EL CLIENTE DE SERVICIO.
+        //
+        // Antes se leia con la sesion de quien mira, y eso dejara de funcionar
+        // con la politica por funcion de la 123: el interlocutor normalmente no
+        // es instructor, ni mentor, ni autor de un curso publicado.
+        //
+        // Se puede usar el servicio porque la lista de conversaciones de arriba
+        // ya esta acotada por la RLS a las de esta persona: aqui solo se llega
+        // con interlocutores suyos. Y sin `role`: no se publica.
+        const { data: otherUser } = await servicio
           .from('users')
-          .select('id, full_name, avatar_url, role')
+          .select('id, full_name, avatar_url')
           .eq('id', otherUserId)
           .single()
 
@@ -63,7 +74,7 @@ export async function GET() {
 
         return {
           id: conv.id,
-          otherUser: otherUser || { id: otherUserId, full_name: 'Usuario', avatar_url: null, role: 'student' },
+          otherUser: otherUser || { id: otherUserId, full_name: 'Usuario', avatar_url: null },
           lastMessage: lastMessage || null,
           unreadCount: unreadCount || 0,
           lastMessageAt: conv.last_message_at,
@@ -103,10 +114,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No puedes crear una conversación contigo mismo' }, { status: 400 })
     }
 
-    // Verificar que el otro usuario existe
-    const { data: otherUser, error: userError } = await supabase
+    // COMPROBAR QUE EL DESTINATARIO EXISTE, CON EL CLIENTE DE SERVICIO.
+    //
+    // ESTE ERA UN FALLO DE VERDAD, y el guardian lo eximia porque la variable se
+    // llama `userId`: ese id VIENE DEL CUERPO de la peticion y cuatro lineas mas
+    // arriba se comprueba que es DISTINTO del de la sesion. O sea que es, por
+    // definicion, la ficha de otra persona leida con la sesion de quien escribe.
+    // Con la politica por funcion de la 123 devolveria vacio para cualquier
+    // alumno, y abrir una conversacion con el habria contestado «Usuario no
+    // encontrado».
+    //
+    // SOLO `id`, no el nombre: lo unico que hace falta aqui es saber si existe,
+    // y asi esta lectura no devuelve ni un dato de nadie. Quien pregunta ya
+    // tiene sesion.
+    //
+    // OJO, LO QUE ESTO *NO* ARREGLA: hoy cualquier cuenta con sesion puede abrir
+    // conversacion con cualquier id. No hay regla de quien puede escribir a
+    // quien, y eso es una decision de producto, no de permisos; esta levantado
+    // como pregunta y no se cambia aqui por mi cuenta.
+    const { data: otherUser, error: userError } = await createAdminClient()
       .from('users')
-      .select('id, full_name')
+      .select('id')
       .eq('id', userId)
       .single()
 

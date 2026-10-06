@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
  * GET /api/admin/students/stats
@@ -26,7 +27,12 @@ export async function GET() {
     }
 
     // 1. Total de usuarios registrados
-    const { count: totalUsers } = await supabase
+    // TODAS las lecturas de `users` de esta ruta van por el servicio: el panel
+    // cuenta y lista alumnos, y un count pasa por la RLS igual que un select.
+    // El 403 por `role !== 'admin'` esta unas lineas arriba.
+    const servicio = createAdminClient()
+
+    const { count: totalUsers } = await servicio
       .from('users')
       .select('id', { count: 'exact', head: true })
 
@@ -72,10 +78,7 @@ export async function GET() {
         title,
         slug,
         thumbnail_url,
-        instructor_id,
-        users!courses_instructor_id_fkey (
-          full_name
-        )
+        instructor_id
       `)
       .eq('status', 'published')
       .order('created_at', { ascending: false })
@@ -93,6 +96,18 @@ export async function GET() {
       allEnrollments = enrollments || []
     }
 
+    // LOS NOMBRES DE LOS AUTORES, APARTE Y CON EL SERVICIO.
+    //
+    // Era un embed en la consulta de cursos. Un instructor cuyo unico curso este
+    // pendiente de revision no tiene pagina publica, asi que con la politica por
+    // funcion de la 123 el embed volveria vacio. La consulta de cursos no se
+    // toca; aqui solo se resuelven los nombres de los ids que ya trae.
+    const idsDeAutor = [...new Set((courses || []).map((c) => c.instructor_id).filter(Boolean))] as string[]
+    const { data: autores } = idsDeAutor.length
+      ? await servicio.from('users').select('id, full_name').in('id', idsDeAutor)
+      : { data: [] }
+    const autorPorId = new Map((autores ?? []).map((u) => [u.id, u]))
+
     // Calcular estadísticas por curso
     const courseStats = (courses || []).map(course => {
       const courseEnrollments = allEnrollments.filter(e => e.course_id === course.id)
@@ -100,7 +115,7 @@ export async function GET() {
       const inProgress = courseEnrollments.filter(e => !e.completed_at).length
       const total = courseEnrollments.length
       const courseCompletionRate = total > 0 ? Math.round((completed / total) * 100) : 0
-      const instructor = course.users as any
+      const instructor = autorPorId.get(course.instructor_id as string) ?? null
 
       return {
         courseId: course.id,
@@ -134,7 +149,7 @@ export async function GET() {
     const recentUserIds = [...new Set((recentEnrollments || []).map(e => e.user_id))]
     const recentCourseIds = [...new Set((recentEnrollments || []).map(e => e.course_id))]
 
-    const { data: users } = await supabase
+    const { data: users } = await servicio
       .from('users')
       .select('id, full_name, avatar_url')
       .in('id', recentUserIds.length > 0 ? recentUserIds : ['00000000-0000-0000-0000-000000000000'])

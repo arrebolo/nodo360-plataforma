@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin/auth'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { Trophy, Zap, Users, TrendingUp, Plus, Settings } from 'lucide-react'
 
@@ -35,16 +36,29 @@ async function getGamificationStats() {
   })
 
   // Top 5 usuarios por XP
-  const { data: topUsers } = await supabase
+  // EL TOP 5, SIN EMBED. Era `users!inner (full_name)`, y un inner join con la
+  // politica por funcion de la 123 no deja fuera el nombre: deja fuera LA FILA
+  // ENTERA, asi que el top 5 se quedaria solo con instructores y mentores.
+  //
+  // La consulta de estadisticas se queda como esta —con su RLS— y los nombres se
+  // resuelven aparte, con el servicio, pidiendo solo los cinco ids que ya ha
+  // devuelto. requireAdmin() en el layout decide quien llega hasta aqui.
+  const { data: topStats } = await supabase
     .from('user_gamification_stats')
-    .select(`
-      total_xp,
-      current_level,
-      user_id,
-      users!inner (full_name)
-    `)
+    .select('total_xp, current_level, user_id')
     .order('total_xp', { ascending: false })
     .limit(5)
+
+  const { data: nombresTop } = await createAdminClient()
+    .from('users')
+    .select('id, full_name')
+    .in('id', (topStats || []).map((u) => u.user_id))
+
+  const nombrePorId = new Map((nombresTop || []).map((u) => [u.id, u.full_name]))
+  const topUsers = (topStats || []).map((u) => ({
+    ...u,
+    users: { full_name: nombrePorId.get(u.user_id) ?? null },
+  }))
 
   // Hitos más populares
   const { data: userBadgesData } = await supabase

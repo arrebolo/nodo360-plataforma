@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin/auth'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Zap, TrendingUp, Bell, Shield, Database } from 'lucide-react'
 import XPConfigForm from './XPConfigForm'
 import LevelConfigForm from './LevelConfigForm'
@@ -35,7 +36,11 @@ async function getSystemConfig() {
   }
 
   // Contar estadísticas actuales
-  const { count: totalUsers } = await supabase
+  //
+  // EL RECUENTO, CON EL SERVICIO. Un count pasa por la RLS igual que un select:
+  // con la politica por funcion de la 123, este panel diria «4 usuarios» en vez
+  // de los que hay. requireAdmin() en el layout ya ha decidido quien entra aqui.
+  const { count: totalUsers } = await createAdminClient()
     .from('users')
     .select('*', { count: 'exact', head: true })
 

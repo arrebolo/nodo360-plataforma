@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
  * GET /api/instructor/students/stats
@@ -119,7 +120,9 @@ export async function GET() {
 
     // Obtener nombres de usuarios
     const recentUserIds = [...new Set((recentEnrollments || []).map(e => e.user_id))]
-    const { data: users } = await supabase
+    // Con el servicio: son alumnos, y la 123 no da su ficha a otra sesion. Los
+    // ids vienen de las matriculas de SUS cursos, y el 403 por rol esta delante.
+    const { data: users } = await createAdminClient()
       .from('users')
       .select('id, full_name, avatar_url')
       .in('id', recentUserIds)

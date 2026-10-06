@@ -36,9 +36,12 @@ export async function GET(
   }
 
   const { id } = await params
-  const supabase = await createClient()
 
-  const { data: user, error } = await supabase
+  // CON EL SERVICIO. Es la ficha ENTERA de otra persona, y la pide el panel
+  // despues de verifyAdmin(). Con la sesion, la politica por funcion de la 123
+  // devolveria una fila vacia para cualquier alumno y el panel diria que el
+  // usuario no existe.
+  const { data: user, error } = await createAdminClient()
     .from('users')
     .select('*')
     .eq('id', id)

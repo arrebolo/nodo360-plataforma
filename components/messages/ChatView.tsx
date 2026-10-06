@@ -19,7 +19,9 @@ interface OtherUser {
   id: string
   full_name: string
   avatar_url: string | null
-  role: string
+  // SIN `role`. Se pintaba debajo del nombre, en la cabecera del chat, y no
+  // aporta nada a quien lee: «Student» debajo de un nombre no dice nada util, y
+  // es la etiqueta que la 123 deja de publicar.
 }
 
 interface ChatViewProps {
@@ -176,7 +178,6 @@ export default function ChatView({ conversationId, currentUserId }: ChatViewProp
             )}
             <div>
               <p className="font-medium text-white">{otherUser.full_name}</p>
-              <p className="text-xs text-white/50 capitalize">{otherUser.role}</p>
             </div>
           </div>
         )}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { scanMessage } from '@/lib/moderation/message-scanner'
 
@@ -62,16 +63,26 @@ export async function GET(
       ? conversation.participant_2
       : conversation.participant_1
 
-    const { data: otherUser } = await supabase
+    // LA FICHA DEL INTERLOCUTOR, CON EL CLIENTE DE SERVICIO.
+    //
+    // Antes se leia con la sesion de quien mira, y eso dejara de funcionar con
+    // la politica por funcion de la 123: el interlocutor normalmente no es
+    // instructor, ni mentor, ni autor de un curso publicado, asi que su fila no
+    // sera visible para otra sesion.
+    //
+    // Se puede usar el servicio porque la participacion YA ESTA COMPROBADA
+    // arriba: si quien pregunta no esta en la conversacion, no se llega aqui.
+    // Y se piden solo nombre y avatar: el rol no se publica.
+    const { data: otherUser } = await createAdminClient()
       .from('users')
-      .select('id, full_name, avatar_url, role')
+      .select('id, full_name, avatar_url')
       .eq('id', otherUserId)
       .single()
 
     return NextResponse.json({
       conversation: {
         id: conversation.id,
-        otherUser: otherUser || { id: otherUserId, full_name: 'Usuario', avatar_url: null, role: 'student' },
+        otherUser: otherUser || { id: otherUserId, full_name: 'Usuario', avatar_url: null },
       },
       messages: messages || [],
       pagination: {

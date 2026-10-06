@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 export const dynamic = 'force-dynamic'
@@ -17,8 +18,23 @@ export async function GET(request: Request) {
     if (rateLimitResponse) return rateLimitResponse
     const supabase = await createClient()
 
+    // HACE FALTA SESION, y antes no.
+    //
+    // Esta ruta no comprobaba nada: con la clave anonima devolvia los nombres
+    // del top 100. Al pasar la lectura al cliente de servicio —que hace falta
+    // porque la 123 deja de dar las fichas de los alumnos a otra sesion— habria
+    // quedado la lista ENTERA abierta a cualquiera. Asi que primero la puerta.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
+    // El ranking es de todos los alumnos, no de quien tiene pagina publica, asi
+    // que la ficha se lee con el servicio. Quien pregunta ya tiene sesion.
+    const servicio = createAdminClient()
+
     // Obtener top usuarios por XP
-    const { data: topUsers, error } = await supabase
+    const { data: topUsers, error } = await servicio
       .from('user_gamification_stats')
       .select(`
         user_id,
