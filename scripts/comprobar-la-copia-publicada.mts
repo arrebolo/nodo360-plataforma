@@ -63,13 +63,45 @@ try {
   di(malRetirados.length === 0, 'ningun curso publicado esta marcado como retirado',
     `${(retirados ?? []).length} retirados, ${malRetirados.length} mal`)
 
-  // ── 3. LAS TABLAS ESPEJO ESTAN CERRADAS ──────────────────────────────────
-  console.log('\n=== lo que ve anon (no debe ver nada del espejo) ===')
-  for (const t of ['courses_publicados', 'modules_publicados', 'lessons_publicadas', 'quiz_questions_publicadas']) {
-    const r = await anon.from(t).select('id').limit(1)
-    di(Boolean(r.error) || (r.data?.length ?? 0) === 0, `anon no lee ${t}`,
-      r.error ? `${r.error.code}` : `${r.data?.length ?? 0} filas`)
+  // ── 3. QUE VE anon DEL ESPEJO ────────────────────────────────────────────
+  //
+  // ESTE BLOQUE DECIA LO CONTRARIO, y llevaba en rojo desde la migracion 119.
+  // Con la 117 el espejo estaba cerrado a `anon`; la 119 lo ABRIO a proposito
+  // —GRANT SELECT sobre las tres tablas mas una politica `retirada_el IS NULL`—
+  // porque es la condicion para que el bloque 3 mueva las lecturas publicas a la
+  // copia. Un script que afirma lo contrario de la decision tomada no avisa de
+  // nada: solo ensena tres fallos que hay que ignorar, y a un fallo que se
+  // ignora deja de mirarlo nadie.
+  //
+  // Lo que de verdad hay que vigilar son las tres cosas de abajo.
+  console.log('\n=== lo que ve anon del espejo (119: las vivas si, las retiradas no) ===')
+
+  for (const t of ['courses_publicados', 'modules_publicados', 'lessons_publicadas']) {
+    // PRECONDICION DE LA ASERCION NEGATIVA. «anon no lee las retiradas» pasa
+    // solo si no hay ninguna retirada que leer, y entonces no ha medido nada.
+    // El cliente de servicio dice cuantas hay de verdad.
+    const { count: hayRetiradas } = await svc.from(t)
+      .select('id', { count: 'exact', head: true }).not('retirada_el', 'is', null)
+    di((hayRetiradas ?? 0) > 0, `hay filas retiradas en ${t} que anon podria leer si la politica fallara`,
+      `${hayRetiradas ?? 0}`)
+
+    const vivas = await anon.from(t).select('id').is('retirada_el', null).limit(1)
+    di(!vivas.error && (vivas.data?.length ?? 0) === 1, `anon lee las filas vivas de ${t}`,
+      vivas.error ? `${vivas.error.code}: ${vivas.error.message.slice(0, 50)}` : `${vivas.data?.length ?? 0} filas`)
+
+    // La otra mitad, y es la que protege: lo retirado sale del catalogo. Si la
+    // politica se cayera, un curso archivado seguiria leyendose desde fuera.
+    const retiradas = await anon.from(t).select('id').not('retirada_el', 'is', null).limit(1)
+    di(!retiradas.error && (retiradas.data?.length ?? 0) === 0, `y NO lee las retiradas de ${t}`,
+      retiradas.error ? `${retiradas.error.code}` : `${retiradas.data?.length ?? 0} filas`)
   }
+
+  // Las preguntas del examen siguen cerradas a anon, con sesion o sin ella: la
+  // 119 solo se las concedio a `authenticated`, y por columnas.
+  const preguntas = await anon.from('quiz_questions_publicadas').select('id').limit(1)
+  di(Boolean(preguntas.error) || (preguntas.data?.length ?? 0) === 0,
+    'anon NO lee quiz_questions_publicadas',
+    preguntas.error ? `${preguntas.error.code}` : `${preguntas.data?.length ?? 0} filas`)
 
   // ── 4. LO QUE IMPORTA: borrar una leccion ya no borra el progreso ─────────
   console.log('\n=== borrar una leccion de trabajo con progreso encima ===')
@@ -123,12 +155,35 @@ try {
     .select('id', { count: 'exact', head: true }).eq('id', l!.id).not('retirada_el', 'is', null)
   di((retirada ?? 0) === 1, 'la leccion que ya no existe queda retirada, no borrada', `${retirada ?? 0}`)
 
-  // ── 6. Borrar un curso con matricula esta impedido ───────────────────────
-  console.log('\n=== las matriculas ===')
+  // ── 6. Borrar un curso: DOS CERRADURAS, y cada una con su codigo ─────────
+  //
+  // Esta comprobacion decia «borrar un curso con matriculas esta impedido» y
+  // miraba solo `Boolean(error)`. Desde la migracion 121 hay un trigger que
+  // frena el borrado ANTES, por tener copia publicada viva, asi que habria
+  // seguido en verde sin volver a medir las matriculas nunca. Un verde que mide
+  // otra cosa es peor que un rojo: ahora cada mitad exige SU codigo.
+  console.log('\n=== borrar un curso: las dos cerraduras ===')
   await svc.from('course_enrollments').insert({ user_id: creado.usuario, course_id: c!.id })
-  const delCurso = await svc.from('courses').delete().eq('id', c!.id)
-  di(Boolean(delCurso.error), 'borrar un curso con matriculas esta impedido',
-    delCurso.error ? `${delCurso.error.code}` : '*** SE BORRO')
+
+  const conCopiaViva = await svc.from('courses').delete().eq('id', c!.id)
+  di(conCopiaViva.error?.code === '42501',
+    'con la copia publicada viva, borrar da 42501 (trigger de la 121)',
+    conCopiaViva.error ? conCopiaViva.error.code : '*** SE BORRO')
+
+  // Archivar retira la copia (trigger de la 119). Y entonces lo que impide
+  // borrar son las matriculas, con otro codigo y por otro motivo.
+  const archivado = await svc.from('courses').update({ status: 'archived' }).eq('id', c!.id)
+  di(!archivado.error, 'archivar el curso',
+    archivado.error ? `${archivado.error.code}: ${archivado.error.message.slice(0, 60)}` : 'archivado')
+
+  const { count: copiasVivas } = await svc.from('courses_publicados')
+    .select('id', { count: 'exact', head: true }).eq('id', c!.id).is('retirada_el', null)
+  di((copiasVivas ?? 0) === 0, 'archivar ha retirado la copia', `${copiasVivas ?? 0} vivas`)
+
+  const conMatriculas = await svc.from('courses').delete().eq('id', c!.id)
+  di(conMatriculas.error?.code === '23503',
+    'retirada la copia, lo que impide borrar son las matriculas (23503)',
+    conMatriculas.error ? conMatriculas.error.code : '*** SE BORRO')
 } catch (e) {
   fallos++
   console.log(`\n*** se detuvo: ${(e as Error).message}`)
