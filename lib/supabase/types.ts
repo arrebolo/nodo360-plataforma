@@ -656,6 +656,7 @@ export type Database = {
           difficulty_level: string | null
           duration_label: string | null
           enrolled_count: number | null
+          firmado_por_la_plataforma: boolean
           has_final_quiz: boolean | null
           id: string
           instructor_id: string | null
@@ -695,6 +696,7 @@ export type Database = {
           difficulty_level?: string | null
           duration_label?: string | null
           enrolled_count?: number | null
+          firmado_por_la_plataforma?: boolean
           has_final_quiz?: boolean | null
           id?: string
           instructor_id?: string | null
@@ -734,6 +736,7 @@ export type Database = {
           difficulty_level?: string | null
           duration_label?: string | null
           enrolled_count?: number | null
+          firmado_por_la_plataforma?: boolean
           has_final_quiz?: boolean | null
           id?: string
           instructor_id?: string | null
@@ -5060,6 +5063,7 @@ export type Database = {
         Row: {
           active_path_id: string | null
           active_path_selected_at: string | null
+          anunciar_logros: boolean
           avatar_path: string | null
           avatar_url: string | null
           bio: string | null
@@ -5088,6 +5092,7 @@ export type Database = {
         Insert: {
           active_path_id?: string | null
           active_path_selected_at?: string | null
+          anunciar_logros?: boolean
           avatar_path?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -5116,6 +5121,7 @@ export type Database = {
         Update: {
           active_path_id?: string | null
           active_path_selected_at?: string | null
+          anunciar_logros?: boolean
           avatar_path?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -5434,7 +5440,6 @@ export type Database = {
           github: string | null
           id: string | null
           linkedin: string | null
-          role: Database["public"]["Enums"]["user_role"] | null
           twitter: string | null
           website: string | null
         }

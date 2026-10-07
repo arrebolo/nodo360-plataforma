@@ -18,6 +18,7 @@
     "comprobar:lecturas": "tsx scripts/comprobar-lecturas-publicas.mts",
     "comprobar:zonas": "tsx scripts/comprobar-zonas-de-api.mts",
     "comprobar:fichas": "tsx scripts/comprobar-fichas-ajenas.mts",
+    "comprobar:tipos": "tsx scripts/auditar-los-tipos.mts",
     "comprobar:firma": "tsx scripts/comprobar-la-firma-de-la-plataforma.mts",
     "probar:migracion": "tsx scripts/probar-una-migracion.mts"
   },
