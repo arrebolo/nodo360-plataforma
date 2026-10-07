@@ -179,11 +179,29 @@ di(!eVista, 'anon lee de perfiles_publicos lo que el modal del autor necesita',
 di((dVista?.length ?? 0) === 1, 'y la vista le da fila (no esta vacia para anon)',
   `${dVista?.length ?? 0} filas`)
 
-// Y la otra mitad: que el titulo no necesite preguntar quien administra. Mientras
-// `role` siga en la vista esto sigue en verde a proposito —lo cierra la 122—,
-// pero el numero tiene que estar a la vista para saber que queda pendiente.
-const { data: dAdmins } = await anon.from('perfiles_publicos').select('id').eq('role', 'admin')
-console.log(`   ...  por la vista, role=eq.admin devuelve ${dAdmins?.length ?? 0} fila(s). La 122 quita «role» de la vista y esto pasara a 0.`)
+// Y la otra mitad: que no se pueda preguntar QUIEN ADMINISTRA, ni por la vista
+// ni por la tabla. Lo cerro la 123, y cada camino da un codigo distinto:
+//
+//   por la vista   42703  la columna `role` ya no existe ahi
+//   por la tabla   42501  anon perdio el permiso de columna
+//
+// SE EXIGE EL CODIGO, no «cero filas». Aqui habia un `const { data } = ...` que
+// se tragaba el error y contaba 0 filas: eso pasa en verde tanto si la consulta
+// esta cerrada como si devolvio vacio por cualquier otra razon, y ademas habria
+// seguido en verde si alguien devolviera la columna a la vista con 0 admins.
+const porLaVista = await anon.from('perfiles_publicos').select('id').eq('role', 'admin')
+di(porLaVista.error?.code === '42703',
+  'por la vista no se puede filtrar por role: la columna no existe',
+  porLaVista.error
+    ? `${porLaVista.error.code}: ${porLaVista.error.message.slice(0, 50)}`
+    : `SIN ERROR, ${porLaVista.data?.length ?? 0} fila(s): la columna ha vuelto`)
+
+const porLaTabla = await anon.from('users').select('id').eq('role', 'admin')
+di(porLaTabla.error?.code === '42501',
+  'y por la tabla tampoco: anon no lee role',
+  porLaTabla.error
+    ? `${porLaTabla.error.code}: ${porLaTabla.error.message.slice(0, 50)}`
+    : `SIN ERROR, ${porLaTabla.data?.length ?? 0} fila(s): anon ha recuperado el permiso`)
 
 console.log(
   fallos === 0
