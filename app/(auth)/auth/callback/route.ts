@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import type { EmailOtpType } from '@supabase/supabase-js'
 import { destinoTrasEntrar, metodoDeRegistro } from '@/lib/auth/tras-verificar'
+import { destinoInterno } from '@/lib/navegacion/destino-interno'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
@@ -16,7 +17,8 @@ export async function GET(request: Request) {
   const errorParam = requestUrl.searchParams.get('error')
   const errorDescription = requestUrl.searchParams.get('error_description')
   const errorCode = requestUrl.searchParams.get('error_code')
-  const next = requestUrl.searchParams.get('next') || '/dashboard'
+  // El destino, solo si es de este sitio: ?next=//otro-sitio.com redirigia fuera
+  const next = destinoInterno(requestUrl.searchParams.get('next'))
 
   // Log completo para debugging
   console.log('[Auth Callback] ===================')
@@ -33,7 +35,8 @@ export async function GET(request: Request) {
 
   // Leer redirect de cookie (guardada antes del OAuth)
   const cookieStore = await cookies()
-  const redirectTo = cookieStore.get('auth_redirect')?.value
+  const guardado = cookieStore.get('auth_redirect')?.value
+  const redirectTo = guardado ? destinoInterno(guardado, next) : undefined
   console.log('[Auth Callback] Cookie redirect:', redirectTo)
 
   const supabase = await createClient()

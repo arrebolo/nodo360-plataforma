@@ -6,6 +6,7 @@ import type { EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { codigoParaLaUrl } from '@/lib/auth/error-messages'
 import { destinoTrasEntrar, metodoDeRegistro } from '@/lib/auth/tras-verificar'
+import { destinoInterno } from '@/lib/navegacion/destino-interno'
 import { esTipoDeEnlace } from './tipos'
 
 /**
@@ -46,7 +47,7 @@ export async function confirmarEnlace(formData: FormData): Promise<void> {
 
   // El destino guardado al pedir el enlace solo existe si se abre en el mismo
   // navegador; en otro, se va al panel
-  const redirectTo = cookieStore.get('auth_redirect')?.value || '/dashboard'
+  const redirectTo = destinoInterno(cookieStore.get('auth_redirect')?.value)
 
   const h = await headers()
   // El mismo origen al que ha llegado el POST, como hace el callback con

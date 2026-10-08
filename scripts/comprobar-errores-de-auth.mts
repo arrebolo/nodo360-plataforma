@@ -7,12 +7,19 @@
  * Sin red ni base: llama a las funciones de lib/auth/error-messages.ts con los
  * errores tal como los devuelve Supabase (texto en inglés y `code`) y con lo que
  * llega en `?error=` y `?error_code=`.
+ *
+ * Y el destino tras entrar (lib/navegacion/destino-interno.ts): `?next=`, la cookie
+ * auth_redirect y el campo `redirect` solo llevan a rutas de este sitio, tambien
+ * con `//otro-sitio.com`, una barra invertida (`/\otro-sitio.com`) o un tabulador en
+ * medio.
  */
 // El fichero de lib es CommonJS para tsx (el paquete no es type: module), y los
 // nombres sueltos no siempre se ven desde un .mts: se importa el modulo entero
 import * as errores from '../lib/auth/error-messages.ts'
 const { MENSAJE_GENERICO, codigoParaLaUrl, mensajeDeErrorEnUrl, traducirErrorDeAuth } =
   ((errores as any).default ?? errores) as typeof errores
+import * as navegacion from '../lib/navegacion/destino-interno.ts'
+const { destinoInterno } = ((navegacion as any).default ?? navegacion) as typeof navegacion
 
 let fallos = 0
 function di(bien: boolean, texto: string, visto: unknown) {
@@ -75,6 +82,25 @@ console.log('\n== El código que se pone en la URL')
 di(codigoParaLaUrl({ code: 'otp_expired', message: 'x' }) === 'otp_expired', 'un código conocido pasa tal cual', codigoParaLaUrl({ code: 'otp_expired' }))
 di(codigoParaLaUrl({ code: 'raro', message: 'Some English text' }) === 'error_inesperado', 'uno desconocido se cambia por uno propio, nunca el texto', codigoParaLaUrl({ code: 'raro' }))
 di(codigoParaLaUrl({ message: 'x' }, 'callback_error') === 'callback_error', 'sin código, el que se pide', codigoParaLaUrl({ message: 'x' }, 'callback_error'))
+
+console.log('\n== El destino tras entrar (?next=, cookie auth_redirect, campo redirect)')
+const destino = (valor: string | null, esperado: string, texto = JSON.stringify(valor)) => {
+  const visto = destinoInterno(valor)
+  di(visto === esperado, `${texto} -> ${esperado}`, visto)
+}
+destino('/dashboard/cursos?pestana=2#arriba', '/dashboard/cursos?pestana=2#arriba')
+destino('/cursos/bitcoin-desde-cero/quiz-final', '/cursos/bitcoin-desde-cero/quiz-final')
+destino('https://otro-sitio.com', '/dashboard')
+destino('//otro-sitio.com', '/dashboard')
+destino('//otro-sitio.com/dashboard', '/dashboard')
+destino('/\\otro-sitio.com', '/dashboard')
+destino('/\t/otro-sitio.com', '/dashboard', '"/<tab>/otro-sitio.com"')
+destino('/\n/otro-sitio.com', '/dashboard', '"/<salto>/otro-sitio.com"')
+destino('javascript:alert(1)', '/dashboard')
+destino('dashboard', '/dashboard')
+destino('', '/dashboard')
+destino(null, '/dashboard')
+di(destinoInterno('//otro-sitio.com', '') === '', 'con otro valor por defecto, ese', destinoInterno('//otro-sitio.com', ''))
 
 console.log(fallos ? `\n*** ${fallos} comprobacion(es) mal` : '\nTodo bien')
 process.exit(fallos ? 1 : 0)

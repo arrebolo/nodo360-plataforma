@@ -12,6 +12,7 @@ import {
   traducirErrorDeAuth,
 } from '@/lib/auth/error-messages'
 import { esRedireccion } from '@/lib/navegacion/es-redireccion'
+import { destinoInterno } from '@/lib/navegacion/destino-interno'
 
 /**
  * Helper para detectar errores de redirect de Next.js
@@ -90,16 +91,18 @@ export async function signInWithEmail(formData: FormData): Promise<AuthResult> {
   }
 
   try {
-    // Guardar redirect en cookie (igual que OAuth)
-    if (redirectTo && redirectTo.startsWith('/')) {
+    // Guardar redirect en cookie (igual que OAuth). startsWith('/') dejaba
+    // pasar //otro-sitio.com: ver lib/navegacion/destino-interno.ts
+    const destino = destinoInterno(redirectTo, '')
+    if (destino) {
       const cookieStore = await cookies()
-      cookieStore.set('auth_redirect', redirectTo, {
+      cookieStore.set('auth_redirect', destino, {
         path: '/',
         maxAge: 60 * 5, // 5 minutos
         httpOnly: true,
         sameSite: 'lax',
       })
-      console.log('✅ [Auth Actions] Cookie auth_redirect guardada:', redirectTo)
+      console.log('✅ [Auth Actions] Cookie auth_redirect guardada:', destino)
     }
 
     const supabase = await createClient()
@@ -168,9 +171,10 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
 
     console.log('✅ [Auth Actions] Login exitoso')
 
-    // Usar redirect personalizado o el default
-    if (redirectTo && redirectTo !== '/') {
-      redirect(redirectTo)
+    // Usar redirect personalizado (solo si es de este sitio) o el default
+    const destino = destinoInterno(redirectTo, '/')
+    if (destino !== '/') {
+      redirect(destino)
     } else {
       await redirectAfterLogin()
     }
@@ -416,10 +420,12 @@ export async function signInWithOAuth(provider: OAuthProvider, redirectTo?: stri
   console.log('🔍 [Auth Actions] Redirect después de login:', redirectTo)
 
   try {
-    // Guardar redirect en cookie para usarlo después del callback
-    if (redirectTo) {
+    // Guardar redirect en cookie para usarlo después del callback, solo si es
+    // de este sitio
+    const destino = destinoInterno(redirectTo, '')
+    if (destino) {
       const cookieStore = await cookies()
-      cookieStore.set('auth_redirect', redirectTo, {
+      cookieStore.set('auth_redirect', destino, {
         path: '/',
         maxAge: 60 * 5, // 5 minutos
         httpOnly: true,
