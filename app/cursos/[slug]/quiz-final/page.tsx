@@ -145,7 +145,7 @@ export default async function FinalQuizPage({ params }: FinalQuizPageProps) {
       {seAcabaDeMatricular && <CursoEmpezado slug={course.slug} />}
       {isPreview && <CoursePreviewBanner />}
       {/* Header */}
-      <header className="border-b border-white/10 bg-dark-surface/80 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-white/10 bg-dark-surface/80 backdrop-blur-sm sticky top-16 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-light to-brand flex items-center justify-center">

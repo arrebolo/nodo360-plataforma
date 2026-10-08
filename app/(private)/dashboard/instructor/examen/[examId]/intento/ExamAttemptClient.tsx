@@ -121,7 +121,7 @@ export function ExamAttemptClient({
   return (
     <div className="min-h-screen bg-dark">
       {/* Header fijo con timer */}
-      <div className="sticky top-0 z-50 bg-dark/95 backdrop-blur-sm border-b border-white/10">
+      <div className="sticky top-16 z-40 bg-dark/95 backdrop-blur-sm border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>

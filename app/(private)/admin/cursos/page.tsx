@@ -199,7 +199,7 @@ export default async function AdminCoursesPage({
   return (
     <div className="min-h-screen">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-gradient-to-br from-dark-surface/95 via-dark-soft/95 to-dark-surface/95 backdrop-blur-lg border-b border-white/10 px-8 py-6 mb-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+      <div className="sticky top-16 z-10 bg-gradient-to-br from-dark-surface/95 via-dark-soft/95 to-dark-surface/95 backdrop-blur-lg border-b border-white/10 px-8 py-6 mb-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-1 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
