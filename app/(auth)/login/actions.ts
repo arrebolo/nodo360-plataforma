@@ -7,9 +7,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { correoNormalizado } from '@/lib/auth/correo-normalizado'
 import { redirectAfterLogin } from '@/lib/auth/redirect-after-login'
 import {
-  findSpanishErrorMessage,
-  getMessageByCode,
+  codigoParaLaUrl,
   MENSAJE_GENERICO,
+  traducirErrorDeAuth,
 } from '@/lib/auth/error-messages'
 import { esRedireccion } from '@/lib/navegacion/es-redireccion'
 
@@ -36,15 +36,11 @@ function isRedirectError(error: unknown): boolean {
  * respondía «al menos 6 caracteres» para CUALQUIER problema de contraseña,
  * incluida una demasiado larga.
  *
- * El texto manda sobre el código porque es más específico: 'weak_password' no
- * distingue corta de larga, y el mensaje de Supabase sí.
+ * El orden (texto antes que código, y el genérico al final) lo decide
+ * traducirErrorDeAuth, en lib/auth/error-messages.ts.
  */
 function mensajeDeError(error: { message?: string; code?: string }): string {
-  return (
-    findSpanishErrorMessage(error.message) ??
-    getMessageByCode(error.code) ??
-    MENSAJE_GENERICO
-  )
+  return traducirErrorDeAuth(error)
 }
 
 /**
@@ -153,7 +149,7 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
 
   if (!email || !password) {
     console.error('❌ [Auth Actions] Credenciales incompletas')
-    redirect('/login?error=Credenciales+incompletas')
+    redirect('/login?error=credenciales_incompletas')
   }
 
   try {
@@ -166,7 +162,8 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
 
     if (error) {
       console.error('❌ [Auth Actions] Error en login:', error.message)
-      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+      // En la URL solo el codigo, nunca el texto: ver lib/auth/error-messages.ts
+      redirect(`/login?error=${codigoParaLaUrl(error)}`)
     }
 
     console.log('✅ [Auth Actions] Login exitoso')
@@ -183,7 +180,7 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
       throw error
     }
     console.error('❌ [Auth Actions] Error inesperado:', error)
-    redirect('/login?error=Error+inesperado')
+    redirect('/login?error=error_inesperado')
   }
 }
 
@@ -445,7 +442,7 @@ export async function signInWithOAuth(provider: OAuthProvider, redirectTo?: stri
 
     if (error) {
       console.error('❌ [OAuth] Error completo:', error)
-      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+      redirect(`/login?error=${codigoParaLaUrl(error, 'oauth_error')}`)
     }
 
     if (data.url) {
@@ -453,14 +450,14 @@ export async function signInWithOAuth(provider: OAuthProvider, redirectTo?: stri
       redirect(data.url)
     } else {
       console.error('❌ [OAuth] No se recibió URL de autorización')
-      redirect('/login?error=No+se+recibió+URL+de+autorización')
+      redirect('/login?error=oauth_error')
     }
   } catch (error) {
     if (isRedirectError(error)) {
       throw error
     }
     console.error('❌ [Auth Actions] Error inesperado en OAuth:', error)
-    redirect('/login?error=Error+con+OAuth')
+    redirect('/login?error=oauth_error')
   }
 }
 
@@ -476,7 +473,7 @@ export async function signOut(): Promise<void> {
 
     if (error) {
       console.error('❌ [Auth Actions] Error al cerrar sesión:', error.message)
-      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+      redirect('/login?error=logout_error')
     }
 
     console.log('✅ [Auth Actions] Sesión cerrada')
@@ -486,7 +483,7 @@ export async function signOut(): Promise<void> {
       throw error
     }
     console.error('❌ [Auth Actions] Error inesperado:', error)
-    redirect('/login?error=Error+al+cerrar+sesión')
+    redirect('/login?error=logout_error')
   }
 }
 

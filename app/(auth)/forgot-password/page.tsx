@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Mail, ArrowLeft, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { traducirErrorDeAuth } from '@/lib/auth/error-messages'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -41,27 +42,17 @@ export default function ForgotPasswordPage() {
           name: resetError.name,
         })
 
-        // Mapear errores específicos a mensajes en español
-        const errorMessage = resetError.message.toLowerCase()
-
-        if (errorMessage.includes('rate limit') || errorMessage.includes('too many')) {
-          setError('Has solicitado demasiados correos. Espera unos minutos e intenta de nuevo.')
-        } else if (errorMessage.includes('invalid email') || errorMessage.includes('invalid_email')) {
-          setError('El formato del email no es valido.')
-        } else if (errorMessage.includes('email not confirmed')) {
-          setError('Tu email aun no ha sido confirmado. Revisa tu bandeja de entrada.')
-        } else if (errorMessage.includes('user not found')) {
-          // Por seguridad, no revelamos si el usuario existe o no
-          // Mostramos exito de todos modos
+        // Por seguridad no se revela si la cuenta existe: se da por enviado
+        if (resetError.code === 'user_not_found' || resetError.message.toLowerCase().includes('user not found')) {
           console.log('[Forgot Password] Usuario no encontrado, mostrando exito por seguridad')
           setSuccess(true)
           return
-        } else if (errorMessage.includes('smtp') || errorMessage.includes('email provider')) {
-          setError('Error del servidor de correo. Intenta de nuevo en unos minutos.')
-        } else {
-          // Mostrar el mensaje original de Supabase si no es sensible
-          setError(`Error: ${resetError.message}`)
         }
+
+        // El resto, traducido en el sitio de siempre (lib/auth/error-messages.ts):
+        // antes aqui habia una tabla propia que, si no reconocia el error, lo
+        // mostraba en ingles («Error: For security purposes…»)
+        setError(traducirErrorDeAuth(resetError))
         return
       }
 

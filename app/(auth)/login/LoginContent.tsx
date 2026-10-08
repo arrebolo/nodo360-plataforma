@@ -12,7 +12,7 @@ import {
   resendSignUpConfirmation,
   type OAuthProvider,
 } from './actions'
-import { getSpanishErrorMessage } from '@/lib/auth/error-messages'
+import { mensajeDeErrorEnUrl, traducirErrorDeAuth } from '@/lib/auth/error-messages'
 import { enviarEvento } from '@/lib/analytics/eventos'
 
 type TabType = 'login' | 'register'
@@ -42,16 +42,15 @@ export default function LoginContent() {
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
-    const successParam = searchParams.get('success')
     const modeParam = searchParams.get('mode')
 
-    // Traducir el error al español si viene de la URL
+    // En la URL solo viajan códigos, y aquí se traducen: un texto que no sea un
+    // código conocido da el mensaje genérico, no se muestra. `?success=` se
+    // mostraba tal cual y ya no se lee: nadie lo ponía, solo servía para colar
+    // un aviso con aspecto oficial. Ver lib/auth/error-messages.ts.
     if (errorParam) {
-      const decodedError = decodeURIComponent(errorParam)
-      // El error ya se traducirá en el render con getSpanishErrorMessage
-      setError(decodedError)
+      setError(mensajeDeErrorEnUrl(errorParam, searchParams.get('error_code')))
     }
-    if (successParam) setSuccess(decodeURIComponent(successParam))
 
     // Si viene mode=register, cambiar a tab registro
     if (modeParam === 'register') {
@@ -75,7 +74,7 @@ export default function LoginContent() {
         setError(result.message)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado')
+      setError(traducirErrorDeAuth(err instanceof Error ? err : null))
     } finally {
       setLoading(false)
     }
@@ -105,7 +104,7 @@ export default function LoginContent() {
         (err as any).digest?.startsWith?.('NEXT_REDIRECT')
       )
       if (!isRedirect) {
-        setError(getSpanishErrorMessage(err instanceof Error ? err.message : 'Error inesperado'))
+        setError(traducirErrorDeAuth(err instanceof Error ? err : null))
       }
     } finally {
       // Siempre resetear el estado de loading
@@ -150,7 +149,7 @@ export default function LoginContent() {
         setError(result.message)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado')
+      setError(traducirErrorDeAuth(err instanceof Error ? err : null))
     } finally {
       setIsRegistering(false)
     }
@@ -170,7 +169,7 @@ export default function LoginContent() {
         setError(result.message)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado')
+      setError(traducirErrorDeAuth(err instanceof Error ? err : null))
     } finally {
       setReenviando(false)
     }
@@ -205,7 +204,7 @@ export default function LoginContent() {
                 role="alert"
                 aria-live="assertive"
               >
-                {getSpanishErrorMessage(error)}
+                {error}
               </p>
             )}
 
@@ -335,9 +334,9 @@ export default function LoginContent() {
             >
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 mt-0.5">
-                  {error.toLowerCase().includes('suspendid') || error.toLowerCase().includes('banned') ? (
+                  {error.toLowerCase().includes('suspendid') || error.toLowerCase().includes('bloquead') ? (
                     <AlertTriangle className="w-5 h-5 text-orange-400" />
-                  ) : error.toLowerCase().includes('navegador') || error.toLowerCase().includes('expirad') ? (
+                  ) : error.toLowerCase().includes('navegador') || error.toLowerCase().includes('caducad') ? (
                     <Info className="w-5 h-5 text-yellow-400" />
                   ) : (
                     <AlertCircle className="w-5 h-5 text-red-400" />
@@ -345,14 +344,9 @@ export default function LoginContent() {
                 </div>
                 <div className="flex-1">
                   <p className="text-red-300 text-sm font-medium">
-                    {getSpanishErrorMessage(error)}
+                    {error}
                   </p>
                   {/* Mostrar sugerencia según el tipo de error */}
-                  {error.toLowerCase().includes('navegador') && (
-                    <p className="text-red-300/70 text-xs mt-1">
-                      Abre el enlace en el mismo navegador donde lo solicitaste.
-                    </p>
-                  )}
                   {error.toLowerCase().includes('credenciales') && (
                     <p className="text-red-300/70 text-xs mt-1">
                       ¿Olvidaste tu contraseña?{' '}

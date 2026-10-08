@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getMiPerfil } from '@/lib/auth/miPerfil'
 import { enviarBienvenidaUnaSolaVez } from '@/lib/email/bienvenida-una-sola-vez'
+import { codigoParaLaUrl } from '@/lib/auth/error-messages'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import type { EmailOtpType, User } from '@supabase/supabase-js'
@@ -114,18 +115,13 @@ export async function GET(request: Request) {
       code: errorCode,
     })
 
-    // Manejar errores específicos
-    if (errorParam === 'access_denied') {
-      return NextResponse.redirect(`${origin}/login?error=access_denied`)
-    }
-
-    // Para recovery con error, mostrar mensaje específico
-    if (type === 'recovery') {
-      const errorMsg = encodeURIComponent(errorDescription || 'Error en recuperación de contraseña')
-      return NextResponse.redirect(`${origin}/forgot-password?error=${errorMsg}`)
-    }
-
-    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(errorDescription || errorParam)}`)
+    // A la URL va el CODIGO, no la descripcion (que viene en ingles). Y el
+    // error_code manda sobre el error: un enlace caducado llega como
+    // error=access_denied&error_code=otp_expired, y por mirar solo el primero se
+    // le decia al usuario «cancelaste el inicio de sesion».
+    const codigo = encodeURIComponent(errorCode || errorParam)
+    const destino = type === 'recovery' ? 'forgot-password' : 'login'
+    return NextResponse.redirect(`${origin}/${destino}?error=${codigo}`)
   }
 
   // =====================================================
@@ -147,12 +143,9 @@ export async function GET(request: Request) {
         name: error.name,
       })
 
-      if (type === 'recovery') {
-        const errorMsg = encodeURIComponent(error.message || 'Enlace de recuperación expirado o inválido')
-        return NextResponse.redirect(`${origin}/forgot-password?error=${errorMsg}`)
-      }
-
-      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message || 'otp_error')}`)
+      const codigo = codigoParaLaUrl(error, 'enlace_invalido')
+      const destino = type === 'recovery' ? 'forgot-password' : 'login'
+      return NextResponse.redirect(`${origin}/${destino}?error=${codigo}`)
     }
 
     console.log('[Auth Callback] verifyOtp exitoso')
@@ -221,27 +214,14 @@ export async function GET(request: Request) {
         // No hay sesión activa, mostrar mensaje amigable
         console.log('[Auth Callback] No hay sesión activa, mostrando error PKCE amigable')
 
-        if (type === 'recovery') {
-          const errorMsg = encodeURIComponent('El enlace ha expirado o fue abierto en un navegador diferente. Por favor, solicita un nuevo enlace de recuperación.')
-          return NextResponse.redirect(`${origin}/forgot-password?error=${errorMsg}`)
-        }
-
-        if (type === 'magiclink' || type === 'email') {
-          const errorMsg = encodeURIComponent('El enlace ha expirado o fue abierto en un navegador diferente. Por favor, solicita un nuevo enlace de acceso.')
-          return NextResponse.redirect(`${origin}/login?error=${errorMsg}`)
-        }
-
-        const errorMsg = encodeURIComponent('El enlace ha expirado o fue abierto en un navegador diferente. Por favor, intenta iniciar sesión nuevamente.')
-        return NextResponse.redirect(`${origin}/login?error=${errorMsg}`)
+        const destino = type === 'recovery' ? 'forgot-password' : 'login'
+        return NextResponse.redirect(`${origin}/${destino}?error=flow_state_not_found`)
       }
 
       // Otros errores no relacionados con PKCE
-      if (type === 'recovery') {
-        const errorMsg = encodeURIComponent(error.message || 'Enlace de recuperación expirado o inválido')
-        return NextResponse.redirect(`${origin}/forgot-password?error=${errorMsg}`)
-      }
-
-      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message || 'callback_error')}`)
+      const codigo = codigoParaLaUrl(error, 'callback_error')
+      const destino = type === 'recovery' ? 'forgot-password' : 'login'
+      return NextResponse.redirect(`${origin}/${destino}?error=${codigo}`)
     }
 
     console.log('[Auth Callback] exchangeCodeForSession exitoso')

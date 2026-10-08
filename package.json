@@ -20,7 +20,8 @@
     "comprobar:fichas": "tsx scripts/comprobar-fichas-ajenas.mts",
     "comprobar:tipos": "tsx scripts/auditar-los-tipos.mts",
     "comprobar:firma": "tsx scripts/comprobar-la-firma-de-la-plataforma.mts",
-    "probar:migracion": "tsx scripts/probar-una-migracion.mts"
+    "probar:migracion": "tsx scripts/probar-una-migracion.mts",
+    "comprobar:auth": "tsx scripts/comprobar-errores-de-auth.mts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

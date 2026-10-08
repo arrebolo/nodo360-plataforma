@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { traducirErrorDeAuth } from '@/lib/auth/error-messages'
 import { Button } from '@/components/ui/Button'
 
 interface ChangePasswordFormProps {
@@ -53,7 +54,7 @@ export function ChangePasswordForm({ userEmail }: ChangePasswordFormProps) {
       })
 
       if (updateError) {
-        throw new Error(updateError.message || 'Error al actualizar la contraseña')
+        throw new Error(traducirErrorDeAuth(updateError))
       }
 
       setSuccess(true)

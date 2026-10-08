@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { KeyRound, Eye, EyeOff, CheckCircle, AlertCircle, Loader2, ArrowLeft, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { traducirErrorDeAuth } from '@/lib/auth/error-messages'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -66,13 +67,7 @@ export default function ResetPasswordPage() {
       })
 
       if (updateError) {
-        if (updateError.message.includes('same as')) {
-          setError('La nueva contrasena debe ser diferente a la anterior')
-        } else if (updateError.message.includes('weak')) {
-          setError('La contrasena es demasiado debil')
-        } else {
-          setError('Error al actualizar la contrasena. Intenta de nuevo.')
-        }
+        setError(traducirErrorDeAuth(updateError))
         return
       }
 
