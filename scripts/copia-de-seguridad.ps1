@@ -39,10 +39,10 @@
   Vuelca únicamente el esquema public, sin intentar auth ni storage.
 
 .EXAMPLE
-  .\scripts\copia-de-seguridad.ps1
+  powershell -NoProfile -File .\scripts\copia-de-seguridad.ps1
 
 .EXAMPLE
-  .\scripts\copia-de-seguridad.ps1 -Destino D:\copias -Formato custom
+  powershell -NoProfile -File .\scripts\copia-de-seguridad.ps1 -Destino D:\copias -Formato custom
 
 .NOTES
   QUÉ VERSIÓN DE pg_dump HACE FALTA
@@ -629,8 +629,15 @@ try {
   Write-Host ''
 
 } finally {
-  # La contraseña no se queda en la sesión de PowerShell, termine como termine:
-  # también con exit, con un error o con Ctrl+C.
+  # La contraseña no se queda en el proceso, termine como termine: también con
+  # exit, con un error o con Ctrl+C.
+  #
+  # Borra las PG* sin mirar si ya estaban antes, y es a propósito: el script se
+  # ejecuta con powershell -File, en un proceso aparte, así que lo que borra es
+  # suyo y no toca la sesión de quien lo llama. Si alguien lo lanzara con
+  # .\scripts\copia-de-seguridad.ps1 desde una sesión con PGHOST o PGPASSWORD
+  # puestas, sí se las borraría: por eso los ejemplos de arriba lo lanzan con
+  # -File.
   foreach ($v in @('PGPASSWORD', 'PGHOST', 'PGPORT', 'PGUSER', 'PGDATABASE', 'PGSSLMODE', 'PGCONNECT_TIMEOUT')) {
     if (Test-Path "Env:$v") { Remove-Item "Env:$v" -ErrorAction SilentlyContinue }
   }
