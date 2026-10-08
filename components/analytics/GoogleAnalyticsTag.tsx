@@ -20,9 +20,17 @@ const GA_MEASUREMENT_ID = 'G-4L1V170N61'
  */
 const RUTAS_INTERNAS = ['/admin', '/dashboard/admin']
 
-function esRutaInterna(ruta: string | null): boolean {
+/**
+ * Rutas cuya URL lleva un secreto: /auth/confirmar trae el token_hash del enlace
+ * del correo, todavía sin usar, y el page_view de GA4 envía la URL entera.
+ */
+const RUTAS_CON_SECRETOS = ['/auth/confirmar']
+
+function noSeMide(ruta: string | null): boolean {
   if (!ruta) return false
-  return RUTAS_INTERNAS.some((prefijo) => ruta === prefijo || ruta.startsWith(`${prefijo}/`))
+  return [...RUTAS_INTERNAS, ...RUTAS_CON_SECRETOS].some(
+    (prefijo) => ruta === prefijo || ruta.startsWith(`${prefijo}/`)
+  )
 }
 
 /** La bandera que gtag.js consulta antes de enviar cada hit. */
@@ -65,7 +73,7 @@ export default function GoogleAnalytics({ esInterno = false }: Props) {
 
   const apagadoPorEntorno =
     process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_GA_DISABLED === 'true'
-  const medir = !apagadoPorEntorno && !esRutaInterna(ruta)
+  const medir = !apagadoPorEntorno && !noSeMide(ruta)
 
   // En el render, para adelantarse todo lo posible al page_view automatico.
   apagarEtiqueta(!medir)

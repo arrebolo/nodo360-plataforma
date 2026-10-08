@@ -195,7 +195,7 @@ export default function LoginContent() {
             </p>
             <p className="text-sm text-white/60 mb-6">
               Si no lo ves en unos minutos, míralo en spam o en correo no
-              deseado. Abre el enlace en este mismo navegador.
+              deseado. Puedes abrirlo en este navegador o en otro dispositivo.
             </p>
 
             {error && (
