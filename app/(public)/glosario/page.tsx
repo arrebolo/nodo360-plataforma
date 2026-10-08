@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { Search, ArrowRight, BookOpen, ChevronDown, ChevronUp } from 'lucide-react'
 import { Footer } from '@/components/navigation/Footer'
@@ -133,11 +133,28 @@ export default function GlosarioPage() {
     return grouped
   }, [filteredTerms])
 
+  // Lo que se queda fijo arriba: solo el buscador en el movil, la barra entera
+  // desde md. Uno de los dos es sticky segun el ancho.
+  const buscadorRef = useRef<HTMLDivElement>(null)
+  const barraRef = useRef<HTMLDivElement>(null)
+
+  // El salto se mide al pulsar, no con un scroll-mt fijo: lo fijo no mide lo
+  // mismo en el movil que en escritorio, ni con las categorias en una fila que
+  // en dos. Con scroll-mt-48 (192 px) y la barra acabando en 245, la letra
+  // quedaba debajo de la barra en escritorio y del todo tapada en el movil.
   const scrollToLetter = (letter: string) => {
     const element = document.getElementById(`letter-${letter}`)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+    if (!element) return
+    const fijo = [buscadorRef.current, barraRef.current].find(
+      (el) => el && getComputedStyle(el).position === 'sticky'
+    )
+    const hueco = fijo
+      ? parseFloat(getComputedStyle(fijo).top) + fijo.offsetHeight + 16
+      : 16
+    window.scrollTo({
+      top: element.getBoundingClientRect().top + window.scrollY - hueco,
+      behavior: 'smooth',
+    })
   }
 
   return (
@@ -163,26 +180,41 @@ export default function GlosarioPage() {
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="sticky top-16 z-40 bg-dark/95 backdrop-blur-lg border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
-          {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-            <input
-              type="text"
-              placeholder="Buscar términos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:border-brand-light/50 focus:ring-2 focus:ring-brand-light/20 transition"
-            />
+      {/* Search and Filters
+          Desde md, la barra entera se queda fija, como siempre. En el movil
+          ocupaba el 60 % de la pantalla con las tarjetas pasando por detras,
+          asi que alli solo se queda fijo el buscador: el envoltorio es
+          `contents` y el sticky pasa al bloque del buscador, que entonces se
+          pega dentro de la pagina entera y no dentro de la barra. */}
+      <div
+        ref={barraRef}
+        className="contents md:block md:sticky md:top-16 md:z-40 md:bg-dark/95 md:backdrop-blur-lg md:border-b md:border-white/10"
+      >
+        <div
+          ref={buscadorRef}
+          className="sticky top-16 z-40 bg-dark border-b border-white/10 md:static md:z-auto md:bg-transparent md:border-0"
+        >
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 md:pt-4 md:pb-0">
+            {/* Search */}
+            <div className="relative md:mb-4">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+              <input
+                type="text"
+                placeholder="Buscar términos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-2 md:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:border-brand-light/50 focus:ring-2 focus:ring-brand-light/20 transition"
+              />
+            </div>
           </div>
+        </div>
 
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2 mb-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-3 pb-1 md:pt-0 md:pb-4">
+          {/* Category Filters: en el movil, una fila que se desplaza */}
+          <div className="flex gap-2 mb-3 md:mb-4 overflow-x-auto md:flex-wrap md:overflow-visible -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 pb-1 md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               onClick={() => setSelectedCategory('all')}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition ${
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium border transition ${
                 selectedCategory === 'all'
                   ? 'bg-brand-light/20 text-brand-light border-brand-light/30'
                   : 'bg-white/5 text-white/60 border-white/10 hover:text-white hover:border-white/20'
@@ -196,7 +228,7 @@ export default function GlosarioPage() {
                 <button
                   key={key}
                   onClick={() => setSelectedCategory(key as GlossaryCategory)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition ${
+                  className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium border transition ${
                     selectedCategory === key
                       ? category.color
                       : 'bg-white/5 text-white/60 border-white/10 hover:text-white hover:border-white/20'
@@ -208,8 +240,8 @@ export default function GlosarioPage() {
             })}
           </div>
 
-          {/* Alphabet Navigation */}
-          <div className="flex flex-wrap gap-1">
+          {/* Alphabet Navigation: en el movil, una fila que se desplaza y no fija */}
+          <div className="flex gap-1 overflow-x-auto md:flex-wrap md:overflow-visible -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 pb-1 md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {availableLetters.map((letter) => {
               const hasTerms = filteredGrouped[letter]?.length > 0
               return (
@@ -217,7 +249,7 @@ export default function GlosarioPage() {
                   key={letter}
                   onClick={() => hasTerms && scrollToLetter(letter)}
                   disabled={!hasTerms}
-                  className={`w-8 h-8 rounded-lg text-sm font-semibold transition ${
+                  className={`shrink-0 w-8 h-8 rounded-lg text-sm font-semibold transition ${
                     hasTerms
                       ? 'bg-white/5 text-white hover:bg-white/10'
                       : 'text-white/20 cursor-not-allowed'
@@ -252,7 +284,7 @@ export default function GlosarioPage() {
             {Object.entries(filteredGrouped)
               .sort(([a], [b]) => a.localeCompare(b, 'es'))
               .map(([letter, terms]) => (
-                <div key={letter} id={`letter-${letter}`} className="scroll-mt-48">
+                <div key={letter} id={`letter-${letter}`}>
                   <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
                     <span className="w-10 h-10 rounded-xl bg-brand-light/20 text-brand-light flex items-center justify-center">
                       {letter}
