@@ -379,7 +379,7 @@ export default function EditBadgeForm({ badge }: { badge: Badge }) {
 
         {/* Preview */}
         <div className="lg:col-span-1">
-          <div className="bg-white/5 rounded-xl p-6 border border-white/10 sticky top-8">
+          <div className="bg-white/5 rounded-xl p-6 border border-white/10 sticky top-24">
             <h2 className="text-xl font-semibold text-white mb-4">
               Vista Previa
             </h2>
