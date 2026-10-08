@@ -7,11 +7,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { correoNormalizado } from '@/lib/auth/correo-normalizado'
 import { redirectAfterLogin } from '@/lib/auth/redirect-after-login'
 import {
-  findSpanishErrorMessage,
-  getMessageByCode,
+  codigoParaLaUrl,
   MENSAJE_GENERICO,
+  traducirErrorDeAuth,
 } from '@/lib/auth/error-messages'
 import { esRedireccion } from '@/lib/navegacion/es-redireccion'
+import { destinoInterno } from '@/lib/navegacion/destino-interno'
 
 /**
  * Helper para detectar errores de redirect de Next.js
@@ -36,15 +37,11 @@ function isRedirectError(error: unknown): boolean {
  * respondía «al menos 6 caracteres» para CUALQUIER problema de contraseña,
  * incluida una demasiado larga.
  *
- * El texto manda sobre el código porque es más específico: 'weak_password' no
- * distingue corta de larga, y el mensaje de Supabase sí.
+ * El orden (texto antes que código, y el genérico al final) lo decide
+ * traducirErrorDeAuth, en lib/auth/error-messages.ts.
  */
 function mensajeDeError(error: { message?: string; code?: string }): string {
-  return (
-    findSpanishErrorMessage(error.message) ??
-    getMessageByCode(error.code) ??
-    MENSAJE_GENERICO
-  )
+  return traducirErrorDeAuth(error)
 }
 
 /**
@@ -94,16 +91,18 @@ export async function signInWithEmail(formData: FormData): Promise<AuthResult> {
   }
 
   try {
-    // Guardar redirect en cookie (igual que OAuth)
-    if (redirectTo && redirectTo.startsWith('/')) {
+    // Guardar redirect en cookie (igual que OAuth). startsWith('/') dejaba
+    // pasar //otro-sitio.com: ver lib/navegacion/destino-interno.ts
+    const destino = destinoInterno(redirectTo, '')
+    if (destino) {
       const cookieStore = await cookies()
-      cookieStore.set('auth_redirect', redirectTo, {
+      cookieStore.set('auth_redirect', destino, {
         path: '/',
         maxAge: 60 * 5, // 5 minutos
         httpOnly: true,
         sameSite: 'lax',
       })
-      console.log('✅ [Auth Actions] Cookie auth_redirect guardada:', redirectTo)
+      console.log('✅ [Auth Actions] Cookie auth_redirect guardada:', destino)
     }
 
     const supabase = await createClient()
@@ -153,7 +152,7 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
 
   if (!email || !password) {
     console.error('❌ [Auth Actions] Credenciales incompletas')
-    redirect('/login?error=Credenciales+incompletas')
+    redirect('/login?error=credenciales_incompletas')
   }
 
   try {
@@ -166,14 +165,16 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
 
     if (error) {
       console.error('❌ [Auth Actions] Error en login:', error.message)
-      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+      // En la URL solo el codigo, nunca el texto: ver lib/auth/error-messages.ts
+      redirect(`/login?error=${codigoParaLaUrl(error)}`)
     }
 
     console.log('✅ [Auth Actions] Login exitoso')
 
-    // Usar redirect personalizado o el default
-    if (redirectTo && redirectTo !== '/') {
-      redirect(redirectTo)
+    // Usar redirect personalizado (solo si es de este sitio) o el default
+    const destino = destinoInterno(redirectTo, '/')
+    if (destino !== '/') {
+      redirect(destino)
     } else {
       await redirectAfterLogin()
     }
@@ -183,7 +184,7 @@ export async function signInWithPassword(formData: FormData): Promise<void> {
       throw error
     }
     console.error('❌ [Auth Actions] Error inesperado:', error)
-    redirect('/login?error=Error+inesperado')
+    redirect('/login?error=error_inesperado')
   }
 }
 
@@ -419,10 +420,12 @@ export async function signInWithOAuth(provider: OAuthProvider, redirectTo?: stri
   console.log('🔍 [Auth Actions] Redirect después de login:', redirectTo)
 
   try {
-    // Guardar redirect en cookie para usarlo después del callback
-    if (redirectTo) {
+    // Guardar redirect en cookie para usarlo después del callback, solo si es
+    // de este sitio
+    const destino = destinoInterno(redirectTo, '')
+    if (destino) {
       const cookieStore = await cookies()
-      cookieStore.set('auth_redirect', redirectTo, {
+      cookieStore.set('auth_redirect', destino, {
         path: '/',
         maxAge: 60 * 5, // 5 minutos
         httpOnly: true,
@@ -445,7 +448,7 @@ export async function signInWithOAuth(provider: OAuthProvider, redirectTo?: stri
 
     if (error) {
       console.error('❌ [OAuth] Error completo:', error)
-      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+      redirect(`/login?error=${codigoParaLaUrl(error, 'oauth_error')}`)
     }
 
     if (data.url) {
@@ -453,14 +456,14 @@ export async function signInWithOAuth(provider: OAuthProvider, redirectTo?: stri
       redirect(data.url)
     } else {
       console.error('❌ [OAuth] No se recibió URL de autorización')
-      redirect('/login?error=No+se+recibió+URL+de+autorización')
+      redirect('/login?error=oauth_error')
     }
   } catch (error) {
     if (isRedirectError(error)) {
       throw error
     }
     console.error('❌ [Auth Actions] Error inesperado en OAuth:', error)
-    redirect('/login?error=Error+con+OAuth')
+    redirect('/login?error=oauth_error')
   }
 }
 
@@ -476,7 +479,7 @@ export async function signOut(): Promise<void> {
 
     if (error) {
       console.error('❌ [Auth Actions] Error al cerrar sesión:', error.message)
-      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+      redirect('/login?error=logout_error')
     }
 
     console.log('✅ [Auth Actions] Sesión cerrada')
@@ -486,7 +489,7 @@ export async function signOut(): Promise<void> {
       throw error
     }
     console.error('❌ [Auth Actions] Error inesperado:', error)
-    redirect('/login?error=Error+al+cerrar+sesión')
+    redirect('/login?error=logout_error')
   }
 }
 

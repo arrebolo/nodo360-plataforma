@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { destinoInterno } from '@/lib/navegacion/destino-interno'
 
 /**
  * Redirige al usuario después del login según su rol
@@ -44,10 +45,12 @@ export async function redirectAfterLogin(next?: string) {
   console.log('   - Nombre:', profile.full_name)
   console.log('   - Rol:', profile.role)
 
-  // SI HAY PARÁMETRO NEXT, USARLO
-  if (next && next !== '/') {
-    console.log('↪️ [redirectAfterLogin] Usando parámetro next:', next)
-    redirect(next)
+  // SI HAY PARÁMETRO NEXT, USARLO, solo si es de este sitio: esto es una
+  // accion de servidor exportada y el parametro llega de fuera
+  const destino = destinoInterno(next, '/')
+  if (destino !== '/') {
+    console.log('↪️ [redirectAfterLogin] Usando parámetro next:', destino)
+    redirect(destino)
   }
 
   // REDIRIGIR SEGÚN ROL

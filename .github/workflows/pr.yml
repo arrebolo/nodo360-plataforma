@@ -88,3 +88,9 @@ jobs:
       #
       # No toca la base: solo lee el codigo.
       - run: npx tsx scripts/comprobar-zonas-de-api.mts
+
+      # Los errores de autenticacion, en espanol y en un solo sitio, y en la URL
+      # solo codigos conocidos: una frase escrita en ?error= no se muestra.
+      #
+      # No toca la base ni la red: llama a lib/auth/error-messages.ts.
+      - run: npx tsx scripts/comprobar-errores-de-auth.mts
