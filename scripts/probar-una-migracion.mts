@@ -34,7 +34,8 @@
  *       `courses`, la vista `perfiles_publicos`, `conversations` y `messages`,
  *       con sus permisos, sus políticas y sus triggers MEDIDOS en producción,
  *       y encima ejecuta las migraciones versionadas posteriores a la foto
- *       (ANDAMIO_HASTA_LA_MIGRACION, o la cabecera del volcado). Una migración que
+ *       (ANDAMIO_HASTA_LA_MIGRACION, o la cabecera del volcado); con el andamio,
+ *       solo las declaradas en COMPATIBLES_CON_EL_ANDAMIO. Una migración que
  *       toque cualquier otra cosa fallará aquí por objetos que no existen, y
  *       ese fallo no dice nada de la migración.
  *   NO  nada que dependa del TEXTO de una política de producción: los recuentos
@@ -563,6 +564,24 @@ INSERT INTO public.messages (conversation_id, sender_id, content)
  * FALLA» sobre un volcado de antes de la 123. Codex lo vio en la #333.
  */
 const ANDAMIO_HASTA_LA_MIGRACION = 122
+
+/**
+ * CON EL ANDAMIO, SOLO LAS DECLARADAS. Un volcado es la base entera, y encima
+ * de el va todo lo posterior. El andamio modela siete objetos: la primera
+ * migracion que toque modules o lessons no arrancaria sobre el, y romperia la
+ * prueba de todas las siguientes con un «relation does not exist» que no dice
+ * nada de la que se prueba. Codex lo vio en la #335.
+ *
+ * Asi que, con el andamio, encima solo van las de esta lista: cada una con el
+ * motivo por el que el andamio la sostiene, y comprobado ejecutandola. Si entre
+ * la foto y la que se prueba hay alguna sin declarar, el banco se niega y la
+ * nombra: ni la aplica a ciegas ni se la salta en silencio, porque cualquiera
+ * de las dos cosas da un resultado sobre una base que no es la de hoy.
+ */
+const COMPATIBLES_CON_EL_ANDAMIO: Record<number, string> = {
+  123: 'toca users (permiso de la columna role y su politica de lectura), es_funcion_publica y la vista perfiles_publicos, y lee instructor_profiles, user_roles y courses: todo modelado',
+}
+
 const CABECERA_DEL_VOLCADO = /^-- nodo360: volcado hasta la migracion (\d{3})\s*$/
 
 /** El numero de una migracion por su nombre: «124-aplicar.sql», «124_x.sql». */
@@ -631,6 +650,26 @@ const encima = fs.readdirSync('supabase/migrations')
   .sort((x, y) => x.n - y.n || x.f.localeCompare(y.f))
   .map(({ f }) => f)
 
+// Con el andamio, todas las de encima tienen que estar declaradas.
+if (!hayVolcado) {
+  const sinDeclarar = encima.filter((f) => !(numeroDe(f)! in COMPATIBLES_CON_EL_ANDAMIO))
+  if (sinDeclarar.length > 0) {
+    console.error(`*** NO SE HA PROBADO ${path.basename(fichero)}. Entre la foto del andamio (la`)
+    console.error(`    ${ANDAMIO_HASTA_LA_MIGRACION}) y ella hay migraciones aplicadas que el andamio no sabe si`)
+    console.error('    sostiene:')
+    for (const f of sinDeclarar) console.error(`       ${f}`)
+    console.error('    Sin ellas, la base de la prueba no es la de hoy; con ellas a ciegas,')
+    console.error('    la primera que toque algo que el andamio no modela tumba la prueba.')
+    console.error('    Una de tres:')
+    console.error('     - si solo toca lo que el andamio modela, declárala en')
+    console.error('       COMPATIBLES_CON_EL_ANDAMIO (scripts/probar-una-migracion.mts)')
+    console.error('       con el motivo;')
+    console.error('     - si toca otra cosa, amplía el andamio, medido, y declárala;')
+    console.error('     - o prueba con el volcado de producción (docs/VOLCADO-DE-ESQUEMA.md).')
+    process.exit(1)
+  }
+}
+
 try {
   if (hayVolcado) {
     // Los roles no vienen en un pg_dump, así que se crean antes: es la primera
@@ -649,14 +688,17 @@ try {
     console.log(`   el andamio describe la base tras la ${ANDAMIO_HASTA_LA_MIGRACION}`)
   }
 
-  // Y encima, lo aplicado despues de la foto, CON EL VOLCADO Y CON EL ANDAMIO.
-  // Si una no arranca aqui, eso tambien hay que verlo: o el andamio no la
-  // modela, o el volcado no es lo que dice su cabecera.
+  // Y encima, lo aplicado despues de la foto: con el volcado, todo; con el
+  // andamio, solo lo declarado (comprobado arriba). Si una no arranca aqui,
+  // eso tambien hay que verlo: o su declaracion es falsa, o el volcado no es
+  // lo que dice su cabecera.
   for (const previa of encima) {
     try {
       await db.exec(fs.readFileSync(path.join('supabase/migrations', previa), 'utf8'))
     } catch (e) {
-      throw new Error(`la ${previa}, que ya esta aplicada, no arranca sobre ${hayVolcado ? 'el volcado' : 'el andamio'}: ${(e as Error).message}`)
+      throw new Error(hayVolcado
+        ? `la ${previa}, que ya esta aplicada, no arranca sobre el volcado: ${(e as Error).message}`
+        : `la ${previa} esta declarada compatible con el andamio y no arranca sobre el: la declaracion es falsa. ${(e as Error).message}`)
     }
     console.log(`   encima:  ${previa} (aplicada en produccion)`)
   }

@@ -208,7 +208,9 @@ El camino:
    sobre un volcado viejo.
 
    Si el fichero no existe, el banco usa el andamio escrito a mano, que declara
-   su propia foto en `ANDAMIO_HASTA_LA_MIGRACION`.
+   su propia foto en `ANDAMIO_HASTA_LA_MIGRACION`, y encima solo pone las
+   declaradas en `COMPATIBLES_CON_EL_ANDAMIO`: si hay una posterior sin
+   declarar, se niega y la nombra.
 2. **Para versionar lo que falta**: de ese volcado se extrae **solo lo que no
    está en ninguna migración** y se escribe como `001`, `002`, `017` y `018` con
    su cabecera explicando que son el esquema inicial reconstruido, no una
