@@ -7,11 +7,21 @@
   storage, no solo public: auth.users son LAS CUENTAS, y sin ellas nadie puede
   iniciar sesión aunque se restaure todo lo demás.
 
-  La conexión NUNCA se escribe aquí. Se lee de la variable de entorno
-  NODO360_DB_URL, y además no se le pasa a pg_dump como argumento: se
-  descompone en las variables PGHOST, PGUSER, PGPASSWORD... porque los
-  argumentos de un proceso son visibles para cualquier programa del equipo
-  (el Administrador de tareas tiene una columna «Línea de comandos»).
+  LA CADENA DE CONEXIÓN SE PIDE AL EJECUTARLO Y NO SE GUARDA EN NINGÚN SITIO.
+  Se pega con Read-Host -AsSecureString (no se ve, no queda en el historial),
+  se descompone en las variables PGHOST, PGUSER, PGPASSWORD... de ESTE proceso
+  —no se le pasa a pg_dump como argumento, porque los argumentos de un proceso
+  los ve cualquier programa del equipo: el Administrador de tareas tiene una
+  columna «Línea de comandos»— y se borra en un finally, termine como termine.
+
+  Antes se leía de una variable de entorno de usuario, NODO360_DB_URL, y el
+  propio script decía cómo dejarla guardada. Eso era un error: una variable
+  de usuario queda en texto plano en el registro, la lee cualquier proceso de
+  la cuenta —cualquier paquete de npm, cualquier herramienta— y da acceso
+  total a la base saltándose la RLS y los permisos. Si sigue puesta, el script
+  lo avisa, NO la lee y dice cómo borrarla.
+
+  Lo ejecuta una persona, a mano: con la entrada redirigida se niega.
 
   NO RESTAURA NADA. Al terminar imprime el comando de restauración para
   cuando haga falta, mirándolo antes de ejecutarlo.
@@ -144,144 +154,179 @@ function Ejecutar-Leyendo([string] $programa, [string[]] $argumentos) {
 
 
 # ----------------------------------------------------------------------------
-# 1. La cadena de conexión
+# 1. La cadena de conexión: se pide ahora, y no se guarda
 # ----------------------------------------------------------------------------
 Escribir-Titulo 'Comprobando la conexión'
 
-$cadena = $env:NODO360_DB_URL
-
-if ([string]::IsNullOrWhiteSpace($cadena)) {
+# Una variable guardada de antes NO se usa: se avisa y se dice cómo quitarla.
+# Se pregunta por el NOMBRE (en el registro y en la sesión), sin leer el valor.
+$guardadaEnUsuario = (Get-Item 'HKCU:\Environment').GetValueNames() -contains 'NODO360_DB_URL'
+$guardadaEnSesion  = Test-Path 'Env:NODO360_DB_URL'
+if ($guardadaEnUsuario -or $guardadaEnSesion) {
   Write-Host ''
-  Write-Host 'ERROR: falta la variable de entorno NODO360_DB_URL.' -ForegroundColor Red
+  Write-Host 'AVISO: hay una variable NODO360_DB_URL puesta. Este script NO la usa.' -ForegroundColor Yellow
   Write-Host ''
-  Write-Host 'No hay ninguna cadena de conexión escrita en este script ni en el'
-  Write-Host 'repositorio, a propósito. Hay que ponerla como variable de tu usuario:'
+  Write-Host 'Con la cadena de conexión dentro, cualquier proceso de tu cuenta puede'
+  Write-Host 'leerla y entrar en la base saltándose la RLS. Bórrala:'
   Write-Host ''
-  Write-Host '  1. En Supabase: Project Settings -> Database -> Connection string,'
-  Write-Host '     pestaña URI. Usa la conexión DIRECTA o el SESSION POOLER'
-  Write-Host '     (puerto 5432). El pooler de TRANSACCIONES (6543) no sirve para'
-  Write-Host '     pg_dump.'
-  Write-Host ''
-  Write-Host '  2. Guárdala sin que quede en el historial de PowerShell:'
-  Write-Host ''
-  Write-Host '       $c = Read-Host "Pega la cadena" -AsSecureString' -ForegroundColor Yellow
-  Write-Host '       $t = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($c)' -ForegroundColor Yellow
-  Write-Host '       $u = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($t)' -ForegroundColor Yellow
-  Write-Host '       [Environment]::SetEnvironmentVariable("NODO360_DB_URL", $u, "User")' -ForegroundColor Yellow
-  Write-Host '       Remove-Variable c, t, u' -ForegroundColor Yellow
-  Write-Host ''
-  Write-Host '  3. Cierra y abre PowerShell para que la variable exista en la sesión.'
-  Write-Host ''
-  exit 1
-}
-
-try {
-  $uri = [System.Uri] $cadena
-} catch {
-  Terminar-Con-Error 'NODO360_DB_URL no parece una URL. Tiene que empezar por postgresql://'
-}
-
-if (@('postgresql', 'postgres') -notcontains $uri.Scheme) {
-  Terminar-Con-Error "NODO360_DB_URL empieza por '$($uri.Scheme)://' y debería empezar por 'postgresql://'."
-}
-
-$puerto = $uri.Port
-if ($puerto -le 0) { $puerto = 5432 }
-
-if ($puerto -eq 6543) {
-  Write-Host ''
-  Write-Host 'ERROR: esa cadena es la del pooler de TRANSACCIONES (puerto 6543).' -ForegroundColor Red
-  Write-Host ''
-  Write-Host 'pg_dump no funciona ahí: necesita mantener una sesión y una transacción'
-  Write-Host 'abiertas durante todo el volcado, y ese pooler reparte cada sentencia'
-  Write-Host 'entre conexiones distintas.'
-  Write-Host ''
-  Write-Host 'Usa la conexión DIRECTA o el SESSION POOLER, los dos en el puerto 5432.'
-  Write-Host ''
-  exit 1
-}
-
-$usuario = ''
-$clave = ''
-if ($uri.UserInfo) {
-  $corte = $uri.UserInfo.IndexOf(':')
-  if ($corte -ge 0) {
-    $usuario = [Uri]::UnescapeDataString($uri.UserInfo.Substring(0, $corte))
-    $clave   = [Uri]::UnescapeDataString($uri.UserInfo.Substring($corte + 1))
-  } else {
-    $usuario = [Uri]::UnescapeDataString($uri.UserInfo)
+  if ($guardadaEnUsuario) {
+    Write-Host '    [Environment]::SetEnvironmentVariable("NODO360_DB_URL", $null, "User")' -ForegroundColor Yellow
   }
-}
-if ([string]::IsNullOrWhiteSpace($usuario)) {
-  Terminar-Con-Error 'La cadena no lleva usuario. Debería ser postgresql://USUARIO:CLAVE@servidor:5432/postgres'
-}
-if ([string]::IsNullOrWhiteSpace($clave)) {
-  Terminar-Con-Error 'La cadena no lleva contraseña. Cópiala otra vez de Supabase: el panel la incluye.'
-}
-
-$baseDatos = $uri.AbsolutePath.TrimStart('/')
-if ([string]::IsNullOrWhiteSpace($baseDatos)) { $baseDatos = 'postgres' }
-
-# La contraseña solo se muestra así, nunca entera.
-$claveTapada = '*' * $clave.Length
-Write-Host "  servidor : $($uri.Host):$puerto"
-Write-Host "  base     : $baseDatos"
-Write-Host "  usuario  : $usuario"
-Write-Host "  clave    : $claveTapada  ($($clave.Length) caracteres)"
-
-
-# ----------------------------------------------------------------------------
-# 2. Las herramientas
-# ----------------------------------------------------------------------------
-Escribir-Titulo 'Buscando pg_dump'
-
-$pgDump = Buscar-Programa 'pg_dump.exe'
-if (-not $pgDump) {
+  if ($guardadaEnSesion) {
+    Write-Host '    Remove-Item Env:NODO360_DB_URL' -ForegroundColor Yellow
+  }
   Write-Host ''
-  Write-Host 'ERROR: no encuentro pg_dump.exe.' -ForegroundColor Red
+  Write-Host 'y cambia la contraseña de la base en Supabase (Project Settings ->'
+  Write-Host 'Database -> Reset database password): ha estado guardada en claro.'
   Write-Host ''
-  Write-Host 'Instala el cliente de PostgreSQL, la versión más reciente:'
-  Write-Host ''
-  Write-Host '    winget install PostgreSQL.PostgreSQL.18' -ForegroundColor Yellow
-  Write-Host ''
-  Write-Host 'o bájalo de https://www.postgresql.org/download/windows/ y en el'
-  Write-Host 'instalador basta con marcar «Command Line Tools».'
-  Write-Host ''
-  Write-Host 'No hace falta añadirlo al PATH: este script lo busca solo en'
-  Write-Host 'C:\Program Files\PostgreSQL\*\bin\.'
-  Write-Host ''
-  exit 1
 }
 
-$resultadoVersion = Ejecutar-Leyendo $pgDump @('--version')
-$versionTexto = $resultadoVersion.Salida.Trim()
-Write-Host "  $pgDump"
-Write-Host "  $versionTexto"
+# Solo a mano. Con la entrada redirigida no hay nadie al teclado: medido, en
+# PowerShell 5.1 Read-Host -AsSecureString se queda colgado esperando. Mejor
+# decirlo y parar, y que ningún otro programa pueda pasarle la cadena.
+if (-not [Environment]::UserInteractive -or [Console]::IsInputRedirected) {
+  Terminar-Con-Error 'Este script se ejecuta a mano, en una consola: pide la cadena de conexión con el teclado y no la acepta por una tubería.'
+}
 
-$mayorCliente = 0
-if ($versionTexto -match '(\d+)\.\d+') { $mayorCliente = [int] $Matches[1] }
-elseif ($versionTexto -match '(\d+)')  { $mayorCliente = [int] $Matches[1] }
+Write-Host ''
+Write-Host 'Pega la cadena de conexión de Supabase (Project Settings -> Database ->'
+Write-Host 'Connection string, pestaña URI). La DIRECTA o el SESSION POOLER, puerto'
+Write-Host '5432; el pooler de TRANSACCIONES (6543) no sirve para pg_dump.'
+Write-Host 'No se verá al pegarla, no queda en el historial y no se guarda.'
+Write-Host ''
 
-$psql = Buscar-Programa 'psql.exe'
-
-
-# ----------------------------------------------------------------------------
-# 3. Las variables PG*, para que la contraseña no viaje en la línea de comandos
-# ----------------------------------------------------------------------------
-$modoSsl = 'require'
-if ($uri.Query -match 'sslmode=([a-z-]+)') { $modoSsl = $Matches[1] }
-
-$env:PGHOST            = $uri.Host
-$env:PGPORT            = "$puerto"
-$env:PGUSER            = $usuario
-$env:PGPASSWORD        = $clave
-$env:PGDATABASE        = $baseDatos
-$env:PGSSLMODE         = $modoSsl
-$env:PGCONNECT_TIMEOUT = '20'
-
+# Desde aquí, todo dentro del try: el finally del final borra la cadena, la
+# clave y las variables PG*, también si algo termina con exit.
+$cadena = $null
+$clave = $null
+$uri = $null
 $codigoSalida = 0
 
 try {
+
+  $segura = Read-Host 'Cadena de conexión' -AsSecureString
+  $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($segura)
+  try {
+    $cadena = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+  } finally {
+    # La copia sin cifrar que hace falta para leerla, a ceros en cuanto se lee.
+    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+    $segura.Dispose()
+    Remove-Variable segura, bstr -ErrorAction SilentlyContinue
+  }
+
+  if ([string]::IsNullOrWhiteSpace($cadena)) {
+    Terminar-Con-Error 'No se ha pegado nada.'
+  }
+
+  # El mensaje de error NO repite lo pegado: llevaría la contraseña dentro.
+  $uri = $null
+  if (-not [System.Uri]::TryCreate($cadena.Trim(), [System.UriKind]::Absolute, [ref] $uri)) {
+    Terminar-Con-Error 'Eso no parece una cadena de conexión. Tiene que empezar por postgresql://'
+  }
+
+  if (@('postgresql', 'postgres') -notcontains $uri.Scheme) {
+    Terminar-Con-Error "La cadena empieza por '$($uri.Scheme)://' y debería empezar por 'postgresql://'."
+  }
+
+  $puerto = $uri.Port
+  if ($puerto -le 0) { $puerto = 5432 }
+
+  if ($puerto -eq 6543) {
+    Write-Host ''
+    Write-Host 'ERROR: esa cadena es la del pooler de TRANSACCIONES (puerto 6543).' -ForegroundColor Red
+    Write-Host ''
+    Write-Host 'pg_dump no funciona ahí: necesita mantener una sesión y una transacción'
+    Write-Host 'abiertas durante todo el volcado, y ese pooler reparte cada sentencia'
+    Write-Host 'entre conexiones distintas.'
+    Write-Host ''
+    Write-Host 'Usa la conexión DIRECTA o el SESSION POOLER, los dos en el puerto 5432.'
+    Write-Host ''
+    exit 1
+  }
+
+  $usuario = ''
+  $clave = ''
+  if ($uri.UserInfo) {
+    $corte = $uri.UserInfo.IndexOf(':')
+    if ($corte -ge 0) {
+      $usuario = [Uri]::UnescapeDataString($uri.UserInfo.Substring(0, $corte))
+      $clave   = [Uri]::UnescapeDataString($uri.UserInfo.Substring($corte + 1))
+    } else {
+      $usuario = [Uri]::UnescapeDataString($uri.UserInfo)
+    }
+  }
+  if ([string]::IsNullOrWhiteSpace($usuario)) {
+    Terminar-Con-Error 'La cadena no lleva usuario. Debería ser postgresql://USUARIO:CLAVE@servidor:5432/postgres'
+  }
+  if ([string]::IsNullOrWhiteSpace($clave)) {
+    Terminar-Con-Error 'La cadena no lleva contraseña. Cópiala otra vez de Supabase: el panel la incluye.'
+  }
+
+  $baseDatos = $uri.AbsolutePath.TrimStart('/')
+  if ([string]::IsNullOrWhiteSpace($baseDatos)) { $baseDatos = 'postgres' }
+
+  # La contraseña solo se muestra así, nunca entera.
+  $claveTapada = '*' * $clave.Length
+  Write-Host "  servidor : $($uri.Host):$puerto"
+  Write-Host "  base     : $baseDatos"
+  Write-Host "  usuario  : $usuario"
+  Write-Host "  clave    : $claveTapada  ($($clave.Length) caracteres)"
+
+
+  # ----------------------------------------------------------------------------
+  # 2. Las herramientas
+  # ----------------------------------------------------------------------------
+  Escribir-Titulo 'Buscando pg_dump'
+
+  $pgDump = Buscar-Programa 'pg_dump.exe'
+  if (-not $pgDump) {
+    Write-Host ''
+    Write-Host 'ERROR: no encuentro pg_dump.exe.' -ForegroundColor Red
+    Write-Host ''
+    Write-Host 'Instala el cliente de PostgreSQL, la versión más reciente:'
+    Write-Host ''
+    Write-Host '    winget install PostgreSQL.PostgreSQL.18' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host 'o bájalo de https://www.postgresql.org/download/windows/ y en el'
+    Write-Host 'instalador basta con marcar «Command Line Tools».'
+    Write-Host ''
+    Write-Host 'No hace falta añadirlo al PATH: este script lo busca solo en'
+    Write-Host 'C:\Program Files\PostgreSQL\*\bin\.'
+    Write-Host ''
+    exit 1
+  }
+
+  $resultadoVersion = Ejecutar-Leyendo $pgDump @('--version')
+  $versionTexto = $resultadoVersion.Salida.Trim()
+  Write-Host "  $pgDump"
+  Write-Host "  $versionTexto"
+
+  $mayorCliente = 0
+  if ($versionTexto -match '(\d+)\.\d+') { $mayorCliente = [int] $Matches[1] }
+  elseif ($versionTexto -match '(\d+)')  { $mayorCliente = [int] $Matches[1] }
+
+  $psql = Buscar-Programa 'psql.exe'
+
+
+  # ----------------------------------------------------------------------------
+  # 3. Las variables PG*, para que la contraseña no viaje en la línea de comandos
+  # ----------------------------------------------------------------------------
+  $modoSsl = 'require'
+  if ($uri.Query -match 'sslmode=([a-z-]+)') { $modoSsl = $Matches[1] }
+
+  $env:PGHOST            = $uri.Host
+  $env:PGPORT            = "$puerto"
+  $env:PGUSER            = $usuario
+  $env:PGPASSWORD        = $clave
+  $env:PGDATABASE        = $baseDatos
+  $env:PGSSLMODE         = $modoSsl
+  $env:PGCONNECT_TIMEOUT = '20'
+
+  # Ya está en las variables PG* de este proceso, que es lo único que necesitan
+  # pg_dump y psql. Ni la cadena ni la clave hacen falta más.
+  $cadena = $null
+  $clave = $null
 
   # --------------------------------------------------------------------------
   # 4. ¿Es el cliente lo bastante nuevo?
@@ -584,10 +629,16 @@ try {
   Write-Host ''
 
 } finally {
-  # La contraseña no se queda en la sesión de PowerShell.
+  # La contraseña no se queda en la sesión de PowerShell, termine como termine:
+  # también con exit, con un error o con Ctrl+C.
   foreach ($v in @('PGPASSWORD', 'PGHOST', 'PGPORT', 'PGUSER', 'PGDATABASE', 'PGSSLMODE', 'PGCONNECT_TIMEOUT')) {
     if (Test-Path "Env:$v") { Remove-Item "Env:$v" -ErrorAction SilentlyContinue }
   }
+  $cadena = $null
+  $clave = $null
+  $claveTapada = $null
+  $uri = $null
+  Remove-Variable cadena, clave, claveTapada, uri -ErrorAction SilentlyContinue
 }
 
 exit $codigoSalida
