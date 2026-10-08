@@ -25,14 +25,16 @@
  *   SI  errores de sintaxis y DE TIPOS, en el SQL llano y dentro de plpgsql;
  *       funciones que no existen; columnas que no existen; triggers que se
  *       pisan; que una autoprueba se levante cuando debe y no cuando no debe.
- *   NO  nada sobre LOS DATOS DE PRODUCCION. El andamio tiene cuatro filas
- *       inventadas. Si una autoprueba cuenta cursos reales, aquí dirá otra cosa:
+ *   NO  nada sobre LOS DATOS DE PRODUCCION. El andamio tiene un puñado de
+ *       filas inventadas. Si una autoprueba cuenta cursos reales, aquí dirá otra cosa:
  *       eso lo dice la aplicación de verdad, y por eso sigue habiendo revisión
  *       humana antes de aplicar.
  *   NO  nada de los objetos que el andamio no tiene. ESTA ESCRITO A MANO, y
- *       hoy modela cinco: `users`, `instructor_profiles`, `user_roles`,
- *       `courses` y la vista `perfiles_publicos`, con sus permisos por columna,
- *       sus políticas y sus triggers MEDIDOS en producción. Una migración que
+ *       hoy modela siete: `users`, `instructor_profiles`, `user_roles`,
+ *       `courses`, la vista `perfiles_publicos`, `conversations` y `messages`,
+ *       con sus permisos, sus políticas y sus triggers MEDIDOS en producción,
+ *       y encima ejecuta las migraciones ya aplicadas que no tiene escritas
+ *       (APLICADAS_ENCIMA_DEL_ANDAMIO). Una migración que
  *       toque cualquier otra cosa fallará aquí por objetos que no existen, y
  *       ese fallo no dice nada de la migración.
  *   NO  nada que dependa del TEXTO de una política de producción: los recuentos
@@ -110,7 +112,9 @@ CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$
   SELECT nullif(current_setting('request.jwt.claims', true)::json ->> 'sub', '')::uuid
 $$;
 
-CREATE TYPE user_role AS ENUM ('student', 'instructor', 'mentor', 'admin');
+-- Los CINCO valores y en su orden, medidos en el OpenAPI de produccion el
+-- 2026-10-08: «council» existe y el andamio no lo tenia.
+CREATE TYPE user_role AS ENUM ('student', 'instructor', 'admin', 'mentor', 'council');
 
 -- Hace falta antes de la tabla: la columna generada email_normalizado la llama.
 -- Copiada de la 106, con su IMMUTABLE, que es lo que permite generar con ella.
@@ -226,24 +230,32 @@ CREATE POLICY users_update_own ON public.users
 -- perfiles_publicos: perfil de instructor activo, mentor activo en user_roles, o
 -- autor de un curso publicado. Sin estas tres tablas, la 123 no se puede probar.
 
+-- is_active y accepts_messages ADMITEN NULL, con default true: medido en el
+-- OpenAPI el 2026-10-08. El andamio las tenia NOT NULL, y con eso el caso «un
+-- NULL no es acepta» de la 124 no se podia ni montar. Solo estan las columnas
+-- que alguna migracion probada usa; produccion tiene 18.
 CREATE TABLE public.instructor_profiles (
   user_id uuid PRIMARY KEY REFERENCES public.users(id),
-  is_active boolean NOT NULL DEFAULT true,
-  accepts_messages boolean NOT NULL DEFAULT true
+  is_active boolean DEFAULT true,
+  accepts_messages boolean DEFAULT true
 );
 
--- Fiel al original (scripts/add-user-roles-system.sql): «role» es el MISMO enum
--- que users.role —la 034 lo castea a ::TEXT, que es lo que lo delata— y
--- «is_active» ADMITE NULL, asi que un «AND is_active» con NULL no casa. Si aqui
--- fuera «text NOT NULL», el banco dejaria pasar comparaciones que en produccion
--- fallan y escondería el caso del NULL.
+-- MEDIDA el 2026-10-08, y desmiente lo que el andamio decia antes:
+--
+--   «role» es TEXT, NO el enum de users.role. El OpenAPI lo da como «text»
+--   (users.role sale como «public.user_role») y la conducta lo confirma:
+--   filtrar user_roles.role por un valor que no existe devuelve 0 filas, y
+--   users.role da 22P02 «invalid input value for enum». El andamio lo tenia
+--   como enum por una INFERENCIA —la 034 lo castea a ::TEXT— que no era una
+--   medida. Sin default.
+--   «expires_at» NO EXISTE en produccion. Fuera.
+--   «is_active» ADMITE NULL, default true: un «AND is_active» con NULL no casa.
 CREATE TABLE public.user_roles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  role user_role NOT NULL DEFAULT 'student',
+  role text NOT NULL,
   granted_by uuid REFERENCES public.users(id),
   granted_at timestamptz DEFAULT now(),
-  expires_at timestamptz,
   is_active boolean DEFAULT true,
   notes text,
   created_at timestamptz DEFAULT now(),
@@ -379,7 +391,161 @@ CREATE OR REPLACE VIEW public.perfiles_publicos AS
 
 REVOKE ALL ON public.perfiles_publicos FROM PUBLIC;
 GRANT SELECT ON public.perfiles_publicos TO anon, authenticated;
+
+-- ── LA MENSAJERIA: conversations y messages ───────────────────────────────
+--
+-- Vienen de supabase/018_messaging_system.sql, aplicado a mano y fuera de
+-- migrations/. NO estan copiadas de ahi a ciegas: cada cosa se MIDIO contra
+-- produccion el 2026-10-08 (tmp/medir-conversations-y-messages.mts y
+-- tmp/medir-conversations-restricciones.mts) y coincide con el 018:
+--
+--   columnas, tipos, NOT NULL y defaults   OpenAPI de PostgREST
+--   different_participants                 (p, p)            -> 23514
+--   unique_conversation, EN ESE ORDEN      (p1,p2) dos veces -> 23505
+--                                          (p2,p1) tras (p1,p2) -> PASA
+--   messages_content_check                 '' y 5001 -> 23514, 5000 -> pasa
+--   claves ajenas                          conversacion inexistente -> 23503
+--   ON DELETE CASCADE                      borrar la cuenta borra su conversacion
+--   trigger_update_last_message            un mensaje pone last_message_at
+--
+-- LOS PERMISOS, medidos por lo que pasa y no por catalogo: anon y
+-- authenticated tienen la tabla entera (un INSERT de anon lo para la RLS con
+-- 42501 «violates row-level security policy», no «permission denied»; un DELETE
+-- sin politica da 0 filas, no 42501). Es el GRANT ALL que Supabase da por
+-- defecto.
+--
+-- LAS POLITICAS: el texto no se puede leer desde fuera, pero LO QUE HACEN si se
+-- midio, caso por caso, y es exactamente lo que dice el 018 —sin TO, o sea
+-- para PUBLIC—:
+--
+--   conversations SELECT   solo participantes          C ve 0, B ve 1
+--   conversations INSERT   quien inserta es participante   (B,C) por A -> 42501
+--   conversations UPDATE   USING participante, SIN WITH CHECK propio, asi que
+--                          el WITH CHECK es el mismo USING sobre la fila NUEVA:
+--                          A puede poner participant_2 := C (PASA, medido) y no
+--                          puede salirse (participant_1 := C -> 42501, medido)
+--   messages SELECT        solo participantes
+--   messages INSERT        sender_id = uno mismo y participante
+--   messages UPDATE        cualquier participante, CUALQUIER columna: B
+--                          reescribio el content de A y se puso de sender_id
+--                          (medido). La 124 no lo toca; esta apuntado.
+--   ninguna de DELETE      A borrando lo suyo -> 0 filas
+
+CREATE TABLE public.conversations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_1 uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  participant_2 uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  last_message_at timestamptz,
+  created_at timestamptz DEFAULT now(),
+  CONSTRAINT unique_conversation UNIQUE (participant_1, participant_2),
+  CONSTRAINT different_participants CHECK (participant_1 != participant_2)
+);
+
+CREATE TABLE public.messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id uuid NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
+  sender_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  content text NOT NULL CHECK (char_length(content) > 0 AND char_length(content) <= 5000),
+  read_at timestamptz,
+  created_at timestamptz DEFAULT now()
+);
+
+GRANT ALL ON public.conversations, public.messages TO anon, authenticated, service_role;
+
+ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own conversations" ON public.conversations
+  FOR SELECT USING (auth.uid() IN (participant_1, participant_2));
+CREATE POLICY "Users can create conversations" ON public.conversations
+  FOR INSERT WITH CHECK (auth.uid() IN (participant_1, participant_2));
+CREATE POLICY "Users can update own conversations" ON public.conversations
+  FOR UPDATE USING (auth.uid() IN (participant_1, participant_2));
+
+CREATE POLICY "Users can view messages in own conversations" ON public.messages
+  FOR SELECT USING (EXISTS (SELECT 1 FROM public.conversations c
+    WHERE c.id = conversation_id AND auth.uid() IN (c.participant_1, c.participant_2)));
+CREATE POLICY "Users can send messages in own conversations" ON public.messages
+  FOR INSERT WITH CHECK (sender_id = auth.uid() AND EXISTS (SELECT 1 FROM public.conversations c
+    WHERE c.id = conversation_id AND auth.uid() IN (c.participant_1, c.participant_2)));
+CREATE POLICY "Users can mark messages as read" ON public.messages
+  FOR UPDATE
+  USING (EXISTS (SELECT 1 FROM public.conversations c
+    WHERE c.id = conversation_id AND auth.uid() IN (c.participant_1, c.participant_2)))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.conversations c
+    WHERE c.id = conversation_id AND auth.uid() IN (c.participant_1, c.participant_2)));
+
+-- El trigger de last_message_at, del 018: SECURITY INVOKER, asi que el UPDATE lo
+-- hace quien envia el mensaje, con su RLS. Medido vivo: el mensaje de la
+-- medicion puso last_message_at.
+CREATE OR REPLACE FUNCTION public.update_conversation_last_message() RETURNS trigger AS $ulm$
+BEGIN
+  UPDATE public.conversations SET last_message_at = NEW.created_at
+   WHERE id = NEW.conversation_id;
+  RETURN NEW;
+END;
+$ulm$ LANGUAGE plpgsql;
+CREATE TRIGGER trigger_update_last_message AFTER INSERT ON public.messages
+  FOR EACH ROW EXECUTE FUNCTION public.update_conversation_last_message();
+
+-- La RPC, tal como la dejo la 034 (guarda de identidad) y con los permisos de la
+-- 033. Medido: anon -> 42501 permission denied; una sesion pidiendo una
+-- conversacion ajena -> 42501 «No autorizado»; la propia -> PASA.
+CREATE OR REPLACE FUNCTION public.get_or_create_conversation(p_user_1 uuid, p_user_2 uuid)
+ RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public', 'pg_temp'
+AS $goc$
+DECLARE
+  v_conversation_id UUID;
+  v_ordered_1 UUID;
+  v_ordered_2 UUID;
+BEGIN
+  IF auth.uid() IS NOT NULL AND auth.uid() NOT IN (p_user_1, p_user_2) THEN
+    RAISE EXCEPTION 'No autorizado' USING ERRCODE = '42501';
+  END IF;
+  IF p_user_1 = p_user_2 THEN
+    RAISE EXCEPTION 'No puedes crear una conversación contigo mismo';
+  END IF;
+  IF p_user_1 < p_user_2 THEN
+    v_ordered_1 := p_user_1; v_ordered_2 := p_user_2;
+  ELSE
+    v_ordered_1 := p_user_2; v_ordered_2 := p_user_1;
+  END IF;
+  SELECT id INTO v_conversation_id FROM public.conversations
+   WHERE (participant_1 = v_ordered_1 AND participant_2 = v_ordered_2)
+      OR (participant_1 = v_ordered_2 AND participant_2 = v_ordered_1);
+  IF v_conversation_id IS NULL THEN
+    INSERT INTO public.conversations (participant_1, participant_2)
+    VALUES (v_ordered_1, v_ordered_2) RETURNING id INTO v_conversation_id;
+  END IF;
+  RETURN v_conversation_id;
+END;
+$goc$;
+REVOKE ALL ON FUNCTION public.get_or_create_conversation(uuid, uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_or_create_conversation(uuid, uuid) TO authenticated, service_role;
+
+-- Un SEGUNDO alumno. La forma de produccion lo pide —hay veinte— y las pruebas
+-- de mensajeria tambien: «un alumno escribe a otro alumno» necesita dos.
+INSERT INTO public.users (email, full_name, role) VALUES
+  ('alumna@ejemplo.invalid', 'Otra cuenta de alumno', 'student');
+
+-- La conversacion que hay hoy, con su FORMA medida: administracion <->
+-- instructor con perfil activo que acepta mensajes, y mensajes de los dos.
+INSERT INTO public.conversations (participant_1, participant_2)
+  SELECT least(a.id, i.id), greatest(a.id, i.id)
+    FROM public.users a, public.users i
+   WHERE a.role = 'admin' AND i.role = 'instructor';
+INSERT INTO public.messages (conversation_id, sender_id, content)
+  SELECT c.id, u.id, 'Mensaje de ' || u.full_name
+    FROM public.conversations c
+    JOIN public.users u ON u.id IN (c.participant_1, c.participant_2);
 `
+
+/**
+ * Las migraciones YA APLICADAS en produccion que el andamio no tiene escritas:
+ * el andamio describe la base de antes de ellas, y el banco las ejecuta encima.
+ * Al aplicar una migracion nueva en produccion, se añade aqui.
+ */
+const APLICADAS_ENCIMA_DEL_ANDAMIO = ['123_el_rol_deja_de_ser_legible.sql']
 
 const sql = fs.readFileSync(fichero, 'utf8')
 console.log(`\n=== ${path.basename(fichero)} contra un PostgreSQL de usar y tirar ===\n`)
@@ -409,10 +575,26 @@ try {
     await db.exec(ANDAMIO)
     const { rows } = await db.query<{ n: number }>('select count(*)::int n from public.users')
     console.log(`   esquema: ANDAMIO ESCRITO A MANO, ${rows[0].n} filas de mentira`)
-    console.log('   modela users, instructor_profiles, user_roles, courses y')
-    console.log('   perfiles_publicos, con su RLS. NADA MAS: para el resto del')
-    console.log('   esquema hace falta el volcado')
+    console.log('   modela users, instructor_profiles, user_roles, courses,')
+    console.log('   perfiles_publicos, conversations y messages, con su RLS. NADA')
+    console.log('   MAS: para el resto del esquema hace falta el volcado')
     console.log('   (docs/VOLCADO-DE-ESQUEMA.md)')
+
+    // Y encima, las que ya estan aplicadas en produccion y son POSTERIORES al
+    // andamio, en orden y solo las ANTERIORES a la que se prueba: asi se puede
+    // seguir probando la 123 sobre lo que habia antes de ella, y la 124 sobre lo
+    // que hay hoy. Se aplica EL FICHERO VERSIONADO, no una copia a mano: es lo
+    // que se ejecuto, y si dejara de arrancar aqui, eso tambien hay que verlo.
+    const numero = Number(path.basename(fichero).match(/^(\d{3})/)?.[1] ?? Infinity)
+    for (const previa of APLICADAS_ENCIMA_DEL_ANDAMIO) {
+      if (Number(previa.slice(0, 3)) >= numero) continue
+      try {
+        await db.exec(fs.readFileSync(path.join('supabase/migrations', previa), 'utf8'))
+      } catch (e) {
+        throw new Error(`la ${previa}, que ya esta aplicada, no arranca sobre el andamio: ${(e as Error).message}`)
+      }
+      console.log(`   encima:  ${previa} (aplicada en produccion)`)
+    }
   }
   console.log()
 } catch (e) {
@@ -470,8 +652,8 @@ if (verificacion) {
 
 console.log()
 console.log('   TODO CORRECTO: el fichero se ejecuta entero contra un PostgreSQL de verdad.')
-console.log('   OJO: esto NO dice nada de LOS DATOS de producción. El andamio tiene cuatro')
-console.log('   filas inventadas, así que una verificación que cuente filas reales dirá aquí')
+console.log('   OJO: esto NO dice nada de LOS DATOS de producción. El andamio tiene un puñado')
+console.log('   de filas inventadas, así que una verificación que cuente filas reales dirá aquí')
 console.log('   otra cosa. Lo que esto prueba es que el fichero arranca y que su lógica se')
 console.log('   sostiene; lo demás lo dice aplicarla.')
 console.log()
