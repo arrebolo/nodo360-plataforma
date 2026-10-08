@@ -91,7 +91,7 @@ export function LessonSidebar({
   )
 
   return (
-    <div className="bg-dark-secondary border border-dark-border rounded-2xl h-fit sticky top-4 overflow-hidden">
+    <div className="bg-dark-secondary border border-dark-border rounded-2xl h-fit sticky top-20 overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-dark-border">
         <h3 className="font-semibold text-white">Contenido del curso</h3>

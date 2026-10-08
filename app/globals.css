@@ -118,8 +118,12 @@ html {
   scroll-behavior: smooth;
 }
 
+/* min-height, no height: la cabecera del sitio es sticky dentro de body, y con
+   height: 100% body medía una pantalla, así que la cabecera se iba al bajar de
+   la primera. Con min-height, body crece con la página y la cabecera se queda.
+   Lo que sea sticky arriba en una página va por debajo de ella: top-16 o más. */
 body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

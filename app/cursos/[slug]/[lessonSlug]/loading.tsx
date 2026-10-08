@@ -32,7 +32,7 @@ export default function LessonLoading() {
 
           {/* Sidebar - course navigation */}
           <div className="lg:w-80 flex-shrink-0">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4 sticky top-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4 sticky top-20">
               <div className="h-6 w-40 bg-white/10 rounded" />
 
               {/* Module skeletons */}

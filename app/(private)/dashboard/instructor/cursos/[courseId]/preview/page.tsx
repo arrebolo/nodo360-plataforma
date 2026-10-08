@@ -101,7 +101,7 @@ export default async function CoursePreviewPage({ params }: PreviewPageProps) {
   return (
     <div className="min-h-screen bg-dark">
       {/* Banner de preview */}
-      <div className="sticky top-0 z-50 bg-brand/90 backdrop-blur-sm border-b border-brand-light/20">
+      <div className="sticky top-16 z-40 bg-brand/90 backdrop-blur-sm border-b border-brand-light/20">
         <div className={cx(tokens.layout.container, 'py-3')}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
