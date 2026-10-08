@@ -1,16 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Mail, ArrowLeft, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { traducirErrorDeAuth } from '@/lib/auth/error-messages'
+import { mensajeDeErrorEnUrl, traducirErrorDeAuth } from '@/lib/auth/error-messages'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // El callback y /auth/confirmar mandan aquí los fallos de un enlace de
+  // recuperación (?error=otp_expired…), y esta página no los leía: quien abría
+  // un enlace caducado veía el formulario vacío, sin saber qué había pasado.
+  // window.location y no useSearchParams, que obligaría a envolver la página en
+  // un Suspense solo para esto.
+  useEffect(() => {
+    const parametros = new URLSearchParams(window.location.search)
+    const codigo = parametros.get('error')
+    if (codigo) setError(mensajeDeErrorEnUrl(codigo, parametros.get('error_code')))
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
