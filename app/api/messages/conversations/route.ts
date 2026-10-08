@@ -128,10 +128,10 @@ export async function POST(request: NextRequest) {
     // y asi esta lectura no devuelve ni un dato de nadie. Quien pregunta ya
     // tiene sesion.
     //
-    // OJO, LO QUE ESTO *NO* ARREGLA: hoy cualquier cuenta con sesion puede abrir
-    // conversacion con cualquier id. No hay regla de quien puede escribir a
-    // quien, y eso es una decision de producto, no de permisos; esta levantado
-    // como pregunta y no se cambia aqui por mi cuenta.
+    // QUIEN PUEDE ESCRIBIR A QUIEN no se decide aqui: lo decide la base, en la
+    // 124 (trigger en conversations y la misma regla dentro de la RPC), porque
+    // PostgREST es alcanzable directamente y una regla en esta ruta se saltaria
+    // con un INSERT. Aqui solo se traduce su «no» a una respuesta legible.
     const { data: otherUser, error: userError } = await createAdminClient()
       .from('users')
       .select('id')
@@ -150,6 +150,13 @@ export async function POST(request: NextRequest) {
       })
 
     if (fnError) {
+      // 42501 es un «no» con su motivo, no un fallo del servidor: la regla de
+      // la 124 («Esta persona no acepta mensajes») o la guarda de identidad de
+      // la 034. El mensaje lo escribe la base para quien lo lee, y
+      // SendMessageButton lo muestra tal cual.
+      if (fnError.code === '42501') {
+        return NextResponse.json({ error: fnError.message }, { status: 403 })
+      }
       console.error('[POST /api/messages/conversations] RPC error:', fnError)
       return NextResponse.json({ error: 'Error al crear conversación' }, { status: 500 })
     }
