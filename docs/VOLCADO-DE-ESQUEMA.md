@@ -188,9 +188,29 @@ con `--schema=auth` y se mira qué sale antes de usarlo.
 
 El camino:
 
-1. **Para el banco de pruebas**: copiarlo a `tmp/esquema-produccion.sql`. `tmp/`
-   está en `.gitignore`, así que no se sube. El banco lo cargará de ahí cuando
-   exista, y seguirá usando el andamio escrito a mano si no está.
+1. **Para el banco de pruebas**: copiarlo a `tmp/esquema-produccion.sql`
+   **con una primera línea que diga hasta qué migración llega**: la última
+   aplicada en producción cuando se sacó. `tmp/` está en `.gitignore`, así que
+   no se sube.
+
+   ```powershell
+   $hasta = '124'   # la ULTIMA migracion aplicada cuando se saco el volcado
+   "-- nodo360: volcado hasta la migracion $hasta`n" +
+     (Get-Content -Raw "$destino\esquema-publico.sql") |
+     Set-Content -Encoding utf8 tmp\esquema-produccion.sql
+   ```
+
+   El banco la necesita. Un volcado es una foto, y para probar una migración
+   sobre la base de **hoy** pone encima, en orden, las migraciones versionadas
+   posteriores a esa foto. **Sin la línea, se niega a usarlo**, y también si la
+   foto ya incluye la migración que se prueba. Antes no lo hacía: con un
+   volcado no aplicaba nada encima, y una migración correcta salía en rojo
+   sobre un volcado viejo.
+
+   Si el fichero no existe, el banco usa el andamio escrito a mano, que declara
+   su propia foto en `ANDAMIO_HASTA_LA_MIGRACION`, y encima solo pone las
+   declaradas en `COMPATIBLES_CON_EL_ANDAMIO`: si hay una posterior sin
+   declarar, se niega y la nombra.
 2. **Para versionar lo que falta**: de ese volcado se extrae **solo lo que no
    está en ninguna migración** y se escribe como `001`, `002`, `017` y `018` con
    su cabecera explicando que son el esquema inicial reconstruido, no una
