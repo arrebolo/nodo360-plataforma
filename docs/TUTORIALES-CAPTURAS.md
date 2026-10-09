@@ -94,14 +94,25 @@ Se usa **Microsoft Edge**, que ya viene instalado, **sin iniciar sesión**.
 ### 6. Carpeta para pasar las capturas
 
 1. Con la sesión de `usuario`, crea la carpeta **`C:\Capturas-tutoriales`**.
-2. Desde tu cuenta de siempre, comprueba que la puedes abrir. Las carpetas de la
-   raíz de `C:` heredan permiso de modificación para todas las cuentas del equipo,
-   así que debería abrirse sin más. Si no se abre, en un PowerShell de
-   administrador de tu cuenta:
+2. Cierra la sesión de `usuario`, entra con tu cuenta principal (`alber`) y
+   comprueba que abres la carpeta y las capturas de dentro: es la cuenta que las
+   copia al repositorio. Las carpetas de la raíz de `C:` heredan permiso de
+   modificación para los usuarios autenticados del equipo, así que debería
+   abrirse sin más.
+3. Si no se abre, o abre pero no deja leer los archivos, dale permiso a tu
+   cuenta principal. Desde **tu cuenta principal**, abre PowerShell **como
+   administrador** (Inicio → escribe **PowerShell** → clic derecho → **«Ejecutar
+   como administrador»**) y ejecuta:
 
    ```powershell
-   icacls "C:\Capturas-tutoriales" /grant "usuario:(OI)(CI)M"
+   icacls "C:\Capturas-tutoriales" /grant "alber:(OI)(CI)M" /T
    ```
+
+   `(OI)(CI)` hace que lo hereden las subcarpetas y archivos que se creen después;
+   `/T` lo aplica también a lo que ya hay dentro. `usuario` no lo necesita: creó la
+   carpeta y es su propietaria. Si algún día comparten la carpeta más cuentas,
+   en lugar de `alber` se pone el grupo Usuarios por su identificador, que no
+   cambia con el idioma de Windows: `"*S-1-5-32-545:(OI)(CI)M"`.
 
 Es la única carpeta que comparten las dos cuentas. La cuenta `usuario` no puede
 leer tu carpeta personal, ni tú necesitas entrar en la suya.
@@ -134,7 +145,9 @@ leer tu carpeta personal, ni tú necesitas entrar en la suya.
    `docs/TUTORIALES.md`.
 
 Se capturan en **PNG**. El paso a WebP, el tamaño y quitar los metadatos los hace
-un script del repositorio al añadirlas al tutorial.
+un script del repositorio al añadirlas al tutorial (`npm run preparar:capturas`).
+**Ese script lo añade la PR #340; no se sube ninguna captura al repositorio
+antes de que esté.**
 
 ---
 
