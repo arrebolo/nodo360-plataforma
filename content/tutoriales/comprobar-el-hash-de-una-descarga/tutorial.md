@@ -188,4 +188,4 @@ En Windows, que no salga nada también puede querer decir que `SHA256SUMS` no es
 
 Que el hash coincida demuestra que tu archivo es idéntico al que aparece en la lista. **No demuestra que la lista sea auténtica.** El instalador y `SHA256SUMS` vienen de la misma web: si alguien tomara el control de esa web, podría cambiar los dos a la vez y seguirían coincidiendo.
 
-Para eso existe la firma de la lista, el archivo `SHA256SUMS.asc`: permite comprobar que la lista la publicaron los desarrolladores que dicen haberla publicado. Antes de instalar un programa que vaya a guardar claves o monedas, comprueba también la firma.
+Para eso existe la firma de la lista, el archivo `SHA256SUMS.asc`: permite comprobar que la lista la publicaron los desarrolladores que dicen haberla publicado. Antes de instalar un programa que vaya a guardar claves o monedas, comprueba también la firma: se hace en :tutorial[Verificar la firma PGP de una descarga con GnuPG]{slug="verificar-la-firma-de-una-descarga"}.
