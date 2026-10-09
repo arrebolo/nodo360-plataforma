@@ -69,6 +69,27 @@ afirmacion mas ambiciosa tiene que salir de la base de datos antes de publicarse
 | 4 | Lo que no se pueda verificar retroactivamente no se da por bueno | `PLAN-REFORMA.md:25` (certificados) |
 | 7 | Honestidad: no anunciar lo que no existe ni inflar lo que si | `PLAN-REFORMA.md:12`, `curso-...:112` |
 
+### El Principio #2 en los tutoriales (decision del 09/10/2026)
+
+Un tutorial de `/tutoriales` es una tarea practica, y se hace necesariamente con
+un programa concreto. El principio se lee asi:
+
+- **El tutorial dice «como se hace con X», nunca «usa X».** El titulo nombra la
+  tarea, no el programa, salvo que el programa sea la tarea.
+- **Bloque fijo «Por que este programa»**: que criterios objetivos cumple, con
+  hechos comprobables y sin adjetivos. Los criterios son: codigo abierto,
+  descarga oficial verificable (hashes y, si maneja claves, firmas), mantenido
+  (alguna version en los ultimos 12 meses), no custodia monedas ni claves ni
+  exige cuenta, funciona en signet si mueve monedas, y sin programa de afiliados.
+- **Bloque fijo «Con que otros se hace lo mismo»**: las alternativas que tambien
+  cumplen los criterios, **en orden alfabetico y sin orden de preferencia**.
+- **Fuera las carteras fisicas, por ahora**: implican comprar un aparato de una
+  marca.
+
+El detalle, con el resto de reglas de los tutoriales (signet en todos, solo
+descargas oficiales verificadas, nada de exchanges ni afiliados), esta en
+`docs/TUTORIALES.md`.
+
 ---
 
 ## METRICAS REALES (25/09/2026)
