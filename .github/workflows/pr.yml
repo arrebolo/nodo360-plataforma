@@ -94,3 +94,12 @@ jobs:
       #
       # No toca la base ni la red: llama a lib/auth/error-messages.ts.
       - run: npx tsx scripts/comprobar-errores-de-auth.mts
+
+      # Las reglas de los tutoriales (lib/tutoriales/analizar.ts), caso por
+      # caso: HTML crudo, pasos sin «Deberías ver», enlaces a exchanges o de
+      # referido, palabras que no son español neutro, capturas sin texto
+      # alternativo o que pesan demasiado. Los tutoriales de verdad los valida
+      # el prebuild, dentro de npm run build.
+      #
+      # No toca la base ni la red.
+      - run: npx tsx scripts/comprobar-tutoriales.mts

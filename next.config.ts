@@ -925,8 +925,14 @@ const nextConfig: NextConfig = {
   // disco: las dos fuentes y el logo. El trazado automatico no los ve, porque
   // las rutas se construyen con process.cwd() y no con un import. Sin esto, en
   // Vercel la funcion se despliega sin ellos y cada tarjeta falla al generarse.
+  //
+  // Lo mismo con los tutoriales: lib/tutoriales/cargar.ts lee
+  // content/tutoriales/ con readdir. Las paginas no son estaticas (el layout
+  // raiz las hace dinamicas), asi que se leen en la funcion, no en el build.
   outputFileTracingIncludes: {
     '/**': ['./lib/og/*.woff', './public/imagenes/logo-nodo360.png'],
+    '/tutoriales': ['./content/tutoriales/**/*'],
+    '/tutoriales/**': ['./content/tutoriales/**/*'],
   },
 
   // Configuración experimental para mejor performance

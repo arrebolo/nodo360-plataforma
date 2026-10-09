@@ -3,8 +3,8 @@ import { Info } from 'lucide-react'
 /**
  * Aviso de contenido educativo.
  *
- * El texto vive SOLO aqui. Lo usan el blog, la ficha de curso y la pagina de
- * leccion; cambiarlo en este archivo lo cambia en los tres. No duplicarlo
+ * El texto vive SOLO aqui. Lo usan el blog, la ficha de curso, la pagina de
+ * leccion y los tutoriales; cambiarlo en este archivo lo cambia en todos. No duplicarlo
  * dentro del contenido de lib/blog-data.ts ni en el HTML de las lecciones.
  *
  * Por que existe: hasta el 24/09/2026 solo el blog llevaba aviso, y los cursos
@@ -12,12 +12,13 @@ import { Info } from 'lucide-react'
  * Estaba unicamente en /terminos, que nadie lee.
  */
 
-type Tipo = 'articulo' | 'curso' | 'leccion'
+type Tipo = 'articulo' | 'curso' | 'leccion' | 'tutorial'
 
 const SUJETO: Record<Tipo, string> = {
   articulo: 'Este artículo es contenido educativo.',
   curso: 'Este curso es contenido educativo.',
   leccion: 'Esta lección es contenido educativo.',
+  tutorial: 'Este tutorial es contenido educativo.',
 }
 
 export function AvisoEducativo({

@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { enviarEvento } from '@/lib/analytics/eventos'
 
 /**
- * El enlace a un curso desde el blog o el glosario, con su medición.
+ * El enlace a un curso desde el blog, el glosario o un tutorial, con su medición.
  *
  * Es de cliente solo por el evento de GA4: el bloque que lo rodea se sigue
  * renderizando en el servidor. Si la medición falla, el enlace funciona igual
@@ -22,7 +22,7 @@ export function EnlaceACurso({
   variante = 'boton',
 }: {
   url: string
-  origen: 'blog' | 'glosario'
+  origen: 'blog' | 'glosario' | 'tutorial'
   slugOrigen: string
   courseSlug: string
   children: React.ReactNode
