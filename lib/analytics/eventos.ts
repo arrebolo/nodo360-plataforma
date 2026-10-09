@@ -60,7 +60,7 @@ type Eventos = {
   /** Examen final suspendido. Los intentos son ilimitados, así que puede repetirse. */
   exam_failed: { course_slug: string }
   /**
-   * Clic en un enlace a un curso desde el blog o el glosario.
+   * Clic en un enlace a un curso desde el blog, el glosario o un tutorial.
    *
    * `origen` dice desde qué sección se pulsó y `slug_origen` desde qué artículo
    * o término concreto. Con los dos se puede saber qué contenido trae gente a
@@ -71,7 +71,7 @@ type Eventos = {
    * reconocer a nadie.
    */
   related_course_click: {
-    origen: 'blog' | 'glosario'
+    origen: 'blog' | 'glosario' | 'tutorial'
     slug_origen: string
     course_slug: string
   }
