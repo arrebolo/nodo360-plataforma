@@ -40,7 +40,7 @@ Este tutorial se hace con **Sparrow Wallet**:
 
 ## Con qué otros se hace lo mismo
 
-- **Bitcoin Core**: la cartera del programa de referencia. Funciona en signet si se arranca con la opción `-signet`, pero antes de mostrar nada tiene que descargar y comprobar la cadena de bloques entera de signet, y eso no cabe en un tutorial de 20 minutos.
+- **Bitcoin Core**: la cartera del programa de referencia. Funciona en signet si se arranca con la opción `-signet`, pero antes tiene que descargar y comprobar la cadena de bloques entera de signet, y eso no cabe en 20 minutos; por eso tiene su propio tutorial, en el que sincronizar es el objetivo.
 - **Electrum**: funciona en signet si se arranca con la opción `--signet`.
 
 ## Paso 1: Descarga el instalador y los archivos de verificación

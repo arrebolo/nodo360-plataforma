@@ -80,7 +80,10 @@ un programa concreto. El principio se lee asi:
   hechos comprobables y sin adjetivos. Los criterios son: codigo abierto,
   descarga oficial verificable (hashes y, si maneja claves, firmas), mantenido
   (alguna version en los ultimos 12 meses), no custodia monedas ni claves ni
-  exige cuenta, funciona en signet si mueve monedas, y sin programa de afiliados.
+  exige cuenta, funciona en signet si mueve monedas, sin programa de afiliados,
+  y la tarea cabe en el tiempo del tutorial (anadido el 09/10/2026: Bitcoin Core
+  no es la cartera del tutorial 3 porque antes tiene que sincronizar signet; va
+  en su propio tutorial, donde sincronizar es el objetivo).
 - **Bloque fijo «Con que otros se hace lo mismo»**: las alternativas que tambien
   cumplen los criterios, **en orden alfabetico y sin orden de preferencia**.
 - **Fuera las carteras fisicas, por ahora**: implican comprar un aparato de una

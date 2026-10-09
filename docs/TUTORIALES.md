@@ -149,6 +149,12 @@ todos:
 4. **No custodia tus monedas ni tus claves**, y no exige crear una cuenta.
 5. **Funciona en signet**, si el tutorial mueve monedas.
 6. **Sin programa de afiliados** que pague por enlazarlo.
+7. **La tarea cabe en el tiempo del tutorial** (sección 1: 20 minutos como
+   máximo). Un programa que antes exige una espera larga, como sincronizar una
+   cadena de bloques, no sirve para un tutorial cuya tarea es otra. Va a su
+   propio tutorial, donde esa espera es el objetivo: Bitcoin Core no es la
+   cartera del tutorial «crear una cartera en signet» porque antes tiene que
+   sincronizar signet entera, y tiene el suyo, «Instalar Bitcoin Core en signet».
 
 Si además funciona en Windows, macOS y Linux, mejor: el tutorial sirve a más
 gente. Ante dos programas que cumplen todo, se prefiere la implementación de
